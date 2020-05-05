@@ -1,17 +1,45 @@
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (C) FTW! Masters
+// Keep the headers and the patterns adopted by the project. If you changed anything in the file just insert
+// your name below, but don't remove the names of who worked here before.
+// 
+// This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
+// found here: https://gitlab.com/spirited/comet
+// 
+// Comet - Comet.Account - DbRealm.cs
+// Description:
+// 
+// Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
+// 
+// Developed by:
+// Felipe Vieira Vendramini <felipevendramini@live.com>
+// 
+// Programming today is a race between software engineers striving to build bigger and better
+// idiot-proof programs, and the Universe trying to produce bigger and better idiots.
+// So far, the Universe is winning.
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#region References
+
+using System.ComponentModel.DataAnnotations.Schema;
+using Comet.Network.RPC;
+
+#endregion
+
 namespace Comet.Account.Database.Models
 {
-    using System.ComponentModel.DataAnnotations.Schema;
-    using Comet.Network.RPC;
-
     /// <summary>
-    /// Realms are configured instances of the game server. This class defines routing 
-    /// details for authenticated clients to be redirected to. Redirection involves
-    /// access token leasing, provided by the game server via RPC. Security for RPC stream
-    /// encryption is defined in this class.
+    ///     Realms are configured instances of the game server. This class defines routing
+    ///     details for authenticated clients to be redirected to. Redirection involves
+    ///     access token leasing, provided by the game server via RPC. Security for RPC stream
+    ///     encryption is defined in this class.
     /// </summary>
     [Table("realm")]
-    public partial class DbRealm
+    public class DbRealm
     {
+        // Application Logic Fields
+        [NotMapped] public RpcClient Rpc;
+
         // Column Properties
         public uint RealmID { get; set; }
         public string Name { get; set; }
@@ -23,9 +51,5 @@ namespace Comet.Account.Database.Models
 
         // Navigational Properties
         public virtual DbAccountAuthority Authority { get; set; }
-
-        // Application Logic Fields
-        [NotMapped]
-        public RpcClient Rpc;
     }
 }

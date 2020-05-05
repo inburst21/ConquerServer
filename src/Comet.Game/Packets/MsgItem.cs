@@ -1,15 +1,40 @@
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (C) FTW! Masters
+// Keep the headers and the patterns adopted by the project. If you changed anything in the file just insert
+// your name below, but don't remove the names of who worked here before.
+// 
+// This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
+// found here: https://gitlab.com/spirited/comet
+// 
+// Comet - Comet.Game - MsgItem.cs
+// Description:
+// 
+// Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
+// 
+// Developed by:
+// Felipe Vieira Vendramini <felipevendramini@live.com>
+// 
+// Programming today is a race between software engineers striving to build bigger and better
+// idiot-proof programs, and the Universe trying to produce bigger and better idiots.
+// So far, the Universe is winning.
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#region References
+
+using System;
+using System.Threading.Tasks;
+using Comet.Game.States;
+using Comet.Network.Packets;
+
+#endregion
+
 namespace Comet.Game.Packets
 {
-    using System;
-    using System.Threading.Tasks;
-    using Comet.Game.States;
-    using Comet.Network.Packets;
-
     /// <remarks>Packet Type 1009</remarks>
     /// <summary>
-    /// Message containing an item action command. Item actions are usually performed to 
-    /// manage player equipment, inventory, money, or item shop purchases and sales. It
-    /// is serves a second purpose for measuring client ping.
+    ///     Message containing an item action command. Item actions are usually performed to
+    ///     manage player equipment, inventory, money, or item shop purchases and sales. It
+    ///     is serves a second purpose for measuring client ping.
     /// </summary>
     public sealed class MsgItem : MsgBase<Client>
     {
@@ -21,51 +46,51 @@ namespace Comet.Game.Packets
         public ItemActionType Action { get; set; }
 
         /// <summary>
-        /// Decodes a byte packet into the packet structure defined by this message class. 
-        /// Should be invoked to structure data from the client for processing. Decoding
-        /// follows TQ Digital's byte ordering rules for an all-binary protocol.
+        ///     Decodes a byte packet into the packet structure defined by this message class.
+        ///     Should be invoked to structure data from the client for processing. Decoding
+        ///     follows TQ Digital's byte ordering rules for an all-binary protocol.
         /// </summary>
         /// <param name="bytes">Bytes from the packet processor or client socket</param>
         public override void Decode(byte[] bytes)
         {
             var reader = new PacketReader(bytes);
-            this.Length = reader.ReadUInt16();
-            this.Type = (PacketType)reader.ReadUInt16();
-            this.CharacterID = reader.ReadUInt32();
-            this.Command = reader.ReadUInt32();
-            this.Action = (ItemActionType)reader.ReadUInt32();
-            this.Timestamp = reader.ReadUInt32();
-            this.Argument = reader.ReadUInt32();
+            Length = reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
+            CharacterID = reader.ReadUInt32();
+            Command = reader.ReadUInt32();
+            Action = (ItemActionType) reader.ReadUInt32();
+            Timestamp = reader.ReadUInt32();
+            Argument = reader.ReadUInt32();
         }
 
         /// <summary>
-        /// Encodes the packet structure defined by this message class into a byte packet
-        /// that can be sent to the client. Invoked automatically by the client's send 
-        /// method. Encodes using byte ordering rules interoperable with the game client.
+        ///     Encodes the packet structure defined by this message class into a byte packet
+        ///     that can be sent to the client. Invoked automatically by the client's send
+        ///     method. Encodes using byte ordering rules interoperable with the game client.
         /// </summary>
         /// <returns>Returns a byte packet of the encoded packet.</returns>
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)base.Type);
-            writer.Write(this.CharacterID);
-            writer.Write(this.Command);
-            writer.Write((uint)this.Action);
-            writer.Write(this.Timestamp);
-            writer.Write(this.Argument);
+            writer.Write((ushort) Type);
+            writer.Write(CharacterID);
+            writer.Write(Command);
+            writer.Write((uint) Action);
+            writer.Write(Timestamp);
+            writer.Write(Argument);
             return writer.ToArray();
         }
 
         /// <summary>
-        /// Process can be invoked by a packet after decode has been called to structure
-        /// packet fields and properties. For the server implementations, this is called
-        /// in the packet handler after the message has been dequeued from the server's
-        /// <see cref="PacketProcessor"/>.
+        ///     Process can be invoked by a packet after decode has been called to structure
+        ///     packet fields and properties. For the server implementations, this is called
+        ///     in the packet handler after the message has been dequeued from the server's
+        ///     <see cref="PacketProcessor" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            switch (this.Action)
+            switch (Action)
             {
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
@@ -74,20 +99,20 @@ namespace Comet.Game.Packets
                 default:
                     await client.SendAsync(this);
                     await client.SendAsync(new MsgTalk(client.ID, MsgTalk.TalkChannel.Service,
-                        String.Format("Missing packet {0}, Action {1}, Length {2}",
-                        this.Type, this.Action, this.Length)));
+                        string.Format("Missing packet {0}, Action {1}, Length {2}",
+                            Type, Action, Length)));
                     Console.WriteLine(
-                        "Missing packet {0}, action {1}, Length {2}\n{3}", 
-                        this.Type, this.Action, this.Length, PacketDump.Hex(this.Encode()));
+                        "Missing packet {0}, action {1}, Length {2}\n{3}",
+                        Type, Action, Length, PacketDump.Hex(Encode()));
                     break;
             }
         }
 
         /// <summary>
-        /// Enumeration type for defining item actions that may be requested by the user, 
-        /// or given to by the server. Allows for action handling as a packet subtype. 
-        /// Enums should be named by the action they provide to a system in the context
-        /// of the player item.
+        ///     Enumeration type for defining item actions that may be requested by the user,
+        ///     or given to by the server. Allows for action handling as a packet subtype.
+        ///     Enums should be named by the action they provide to a system in the context
+        ///     of the player item.
         /// </summary>
         public enum ItemActionType
         {

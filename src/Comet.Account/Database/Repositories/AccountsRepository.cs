@@ -1,3 +1,5 @@
+using System;
+
 namespace Comet.Account.Database.Repositories
 {
     using System.Linq;
@@ -46,6 +48,32 @@ namespace Comet.Account.Database.Repositories
                 inputHashed = sha1.ComputeHash(Encoding.ASCII.GetBytes(input + salt));
             var final = Hex.ToHexString(inputHashed);
             return final.Equals(hash);
+        }
+
+        public static string HashPassword(string password, string salt)
+        {
+            byte[] inputHashed;
+            using (var sha256 = SHA256.Create())
+                inputHashed = sha256.ComputeHash(Encoding.ASCII.GetBytes(password + salt));
+            var final = Hex.ToHexString(inputHashed);
+            return final;
+        }
+
+        public static string GenerateSalt()
+        {
+            const string UPPER_S = "QWERTYUIOPASDFGHJKLZXCVBNM";
+            const string LOWER_S = "qwertyuioplkjhgfdsazxcvbnm";
+            const string NUMBER_S = "1236547890";
+            const string POOL_S = UPPER_S + LOWER_S + NUMBER_S;
+            const int SIZE_I = 30;
+
+            Random random = new Random();
+            string output = "";
+            for (int i = 0; i < SIZE_I; i++)
+            {
+                output += POOL_S[random.Next() % POOL_S.Length];
+            }
+            return output;
         }
     } 
 }
