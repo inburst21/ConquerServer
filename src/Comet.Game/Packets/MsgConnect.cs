@@ -76,7 +76,7 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
@@ -93,6 +93,8 @@ namespace Comet.Game.Packets
             // Generate new keys and check for an existing character
             client.Cipher.GenerateKeys(new object[] {Token});
             var character = await CharactersRepository.FindAsync(auth.AccountID);
+            client.AccountIdentity = auth.AccountID;
+            client.VipLevel = auth.VipLevel;
             if (character == null)
             {
                 // Create a new character
@@ -105,9 +107,12 @@ namespace Comet.Game.Packets
             else
             {
                 // Character already exists
-                client.Character = new Character(character);
-                await client.SendAsync(LoginOk);
-                await client.SendAsync(new MsgUserInfo(client.Character));
+                client.Character = new Character(character, client);
+                if (await Kernel.RoleManager.LoginUserAsync(client))
+                {
+                    await client.SendAsync(LoginOk);
+                    await client.SendAsync(new MsgUserInfo(client.Character));
+                }
             }
         }
     }

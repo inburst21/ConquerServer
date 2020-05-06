@@ -61,9 +61,11 @@ namespace Comet.Game
             var config = new ServerConfiguration(args);
             if (!config.Valid)
             {
-                await Log.WriteLog(LogLevel.Message, "Invalid server configuration file");
+                await Log.WriteLog(LogLevel.Error, "Invalid server configuration file");
                 return;
             }
+
+            Kernel.Configuration = config.GameNetwork;
 
             // Initialize the database
             await Log.WriteLog(LogLevel.Message, "Initializing server...");
@@ -71,7 +73,13 @@ namespace Comet.Game
             ServerDbContext.Configuration = config.Database;
             if (!ServerDbContext.Ping())
             {
-                await Log.WriteLog(LogLevel.Message, "Invalid database configuration");
+                await Log.WriteLog(LogLevel.Error, "Invalid database configuration");
+                return;
+            }
+
+            if (!Kernel.Startup())
+            {
+                await Log.WriteLog(LogLevel.Error, "Could not load database related stuff");
                 return;
             }
 

@@ -49,9 +49,15 @@ namespace Comet.Game.Packets
         public static readonly MsgTalk RegisterOk = new MsgTalk(0, TalkChannel.Register, "ANSWER_OK");
         public static readonly MsgTalk RegisterInvalid = new MsgTalk(0, TalkChannel.Register, "Invalid character");
         public static readonly MsgTalk RegisterNameTaken = new MsgTalk(0, TalkChannel.Register, "Character name taken");
+        public static readonly MsgTalk RegisterTryAgain = new MsgTalk(0, TalkChannel.Register, "Error, please try later");
 
-        public static readonly MsgTalk RegisterTryAgain =
-            new MsgTalk(0, TalkChannel.Register, "Error, please try later");
+        /// <summary>
+        /// Instantiates a new instance of <see cref="MsgTalk"/> with an empty buffer.
+        /// </summary>
+        public MsgTalk()
+        {
+            
+        }
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="MsgTalk" /> using the recipient's

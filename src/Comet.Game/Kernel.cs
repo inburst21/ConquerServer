@@ -24,7 +24,9 @@
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Routines;
+using Comet.Game.World.Managers;
 
 #endregion
 
@@ -42,6 +44,11 @@ namespace Comet.Game
         public static MemoryCache Logins = MemoryCache.Default;
         public static List<uint> Registration = new List<uint>();
 
+        public static ServerConfiguration.GameNetworkConfiguration Configuration;
+
+        public static MapManager MapManager = new MapManager();
+        public static RoleManager RoleManager = new RoleManager();
+
         /// <summary>
         ///     Returns the next random number from the generator.
         /// </summary>
@@ -50,6 +57,16 @@ namespace Comet.Game
         public static Task<int> NextAsync(int minValue, int maxValue)
         {
             return Services.Randomness.NextAsync(minValue, maxValue);
+        }
+
+        public static bool Startup()
+        {
+            MapManager.LoadData();
+            MapManager.LoadMaps();
+
+            _ = RoleManager.InitializeAsync();
+
+            return true;
         }
 
         // Background services

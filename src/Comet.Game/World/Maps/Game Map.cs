@@ -1,0 +1,464 @@
+﻿// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (C) FTW! Masters
+// Keep the headers and the patterns adopted by the project. If you changed anything in the file just insert
+// your name below, but don't remove the names of who worked here before.
+// 
+// This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
+// found here: https://gitlab.com/spirited/comet
+// 
+// Comet - Comet.Game - Game Map.cs
+// Description:
+// 
+// Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
+// 
+// Developed by:
+// Felipe Vieira Vendramini <felipevendramini@live.com>
+// 
+// Programming today is a race between software engineers striving to build bigger and better
+// idiot-proof programs, and the Universe trying to produce bigger and better idiots.
+// So far, the Universe is winning.
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#region References
+
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core.Mathematics;
+using Comet.Game.Database.Models;
+using Comet.Game.Packets;
+using Comet.Game.States;
+using Comet.Game.States.Base_Entities;
+using Comet.Network.Packets;
+using Comet.Shared;
+
+#endregion
+
+namespace Comet.Game.World.Maps
+{
+    public sealed class GameMap
+    {
+        public const uint DEFAULT_LIGHT_RGB = 0xFFFFFF;
+
+        public const int REGION_NONE = 0,
+            REGION_CITY = 1,
+            REGION_WEATHER = 2,
+            REGION_STATUARY = 3,
+            REGION_DESC = 4,
+            REGION_GOBALDESC = 5,
+            REGION_DANCE = 6, // data0: idLeaderRegion, data1: idMusic, 
+            REGION_PK_PROTECTED = 7,
+            REGION_FLAG_BASE = 8;
+
+        public static readonly sbyte[] WalkXCoords = {0, -1, -1, -1, 0, 1, 1, 1, 0};
+        public static readonly sbyte[] WalkYCoords = {1, 1, 0, -1, -1, -1, 0, 1, 0};
+
+        private readonly DbMap m_dbMap;
+        private GameMapData m_mapData;
+
+        private GameBlock[,] m_blocks;
+
+        private ConcurrentDictionary<uint, Character> m_users = new ConcurrentDictionary<uint, Character>();
+        private ConcurrentDictionary<uint, Role> m_roles = new ConcurrentDictionary<uint, Role>();
+
+        public GameMap(DbMap map)
+        {
+            m_dbMap = map;
+        }
+
+        public uint Identity => m_dbMap?.Identity ?? 0;
+        public uint MapDoc => m_dbMap?.MapDoc ?? 0;
+        public uint Type => m_dbMap?.Type ?? 0;
+
+        public int Width => m_mapData?.Width ?? 0;
+        public int Height => m_mapData?.Height ?? 0;
+
+        public uint Light => m_dbMap?.Color ?? 0;
+
+        public int BlocksX => Width / GameBlock.BLOCK_SIZE;
+        public int BlocksY => Height / GameBlock.BLOCK_SIZE;
+
+        public ulong Flag { get; set; }
+
+        public bool Initialize()
+        {
+            if (m_dbMap == null) return false;
+
+            m_mapData = Kernel.MapManager.GetMapData(MapDoc);
+            if (m_mapData == null)
+            {
+                Log.WriteLog(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found").Wait();
+                return false;
+            }
+
+            m_blocks = new GameBlock[BlocksX, BlocksY];
+            for (int y = 0; y < BlocksY; y++)
+            {
+                for (int x = 0; x < BlocksX; x++)
+                {
+                    m_blocks[x, y] = new GameBlock();
+                }
+            }
+
+            return true;
+        }
+
+        #region Query Role
+
+        public Role QueryAroundRole(Role sender, uint target)
+        {
+            int currentBlockX = GetBlockX(sender.MapX);
+            int currentBlockY = GetBlockY(sender.MapY);
+            return Query9Blocks(currentBlockX, currentBlockY).FirstOrDefault(x => x.Identity == target);
+        }
+
+        #endregion
+
+        #region Role Management
+
+        public async Task<bool> AddAsync(Role role)
+        {
+            if (m_roles.TryAdd(role.Identity, role))
+            {
+                EnterBlock(role, role.MapX, role.MapY);
+
+                if (role is Character character)
+                {
+                    m_users.TryAdd(character.Identity, character);
+                    await character.Screen.UpdateAsync();
+                }
+                else
+                {
+                    foreach (var user in m_users.Values.Where(x =>
+                        ScreenCalculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.VIEW_SIZE))
+                    {
+                        await user.Screen.SpawnAsync(role);
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<bool> RemoveAsync(uint idRole)
+        {
+            if (m_roles.TryRemove(idRole, out var role))
+            {
+                m_users.TryRemove(idRole, out _);
+                LeaveBlock(role);
+
+                foreach (var user in Query9BlocksByPos(role.MapX, role.MapY).Where(x => x is Character)
+                    .Cast<Character>())
+                {
+                    await user.Screen.RemoveAsync(idRole, true);
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Broadcasting
+
+        public async Task SendMapInfoAsync(Character user)
+        {
+            // todo handle weather
+            MsgAction action = new MsgAction
+            {
+                Action = MsgAction.ActionType.MapArgb,
+                Identity = 1,
+                Command = Light,
+                ArgumentX = 0,
+                ArgumentY = 0
+            };
+            await user.SendAsync(action);
+            await user.SendAsync(new MsgMapInfo(Identity, MapDoc, Type));
+        }
+
+        public async Task BroadcastMsgAsync(IPacket msg, uint exclude = 0)
+        {
+            foreach (var user in m_users.Values)
+            {
+                if (user.Identity == exclude)
+                    continue;
+
+                await user.SendAsync(msg);
+            }
+        }
+
+        public async Task BroadcastRoomMsgAsync(int x, int y, IPacket msg, uint exclude = 0)
+        {
+            foreach (var user in m_users.Values)
+            {
+                if (user.Identity == exclude ||
+                    ScreenCalculations.GetDistance(x, y, user.MapX, user.MapY) > Screen.VIEW_SIZE)
+                    continue;
+
+                await user.SendAsync(msg);
+            }
+        }
+
+        #endregion
+
+        #region Blocks
+
+        public void EnterBlock(Role role, int newX, int newY, int oldX = 0, int oldY = 0)
+        {
+            int currentBlockX = GetBlockX(newX);
+            int currentBlockY = GetBlockY(newY);
+
+            int oldBlockX = GetBlockX(oldX);
+            int oldBlockY = GetBlockY(oldY);
+
+            if (currentBlockX != oldBlockX || currentBlockY != oldBlockY)
+            {
+                if (GetBlock(oldBlockX, oldBlockY)?.RoleSet.ContainsKey(role.Identity) == true)
+                    LeaveBlock(role);
+
+                GetBlock(currentBlockX, currentBlockY)?.Add(role);
+            }
+        }
+
+        public void LeaveBlock(Role role)
+        {
+            GetBlock(GetBlockX(role.MapX), GetBlockY(role.MapY))?.Remove(role);
+        }
+
+
+        public GameBlock GetBlock(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= BlocksX || y >= BlocksY)
+                return null;
+            return m_blocks[x, y];
+        }
+
+        public List<Role> Query9BlocksByPos(int x, int y)
+        {
+            return Query9Blocks(GetBlockX(x), GetBlockY(y));
+        }
+
+        public List<Role> Query9Blocks(int x, int y)
+        {
+            List<Role> result = new List<Role>();
+
+            //Console.WriteLine(@"============== Query Block Begin =================");
+            for (int aroundBlock = 0; aroundBlock < WalkXCoords.Length; aroundBlock++)
+            {
+                int viewBlockX = x + WalkXCoords[aroundBlock];
+                int viewBlockY = y + WalkYCoords[aroundBlock];
+
+                //Console.WriteLine($@"Block: {viewBlockX},{viewBlockY} [from: {viewBlockX*18},{viewBlockY*18}] [to: {viewBlockX*18+18},{viewBlockY*18+18}]");
+
+                if (viewBlockX < 0 || viewBlockY < 0 || viewBlockX >= BlocksX || viewBlockY >= BlocksY)
+                    continue;
+
+                result.AddRange(GetBlock(viewBlockX, viewBlockY).RoleSet.Values);
+            }
+
+            //Console.WriteLine(@"============== Query Block End =================");
+            return result;
+        }
+
+        #endregion
+
+        #region Map Checks
+
+        /// <summary>
+        ///     Checks if the map is a pk field. Wont add pk points.
+        /// </summary>
+        public bool IsPkField()
+        {
+            return (Type & (uint) MapTypeFlags.PkField) != 0;
+        }
+
+        /// <summary>
+        ///     Disable teleporting by skills or scrolls.
+        /// </summary>
+        public bool IsChgMapDisable()
+        {
+            return (Type & (uint) MapTypeFlags.ChangeMapDisable) != 0;
+        }
+
+        /// <summary>
+        ///     Disable recording the map position into the database.
+        /// </summary>
+        public bool IsRecordDisable()
+        {
+            return (Type & (uint) MapTypeFlags.RecordDisable) != 0;
+        }
+
+        /// <summary>
+        ///     Disable team creation into the map.
+        /// </summary>
+        public bool IsTeamDisable()
+        {
+            return (Type & (uint) MapTypeFlags.TeamDisable) != 0;
+        }
+
+        /// <summary>
+        ///     Disable use of pk on the map.
+        /// </summary>
+        public bool IsPkDisable()
+        {
+            return (Type & (uint) MapTypeFlags.PkDisable) != 0;
+        }
+
+        /// <summary>
+        ///     Disable teleporting by actions.
+        /// </summary>
+        public bool IsTeleportDisable()
+        {
+            return (Type & (uint) MapTypeFlags.TeleportDisable) != 0;
+        }
+
+        /// <summary>
+        ///     Checks if the map is a syndicate map
+        /// </summary>
+        /// <returns></returns>
+        public bool IsSynMap()
+        {
+            return (Type & (uint) MapTypeFlags.GuildMap) != 0;
+        }
+
+        /// <summary>
+        ///     Checks if the map is a prision
+        /// </summary>
+        public bool IsPrisionMap()
+        {
+            return (Type & (uint) MapTypeFlags.PrisonMap) != 0;
+        }
+
+        /// <summary>
+        ///     If the map enable the fly skill.
+        /// </summary>
+        public bool IsWingDisable()
+        {
+            return (Type & (uint) MapTypeFlags.WingDisable) != 0;
+        }
+
+        /// <summary>
+        ///     Check if the map is in war.
+        /// </summary>
+        public bool IsWarTime()
+        {
+            return (Flag & 1) != 0;
+        }
+
+        /// <summary>
+        ///     Check if the map is the training ground. [1039]
+        /// </summary>
+        public bool IsTrainingMap()
+        {
+            return Identity == 1039;
+        }
+
+        /// <summary>
+        ///     Check if its the family (clan) map.
+        /// </summary>
+        public bool IsFamilyMap()
+        {
+            return (Type & (uint) MapTypeFlags.Family) != 0;
+        }
+
+        /// <summary>
+        ///     If the map enables booth to be built.
+        /// </summary>
+        public bool IsBoothEnable()
+        {
+            return (Type & (uint) MapTypeFlags.BoothEnable) != 0;
+        }
+
+        public bool IsDeadIsland()
+        {
+            return (Type & (uint) MapTypeFlags.DeadIsland) != 0;
+        }
+
+        public bool IsPkGameMap()
+        {
+            return (Type & (uint) MapTypeFlags.PkGame) != 0;
+        }
+
+        public bool IsMineField()
+        {
+            return (Type & (uint) MapTypeFlags.MineField) != 0;
+        }
+
+        public bool IsSkillMap()
+        {
+            return (Type & (uint) MapTypeFlags.SkillMap) != 0;
+        }
+
+        public bool IsLineSkillMap()
+        {
+            return (Type & (ulong) MapTypeFlags.LineSkillOnly) != 0;
+        }
+
+        public bool IsDynamicMap()
+        {
+            return Identity > 999999;
+        }
+
+        #endregion
+
+        #region Position Check
+
+        public bool IsValidPoint(int x, int y)
+        {
+            return x >= 0 && x < Width && y >= 0 && y < Height;
+        }
+
+        public bool IsStandEnable(int x, int y)
+        {
+            return m_mapData[x, y].IsAccessible();
+        }
+
+        public bool IsMoveEnable(int x, int y)
+        {
+            return IsValidPoint(x, y) && IsStandEnable(x, y);
+        }
+
+        #endregion
+
+        #region Static
+
+        public static int GetBlockX(int x)
+        {
+            return x / GameBlock.BLOCK_SIZE;
+        }
+
+        public static int GetBlockY(int y)
+        {
+            return y / GameBlock.BLOCK_SIZE;
+        }
+
+        #endregion
+    }
+
+    [Flags]
+    public enum MapTypeFlags
+    {
+        Normal = 0,
+        PkField = 1, //0x1 1
+        ChangeMapDisable = 1 << 1, //0x2 2
+        RecordDisable = 1 << 2, //0x4 4 
+        PkDisable = 1 << 3, //0x8 8
+        BoothEnable = 1 << 4, //0x10 16
+        TeamDisable = 1 << 5, //0x20 32
+        TeleportDisable = 1 << 6, // 0x40 64
+        GuildMap = 1 << 7, // 0x80 128
+        PrisonMap = 1 << 8, // 0x100 256
+        WingDisable = 1 << 9, // 0x200 512
+        Family = 1 << 10, // 0x400 1024
+        MineField = 1 << 11, // 0x800 2048
+        PkGame = 1 << 12, // 0x1000 4098
+        NeverWound = 1 << 13, // 0x2000 8196
+        DeadIsland = 1 << 14, // 0x4000 16392
+        SkillMap = 1 << 17, // 0x20000 65568
+        LineSkillOnly = 1 << 18
+    }
+}

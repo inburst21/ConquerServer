@@ -22,9 +22,13 @@
 #region References
 
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.States.Base_Entities;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -40,9 +44,10 @@ namespace Comet.Game.Packets
     {
         // Packet Properties
         public uint Timestamp { get; set; }
-        public uint CharacterID { get; set; }
+        public uint Identity { get; set; }
         public uint Command { get; set; }
-        public ushort[] Arguments { get; set; }
+        public ushort ArgumentX { get; set; }
+        public ushort ArgumentY { get; set; }
         public ushort Direction { get; set; }
         public ActionType Action { get; set; }
 
@@ -58,11 +63,10 @@ namespace Comet.Game.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadUInt32();
-            CharacterID = reader.ReadUInt32();
+            Identity = reader.ReadUInt32();
             Command = reader.ReadUInt32();
-            Arguments = new ushort[2];
-            for (int i = 0; i < Arguments.Length; i++)
-                Arguments[i] = reader.ReadUInt16();
+            ArgumentX = reader.ReadUInt16();
+            ArgumentY = reader.ReadUInt16();
             Direction = reader.ReadUInt16();
             Action = (ActionType) reader.ReadUInt16();
         }
@@ -78,10 +82,10 @@ namespace Comet.Game.Packets
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
             writer.Write(Timestamp);
-            writer.Write(CharacterID);
+            writer.Write(Identity);
             writer.Write(Command);
-            for (int i = 0; i < Arguments.Length; i++)
-                writer.Write(Arguments[i]);
+            writer.Write(ArgumentX);
+            writer.Write(ArgumentY);
             writer.Write(Direction);
             writer.Write((ushort) Action);
             return writer.ToArray();
@@ -91,31 +95,95 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            Role target = null;
+            Character user = client.Character;
+
             switch (Action)
             {
-                case ActionType.LoginSpawn:
-                    CharacterID = client.ID;
-                    Command = client.Character.MapID;
-                    Arguments[0] = client.Character.X;
-                    Arguments[1] = client.Character.Y;
+                case ActionType.LoginSpawn: // 74
+                    Identity = client.Character.Identity;
+                    Command = client.Character.MapIdentity;
+                    ArgumentX = client.Character.MapX;
+                    ArgumentY = client.Character.MapY;
                     await client.SendAsync(this);
                     break;
 
-                case ActionType.LoginComplete:
+                case ActionType.LoginInventory: // 75
                     await client.SendAsync(this);
+                    break;
+
+                case ActionType.LoginRelationships: // 76
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.LoginProficiencies: // 77
+                    await client.Character.WeaponSkill.SendAsync();
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.LoginSpells: // 78
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.CharacterPkMode:
+                    if (!Enum.IsDefined(typeof(PkModeType), Command))
+                        Command = (uint)PkModeType.Capture;
+
+                    client.Character.PkMode = (PkModeType)Command;
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.LoginGuild: // 97
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.MapQuery: // 102
+                    Character targetUser = Kernel.RoleManager.GetUser(Identity);
+                    if (targetUser != null)
+                        await targetUser.SendSpawnToAsync(user);
+                    break;
+
+                case ActionType.LoginComplete: // 130
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.MapJump:
+                    if (user != null) // todo handle ai 
+                    {
+                        if (!user.IsAlive)
+                        {
+                            await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
+                            return;
+                        }
+
+                        ushort newX = (ushort)Command;
+                        ushort newY = (ushort)(Command >> 16);
+
+                        if (user.GetDistance(newX, newY) >= 2 * Screen.VIEW_SIZE)
+                        {
+                            await user.SendAsync(Language.StrInvalidMsg, MsgTalk.TalkChannel.System, Color.Red);
+                            await Kernel.RoleManager.KickoutAsync(user.Identity, "big jump");
+                            return;
+                        }
+
+                        user.ProcessOnMove();
+                        await user.JumpPosAsync(newX, newY);
+                        await user.SendAsync(this);
+                        await user.Screen.UpdateAsync(this);
+                    }
+
                     break;
 
                 default:
                     await client.SendAsync(this);
-                    await client.SendAsync(new MsgTalk(client.ID, MsgTalk.TalkChannel.Service,
-                        string.Format("Missing packet {0}, Action {1}, Length {2}",
-                            Type, Action, Length)));
-                    Console.WriteLine(
+                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                        $"Missing packet {Type}, Action {Action}, Length {Length}"));
+                    await Log.WriteLog(LogLevel.Warning,
                         "Missing packet {0}, Action {1}, Length {2}\n{3}",
                         Type, Action, Length, PacketDump.Hex(Encode()));
                     break;
@@ -147,9 +215,9 @@ namespace Comet.Game.Packets
             MapMine = 99,
             MapTeamLeaderStar = 101,
             MapQuery,
-            MapSkyColor = 104,
+            MapArgb = 104,
             MapTeamMemberStar = 106,
-            MapKickBack = 108,
+            Kickback = 108,
             SpellRemove,
             ProficiencyRemove,
             BoothSpawn,
@@ -165,7 +233,7 @@ namespace Comet.Game.Packets
             ClientDialog = 126,
             LoginComplete = 130,
             MapEffect,
-            LoginOfflineMessages,
+            RemoveEntity,
             MapJump,
             CharacterDead = 137,
             RelationshipsFriend = 140,

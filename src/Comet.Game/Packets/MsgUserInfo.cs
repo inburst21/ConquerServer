@@ -43,27 +43,27 @@ namespace Comet.Game.Packets
         ///     from the database and stored in <see cref="DbCharacter" />.
         /// </summary>
         /// <param name="character">Character info from the database</param>
-        public MsgUserInfo(DbCharacter character)
+        public MsgUserInfo(Character character)
         {
             Type = PacketType.MsgUserInfo;
-            CharacterID = character.CharacterID;
+            CharacterID = character.Identity;
             Mesh = (uint) (character.Mesh + character.Avatar * 10000);
             Hairstyle = character.Hairstyle;
-            Silver = character.Silver;
-            Jewels = character.Jewels;
-            Experience = character.Experience;
+            Silver = character.Silvers;
+            Jewels = character.ConquerPoints;
+            //Experience = character.Experience;
             Strength = character.Strength;
             Agility = character.Agility;
             Vitality = character.Vitality;
             Spirit = character.Spirit;
             AttributePoints = character.AttributePoints;
-            HealthPoints = character.HealthPoints;
-            ManaPoints = character.ManaPoints;
-            KillPoints = character.KillPoints;
+            HealthPoints = (ushort) character.Life;
+            ManaPoints = (ushort) character.Mana;
+            KillPoints = character.PkPoints;
             Level = character.Level;
-            CurrentClass = character.CurrentClass;
-            PreviousClass = character.PreviousClass;
-            Rebirths = character.Rebirths;
+            CurrentClass = character.Profession;
+            PreviousClass = character.PreviousProfession;
+            Rebirths = character.Metempsychosis;
             CharacterName = character.Name;
             SpouseName = "None";
             HasName = true;

@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 #endregion
@@ -33,35 +34,37 @@ namespace Comet.Game.Database.Models
     ///     a single character on the server. Contains the character's defining look and features,
     ///     level and attribute information, location, etc.
     /// </summary>
-    [Table("character")]
+    [Table("cq_user")]
     public class DbCharacter
     {
         // Column Properties
-        public virtual uint CharacterID { get; set; }
-        public virtual uint AccountID { get; set; }
-        public virtual string Name { get; set; }
-        public virtual uint Mesh { get; set; }
-        public virtual ushort Avatar { get; set; }
-        public virtual ushort Hairstyle { get; set; }
-        public virtual uint Silver { get; set; }
-        public virtual uint Jewels { get; set; }
-        public virtual byte CurrentClass { get; set; }
-        public virtual byte PreviousClass { get; set; }
-        public virtual byte Rebirths { get; set; }
-        public virtual byte Level { get; set; }
-        public virtual ulong Experience { get; set; }
-        public virtual uint MapID { get; set; }
-        public virtual ushort X { get; set; }
-        public virtual ushort Y { get; set; }
-        public virtual uint Virtue { get; set; }
-        public virtual ushort Strength { get; set; }
-        public virtual ushort Agility { get; set; }
-        public virtual ushort Vitality { get; set; }
-        public virtual ushort Spirit { get; set; }
-        public virtual ushort AttributePoints { get; set; }
-        public virtual ushort HealthPoints { get; set; }
-        public virtual ushort ManaPoints { get; set; }
-        public virtual ushort KillPoints { get; set; }
-        public virtual DateTime Registered { get; set; }
+        [Key]
+        [Column("id")] public virtual uint Identity { get; set; }
+        [Column("account_id")] public virtual uint AccountIdentity { get; set; }
+        [Column("name")] public virtual string Name { get; set; }
+        [Column("mate")] public virtual string Mate { get; set; }
+        [Column("lookface")] public virtual uint Mesh { get; set; }
+        [Column("hair")] public virtual ushort Hairstyle { get; set; }
+        [Column("money")] public virtual uint Silver { get; set; }
+        [Column("emoney")] public virtual uint ConquerPoints { get; set; }
+        [Column("profession")] public virtual byte Profession { get; set; }
+        [Column("old_prof")] public virtual byte PreviousProfession { get; set; }
+        [Column("first_prof")] public virtual byte FirstProfession { get; set; }
+        [Column("metempsychosis")] public virtual byte Rebirths { get; set; }
+        [Column("level")] public virtual byte Level { get; set; }
+        [Column("exp")] public virtual ulong Experience { get; set; }
+        [Column("recordmap_id")] public virtual uint MapID { get; set; }
+        [Column("recordx")] public virtual ushort X { get; set; }
+        [Column("recordy")] public virtual ushort Y { get; set; }
+        [Column("virtue")] public virtual uint Virtue { get; set; }
+        [Column("strength")] public virtual ushort Strength { get; set; }
+        [Column("speed")] public virtual ushort Agility { get; set; }
+        [Column("health")] public virtual ushort Vitality { get; set; }
+        [Column("soul")] public virtual ushort Spirit { get; set; }
+        [Column("additional_point")] public virtual ushort AttributePoints { get; set; }
+        [Column("life")] public virtual ushort HealthPoints { get; set; }
+        [Column("mana")] public virtual ushort ManaPoints { get; set; }
+        [Column("pk")] public virtual ushort KillPoints { get; set; }
+        [Column("creation_date")] public virtual DateTime Registered { get; set; }
     }
 }

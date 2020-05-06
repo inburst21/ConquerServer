@@ -56,6 +56,8 @@ namespace Comet.Game.States
         }
 
         // Client unique identifier
-        public uint ID => Character?.CharacterID ?? 0;
+        public uint Identity => Character?.Identity ?? 0;
+        public uint AccountIdentity { get; set; }
+        public byte VipLevel { get; set; }
     }
 }

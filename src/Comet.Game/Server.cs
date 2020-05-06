@@ -30,6 +30,7 @@ using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
+using Comet.Shared;
 
 #endregion
 
@@ -109,23 +110,33 @@ namespace Comet.Game
                     case PacketType.MsgRegister:
                         msg = new MsgRegister();
                         break;
+
+                    case PacketType.MsgTalk:
+                        msg = new MsgTalk();
+                        break;
+
+                    case PacketType.MsgWalk:
+                        msg = new MsgWalk();
+                        break;
+
                     case PacketType.MsgItem:
                         msg = new MsgItem();
                         break;
+
                     case PacketType.MsgAction:
                         msg = new MsgAction();
                         break;
+
                     case PacketType.MsgConnect:
                         msg = new MsgConnect();
                         break;
 
                     default:
-                        Console.WriteLine(
+                        await Log.WriteLog(LogLevel.Warning,
                             "Missing packet {0}, Length {1}\n{2}",
                             type, length, PacketDump.Hex(packet));
-                        await actor.SendAsync(new MsgTalk(actor.ID, MsgTalk.TalkChannel.Service,
-                            string.Format("Missing packet {0}, Length {1}",
-                                type, length)));
+                        await actor.SendAsync(new MsgTalk(actor.Identity, MsgTalk.TalkChannel.Service,
+                            $"Missing packet {type}, Length {length}"));
                         return;
                 }
 
@@ -151,6 +162,7 @@ namespace Comet.Game
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
             Processor.DeselectPartition(actor.Partition);
+            Kernel.RoleManager.LogoutUser(actor.Identity);
         }
     }
 }

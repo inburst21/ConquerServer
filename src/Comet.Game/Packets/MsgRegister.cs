@@ -114,9 +114,10 @@ namespace Comet.Game.Packets
 
             // Create the character
             var character = new DbCharacter();
-            character.AccountID = client.Creation.AccountID;
+            character.AccountIdentity = client.Creation.AccountID;
             character.Name = CharacterName;
-            character.CurrentClass = (byte) Class;
+            character.Mate = "None";
+            character.Profession = (byte) Class;
             character.Mesh = Mesh;
             character.Silver = 1000;
             character.Level = 1;
@@ -136,9 +137,7 @@ namespace Comet.Game.Packets
             character.Registered = DateTime.Now;
 
             // Generate a random look for the character
-            character.Avatar = (ushort) (character.Mesh < 1005
-                ? await Kernel.NextAsync(1, 49)
-                : await Kernel.NextAsync(201, 249));
+            character.Mesh += 10000;
             character.Hairstyle = (ushort) (
                 await Kernel.NextAsync(3, 9) * 100 + Hairstyles[
                     await Kernel.NextAsync(0, Hairstyles.Length)]);

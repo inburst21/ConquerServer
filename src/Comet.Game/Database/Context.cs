@@ -40,6 +40,12 @@ namespace Comet.Game.Database
 
         // Table Definitions
         public virtual DbSet<DbCharacter> Characters { get; set; }
+        public virtual DbSet<DbMap> Maps { get; set; }
+        public virtual DbSet<DbItemAddition> ItemAdditions { get; set; }
+        public virtual DbSet<DbItem> Items { get; set; }
+        public virtual DbSet<DbItemtype> Itemtypes { get; set; }
+        public virtual DbSet<DbPointAllot> PointAllot { get; set; }
+        public virtual DbSet<DbWeaponSkill> WeaponSkills { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
@@ -51,11 +57,7 @@ namespace Comet.Game.Database
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseLazyLoadingProxies(false);
-            options.UseMySql(string.Format("server={0};database={1};user={2};password={3}",
-                Configuration.Hostname,
-                Configuration.Schema,
-                Configuration.Username,
-                Configuration.Password));
+            options.UseMySql($"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}");
         }
 
         /// <summary>
@@ -66,7 +68,7 @@ namespace Comet.Game.Database
         /// <param name="builder">Builder for creating models in the context</param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<DbCharacter>(e => e.HasKey(x => x.CharacterID));
+            builder.Entity<DbCharacter>(e => e.HasKey(x => x.Identity));
         }
 
         /// <summary>

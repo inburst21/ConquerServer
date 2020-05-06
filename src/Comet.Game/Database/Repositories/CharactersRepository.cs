@@ -46,10 +46,10 @@ namespace Comet.Game.Database.Repositories
         /// <returns>Returns character details from the database.</returns>
         public static async Task<DbCharacter> FindAsync(string name)
         {
-            using (var db = new ServerDbContext())
-                return await db.Characters
-                    .Where(x => x.Name == name)
-                    .SingleOrDefaultAsync();
+            await using var db = new ServerDbContext();
+            return await db.Characters
+                .Where(x => x.Name == name)
+                .SingleOrDefaultAsync();
         }
 
         /// <summary>
@@ -60,10 +60,10 @@ namespace Comet.Game.Database.Repositories
         /// <returns>Returns character details from the database.</returns>
         public static async Task<DbCharacter> FindAsync(uint accountID)
         {
-            using (var db = new ServerDbContext())
-                return await db.Characters
-                    .Where(x => x.AccountID == accountID)
-                    .SingleOrDefaultAsync();
+            await using var db = new ServerDbContext();
+            return await db.Characters
+                .Where(x => x.AccountIdentity == accountID)
+                .SingleOrDefaultAsync();
         }
 
         /// <summary>Checks if a character exists in the database by name.</summary>
@@ -71,10 +71,10 @@ namespace Comet.Game.Database.Repositories
         /// <returns>Returns true if the character exists.</returns>
         public static async Task<bool> ExistsAsync(string name)
         {
-            using (var db = new ServerDbContext())
-                return await db.Characters
-                    .Where(x => x.Name == name)
-                    .AnyAsync();
+            await using var db = new ServerDbContext();
+            return await db.Characters
+                .Where(x => x.Name == name)
+                .AnyAsync();
         }
 
         /// <summary>
@@ -84,11 +84,9 @@ namespace Comet.Game.Database.Repositories
         /// <param name="character">Character model to be inserted to the database</param>
         public static async Task CreateAsync(DbCharacter character)
         {
-            using (var db = new ServerDbContext())
-            {
-                db.Characters.Add(character);
-                await db.SaveChangesAsync();
-            }
+            await using var db = new ServerDbContext();
+            db.Characters.Add(character);
+            await db.SaveChangesAsync();
         }
     }
 }
