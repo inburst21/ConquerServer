@@ -91,7 +91,12 @@ namespace Comet.Account.Packets
             };
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
-            await client.SendAsync(new MsgConnectEx(server.GameIPAddress, server.GamePort, token));
+
+            string serverIpAddr = server.GameIPAddress;
+            if (serverIpAddr == "localhost" || serverIpAddr.StartsWith("127."))
+                serverIpAddr = "25.107.199.67";
+
+            await client.SendAsync(new MsgConnectEx(serverIpAddr, server.GamePort, token));
         }
 
         /// <summary>

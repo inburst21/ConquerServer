@@ -67,17 +67,15 @@ namespace Comet.Network.RPC
                 {
                     BaseClient = new TcpClient();
                     await BaseClient.ConnectAsync(address, port);
-                    using (var stream = new NetworkStream(BaseClient.Client, true))
-                    {
-                        // Initialize streams
-                        Stream input = stream;
-                        Stream output = stream;
+                    await using var stream = new NetworkStream(BaseClient.Client, true);
+                    // Initialize streams
+                    Stream input = stream;
+                    Stream output = stream;
 
-                        // Attach JSON-RPC wrapper
-                        Rpc = JsonRpc.Attach(output, input);
-                        await Rpc.InvokeAsync("Connected", agent);
-                        await Rpc.Completion;
-                    }
+                    // Attach JSON-RPC wrapper
+                    Rpc = JsonRpc.Attach(output, input);
+                    await Rpc.InvokeAsync("Connected", agent);
+                    await Rpc.Completion;
                 }
                 catch (IOException)
                 {

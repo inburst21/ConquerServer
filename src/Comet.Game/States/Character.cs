@@ -65,11 +65,41 @@ namespace Comet.Game.States
              */
             m_dbObject = character;
 
+            m_posX = character.X;
+            m_posY = character.Y;
+            m_idMap = character.MapID;
+
             Screen = new Screen(this);
             WeaponSkill = new WeaponSkill(this);
         }
 
         public Client Client => m_socket;
+
+        #region Identity
+
+        public override uint Identity
+        {
+            get => m_dbObject.Identity;
+            protected set
+            {
+                // cannot change the identity
+            }
+        }
+
+        public override string Name
+        {
+            get => m_dbObject.Name;
+            set => m_dbObject.Name = value;
+        }
+
+        public string Mate
+        {
+            get => m_dbObject.Mate;
+            set => m_dbObject.Mate = value;
+        }
+
+        #endregion
+
 
         #region Appearence
 

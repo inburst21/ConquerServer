@@ -110,7 +110,9 @@ namespace Comet.Game.Packets
                     Command = client.Character.MapIdentity;
                     ArgumentX = client.Character.MapX;
                     ArgumentY = client.Character.MapY;
+
                     await client.SendAsync(this);
+                    client.Character.EnterMap();
                     break;
 
                 case ActionType.LoginInventory: // 75

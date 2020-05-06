@@ -95,12 +95,12 @@ namespace Comet.Game
             // Start the RPC server listener
             await Log.WriteLog(LogLevel.Message, "Launching server listeners...");
             var rpcserver = new RpcServerListener(new Remote());
-            await rpcserver.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress)
+            _ = rpcserver.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress)
                 .ConfigureAwait(false);
 
             // Start the game server listener
             var server = new Server(config);
-            await server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
+            _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
                 .ConfigureAwait(false);
 
             // Output all clear and wait for user input

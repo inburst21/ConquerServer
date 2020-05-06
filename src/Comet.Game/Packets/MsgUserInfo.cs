@@ -46,12 +46,12 @@ namespace Comet.Game.Packets
         public MsgUserInfo(Character character)
         {
             Type = PacketType.MsgUserInfo;
-            CharacterID = character.Identity;
+            Identity = character.Identity;
             Mesh = (uint) (character.Mesh + character.Avatar * 10000);
             Hairstyle = character.Hairstyle;
             Silver = character.Silvers;
             Jewels = character.ConquerPoints;
-            //Experience = character.Experience;
+            Experience = character.Experience;
             Strength = character.Strength;
             Agility = character.Agility;
             Vitality = character.Vitality;
@@ -70,7 +70,7 @@ namespace Comet.Game.Packets
         }
 
         // Packet Properties
-        public uint CharacterID { get; set; }
+        public uint Identity { get; set; }
         public uint Mesh { get; set; }
         public ushort Hairstyle { get; set; }
         public uint Silver { get; set; }
@@ -102,7 +102,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(CharacterID);
+            writer.Write(Identity);
             writer.Write(Mesh);
             writer.Write(Hairstyle);
             writer.Write(Silver);

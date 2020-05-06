@@ -25,6 +25,7 @@ using System;
 using System.Runtime.Caching;
 using System.Security.Cryptography;
 using Comet.Network.RPC;
+using Comet.Shared;
 using Comet.Shared.Models;
 
 #endregion
@@ -46,7 +47,7 @@ namespace Comet.Game
         /// <param name="agentName">Name of the client connecting</param>
         public void Connected(string agentName)
         {
-            Console.WriteLine("{0} has connected", agentName);
+            _ = Log.WriteLog(LogLevel.Message, "{0} has connected", agentName);
         }
 
         /// <summary>
