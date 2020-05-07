@@ -138,6 +138,48 @@
   <data name="StrNone" xml:space="preserve">
     <value>None</value>
   </data>
+  <data name="StrNotEnoughEmoney" xml:space="preserve">
+    <value>You don't have enough Conquer Points.</value>
+  </data>
+  <data name="StrNotEnoughMoney" xml:space="preserve">
+    <value>You don't have enough Silvers.</value>
+  </data>
+  <data name="StrPeeragePromptBaron" xml:space="preserve">
+    <value>{0} has become a Baron.</value>
+  </data>
+  <data name="StrPeeragePromptBaroness" xml:space="preserve">
+    <value>{0} has become a Baroness.</value>
+  </data>
+  <data name="StrPeeragePromptCountess" xml:space="preserve">
+    <value>{0} has become a Countess.</value>
+  </data>
+  <data name="StrPeeragePromptDuchess" xml:space="preserve">
+    <value>Congratulations! {0} new Duchess of {1}!</value>
+  </data>
+  <data name="StrPeeragePromptDuke" xml:space="preserve">
+    <value>Congratulations! {0} new Duke of {1}!</value>
+  </data>
+  <data name="StrPeeragePromptEarl" xml:space="preserve">
+    <value>{0} has become an Earl.</value>
+  </data>
+  <data name="StrPeeragePromptKing" xml:space="preserve">
+    <value>Hear ye, hear ye! All hails to our majesty {0}, new King of {1}!</value>
+  </data>
+  <data name="StrPeeragePromptKnight" xml:space="preserve">
+    <value>{0} has become a Knight.</value>
+  </data>
+  <data name="StrPeeragePromptLady" xml:space="preserve">
+    <value>{0} has become a Lady.</value>
+  </data>
+  <data name="StrPeeragePromptPrince" xml:space="preserve">
+    <value>Congratulations! All hails to our highness {0}, Prince of {1}!</value>
+  </data>
+  <data name="StrPeeragePromptPrincess" xml:space="preserve">
+    <value>Congratulations! All hails to our highness {0}, Princess of {1}!</value>
+  </data>
+  <data name="StrPeeragePromptQueen" xml:space="preserve">
+    <value>Hear ye, hear ye! All hails to our majesty {0}, new Queen of {1}!</value>
+  </data>
   <data name="StrTargetNotOnline" xml:space="preserve">
     <value>The target is not online.</value>
   </data>

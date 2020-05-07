@@ -127,8 +127,20 @@ namespace Comet.Game
                         msg = new MsgAction();
                         break;
 
+                    case PacketType.MsgName:
+                        msg = new MsgName();
+                        break;
+
+                    case PacketType.MsgAllot:
+                        msg = new MsgAllot();
+                        break;
+
                     case PacketType.MsgConnect:
                         msg = new MsgConnect();
+                        break;
+
+                    case PacketType.MsgPeerage:
+                        msg = new MsgPeerage();
                         break;
 
                     default:

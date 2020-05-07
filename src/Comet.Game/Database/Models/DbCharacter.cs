@@ -66,5 +66,6 @@ namespace Comet.Game.Database.Models
         [Column("mana")] public virtual ushort ManaPoints { get; set; }
         [Column("pk")] public virtual ushort KillPoints { get; set; }
         [Column("creation_date")] public virtual DateTime Registered { get; set; }
+        [Column("donation")] public ulong Donation { get; set; }
     }
 }

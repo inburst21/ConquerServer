@@ -40,6 +40,11 @@ namespace Comet.Game.States.Base_Entities
         protected uint m_maxLife = 0,
             m_maxMana = 0;
 
+        protected Role()
+        {
+            StatusSet = new StatusSet(this);
+        }
+
         #region Identity
 
         /// <summary>
@@ -73,7 +78,6 @@ namespace Comet.Game.States.Base_Entities
         public virtual uint MaxLife => m_maxLife;
         public virtual uint Mana { get; set; }
         public virtual uint MaxMana => m_maxMana;
-        public virtual bool IsGhost() => false;
 
         #endregion
 
@@ -299,6 +303,216 @@ namespace Comet.Game.States.Base_Entities
         {
             return Identity >= SCENE_NPC_MIN && Identity < SCENE_NPC_MAX;
         }
+
+        #endregion
+
+        #region Battle Attributes
+
+        public virtual int BattlePower => 1;
+
+        public virtual int MinAttack { get; } = 1;
+        public virtual int MaxAttack { get; } = 1;
+        public virtual int MagicAttack { get; } = 1;
+        public virtual int Defense { get; } = 0;
+        public virtual int MagicDefense { get; } = 0;
+        public virtual int MagicDefenseBonus { get; } = 0;
+        public virtual int Dodge { get; } = 0;
+        public virtual int AttackSpeed { get; } = 1000;
+        public virtual int Accuracy { get; } = 1;
+
+        #endregion
+
+        #region Status
+
+        public ulong StatusFlag { get; set; } = 0UL;
+
+        public StatusSet StatusSet { get; }
+
+        public virtual async Task<bool> DetachWellStatus()
+        {
+            for (int i = 1; i < 128; i++)
+            {
+                if (StatusSet[i] != null)
+                    if (IsWellStatus(i))
+                        await DetachStatus(i);
+            }
+            return true;
+        }
+
+        public virtual async Task<bool> DetachBadlyStatus()
+        {
+            for (int i = 1; i < 128; i++)
+            {
+                if (StatusSet[i] != null)
+                    if (IsBadlyStatus(i))
+                        await DetachStatus(i);
+            }
+            return true;
+        }
+
+        public virtual async Task<bool> DetachAllStatus()
+        {
+            await DetachBadlyStatus();
+            await DetachWellStatus();
+            return true;
+        }
+
+        public virtual bool IsWellStatus(int stts)
+        {
+            switch (stts)
+            {
+                case StatusSet.RIDING:
+                case StatusSet.FULL_INVIS:
+                case StatusSet.LUCKY_DIFFUSE:
+                case StatusSet.STIG:
+                case StatusSet.SHIELD:
+                case StatusSet.STAR_OF_ACCURACY:
+                case StatusSet.START_XP:
+                case StatusSet.INVISIBLE:
+                case StatusSet.SUPERMAN:
+                case StatusSet.PARTIALLY_INVISIBLE:
+                case StatusSet.LUCKY_ABSORB:
+                case StatusSet.VORTEX:
+                case StatusSet.POISON_STAR:
+                case StatusSet.FLY:
+                case StatusSet.FATAL_STRIKE:
+                case StatusSet.AZURE_SHIELD:
+                case StatusSet.SUPER_SHIELD_HALO:
+                case StatusSet.CARYING_FLAG:
+                case StatusSet.EARTH_AURA:
+                case StatusSet.FEND_AURA:
+                case StatusSet.FIRE_AURA:
+                case StatusSet.METAL_AURA:
+                case StatusSet.TYRANT_AURA:
+                case StatusSet.WATER_AURA:
+                case StatusSet.WOOD_AURA:
+                case StatusSet.OBLIVION:
+                case StatusSet.CTF_FLAG:
+                    return true;
+            }
+            return false;
+        }
+
+        public virtual bool IsBadlyStatus(int stts)
+        {
+            switch (stts)
+            {
+                case StatusSet.POISONED:
+                case StatusSet.CONFUSED:
+                case StatusSet.ICE_BLOCK:
+                case StatusSet.HUGE_DAZED:
+                case StatusSet.DAZED:
+                case StatusSet.SHACKLED:
+                case StatusSet.TOXIC_FOG:
+                    return true;
+            }
+            return false;
+        }
+
+        public virtual async Task<bool> AppendStatus(StatusInfoStruct pInfo)
+        {
+            if (pInfo.Times > 0)
+            {
+                var pStatus = new StatusMore();
+                if (pStatus.Create(this, pInfo.Status, pInfo.Power, pInfo.Seconds, pInfo.Times))
+                    await StatusSet.AddObj(pStatus);
+            }
+            else
+            {
+                var pStatus = new StatusOnce();
+                if (pStatus.Create(this, pInfo.Status, pInfo.Power, pInfo.Seconds, pInfo.Times))
+                    await StatusSet.AddObj(pStatus);
+            }
+            return true;
+        }
+
+        public virtual async Task<bool> AttachStatus(Role pSender, int nStatus, int nPower, int nSecs, int nTimes, byte pLevel)
+        {
+            if (Map == null)
+                return false;
+
+            if (nStatus == StatusSet.BLUE_NAME && (Map.IsPkField() || Map.IsSynMap() || Map.IsDeadIsland()))
+                return false;
+
+            IStatus pStatus = QueryStatus(nStatus);
+            if (pStatus != null)
+            {
+                bool bChangeData = false;
+                if (pStatus.Power == nPower)
+                    bChangeData = true;
+                else
+                {
+                    int nMinPower = Math.Min(nPower, pStatus.Power);
+                    int nMaxPower = Math.Max(nPower, pStatus.Power);
+
+                    if (nPower <= 30000)
+                        bChangeData = true;
+                    else
+                    {
+                        if (nMinPower >= 30100 || nMinPower > 0 && nMaxPower < 30000)
+                        {
+                            if (nPower > pStatus.Power)
+                                bChangeData = true;
+                        }
+                        else if (nMaxPower < 0 || nMinPower > 30000 && nMaxPower < 30100)
+                        {
+                            if (nPower < pStatus.Power)
+                                bChangeData = true;
+                        }
+                    }
+                }
+
+                if (bChangeData)
+                {
+                    pStatus.ChangeData(nPower, nSecs, nTimes, pSender.Identity);
+                }
+                return true;
+            }
+            else
+            {
+                if (nTimes > 1)
+                {
+                    var pNewStatus = new StatusMore();
+                    if (pNewStatus.Create(this, nStatus, nPower, nSecs, nTimes, pSender.Identity, pLevel))
+                    {
+                        await StatusSet.AddObj(pNewStatus);
+                        return true;
+                    }
+                }
+                else
+                {
+                    var pNewStatus = new StatusOnce();
+                    if (pNewStatus.Create(this, nStatus, nPower, nSecs, 0, pSender.Identity, pLevel))
+                    {
+                        await StatusSet.AddObj(pNewStatus);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public virtual async Task<bool> DetachStatus(int nType)
+        {
+            return await StatusSet.DelObj(nType);
+        }
+
+        public virtual async Task<bool> DetachStatus(ulong nType, bool b64)
+        {
+            return await StatusSet.DelObj(StatusSet.InvertFlag(nType, b64));
+        }
+
+        public virtual IStatus QueryStatus(int nType)
+        {
+            return StatusSet?.GetObjByIndex(nType);
+        }
+
+        public bool IsGhost()
+        {
+            return QueryStatus(StatusSet.GHOST) != null;
+        }
+
+        public virtual bool IsWing => false;
 
         #endregion
 

@@ -50,7 +50,7 @@ namespace Comet.Game
             // claim of ownership, you may include a second copyright above the existing
             // copyright. Do not remove completely to comply with software license. The
             // project name and version may be removed or changed.
-            Console.Title = "Comet, Game Server";
+            Console.Title = @"Comet, Game Server";
             Console.WriteLine();
             await Log.WriteLog(LogLevel.Message, "  Comet: Game Server");
             await Log.WriteLog(LogLevel.Message, "  Copyright 2018 Gareth Jensen \"Spirited\"");
@@ -77,7 +77,7 @@ namespace Comet.Game
                 return;
             }
 
-            if (!Kernel.Startup())
+            if (!await Kernel.StartupAsync())
             {
                 await Log.WriteLog(LogLevel.Error, "Could not load database related stuff");
                 return;

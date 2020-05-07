@@ -46,6 +46,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbItemtype> Itemtypes { get; set; }
         public virtual DbSet<DbPointAllot> PointAllot { get; set; }
         public virtual DbSet<DbWeaponSkill> WeaponSkills { get; set; }
+        public virtual DbSet<DbPeerage> Peerage { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

@@ -124,6 +124,132 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have enough Conquer Points..
+        /// </summary>
+        public static string StrNotEnoughEmoney {
+            get {
+                return ResourceManager.GetString("StrNotEnoughEmoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have enough Silvers..
+        /// </summary>
+        public static string StrNotEnoughMoney {
+            get {
+                return ResourceManager.GetString("StrNotEnoughMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become a Baron..
+        /// </summary>
+        public static string StrPeeragePromptBaron {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptBaron", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become a Baroness..
+        /// </summary>
+        public static string StrPeeragePromptBaroness {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptBaroness", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become a Countess..
+        /// </summary>
+        public static string StrPeeragePromptCountess {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptCountess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} new Duchess of {1}!.
+        /// </summary>
+        public static string StrPeeragePromptDuchess {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptDuchess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} new Duke of {1}!.
+        /// </summary>
+        public static string StrPeeragePromptDuke {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptDuke", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become an Earl..
+        /// </summary>
+        public static string StrPeeragePromptEarl {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptEarl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Hear ye, hear ye! All hails to our majesty {0}, new King of {1}!.
+        /// </summary>
+        public static string StrPeeragePromptKing {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptKing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become a Knight..
+        /// </summary>
+        public static string StrPeeragePromptKnight {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptKnight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become a Lady..
+        /// </summary>
+        public static string StrPeeragePromptLady {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptLady", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! All hails to our highness {0}, Prince of {1}!.
+        /// </summary>
+        public static string StrPeeragePromptPrince {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptPrince", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! All hails to our highness {0}, Princess of {1}!.
+        /// </summary>
+        public static string StrPeeragePromptPrincess {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptPrincess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Hear ye, hear ye! All hails to our majesty {0}, new Queen of {1}!.
+        /// </summary>
+        public static string StrPeeragePromptQueen {
+            get {
+                return ResourceManager.GetString("StrPeeragePromptQueen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The target is not online..
         /// </summary>
         public static string StrTargetNotOnline {

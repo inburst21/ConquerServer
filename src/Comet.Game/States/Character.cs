@@ -22,15 +22,18 @@
 #region References
 
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.Base_Entities;
+using Comet.Game.States.Items;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -71,6 +74,7 @@ namespace Comet.Game.States
 
             Screen = new Screen(this);
             WeaponSkill = new WeaponSkill(this);
+            UserPackage = new UserPackage(this);
         }
 
         public Client Client => m_socket;
@@ -99,8 +103,7 @@ namespace Comet.Game.States
         }
 
         #endregion
-
-
+        
         #region Appearence
 
         public int Gender => Body == BodyType.AgileMale || Body == BodyType.MuscularMale ? 1 : 2;
@@ -225,12 +228,12 @@ namespace Comet.Game.States
 
                 result += (uint)((Strength + Agility + Spirit) * 3);
 
-                //for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
-                //    pos < Item.ItemPosition.EquipmentEnd;
-                //    pos++)
-                //{
-                //    result += (uint)(UserPackage[pos]?.Life ?? 0);
-                //}
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                    pos < Item.ItemPosition.EquipmentEnd;
+                    pos++)
+                {
+                    result += (uint)(UserPackage[pos]?.Life ?? 0);
+                }
 
                 return result;
             }
@@ -268,12 +271,12 @@ namespace Comet.Game.States
                         break;
                 }
 
-                //for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
-                //    pos < Item.ItemPosition.EquipmentEnd;
-                //    pos++)
-                //{
-                //    result += (uint)(UserPackage[pos]?.Mana ?? 0);
-                //}
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                    pos < Item.ItemPosition.EquipmentEnd;
+                    pos++)
+                {
+                    result += (uint)(UserPackage[pos]?.Mana ?? 0);
+                }
 
                 return result;
             }
@@ -423,6 +426,78 @@ namespace Comet.Game.States
             set => m_dbObject.ConquerPoints = value;
         }
 
+        public async Task<bool> ChangeMoney(int amount, bool notify = false)
+        {
+            if (amount > 0)
+            {
+                await AwardMoney(amount);
+                return true;
+            }
+            if (amount < 0)
+            {
+                return await SpendMoney(amount * -1, notify);
+            }
+            return false;
+        }
+
+        public async Task AwardMoney(int amount)
+        {
+            Silvers = (uint) (Silvers + amount);
+            await SaveAsync();
+            SynchroAttributesAsync(ClientUpdateType.Money, Silvers).Forget();
+        }
+
+        public async Task<bool> SpendMoney(int amount, bool notify = false)
+        {
+            if (amount > Silvers)
+            {
+                if (notify)
+                    SendAsync(Language.StrNotEnoughMoney, MsgTalk.TalkChannel.TopLeft, Color.Red).Forget();
+                return false;
+            }
+
+            Silvers = (uint)(Silvers - amount);
+            await SaveAsync();
+            SynchroAttributesAsync(ClientUpdateType.Money, Silvers).Forget();
+            return true;
+        }
+
+        public async Task<bool> ChangeConquerPoints(int amount, bool notify = false)
+        {
+            if (amount > 0)
+            {
+                await AwardConquerPoints(amount);
+                return true;
+            }
+            if (amount < 0)
+            {
+                return await SpendConquerPoints(amount * -1, notify);
+            }
+            return false;
+        }
+
+        public async Task AwardConquerPoints(int amount)
+        {
+            Silvers = (uint)(ConquerPoints + amount);
+            await SaveAsync();
+            SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints).Forget();
+        }
+
+        public async Task<bool> SpendConquerPoints(int amount, bool notify = false)
+        {
+            if (amount > ConquerPoints)
+            {
+                if (notify)
+                    SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red).Forget();
+                return false;
+            }
+
+            ConquerPoints = (uint)(ConquerPoints - amount);
+            await SaveAsync();
+            SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints).Forget();
+            return true;
+        }
+
         #endregion
 
         #region Pk
@@ -433,6 +508,277 @@ namespace Comet.Game.States
         {
             get => m_dbObject?.KillPoints ?? 0;
             set => m_dbObject.KillPoints = value;
+        }
+
+        #endregion
+
+        #region Equipment
+
+        public Item Headgear => UserPackage[Item.ItemPosition.Headwear];
+        public Item Necklace => UserPackage[Item.ItemPosition.Necklace];
+        public Item Ring => UserPackage[Item.ItemPosition.Ring];
+        public Item RightHand => UserPackage[Item.ItemPosition.RightHand];
+        public Item LeftHand => UserPackage[Item.ItemPosition.LeftHand];
+        public Item Armor => UserPackage[Item.ItemPosition.Armor];
+        public Item Boots => UserPackage[Item.ItemPosition.Boots];
+        public Item Garment => UserPackage[Item.ItemPosition.Garment];
+
+        #endregion
+
+        #region User Package
+
+        public UserPackage UserPackage { get; }
+
+        #endregion
+
+        #region Peerage
+
+        public NobilityRank NobilityRank => Kernel.PeerageManager.GetRanking(Identity);
+
+        public int NobilityPosition => Kernel.PeerageManager.GetPosition(Identity);
+
+        public ulong NobilityDonation
+        {
+            get => m_dbObject.Donation;
+            set => m_dbObject.Donation = value;
+        }
+
+        public async Task SendNobilityInfo(bool broadcast = false)
+        {
+            MsgPeerage msg = new MsgPeerage
+            {
+                Action = NobilityAction.Info,
+                DataLow = Identity
+            };
+            msg.Strings.Add($"{Identity} {NobilityDonation} {(int) NobilityRank} {NobilityPosition}");
+            await SendAsync(msg);
+
+            if (broadcast)
+                BroadcastRoomMsgAsync(msg, false).Forget();
+        }
+
+        #endregion
+
+        #region Battle Attributes
+
+        public override int BattlePower
+        {
+            get
+            {
+#if BATTLE_POWER
+                int result = Level + Metempsychosis * 5 + (int) NobilityRank;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.BattlePower ?? 0;
+                }
+                return result;
+#else
+                return 1;
+#endif
+            }
+        }
+
+        public override int MinAttack
+        {
+            get
+            {
+                int result = Strength;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MinAttack ?? 0;
+                }
+
+                result = (int) (result + (result * (1 + (DragonGemBonus / 100d))));
+                return result;
+            }
+        }
+
+        public override int MaxAttack
+        {
+            get
+            {
+                int result = Strength;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MaxAttack ?? 0;
+                }
+
+                result = (int)(result + (result * (1 + (DragonGemBonus / 100d))));
+                return result;
+            }
+        }
+
+        public override int MagicAttack
+        {
+            get
+            {
+                int result = Spirit;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MagicAttack ?? 0;
+                }
+
+                result = (int)(result + (result * (1 + (PhoenixGemBonus/ 100d))));
+                return result;
+            }
+        }
+
+        public override int Defense
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Defense ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int MagicDefense
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MagicDefense ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int MagicDefenseBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MagicDefenseBonus ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int Dodge
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Dodge ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int AttackSpeed { get; } = 1000;
+
+        public override int Accuracy
+        {
+            get
+            {
+                int result = Strength;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Accuracy ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int DragonGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.DragonGemEffect ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int PhoenixGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.PhoenixGemEffect ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int VioletGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.VioletGemEffect ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int MoonGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MoonGemEffect ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int RainbowGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.RainbowGemEffect ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int FuryGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.FuryGemEffect ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public int TortoiseGemBonus
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.TortoiseGemEffect ?? 0;
+                }
+                return result;
+            }
         }
 
         #endregion
@@ -449,7 +795,7 @@ namespace Comet.Game.States
             return IsPm() || Name.Contains("[GM]");
         }
 
-        #endregion
+#endregion
 
         #region Screen
 
@@ -460,7 +806,7 @@ namespace Comet.Game.States
             await Screen.BroadcastRoomMsgAsync(msg, self);
         }
 
-        #endregion
+#endregion
 
         #region Map and Position
 
@@ -536,7 +882,7 @@ namespace Comet.Game.States
             await SaveAsync();
         }
 
-        #endregion
+#endregion
 
         #region Movement
 
@@ -552,7 +898,22 @@ namespace Comet.Game.States
             });
         }
 
-        #endregion
+#endregion
+
+        #region Socket
+
+        public override async Task SendAsync(IPacket msg)
+        {
+            if (m_socket != null)
+                await m_socket.SendAsync(msg);
+        }
+
+        public override async Task SendSpawnToAsync(Character player)
+        {
+            await player.SendAsync(new MsgPlayer(this));
+        }
+
+#endregion
 
         #region Database
 
@@ -570,7 +931,7 @@ namespace Comet.Game.States
             }
         }
 
-        #endregion
+#endregion
     }
 
     /// <summary>Enumeration type for body types for player characters.</summary>

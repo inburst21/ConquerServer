@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.Caching;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Routines;
@@ -48,6 +49,8 @@ namespace Comet.Game
 
         public static MapManager MapManager = new MapManager();
         public static RoleManager RoleManager = new RoleManager();
+        public static ItemManager ItemManager = new ItemManager();
+        public static PeerageManager PeerageManager = new PeerageManager();
 
         /// <summary>
         ///     Returns the next random number from the generator.
@@ -59,12 +62,14 @@ namespace Comet.Game
             return Services.Randomness.NextAsync(minValue, maxValue);
         }
 
-        public static bool Startup()
+        public static async Task<bool> StartupAsync()
         {
             MapManager.LoadData();
             MapManager.LoadMaps();
 
-            _ = RoleManager.InitializeAsync();
+            await ItemManager.InitializeAsync();
+            await RoleManager.InitializeAsync();
+            await PeerageManager.InitializeAsync();
 
             return true;
         }

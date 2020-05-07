@@ -32,7 +32,9 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.Base_Entities;
+using Comet.Network.Packets;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -164,9 +166,27 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public Task OnRoleTimerAsync()
+        public async Task OnRoleTimerAsync()
         {
-            return Task.CompletedTask;
+            
+        }
+
+        public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
+            Color? color = null)
+        {
+            foreach (var user in m_userSet.Values)
+            {
+                await user.SendAsync(message, channel, color);
+            }
+        }
+
+        public async Task BroadcastMsgAsync(IPacket msg, uint ignore = 0)
+        {
+            foreach (var user in m_userSet.Values)
+            {
+                if (user.Identity == ignore) continue;
+                await user.SendAsync(msg);
+            }
         }
 
         public DbPointAllot GetPointAllot(ushort profession, ushort level)

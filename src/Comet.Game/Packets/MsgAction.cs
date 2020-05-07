@@ -116,6 +116,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginInventory: // 75
+                    await user.UserPackage.SendAsync();
                     await client.SendAsync(this);
                     break;
 
@@ -132,8 +133,18 @@ namespace Comet.Game.Packets
                     await client.SendAsync(this);
                     break;
 
+                case ActionType.CharacterDirection: // 79
+                    await client.Character.SetDirectionAsync((FacingDirection) (Direction % 8), false);
+                    await client.SendAsync(this);
+                    break;
+
+                case ActionType.CharacterEmote:
+                    await client.Character.SetActionAsync((EntityAction) Command, false);
+                    await client.SendAsync(this);
+                    break;
+
                 case ActionType.CharacterPkMode:
-                    if (!Enum.IsDefined(typeof(PkModeType), Command))
+                    if (!Enum.IsDefined(typeof(PkModeType), (int) Command))
                         Command = (uint)PkModeType.Capture;
 
                     client.Character.PkMode = (PkModeType)Command;
@@ -151,6 +162,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginComplete: // 130
+                    await client.Character.SendNobilityInfo();
                     await client.SendAsync(this);
                     break;
 

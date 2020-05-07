@@ -24,8 +24,11 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -191,6 +194,138 @@ namespace Comet.Game.Packets
                 Message
             });
             return writer.ToArray();
+        }
+
+        public override async Task ProcessAsync(Client client)
+        {
+            Character sender = client.Character;
+            Character target = Kernel.RoleManager.GetUser(RecipientName);
+
+            if (sender.Name != SenderName)
+            {
+#if DEBUG
+                if (sender.IsGm())
+                    await sender.SendAsync("Invalid sender name????");
+#endif
+                return;
+            }
+
+            if (sender.IsGm())
+            {
+                await Log.GmLog("gm_talk", $"{sender.Name} says to {RecipientName}: {Message}");
+            }
+
+            if (await ProcessCommand(Message, sender))
+            {
+                await Log.GmLog("gm_cmd", $"{sender.Name}: {Message}");
+                return;
+            }
+
+            switch (Channel)
+            {
+                case TalkChannel.Talk:
+                    await sender.BroadcastRoomMsgAsync(this, false);
+                    break;
+                case TalkChannel.Whisper:
+                    if (target == null)
+                    {
+                        _ = sender.SendAsync(Language.StrTargetNotOnline, TalkChannel.Talk, Color.White);
+                        return;
+                    }
+                    break;
+            }
+        }
+
+        private async Task<bool> ProcessCommand(string fullCmd, Character user)
+        {
+            if (fullCmd[0] != '/')
+                return false;
+
+            string[] splitCmd = fullCmd.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            string cmd = splitCmd[0];
+            string param = "";
+            if (splitCmd.Length > 1)
+                param = splitCmd[1];
+
+            if (user.IsPm())
+            {
+                switch (cmd.ToLower())
+                {
+                    case "/awarditem":
+                        if (!uint.TryParse(param, out uint idAwardItem))
+                            return true;
+
+                        DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idAwardItem);
+                        if (itemtype == null)
+                        {
+                            await user.SendAsync($"[AwardItem] Itemtype {idAwardItem} not found");
+                            return true;
+                        }
+
+                        await user.UserPackage.AwardItemAsync(idAwardItem);
+                        return true;
+                    case "/awardmoney":
+                        if (uint.TryParse(param, out uint moneyAmount))
+                            user.Silvers += moneyAmount;
+                        return true;
+                    case "/awardemoney":
+                        if (uint.TryParse(param, out uint emoneyAmount))
+                            user.ConquerPoints += emoneyAmount;
+                        return true;
+                    case "/awardskill":
+                        return true;
+                    case "/awardwskill":
+                        byte level = 1;
+
+                        string[] awardwskill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        if (!ushort.TryParse(awardwskill[0], out var type))
+                            return true;
+                        if (awardwskill.Length > 1 && !byte.TryParse(awardwskill[1], out level))
+                            return true;
+
+                        await user.WeaponSkill.CreateAsync(type, level);
+                        return true;
+                }
+            }
+
+            if (user.IsGm())
+            {
+                switch (cmd.ToLower())
+                {
+                    case "/openui":
+                        if (uint.TryParse(param, out uint ui))
+                            await user.SendAsync(new MsgAction
+                            {
+                                Action = MsgAction.ActionType.ClientCommand,
+                                Identity = user.Identity,
+                                Command = ui,
+                                ArgumentX = user.MapX,
+                                ArgumentY = user.MapY
+                            });
+                        return true;
+                    case "/openwindow":
+                        if (uint.TryParse(param, out uint window))
+                            await user.SendAsync(new MsgAction
+                            {
+                                Action = MsgAction.ActionType.ClientDialog,
+                                Identity = user.Identity,
+                                Command = window,
+                                ArgumentX = user.MapX,
+                                ArgumentY = user.MapY
+                            });
+                        return true;
+                }
+            }
+
+            switch (cmd.ToLower())
+            {
+                case "/dc":
+                case "/discnonect":
+                    user.Client.Disconnect();
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>

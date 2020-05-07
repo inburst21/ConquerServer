@@ -38,8 +38,24 @@ namespace Comet.Game.Packets
     /// </summary>
     public sealed class MsgItem : MsgBase<Client>
     {
+        public MsgItem()
+        {
+            Type = PacketType.MsgItem;
+        }
+
+        public MsgItem(uint identity, ItemActionType action, uint cmd = 0, uint param = 0)
+        {
+            Type = PacketType.MsgItem;
+
+            Identity = identity;
+            Command = cmd;
+            Action = action;
+            Timestamp = (uint)Environment.TickCount;
+            Argument = param;
+        }
+
         // Packet Properties
-        public uint CharacterID { get; set; }
+        public uint Identity { get; set; }
         public uint Command { get; set; }
         public uint Timestamp { get; set; }
         public uint Argument { get; set; }
@@ -56,7 +72,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
-            CharacterID = reader.ReadUInt32();
+            Identity = reader.ReadUInt32();
             Command = reader.ReadUInt32();
             Action = (ItemActionType) reader.ReadUInt32();
             Timestamp = reader.ReadUInt32();
@@ -73,7 +89,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(CharacterID);
+            writer.Write(Identity);
             writer.Write(Command);
             writer.Write((uint) Action);
             writer.Write(Timestamp);
