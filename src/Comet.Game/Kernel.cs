@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Routines;
 using Comet.Game.World.Managers;
+using Comet.Game.World.Threading;
+using Comet.Shared;
 
 #endregion
 
@@ -52,6 +54,10 @@ namespace Comet.Game
         public static ItemManager ItemManager = new ItemManager();
         public static PeerageManager PeerageManager = new PeerageManager();
 
+        public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
+
+        public static SystemProcessor SystemThread = new SystemProcessor(1000);
+
         /// <summary>
         ///     Returns the next random number from the generator.
         /// </summary>
@@ -71,6 +77,7 @@ namespace Comet.Game
             await RoleManager.InitializeAsync();
             await PeerageManager.InitializeAsync();
 
+            await SystemThread.StartAsync();
             return true;
         }
 

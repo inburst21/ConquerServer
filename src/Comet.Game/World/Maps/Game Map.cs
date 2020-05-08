@@ -30,7 +30,7 @@ using Comet.Core.Mathematics;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States;
-using Comet.Game.States.Base_Entities;
+using Comet.Game.States.BaseEntities;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -406,6 +406,11 @@ namespace Comet.Game.World.Maps
         #endregion
 
         #region Position Check
+
+        public bool IsSuperPosition(int x, int y)
+        {
+            return GetBlock(GetBlockX(x), GetBlockY(y)).RoleSet.Values.Any(a => a.MapX == x && a.MapY == y && a.IsAlive);
+        }
 
         public bool IsValidPoint(int x, int y)
         {

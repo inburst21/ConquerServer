@@ -81,6 +81,7 @@ namespace Comet.Game
         /// <param name="packet">Packet bytes to be processed</param>
         protected override void Received(Client actor, ReadOnlySpan<byte> packet)
         {
+            Kernel.NetworkMonitor.Receive(packet.Length);
             Processor.Queue(actor, packet.ToArray());
         }
 

@@ -25,7 +25,7 @@ using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.States;
-using Comet.Game.States.Base_Entities;
+using Comet.Game.States.BaseEntities;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;

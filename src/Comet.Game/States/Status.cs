@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Packets;
-using Comet.Game.States.Base_Entities;
+using Comet.Game.States.BaseEntities;
 using Comet.Shared;
 
 #endregion

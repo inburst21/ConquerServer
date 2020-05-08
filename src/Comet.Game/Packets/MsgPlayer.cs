@@ -62,6 +62,35 @@ namespace Comet.Game.Packets
             Name = user.Name;
         }
 
+        public MsgPlayer(Monster monster)
+        {
+            Type = PacketType.MsgPlayer;
+
+            Identity = monster.Identity;
+
+            Mesh = monster.Mesh;
+
+            MapX = monster.MapX;
+            MapY = monster.MapY;
+
+            Status = (uint) monster.StatusFlag;
+
+            Direction = (byte) monster.Direction;
+            Pose = (byte) monster.Action;
+
+            MonsterLevel = monster.Level;
+            if (monster.Life > ushort.MaxValue)
+            {
+                MonsterLife = (ushort) (ushort.MaxValue / monster.Life * 100);
+            }
+            else
+            {
+                MonsterLife = (ushort) monster.Life;
+            }
+
+            Name = monster.Name;
+        }
+
         public uint Identity { get; set; }
         public uint Mesh { get; set; }
 

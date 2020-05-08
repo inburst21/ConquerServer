@@ -23,6 +23,7 @@
 
 using System;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Comet.Network.Security;
 using Comet.Network.Sockets;
 
@@ -59,5 +60,11 @@ namespace Comet.Game.States
         public uint Identity => Character?.Identity ?? 0;
         public uint AccountIdentity { get; set; }
         public byte VipLevel { get; set; }
+
+        public override Task SendAsync(byte[] packet)
+        {
+            Kernel.NetworkMonitor.Send(packet.Length);
+            return base.SendAsync(packet);
+        }
     }
 }

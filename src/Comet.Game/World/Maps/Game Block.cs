@@ -22,7 +22,7 @@
 #region References
 
 using System.Collections.Concurrent;
-using Comet.Game.States.Base_Entities;
+using Comet.Game.States.BaseEntities;
 
 #endregion
 

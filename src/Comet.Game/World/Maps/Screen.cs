@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States;
-using Comet.Game.States.Base_Entities;
+using Comet.Game.States.BaseEntities;
 using Comet.Network.Packets;
 
 #endregion

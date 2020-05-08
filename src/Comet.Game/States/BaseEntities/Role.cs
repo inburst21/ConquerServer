@@ -28,7 +28,7 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
 
-namespace Comet.Game.States.Base_Entities
+namespace Comet.Game.States.BaseEntities
 {
     public abstract class Role
     {

@@ -31,7 +31,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
-using Comet.Game.States.Base_Entities;
+using Comet.Game.States.BaseEntities;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -45,11 +45,12 @@ namespace Comet.Game.World.Managers
         private readonly ConcurrentDictionary<uint, Character> m_userSet = new ConcurrentDictionary<uint, Character>();
         private readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
 
-        private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot;
+        private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
+        private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
 
         public RoleManager()
         {
-            m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
+
         }
 
         public async Task InitializeAsync()
@@ -57,6 +58,11 @@ namespace Comet.Game.World.Managers
             foreach (var auto in await PointAllotRepository.GetAsync())
             {
                 m_dicPointAllot.TryAdd(AllotIndex(auto.Profession, auto.Level), auto);
+            }
+
+            foreach (var mob in await MonsterypeRepository.GetAsync())
+            {
+                m_dicMonstertype.TryAdd(mob.Id, mob);
             }
         }
 
@@ -197,6 +203,11 @@ namespace Comet.Game.World.Managers
         private uint AllotIndex(ushort prof, ushort level)
         {
             return (uint) (prof << (32 + level));
+        }
+
+        public DbMonstertype GetMonstertype(uint type)
+        {
+            return m_dicMonstertype.TryGetValue(type, out var mob) ? mob : null;
         }
     }
 }
