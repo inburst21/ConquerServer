@@ -42,9 +42,13 @@ namespace Comet.Core
                 Interval = intervalMs,
                 AutoReset = false
             };
-            m_timer.Elapsed += TimerOnElapsed;
+            m_timer.Elapsed += TimerOnElapse;
             m_timer.Disposed += TimerOnDisposed;
         }
+
+        public string Name => m_name;
+
+        public bool StopOnException { get; set; }
 
         public async Task StartAsync()
         {
@@ -58,10 +62,20 @@ namespace Comet.Core
             await OnCloseAsync();
         }
 
-        private async void TimerOnElapsed(object sender, ElapsedEventArgs e)
+        private async void TimerOnElapse(object sender, ElapsedEventArgs e)
         {
-            if (await OnElapseAsync())
-                m_timer.Start();
+            try
+            {
+                if (await OnElapseAsync())
+                    m_timer.Start();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error on thread {m_name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                if (!StopOnException)
+                    m_timer.Start();
+            }
         }
 
         public virtual async Task OnStartAsync()
