@@ -73,7 +73,7 @@ namespace Comet.Game
         public static async Task<bool> StartupAsync()
         {
             MapManager.LoadData();
-            MapManager.LoadMaps();
+            await MapManager.LoadMaps();
 
             await ItemManager.InitializeAsync();
             await RoleManager.InitializeAsync();

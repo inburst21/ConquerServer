@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Comet.Game.States.BaseEntities;
 using Comet.Shared;
 
 #endregion
@@ -65,6 +66,24 @@ namespace Comet.Game.World.Maps
 
         public int Width { get; private set; }
         public int Height { get; private set; }
+
+        public int GetPassage(int x, int y)
+        {
+            for (int cx = 0; cx < 9; cx++)
+            {
+                for (int cy = 0; cy < 9; cy++)
+                {
+                    int testX = x + GameMap.WalkXCoords[cx];
+                    int testY = y + GameMap.WalkYCoords[cy];
+
+                    for (int i = 0; i < m_passageData.Count; i++)
+                        if (m_passageData[i].X == testX
+                            && m_passageData[i].Y == testY)
+                            return m_passageData[i].Index;
+                }
+            }
+            return -1;
+        }
 
         public Tile this[int x, int y]
         {

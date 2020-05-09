@@ -910,6 +910,52 @@ namespace Comet.Game.States
             await SaveAsync();
         }
 
+        public async Task<bool> FlyMap(uint idMap, int x, int y)
+        {
+            if (Map == null)
+            {
+                Log.WriteLog(LogLevel.Warning, $"FlyMap user not in map").Forget();
+                return false;
+            }
+
+            if (idMap == 0)
+                idMap = MapIdentity;
+
+            GameMap newMap = Kernel.MapManager.GetMap(idMap);
+            if (newMap == null || !newMap.IsValidPoint(x, y))
+            {
+                Log.WriteLog(LogLevel.Warning, $"FlyMap user fly invalid position {idMap}[{x},{y}]").Forget();
+                return false;
+            }
+
+            try
+            {
+                LeaveMap();
+
+                m_idMap = newMap.Identity;
+                MapX = (ushort) x;
+                MapY = (ushort) y;
+
+                await SendAsync(new MsgAction
+                {
+                    Identity = Identity,
+                    Command = newMap.MapDoc,
+                    ArgumentX = MapX,
+                    ArgumentY = MapY,
+                    Action = MsgAction.ActionType.MapTeleport,
+                    Direction = (ushort) Direction
+                });
+
+                EnterMap();
+            }
+            catch
+            {
+                Log.WriteLog(LogLevel.Error, "FlyMap error").Forget();
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region Movement
@@ -921,6 +967,7 @@ namespace Comet.Game.States
                 Identity = Identity,
                 ArgumentX = MapX,
                 ArgumentY = MapY,
+                Command = (uint) ((MapY << 16) | MapX),
                 Direction = (ushort)Direction,
                 Action = MsgAction.ActionType.Kickback
             });

@@ -49,6 +49,8 @@ namespace Comet.Game.Database
         public virtual DbSet<DbPeerage> Peerage { get; set; }
         public virtual DbSet<DbMonstertype> Monstertype { get; set; }
         public virtual DbSet<DbGenerator> Generator { get; set; }
+        public virtual DbSet<DbPassway> Passway { get; set; }
+        public virtual DbSet<DbPortal> Portal { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

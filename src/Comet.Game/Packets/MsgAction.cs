@@ -42,6 +42,13 @@ namespace Comet.Game.Packets
     /// </summary>
     public sealed class MsgAction : MsgBase<Client>
     {
+        public MsgAction()
+        {
+            Type = PacketType.MsgAction;
+
+            Timestamp = (uint) Environment.TickCount;
+        }
+
         // Packet Properties
         public uint Timestamp { get; set; }
         public uint Identity { get; set; }
@@ -138,16 +145,27 @@ namespace Comet.Game.Packets
                     await client.SendAsync(this);
                     break;
 
-                case ActionType.CharacterEmote:
+                case ActionType.CharacterEmote: // 81
                     await client.Character.SetActionAsync((EntityAction) Command, false);
                     await client.SendAsync(this);
                     break;
 
+                case ActionType.MapPortal: // 85
+                    uint idMap = 0;
+                    Point tgtPos = new Point();
+                    Point sourcePos = new Point(client.Character.MapX, client.Character.MapY);
+                    if (!client.Character.Map.GetPassageMap(ref idMap, ref tgtPos, ref sourcePos))
+                    {
+                        client.Character.Map.GetRebornMap(ref idMap, ref tgtPos);
+                    }
+                    await client.Character.FlyMap(idMap, tgtPos.X, tgtPos.Y);
+                    break;
+
                 case ActionType.CharacterPkMode:
                     if (!Enum.IsDefined(typeof(PkModeType), (int) Command))
-                        Command = (uint)PkModeType.Capture;
+                        Command = (uint) PkModeType.Capture;
 
-                    client.Character.PkMode = (PkModeType)Command;
+                    client.Character.PkMode = (PkModeType) Command;
                     await client.SendAsync(this);
                     break;
 
@@ -175,8 +193,8 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        ushort newX = (ushort)Command;
-                        ushort newY = (ushort)(Command >> 16);
+                        ushort newX = (ushort) Command;
+                        ushort newY = (ushort) (Command >> 16);
 
                         if (user.GetDistance(newX, newY) >= 2 * Screen.VIEW_SIZE)
                         {

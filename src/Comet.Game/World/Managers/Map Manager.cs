@@ -24,6 +24,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.World.Maps;
@@ -69,15 +70,15 @@ namespace Comet.Game.World.Managers
             stream.Dispose();
         }
 
-        public void LoadMaps()
+        public async Task LoadMaps()
         {
             var jtf = new JoinableTaskFactory(new JoinableTaskContext());
             List<DbMap> maps = jtf.Run(MapsRepository.GetAsync);
             foreach (var dbmap in maps)
             {
                 GameMap map = new GameMap(dbmap);
-                map.Initialize();
-                m_maps.TryAdd(map.Identity, map);
+                if (await map.Initialize())
+                    m_maps.TryAdd(map.Identity, map);
             }
         }
 

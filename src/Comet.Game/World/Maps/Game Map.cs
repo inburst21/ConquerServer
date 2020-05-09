@@ -24,15 +24,18 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core.Mathematics;
 using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -63,6 +66,8 @@ namespace Comet.Game.World.Maps
         private ConcurrentDictionary<uint, Character> m_users = new ConcurrentDictionary<uint, Character>();
         private ConcurrentDictionary<uint, Role> m_roles = new ConcurrentDictionary<uint, Role>();
 
+        private List<Passway> m_passway = new List<Passway>();
+
         public GameMap(DbMap map)
         {
             m_dbMap = map;
@@ -82,7 +87,7 @@ namespace Comet.Game.World.Maps
 
         public ulong Flag { get; set; }
 
-        public bool Initialize()
+        public async Task<bool> Initialize()
         {
             if (m_dbMap == null) return false;
 
@@ -100,6 +105,25 @@ namespace Comet.Game.World.Maps
                 {
                     m_blocks[x, y] = new GameBlock();
                 }
+            }
+
+            List<DbPassway> passways = await PasswayRepository.GetAsync(Identity);
+            foreach (var dbPassway in passways)
+            {
+                DbPortal portal = await PortalRepository.GetAsync(dbPassway.TargetMapId, dbPassway.TargetPortal);
+                if (portal == null)
+                {
+                    await Log.WriteLog(LogLevel.Error, $"Could not find portal for passway [{dbPassway.Identity}]");
+                    continue;
+                }
+
+                m_passway.Add(new Passway
+                {
+                    Index = (int)dbPassway.MapIndex,
+                    TargetMap = dbPassway.TargetMapId,
+                    TargetX = (ushort)portal.PortalX,
+                    TargetY = (ushort)portal.PortalY
+                });
             }
 
             return true;
@@ -433,6 +457,47 @@ namespace Comet.Game.World.Maps
 
         #endregion
 
+        #region Portals and Passages
+
+        public bool GetRebornMap(ref uint idMap, ref Point target)
+        {
+            idMap = m_dbMap.RebornMap;
+            GameMap targetMap = Kernel.MapManager.GetMap(idMap);
+            if (targetMap == null)
+            {
+                Log.WriteLog(LogLevel.Error, $"Could not get reborn map [{Identity}]!").Forget();
+                return false;
+            }
+
+            target = new Point(m_dbMap.LinkX, m_dbMap.LinkY);
+            return true;
+        }
+
+        public bool GetPassageMap(ref uint idMap, ref Point target, ref Point source)
+        {
+            if (!IsValidPoint(source.X, source.Y))
+                return false;
+
+            int idxPassage = m_mapData.GetPassage(source.X, source.Y);
+            if (idxPassage < 0)
+                return false;
+
+            if (IsDynamicMap())
+            {
+                idMap = m_dbMap.LinkMap;
+                target.X = m_dbMap.LinkX;
+                target.Y = m_dbMap.LinkY;
+                return true;
+            }
+
+            Passway passway = m_passway.FirstOrDefault(x => x.Index == idxPassage);
+            idMap = passway.TargetMap;
+            target = new Point(passway.TargetX, passway.TargetY);
+            return true;
+        }
+
+        #endregion
+
         #region Static
 
         public static int GetBlockX(int x)
@@ -446,6 +511,14 @@ namespace Comet.Game.World.Maps
         }
 
         #endregion
+    }
+
+    public struct Passway
+    {
+        public int Index;
+        public uint TargetMap;
+        public ushort TargetX;
+        public ushort TargetY;
     }
 
     [Flags]
