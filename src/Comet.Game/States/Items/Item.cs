@@ -1041,6 +1041,7 @@ namespace Comet.Game.States.Items
 
         public enum ItemColor : byte
         {
+            None,
             Black = 2,
             Orange = 3,
             LightBlue = 4,

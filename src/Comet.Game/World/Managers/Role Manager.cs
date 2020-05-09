@@ -53,6 +53,11 @@ namespace Comet.Game.World.Managers
 
         }
 
+        public int OnlinePlayers => m_userSet.Count;
+        public int RolesCount => m_roleSet.Count;
+
+        public int MaxOnlinePlayers { get; private set; }
+
         public async Task InitializeAsync()
         {
             foreach (var auto in await PointAllotRepository.GetAsync())
@@ -97,6 +102,9 @@ namespace Comet.Game.World.Managers
 
             m_userSet.TryAdd(user.Character.Identity, user.Character);
             m_roleSet.TryAdd(user.Character.Identity, user.Character);
+
+            if (OnlinePlayers > MaxOnlinePlayers)
+                MaxOnlinePlayers = OnlinePlayers;
             return true;
         }
 

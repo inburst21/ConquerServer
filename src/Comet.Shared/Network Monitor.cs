@@ -64,6 +64,11 @@ namespace Comet.Shared
             return Task.FromResult(string.Format(FORMAT_S, upload, download));
         }
 
+        public int BytesSent => m_SentBytes;
+        public int BytesRecv => m_RecvBytes;
+        public long TotalBytesSent => m_TotalSentBytes;
+        public long TotalBytesRecv => m_TotalRecvBytes;
+
         /// <summary>
         ///     Signal to the monitor that aLength bytes were sent.
         /// </summary>

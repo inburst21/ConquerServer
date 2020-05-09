@@ -50,13 +50,17 @@ namespace Comet.Game.Packets
             Metempsychosis = user.Metempsychosis;
             Level = user.Level;
 
+            NobilityRank = (uint) user.NobilityRank;
+            NobilityIdentity = user.Identity;
+            NobilityPosition = (uint) user.NobilityPosition;
+
             Helmet = user.Headgear?.Type ?? 0;
-            HelmetColor = (ushort) (user.Headgear?.Color ?? Item.ItemColor.Orange);
+            HelmetColor = (ushort) (user.Headgear?.Color ?? Item.ItemColor.None);
             RightHand = user.RightHand?.Type ?? 0;
             LeftHand = user.LeftHand?.Type ?? 0;
-            LeftHandColor = (ushort) (user.LeftHand?.Color ?? Item.ItemColor.Orange);
+            LeftHandColor = (ushort) (user.LeftHand?.Color ?? Item.ItemColor.None);
             Armor = user.Armor?.Type ?? 0;
-            ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.Orange);
+            ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
             Name = user.Name;
@@ -109,7 +113,7 @@ namespace Comet.Game.Packets
 
         #region Union
 
-        public uint Status { get; set; }
+        public ulong Status { get; set; }
 
         #region Struct
 
@@ -163,8 +167,8 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(Identity);
-            writer.Write(Mesh);
+            writer.Write(Identity); // 4
+            writer.Write(Mesh); // 8
 
             if (StatuaryLife > 0)
             {
@@ -174,7 +178,7 @@ namespace Comet.Game.Packets
             }
             else
             {
-                writer.Write(Status);
+                writer.Write(Status); // 12
             }
 
             if (OwnerIdentity > 0)
@@ -183,40 +187,36 @@ namespace Comet.Game.Packets
             }
             else
             {
-                writer.Write(SyndicateIdentity);
-                writer.Write((byte) 0);
-                writer.Write(SyndicatePosition);
+                writer.Write(SyndicateIdentity); // 20
+                writer.Write((byte) 0); // 22
+                writer.Write(SyndicatePosition); // 23
             }
 
-            writer.Write(Garment);
-            writer.Write(Helmet);
-            writer.Write(Armor);
-            writer.Write(RightHand);
-            writer.Write(LeftHand);
-            writer.Write(Padding0);
-            writer.Write(MonsterLife);
-            writer.Write(MonsterLevel);
-            writer.Write(MapX);
-            writer.Write(MapY);
-            writer.Write(Hairstyle);
-            writer.Write(Direction);
-            writer.Write(Pose);
-            writer.Write(Metempsychosis);
-            writer.Write(Level);
-            writer.Write(Padding1);
-            writer.Write(NobilityRank);
-            writer.Write(Padding2);
-            writer.Write(HelmetColor);
-            writer.Write(ArmorColor);
-            writer.Write(LeftHandColor);
-            writer.Write(new List<string>
+            writer.Write(Garment); // 24
+            writer.Write(Helmet); // 28
+            writer.Write(Armor); // 32
+            writer.Write(RightHand); // 36
+            writer.Write(LeftHand); // 40
+            writer.Write(Padding0); // 44
+            writer.Write(MonsterLife); // 48
+            writer.Write(MonsterLevel); // 50
+            writer.Write(MapX); // 52
+            writer.Write(MapY); // 54
+            writer.Write(Hairstyle); // 56
+            writer.Write(Direction); // 58
+            writer.Write(Pose); // 59
+            writer.Write(Metempsychosis); // 60
+            writer.Write(Level); // 62
+            writer.Write(Padding1); // 64 
+            writer.Write(NobilityRank); // 68
+            writer.Write(NobilityIdentity); // 72
+            writer.Write(NobilityPosition); // 76
+            writer.Write(new List<string> // 80
             {
                 Name
             });
 
             return writer.ToArray();
         }
-
-        
     }
 }

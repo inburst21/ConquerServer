@@ -24,6 +24,7 @@
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
@@ -48,6 +49,11 @@ namespace Comet.Game.States
     {
         private Client m_socket;
         private readonly DbCharacter m_dbObject;
+
+        private TimeOut m_energyTm = new TimeOut(ADD_ENERGY_STAND_SECS);
+        private TimeOut m_autoHeal = new TimeOut(AUTOHEALLIFE_TIME);
+        private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
+        private TimeOut m_xpPoints = new TimeOut(3000);
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -507,7 +513,29 @@ namespace Comet.Game.States
         public ushort PkPoints
         {
             get => m_dbObject?.KillPoints ?? 0;
-            set => m_dbObject.KillPoints = value;
+            set
+            {
+                if (m_dbObject.KillPoints != value)
+                {
+                    if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
+                    {
+                        DetachStatus(StatusSet.RED_NAME).Forget();
+                        AttachStatus(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0).Forget();
+                    }
+                    else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
+                    {
+                        DetachStatus(StatusSet.BLACK_NAME).Forget();
+                        AttachStatus(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0).Forget();
+                    }
+                    else
+                    {
+                        DetachStatus(StatusSet.BLACK_NAME).Forget();
+                        DetachStatus(StatusSet.RED_NAME).Forget();
+                    }
+                }
+
+                m_dbObject.KillPoints = value;
+            }
         }
 
         #endregion
@@ -845,12 +873,12 @@ namespace Comet.Game.States
             Map = Kernel.MapManager.GetMap(m_idMap);
             if (Map != null)
             {
-                _ = Map.AddAsync(this);
-                _ = Map.SendMapInfoAsync(this);
+                Map.AddAsync(this).Forget();
+                Map.SendMapInfoAsync(this).Forget();
             }
             else
             {
-                _ = Log.WriteLog(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}");
+                Log.WriteLog(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}").Forget();
                 m_socket?.Disconnect();
             }
         }
@@ -860,7 +888,7 @@ namespace Comet.Game.States
         /// </summary>
         public override void LeaveMap()
         {
-            Map?.RemoveAsync(Identity);
+            Map?.RemoveAsync(Identity).Forget();
         }
 
         public async Task SavePositionAsync()
@@ -898,7 +926,314 @@ namespace Comet.Game.States
             });
         }
 
-#endregion
+        #endregion
+
+        #region XP and Stamina
+
+        public byte Energy { get; private set; } = DEFAULT_USER_ENERGY;
+
+        public byte MaxEnergy => 100;
+
+        public byte XpPoints = 0;
+
+        public async Task ProcXpVal()
+        {
+            if (!IsAlive)
+            {
+                await ClsXpVal();
+                return;
+            }
+
+            IStatus pStatus = QueryStatus(StatusSet.START_XP);
+            if (pStatus != null)
+                return;
+
+            if (XpPoints >= 100)
+            {
+                await BurstXp();
+                await SetXp(0);
+                m_xpPoints.Update();
+            }
+            else
+            {
+                if (Map != null && Map.IsBoothEnable())
+                    return;
+                await AddXp(1);
+            }
+        }
+
+        public async Task<bool> BurstXp()
+        {
+            if (XpPoints < 100)
+                return false;
+
+            IStatus pStatus = QueryStatus(StatusSet.START_XP);
+            if (pStatus != null)
+                return true;
+
+            await AttachStatus(this, StatusSet.START_XP, 0, 20, 0, 0);
+            return true;
+        }
+
+        public async Task SetXp(byte nXp)
+        {
+            if (nXp > 100 || QueryStatus(StatusSet.START_XP) != null)
+                return;
+            await SetAttributesAsync(ClientUpdateType.XpCircle, nXp);
+        }
+
+        public async Task AddXp(byte nXp)
+        {
+            if (nXp <= 0 || !IsAlive || QueryStatus(StatusSet.START_XP) != null)
+                return;
+            await AddAttributesAsync(ClientUpdateType.XpCircle, nXp);
+        }
+
+        public async Task ClsXpVal()
+        {
+            XpPoints = 0;
+            await StatusSet.DelObj(StatusSet.START_XP);
+        }
+
+        #endregion
+
+        #region Attributes Set and Add
+
+        public override async Task<bool> AddAttributesAsync(ClientUpdateType type, long value)
+        {
+            bool screen = false;
+            switch (type)
+            {
+                case ClientUpdateType.Level:
+                    if (value < 0)
+                        return false;
+
+                    screen = true;
+                    value = Level = (byte)Math.Max(1, Math.Min(MAX_UPLEV, Level + value));
+                    break;
+
+                case ClientUpdateType.Experience:
+                    if (value < 0)
+                    {
+                        Experience = Math.Max(0, Experience - (ulong) (value * -1));
+                    }
+                    else
+                    {
+                        Experience += (ulong) value;
+                    }
+
+                    value = (long) Experience;
+                    break;
+
+                case ClientUpdateType.Strength:
+                    if (value < 0)
+                        return false;
+
+                    value = Strength = (ushort) Math.Max(0, Math.Min(ushort.MaxValue, Strength + value));
+                    break;
+
+                case ClientUpdateType.Agility:
+                    if (value < 0)
+                        return false;
+
+                    value = Agility = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, Agility + value));
+                    break;
+
+                case ClientUpdateType.Vitality:
+                    if (value < 0)
+                        return false;
+
+                    value = Vitality = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, Vitality + value));
+                    break;
+
+                case ClientUpdateType.Spirit:
+                    if (value < 0)
+                        return false;
+
+                    value = Spirit = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, Spirit + value));
+                    break;
+
+                case ClientUpdateType.XpCircle:
+                    if (value < 0)
+                    {
+                        XpPoints = (byte)Math.Max(0, XpPoints - (value * -1));
+                    }
+                    else
+                    {
+                        XpPoints = (byte)Math.Max(0, XpPoints + value);
+                    }
+
+                    value = XpPoints;
+                    break;
+
+                case ClientUpdateType.Stamina:
+                    if (value < 0)
+                    {
+                        Energy = (byte) Math.Max(0, Energy - (value * -1));
+                    }
+                    else
+                    {
+                        Energy = (byte)Math.Max(0, Math.Min(MaxEnergy, Energy + value));
+                    }
+
+                    value = Energy;
+                    break;
+
+                default:
+                    bool result = await base.AddAttributesAsync(type, value);
+                    return result && await SaveAsync();
+            }
+
+            await SaveAsync();
+            await SynchroAttributesAsync(type, value, screen);
+            return true;
+        }
+
+        public override async Task<bool> SetAttributesAsync(ClientUpdateType type, long value)
+        {
+            bool screen = false;
+            switch (type)
+            {
+                case ClientUpdateType.Level:
+                    screen = true;
+                    Level = (byte) Math.Max(1, Math.Min(MAX_UPLEV, value));
+                    break;
+
+                case ClientUpdateType.Experience:
+                    Experience = (ulong) Math.Max(0, value);
+                    break;
+
+                case ClientUpdateType.XpCircle:
+                    XpPoints = (byte) Math.Max(0, Math.Min(value, 100));
+                    break;
+
+                case ClientUpdateType.Stamina:
+                    Energy = (byte)Math.Max(0, Math.Min(value, MaxEnergy));
+                    break;
+
+                case ClientUpdateType.Atributes:
+                    AttributePoints = (ushort) Math.Max(0, Math.Min(ushort.MaxValue, value));
+                    break;
+
+                case ClientUpdateType.PkPoints:
+                    PkPoints = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, value));
+                    break;
+
+                case ClientUpdateType.Mesh:
+                    screen = true;
+                    Mesh = (uint) value;
+                    break;
+
+                case ClientUpdateType.HairStyle:
+                    screen = true;
+                    Hairstyle = (ushort)value;
+                    break;
+
+                default:
+                    bool result = await base.SetAttributesAsync(type, value);
+                    return result && await SaveAsync();
+            }
+
+            await SaveAsync();
+            await SynchroAttributesAsync(type, value, screen);
+            return true;
+        }
+
+        #endregion
+
+        #region Timer
+
+        public override async Task OnTimerAsync()
+        {
+            try
+            {
+                if (m_pkDecrease.ToNextTime(PK_DEC_TIME))
+                {
+                    if (MapIdentity == 6001)
+                    {
+                        await AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE_IN_PRISON);
+                    }
+                    else
+                    {
+                        await AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE);
+                    }
+                }
+            }
+            catch
+            {
+                Log.WriteLog(LogLevel.Error, $"Error pk decrease for user {Identity}:{Name}").Forget();
+            }
+
+            try
+            {
+                foreach (var status in StatusSet.Status.Values)
+                {
+                    status.OnTimer();
+
+                    if (!status.IsValid && status.Identity != StatusSet.GHOST && status.Identity != StatusSet.DEAD)
+                    {
+                        await StatusSet.DelObj(status.Identity);
+                    }
+                }
+            }
+            catch
+            {
+                Log.WriteLog(LogLevel.Error, $"Error in status check for user {Identity}:{Name}").Forget();
+            }
+
+            if (!IsAlive)
+                return;
+
+            try
+            {
+                if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_SECS))
+                {
+                    // todo handle blessing
+                    if (Action == EntityAction.Sit)
+                    {
+                        await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_SIT);
+                    }
+                    else if (Action == EntityAction.Lie)
+                    {
+                        await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_LIE);
+                    }
+                    else
+                    {
+                        await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_STAND);
+                    }
+                }
+            }
+            catch
+            {
+                Log.WriteLog(LogLevel.Error, $"Error updating energy for user {Identity}:{Name}").Forget();
+            }
+
+            try
+            {
+                if (m_xpPoints.ToNextTime())
+                {
+                    await ProcXpVal();
+                }
+            }
+            catch
+            {
+                Log.WriteLog(LogLevel.Error, $"Error updating xp value for user {Identity}:{Name}").Forget();
+            }
+
+            try
+            {
+                if (m_autoHeal.ToNextTime())
+                {
+                    await AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD);
+                }
+            }
+            catch
+            {
+                Log.WriteLog(LogLevel.Error, $"Error heal life for usre {Identity}:{Name}").Forget();
+            }
+        }
+
+        #endregion
 
         #region Socket
 
@@ -913,7 +1248,7 @@ namespace Comet.Game.States
             await player.SendAsync(new MsgPlayer(this));
         }
 
-#endregion
+        #endregion
 
         #region Database
 

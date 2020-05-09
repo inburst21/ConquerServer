@@ -56,8 +56,8 @@ namespace Comet.Game.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
             Identity = reader.ReadUInt32();
-            PositionX = reader.ReadUInt16();
-            PositionY = reader.ReadUInt16();
+            //PositionX = reader.ReadUInt16();
+            //PositionY = reader.ReadUInt16();
             Action = (StringAction) reader.ReadByte();
             Strings = reader.ReadStrings();
         }
@@ -73,8 +73,8 @@ namespace Comet.Game.Packets
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
             writer.Write(Identity);
-            writer.Write(PositionX);
-            writer.Write(PositionY);
+            //writer.Write(PositionX);
+            //writer.Write(PositionY);
             writer.Write((byte) Action);
             writer.Write(Strings);
             return writer.ToArray();

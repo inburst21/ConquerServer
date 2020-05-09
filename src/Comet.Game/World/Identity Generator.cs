@@ -32,7 +32,11 @@ namespace Comet.Game.World
 {
     public sealed class IdentityGenerator
     {
+        public static IdentityGenerator MapItem = new IdentityGenerator(Role.MAPITEM_FIRST, Role.MAPITEM_LAST);
         public static IdentityGenerator Monster = new IdentityGenerator(Role.MONSTERID_FIRST, Role.MONSTERID_LAST);
+        public static IdentityGenerator Furniture = new IdentityGenerator(Role.SCENE_NPC_MIN, Role.SCENE_NPC_MAX);
+        public static IdentityGenerator Traps = new IdentityGenerator(Role.MAGICTRAPID_FIRST, Role.MAGICTRAPID_LAST);
+
         private readonly ConcurrentQueue<long> m_cqidQueue = new ConcurrentQueue<long>();
         private readonly long m_idMax = uint.MaxValue;
         private readonly long m_idMin;

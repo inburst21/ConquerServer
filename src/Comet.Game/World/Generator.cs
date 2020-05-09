@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
@@ -37,7 +39,7 @@ namespace Comet.Game.World
 {
     public sealed class Generator
     {
-        private const int _MAX_PER_GEN = 50;
+        private const int _MAX_PER_GEN = 20;
         private const int _MIN_TIME_BETWEEN_GEN = 10;
         private static uint m_idGenerator = 2000000;
 
@@ -45,17 +47,38 @@ namespace Comet.Game.World
         private readonly DbMonstertype m_dbMonster;
         private readonly Point m_pCenter;
         private readonly GameMap m_pMap;
-        private TimeOut m_pTimer;
-        private Random m_pRandom = new Random();
+        private TimeOut m_pTimer = new TimeOut(_MIN_TIME_BETWEEN_GEN);
         private Monster m_pDemo;
 
-        private bool m_bIsDynamic;
+        public int Generated = 0;
 
-        public ConcurrentDictionary<uint, Monster> Collection;
+        private ConcurrentDictionary<uint, Monster> m_dicMonsters = new ConcurrentDictionary<uint, Monster>();
+
+        public bool CanBeProcessed = false;
 
         public Generator(DbGenerator dbGen)
         {
             m_dbGen = dbGen;
+            m_pTimer = new TimeOut(Math.Max(m_dbGen.RestSecs, _MIN_TIME_BETWEEN_GEN));
+
+            m_pMap = Kernel.MapManager.GetMap(m_dbGen.Mapid);
+            if (m_pMap == null)
+            {
+                Log.WriteLog(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
+                    .Forget();
+                return;
+            }
+
+            m_dbMonster = Kernel.RoleManager.GetMonstertype(m_dbGen.Npctype);
+            if (m_dbMonster == null)
+            {
+                Log.WriteLog(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
+                    .Forget();
+                return;
+            }
+
+            m_pCenter = new Point(m_dbGen.BoundX + m_dbGen.BoundCx / 2, m_dbGen.BoundY + m_dbGen.BoundCy / 2);
+            CanBeProcessed = true;
         }
 
         public Generator(uint idMap, uint idMonster, ushort usX, ushort usY, ushort usCx, ushort usCy)
@@ -90,8 +113,6 @@ namespace Comet.Game.World
             }
 
             m_pCenter = new Point(m_dbGen.BoundX + m_dbGen.BoundCx / 2, m_dbGen.BoundY + m_dbGen.BoundCy / 2);
-            m_bIsDynamic = true;
-            Collection = new ConcurrentDictionary<uint, Monster>();
         }
 
         public uint Identity => m_dbGen.Id;
@@ -104,6 +125,62 @@ namespace Comet.Game.World
 
         public string MonsterName => m_dbMonster.Name;
 
+        public void IncreaseCount()
+        {
+            Interlocked.Increment(ref Generated);
+        }
+
+        public void DecreaseCount()
+        {
+            Interlocked.Decrement(ref Generated);
+        }
+
+        public async Task<Point> FindGenPosAsync()
+        {
+            Point result = new Point();
+            result.X = m_dbGen.BoundX + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCx);
+            result.Y = m_dbGen.BoundY + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCy);
+
+            if (!m_pMap.IsValidPoint(result.X, result.Y) || !m_pMap.IsStandEnable(result.X, result.Y) ||
+                m_pMap.IsSuperPosition(result.X, result.Y))
+            {
+                return default;
+            }
+
+            return result;
+        }
+
+        public async Task<Monster> GenerateMonsterAsync()
+        {
+            Monster mob = new Monster(m_dbMonster, (uint) IdentityGenerator.Monster.GetNextIdentity, this);
+
+            Point pos = await FindGenPosAsync();
+            if (pos == default)
+                return null;
+
+            if (!mob.Initialize(m_pMap.Identity, (ushort) pos.X, (ushort) pos.Y))
+                return null;
+            return mob;
+        }
+
+        public async Task GenerateAsync()
+        {
+            if (!m_pTimer.ToNextTime())
+                return;
+
+            int generate = Math.Min(m_dbGen.MaxPerGen- Generated, _MAX_PER_GEN);
+            if (generate <= 0)
+                return;
+
+            while (generate-- > 0)
+            {
+                Monster monster = await GenerateMonsterAsync();
+                if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
+                    continue;
+                monster.EnterMap();
+                Generated++;
+            }
+        }
 
         public Point GetCenter()
         {

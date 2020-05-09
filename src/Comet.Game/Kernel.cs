@@ -56,7 +56,9 @@ namespace Comet.Game
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
-        public static SystemProcessor SystemThread = new SystemProcessor(1000);
+        public static SystemProcessor SystemThread = new SystemProcessor();
+        public static UserProcessor UserThread = new UserProcessor();
+        public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
 
         /// <summary>
         ///     Returns the next random number from the generator.
@@ -78,6 +80,9 @@ namespace Comet.Game
             await PeerageManager.InitializeAsync();
 
             await SystemThread.StartAsync();
+            await UserThread.StartAsync();
+            await GeneratorThread.StartAsync();
+
             return true;
         }
 

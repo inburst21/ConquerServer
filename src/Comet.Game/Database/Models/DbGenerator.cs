@@ -29,13 +29,13 @@ namespace Comet.Game.Database.Models
     {
         [Key]
         [Column("id")] public virtual uint Id { get; set; }
-        [Column("map_id")] public virtual uint Mapid { get; set; }
+        [Column("mapid")] public virtual uint Mapid { get; set; }
         [Column("bound_x")] public virtual ushort BoundX { get; set; }
         [Column("bound_y")] public virtual ushort BoundY { get; set; }
         [Column("bound_cx")] public virtual ushort BoundCx { get; set; }
         [Column("bound_cy")] public virtual ushort BoundCy { get; set; }
-        [Column("max_npc")] public virtual int MaxNpc { get; set; }
-        [Column("rest_npc")] public virtual int RestSecs { get; set; }
+        [Column("maxnpc")] public virtual int MaxNpc { get; set; }
+        [Column("rest_secs")] public virtual int RestSecs { get; set; }
         [Column("max_per_gen")] public virtual int MaxPerGen { get; set; }
         [Column("npctype")] public virtual uint Npctype { get; set; }
         [Column("timer_begin")] public virtual int TimerBegin { get; set; }

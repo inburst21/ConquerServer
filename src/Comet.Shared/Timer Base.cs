@@ -20,11 +20,11 @@
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Timers;
-using Comet.Shared;
 
-namespace Comet.Core
+namespace Comet.Shared
 {
     public abstract class TimerBase
     {
@@ -48,6 +48,8 @@ namespace Comet.Core
 
         public string Name => m_name;
 
+        public long ElapsedMilliseconds { get; private set; }
+
         public bool StopOnException { get; set; }
 
         public async Task StartAsync()
@@ -64,6 +66,8 @@ namespace Comet.Core
 
         private async void TimerOnElapse(object sender, ElapsedEventArgs e)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             try
             {
                 if (await OnElapseAsync())
@@ -75,6 +79,11 @@ namespace Comet.Core
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
                 if (!StopOnException)
                     m_timer.Start();
+            }
+            finally
+            {
+                sw.Stop();
+                ElapsedMilliseconds = sw.ElapsedMilliseconds;
             }
         }
 

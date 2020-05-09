@@ -48,12 +48,7 @@ namespace Comet.Game.States
 
             m_idMap = generator.MapIdentity;
         }
-
-        ~Monster()
-        {
-            IdentityGenerator.Monster.ReturnIdentity(Identity);
-        }
-
+        
         #region Identity
 
         public override uint Identity
@@ -82,6 +77,8 @@ namespace Comet.Game.States
             m_posX = x;
             m_posY = y;
 
+            Life = MaxLife;
+
             return true;
         }
 
@@ -96,6 +93,20 @@ namespace Comet.Game.States
         }
 
         #endregion
+
+        public override byte Level
+        {
+            get => (byte) (m_dbMonster?.Level ?? 0);
+            set => m_dbMonster.Level = value;
+        }
+
+        public override uint Life
+        {
+            get;
+            set;
+        }
+
+        public override uint MaxLife => (uint) (m_dbMonster?.Life ?? 1);
 
         #region Battle Attributes
 
@@ -157,6 +168,14 @@ namespace Comet.Game.States
         public override void LeaveMap()
         {
             Map?.RemoveAsync(Identity);
+            IdentityGenerator.Monster.ReturnIdentity(Identity);
+            m_generator.Generated--;
+            if (Map != null)
+            {
+                Map.RemoveAsync(Identity).Forget();
+                Kernel.RoleManager.RemoveRole(Identity);
+            }
+            Map = null;
         }
 
         #endregion

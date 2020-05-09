@@ -131,6 +131,7 @@ namespace Comet.Game.World.Maps
                 }
                 else
                 {
+                    Kernel.RoleManager.AddRole(role);
                     foreach (var user in m_users.Values.Where(x =>
                         ScreenCalculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.VIEW_SIZE))
                     {
@@ -151,6 +152,9 @@ namespace Comet.Game.World.Maps
                 m_users.TryRemove(idRole, out _);
                 LeaveBlock(role);
 
+                if (!(role is Character))
+                    Kernel.RoleManager.RemoveRole(idRole);
+                
                 foreach (var user in Query9BlocksByPos(role.MapX, role.MapY).Where(x => x is Character)
                     .Cast<Character>())
                 {
@@ -409,7 +413,7 @@ namespace Comet.Game.World.Maps
 
         public bool IsSuperPosition(int x, int y)
         {
-            return GetBlock(GetBlockX(x), GetBlockY(y)).RoleSet.Values.Any(a => a.MapX == x && a.MapY == y && a.IsAlive);
+            return GetBlock(GetBlockX(x), GetBlockY(y))?.RoleSet.Values.Any(a => a.MapX == x && a.MapY == y && a.IsAlive) != false;
         }
 
         public bool IsValidPoint(int x, int y)

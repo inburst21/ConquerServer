@@ -88,7 +88,8 @@ namespace Comet.Game.World.Maps
                         targetUser?.Screen.Add(m_user);
 
                         await target.SendSpawnToAsync(m_user);
-                        await m_user.SendSpawnToAsync(targetUser);
+                        if (targetUser != null)
+                            await m_user.SendSpawnToAsync(targetUser);
                     }
                 }
                 else
