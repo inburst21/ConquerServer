@@ -166,7 +166,7 @@ namespace Comet.Game.World.Managers
 
         public Role GetRole(uint idRole)
         {
-            return m_roleSet.TryAdd(idRole, out var role) ? role : null;
+            return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
         }
 
         /// <summary>
