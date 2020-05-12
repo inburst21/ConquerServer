@@ -22,8 +22,10 @@
 #region References
 
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.States.Items;
 using Comet.Network.Packets;
 
 #endregion
@@ -106,8 +108,21 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            Character user = client.Character;
+
             switch (Action)
             {
+                case ItemActionType.InventoryEquip:
+                case ItemActionType.EquipmentWear:
+                    if (!await user.UserPackage.UseItemAsync(Identity, (Item.ItemPosition) Command))
+                        await user.SendAsync(Language.StrUnableToUseItem, MsgTalk.TalkChannel.System, Color.Red);
+                    break;
+
+                case ItemActionType.EquipmentRemove:
+                    if (!user.UserPackage.UnequipAsync((Item.ItemPosition)Command).Result)
+                        await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.System, Color.Red);
+                    break;
+
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
                     break;

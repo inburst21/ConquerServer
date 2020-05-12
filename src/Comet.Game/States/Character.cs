@@ -54,6 +54,7 @@ namespace Comet.Game.States
         private TimeOut m_autoHeal = new TimeOut(AUTOHEALLIFE_TIME);
         private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
         private TimeOut m_xpPoints = new TimeOut(3000);
+        private TimeOut m_ghost = new TimeOut(3);
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -81,6 +82,12 @@ namespace Comet.Game.States
             Screen = new Screen(this);
             WeaponSkill = new WeaponSkill(this);
             UserPackage = new UserPackage(this);
+
+            m_energyTm.Update();
+            m_autoHeal.Update();
+            m_pkDecrease.Update();
+            m_xpPoints.Update();
+            m_ghost.Update();
         }
 
         public Client Client => m_socket;
@@ -811,6 +818,110 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Battle
+
+        public override int GetAttackRange(int sizeAdd)
+        {
+            int nRange = 1, nRangeL = 0, nRangeR = 0;
+
+            if (UserPackage[Item.ItemPosition.RightHand] != null && UserPackage[Item.ItemPosition.RightHand].IsWeapon())
+                nRangeR = UserPackage[Item.ItemPosition.RightHand].AttackRange;
+            if (UserPackage[Item.ItemPosition.LeftHand] != null && UserPackage[Item.ItemPosition.LeftHand].IsWeapon())
+                nRangeL = UserPackage[Item.ItemPosition.LeftHand].AttackRange;
+
+            if (nRangeR > 0 && nRangeL > 0)
+                nRange = (nRangeR + nRangeL) / 2;
+            else if (nRangeR > 0)
+                nRange = nRangeR;
+            else if (nRangeL > 0)
+                nRange = nRangeL;
+
+            nRange += (SizeAddition + sizeAdd + 1) / 2;
+
+            return nRange + 1;
+        }
+
+        public override int Attack(Role target, ref InteractionEffect effect)
+        {
+            if (target == null)
+                return 0;
+
+            if (!target.IsEvil() && Map.IsDeadIsland() || (target is Monster mob && mob.IsGuard()))
+                SetCrimeStatus(15);
+
+            return BattleSystem.CalcPower(this, target, ref effect);
+        }
+
+        public override async Task<bool> BeAttack(int magic, Role attacker, int power, bool bReflectEnable)
+        {
+            if (attacker == null)
+                return false;
+
+            if (PreviousProfession == 25 || FirstProfession == 25 && bReflectEnable && await Kernel.ChanceCalcAsync(15d))
+            {
+                power = Math.Max(1700, power);
+                await attacker.BeAttack(magic, this, power, false);
+                await BroadcastRoomMsgAsync(new MsgInteract
+                {
+                    Action = MsgInteractType.ReflectMagic,
+                    Data = power,
+                    PosX = MapX,
+                    PosY = MapY,
+                    SenderIdentity = Identity,
+                    TargetIdentity = attacker.Identity
+                }, true);
+                return true;
+            }
+
+            if (!IsAlive)
+            {
+                BeKill(this);
+            }
+
+            if (Action == EntityAction.Sit)
+                await SetAttributesAsync(ClientUpdateType.Stamina, Energy / 2);
+
+            return true;
+        }
+
+        public override async Task BeKill(Role attacker)
+        {
+            if (QueryStatus(StatusSet.GHOST) != null)
+                return;
+
+            BattleSystem.ResetBattle();
+
+            await DetachStatus(StatusSet.BLUE_NAME);
+            await DetachAllStatus();
+            await AttachStatus(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
+            await AttachStatus(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
+
+            m_ghost.Update();
+
+            uint idMap = 0;
+            Point posTarget = new Point();
+            if (Map.GetRebornMap(ref idMap, ref posTarget))
+                await SavePositionAsync(idMap, (ushort) posTarget.X, (ushort) posTarget.Y);
+
+            if (Map.IsPkField() || Map.IsSynMap())
+            {
+                if (Map.IsSynMap() && !Map.IsWarTime())
+                    await SavePositionAsync(1002, 430, 378);
+                return;
+            }
+
+            if (Map.IsPrisionMap())
+            {
+                if (!Map.IsDeadIsland())
+                {
+                    int nChance = Math.Min(90, 20 + PkPoints / 2);
+                }
+                return;
+            }
+        }
+
+        #endregion
+
         #region Administration
 
         public bool IsPm()
@@ -1126,6 +1237,10 @@ namespace Comet.Game.States
                     value = Energy;
                     break;
 
+                case ClientUpdateType.PkPoints:
+                    value = PkPoints = (ushort) Math.Max(0, Math.Min(PkPoints + value, ushort.MaxValue));
+                    break;
+
                 default:
                     bool result = await base.AddAttributesAsync(type, value);
                     return result && await SaveAsync();
@@ -1194,7 +1309,7 @@ namespace Comet.Game.States
         {
             try
             {
-                if (m_pkDecrease.ToNextTime(PK_DEC_TIME))
+                if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
                 {
                     if (MapIdentity == 6001)
                     {
@@ -1283,6 +1398,48 @@ namespace Comet.Game.States
         #endregion
 
         #region Socket
+
+        public async Task SetLoginAsync()
+        {
+            m_dbObject.LoginTime = m_dbObject.LogoutTime = DateTime.Now;
+            await SaveAsync();
+        }
+
+        public async Task OnDisconnectAsync()
+        {
+            if (Map?.IsRecordDisable() == false)
+            {
+                m_dbObject.MapID = m_idMap;
+                m_dbObject.X = m_posX;
+                m_dbObject.Y = m_posY;
+            }
+
+            m_dbObject.LogoutTime = DateTime.Now;
+            m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+            
+            await SaveAsync();
+
+            try
+            {
+                await using ServerDbContext context = new ServerDbContext();
+                context.LoginRcd.Add(new DbGameLoginRecord
+                {
+                    AccountIdentity = Client.AccountIdentity,
+                    UserIdentity = Identity,
+                    LoginTime = m_dbObject.LoginTime,
+                    LogoutTime = m_dbObject.LogoutTime,
+                    ServerVersion = $"[{Kernel.SERVER_VERSION}]{Kernel.Version}",
+                    IpAddress = Client.IPAddress,
+                    MacAddress = "Unknown",
+                    OnlineTime = (uint) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds
+                });
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+        }
 
         public override async Task SendAsync(IPacket msg)
         {

@@ -21,7 +21,10 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
+using System.Net.Mime;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
@@ -43,6 +46,9 @@ namespace Comet.Game
     /// </summary>
     public static class Kernel
     {
+        public const int SERVER_VERSION = 1000;
+        public static readonly string Version = "";
+
         // State caches
         public static MemoryCache Logins = MemoryCache.Default;
         public static List<uint> Registration = new List<uint>();
@@ -59,6 +65,11 @@ namespace Comet.Game
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
         public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
+
+        static Kernel()
+        {
+            Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
 
         /// <summary>
         ///     Returns the next random number from the generator.
@@ -90,6 +101,21 @@ namespace Comet.Game
         public static class Services
         {
             public static RandomnessService Randomness = new RandomnessService();
+        }
+
+        public static async Task<bool> ChanceCalcAsync(double chance)
+        {
+            const int DIVISOR_I = 100;
+            try
+            {
+                return await NextAsync(0, DIVISOR_I) <= chance * (DIVISOR_I / 100d);
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Chance Calc error!");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                return false;
+            }
         }
     }
 }

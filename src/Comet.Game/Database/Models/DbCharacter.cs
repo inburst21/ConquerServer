@@ -67,5 +67,8 @@ namespace Comet.Game.Database.Models
         [Column("pk")] public virtual ushort KillPoints { get; set; }
         [Column("creation_date")] public virtual DateTime Registered { get; set; }
         [Column("donation")] public ulong Donation { get; set; }
+        [Column("last_login")] public virtual DateTime LoginTime { get; set; }
+        [Column("last_logout")] public virtual DateTime LogoutTime { get; set; }
+        [Column("online_time")] public virtual int OnlineSeconds { get; set; }
     }
 }

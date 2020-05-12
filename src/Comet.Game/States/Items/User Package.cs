@@ -127,7 +127,7 @@ namespace Comet.Game.States.Items
             if (!await item.CreateAsync(itemtype, pos))
                 return false;
 
-            return m_dicInventory.TryAdd(item.Identity, item) && AddItem(item).Result;
+            return m_dicInventory.TryAdd(item.Identity, item) && await AddItem(item);
         }
 
         public async Task<bool> UseItemAsync(uint idItem, Item.ItemPosition position)
@@ -264,6 +264,8 @@ namespace Comet.Game.States.Items
             item.Position = position;
             await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.InventoryEquip, (uint) position));
             await m_user.SendAsync(new MsgItemInfo(item));
+
+            await item.SaveAsync();
 
             switch (position)
             {

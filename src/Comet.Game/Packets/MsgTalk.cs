@@ -29,6 +29,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -229,7 +230,7 @@ namespace Comet.Game.Packets
                 case TalkChannel.Whisper:
                     if (target == null)
                     {
-                        _ = sender.SendAsync(Language.StrTargetNotOnline, TalkChannel.Talk, Color.White);
+                        await sender.SendAsync(Language.StrTargetNotOnline, TalkChannel.Talk, Color.White);
                         return;
                     }
                     break;
@@ -265,12 +266,12 @@ namespace Comet.Game.Packets
                         await user.UserPackage.AwardItemAsync(idAwardItem);
                         return true;
                     case "/awardmoney":
-                        if (uint.TryParse(param, out uint moneyAmount))
-                            user.Silvers += moneyAmount;
+                        if (int.TryParse(param, out int moneyAmount))
+                            user.AwardMoney(moneyAmount).Forget();
                         return true;
                     case "/awardemoney":
-                        if (uint.TryParse(param, out uint emoneyAmount))
-                            user.ConquerPoints += emoneyAmount;
+                        if (int.TryParse(param, out int emoneyAmount))
+                            user.AwardConquerPoints(emoneyAmount).Forget();
                         return true;
                     case "/awardskill":
                         return true;

@@ -27,13 +27,13 @@ using Comet.Game.Packets;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 namespace Comet.Game.States.BaseEntities
 {
     public abstract class Role
     {
         protected uint m_idMap;
-
         protected ushort m_posX,
             m_posY;
 
@@ -43,6 +43,7 @@ namespace Comet.Game.States.BaseEntities
         protected Role()
         {
             StatusSet = new StatusSet(this);
+            BattleSystem = new BattleSystem(this);
         }
 
         #region Identity
@@ -319,6 +320,75 @@ namespace Comet.Game.States.BaseEntities
         public virtual int Dodge { get; } = 0;
         public virtual int AttackSpeed { get; } = 1000;
         public virtual int Accuracy { get; } = 1;
+        public virtual int Defense2 => Calculations.DEFAULT_DEFENCE2;
+
+        #endregion
+
+        #region Battle Processing
+
+        public BattleSystem BattleSystem { get; }
+
+        public int SizeAddition => 1;
+
+        public virtual int GetAttackRange(int sizeAdd)
+        {
+            return sizeAdd + 1;
+        }
+
+        public virtual bool IsAttackable(Role attacker)
+        {
+            Log.WriteLog(LogLevel.Warning, $"Role::IsAttackable no handler {Identity}").Forget();
+            return false;
+        }
+
+        public virtual bool IsImmunity(Role target)
+        {
+            Log.WriteLog(LogLevel.Warning, $"Role::IsImmunity no handler {Identity}").Forget();
+            return true;
+        }
+
+        public virtual int Attack(Role target, ref InteractionEffect effect)
+        {
+            Log.WriteLog(LogLevel.Warning, $"Role::Attack no handler {Identity}").Forget();
+            return 1;
+        }
+
+        public virtual async Task<bool> BeAttack(int magic, Role attacker, int nPower, bool bReflectEnable)
+        {
+            await Log.WriteLog(LogLevel.Warning, $"Role::BeAttack no handler {Identity}");
+            return false;
+        }
+
+        public virtual void Kill(Role target, uint dieWay)
+        {
+            Log.WriteLog(LogLevel.Warning, $"Role::Kill no handler {Identity}").Forget();
+        }
+
+        public virtual async Task BeKill(Role attacker)
+        {
+            await Log.WriteLog(LogLevel.Warning, $"Role::BeKill no handler {Identity}");
+        }
+
+        public async Task SendDamageMsgAsync(uint idTarget, int nDamage)
+        {
+            MsgInteract msg = new MsgInteract
+            {
+                SenderIdentity = Identity,
+                TargetIdentity = idTarget,
+                Data = nDamage,
+                PosX = MapX,
+                PosY = MapY
+            };
+            
+            if (IsBowman)
+                msg.Action = MsgInteractType.Shoot;
+            else msg.Action = MsgInteractType.Attack;
+
+            if (this is Character user)
+                await user.Screen.BroadcastRoomMsgAsync(msg);
+            else
+                await Map.BroadcastRoomMsgAsync(MapX, MapY, msg);
+        }
 
         #endregion
 
@@ -512,7 +582,19 @@ namespace Comet.Game.States.BaseEntities
             return QueryStatus(StatusSet.GHOST) != null;
         }
 
-        public virtual bool IsWing => false;
+        public void SetCrimeStatus(int nSecs)
+        {
+            AttachStatus(this, StatusSet.BLUE_NAME, 0, nSecs, 1, 0).Forget();
+        }
+
+        public virtual bool IsWing => QueryStatus(StatusSet.FLY) != null;
+
+        public virtual bool IsBowman => false;
+
+        public bool IsEvil()
+        {
+            return QueryStatus(StatusSet.BLUE_NAME) != null || QueryStatus(StatusSet.BLACK_NAME) != null;
+        }
 
         #endregion
 
@@ -524,11 +606,11 @@ namespace Comet.Game.States.BaseEntities
             switch (type)
             {
                 case ClientUpdateType.Hitpoints:
-                    currAttr = Math.Min(MaxLife, Math.Max(Life + value, 0));
+                    currAttr = Life = (uint) Math.Min(MaxLife, Math.Max(Life + value, 0));
                     break;
 
                 case ClientUpdateType.Mana:
-                    currAttr = Math.Min(MaxMana, Math.Max(Mana + value, 0));
+                    currAttr = Mana = (uint) Math.Min(MaxMana, Math.Max(Mana + value, 0));
                     break;
 
                 default:

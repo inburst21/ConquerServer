@@ -103,6 +103,12 @@ namespace Comet.Game.World.Managers
             m_userSet.TryAdd(user.Character.Identity, user.Character);
             m_roleSet.TryAdd(user.Character.Identity, user.Character);
 
+            await user.Character.SetLoginAsync();
+
+#if DEBUG
+            await user.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}");
+#endif
+
             if (OnlinePlayers > MaxOnlinePlayers)
                 MaxOnlinePlayers = OnlinePlayers;
             return true;
@@ -115,6 +121,7 @@ namespace Comet.Game.World.Managers
                 m_roleSet.TryRemove(idUser, out _);
                 try
                 {
+                    user.OnDisconnectAsync().Forget();
                     user.Client.Disconnect();
                 }
                 catch
@@ -155,6 +162,11 @@ namespace Comet.Game.World.Managers
         public bool AddRole(Role role)
         {
             return m_roleSet.TryAdd(role.Identity, role);
+        }
+
+        public Role GetRole(uint idRole)
+        {
+            return m_roleSet.TryAdd(idRole, out var role) ? role : null;
         }
 
         /// <summary>

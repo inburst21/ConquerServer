@@ -1,0 +1,42 @@
+5006
+- Offline TG
+- High Definition and Standard Mode
+
+5016
+- New Fonts
+- Nobility Rank
+- Auto Path
+- Team Auto Invite
+- Mines NPC
+- Celestial Stone in Shopping Mall
+
+5022
+- Mentor and Apprentice System
+- Suspicious Items
+- Trade Partner
+- Item Lock
+- Merchant Account
+- *** Anti virus ***
+
+5022
+- Super Guild War (and probably GoldPrize, etc)
+
+5035
+- New equipment (Plumes and etc)
+- 120 Shield and Headgear
+
+5066
+- Detain Equipment
+- Composition System
+- Earrings wont display as flowers
+- Armor colors wont bug
+- GoodLuck Garment wont bug hairstyles no more
+
+5072
+- Heaven Fan and Star Tower
+- Flowers
+- VIP System
+
+5078
+- Honor Halo
+- Flowers Ranking

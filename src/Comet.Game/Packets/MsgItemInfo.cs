@@ -36,7 +36,10 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgItemInfo;
 
             Identity = item.Identity;
-            Itemtype = item.Type;
+            if (item.IsArmor() || item.IsHelmet())
+                Itemtype = item.Type + (uint) item.Color * 100;
+            else
+                Itemtype = item.Type;
             Amount = item.Durability;
             AmountLimit = item.MaximumDurability;
             Mode = mode;
@@ -47,7 +50,6 @@ namespace Comet.Game.Packets
             Plus = item.Plus;
             Bless = (byte) item.Blessing;
             Enchantment = item.Enchantment;
-            Color = (byte) item.Color;
         }
 
         public uint Identity { get; set; }
@@ -62,7 +64,7 @@ namespace Comet.Game.Packets
         public byte Plus { get; set; }
         public byte Bless { get; set; }
         public byte Enchantment { get; set; }
-        public byte Color { get; set; }
+
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -80,13 +82,14 @@ namespace Comet.Game.Packets
             writer.Write(AmountLimit); // 14
             writer.Write((ushort) Mode); // 16
             writer.Write((ushort) Position); // 18
-            writer.Write((byte) SocketOne); // 20
-            writer.Write((byte) SocketTwo); // 21
-            writer.Write((byte) Effect); // 22
-            writer.Write(Plus); // 23
-            writer.Write(Bless); // 24
-            writer.Write(Enchantment); // 25
-            writer.Write(Color); // 26
+            writer.Write(0); // 20
+            writer.Write((byte) SocketOne); // 24
+            writer.Write((byte) SocketTwo); // 25
+            writer.Write((byte) Effect); // 26
+            writer.Write((byte) 0);
+            writer.Write(Plus); // 27
+            writer.Write(Bless); // 28
+            writer.Write(Enchantment); // 29
             return writer.ToArray();
         }
 

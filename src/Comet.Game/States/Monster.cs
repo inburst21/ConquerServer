@@ -128,6 +128,67 @@ namespace Comet.Game.States
 
         public override int Accuracy => (int) (m_dbMonster?.Dexterity ?? 0);
 
+        public uint AttackUser => m_dbMonster?.AttackUser ?? 0;
+
+        #endregion
+
+        #region Checks
+        
+        public bool IsLockUser()
+        {
+            return (AttackUser & 256) != 0;
+        }
+
+        public bool IsRighteous()
+        {
+            return (AttackUser & 4) != 0;
+        }
+
+        public bool IsGuard()
+        {
+            return (AttackUser & 8) != 0;
+        }
+
+        public bool IsPkKiller()
+        {
+            return (AttackUser & 16) != 0;
+        }
+
+        public bool IsWalkEnable()
+        {
+            return (AttackUser & 64) == 0;
+        }
+
+        public bool IsJumpEnable()
+        {
+            return (AttackUser & 32) != 0;
+        }
+
+        public bool IsFastBack()
+        {
+            return (AttackUser & 128) != 0;
+        }
+
+        public bool IsLockOne()
+        {
+            return (AttackUser & 512) != 0;
+        }
+
+        public bool IsAddLife()
+        {
+            return (AttackUser & 1024) != 0;
+        }
+
+        public bool IsEvilKiller()
+        {
+            return (AttackUser & 2048) != 0;
+        }
+
+        public bool IsDormancyEnable()
+        {
+            return (AttackUser & 256) == 0;
+        }
+
         #endregion
 
         #region Map and Movement

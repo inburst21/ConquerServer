@@ -123,6 +123,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginInventory: // 75
+                    await user.UserPackage.CreateAsync();
                     await user.UserPackage.SendAsync();
                     await client.SendAsync(this);
                     break;

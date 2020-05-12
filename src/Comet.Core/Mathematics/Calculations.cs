@@ -23,6 +23,60 @@ namespace Comet.Core.Mathematics
 {
     public static class Calculations
     {
+        public const int ADJUST_PERCENT = 30000; // ADJUSTÊ±£¬>=30000 ±íÊ¾°Ù·ÖÊý
+        public const int ADJUST_SET = -30000; // ADJUSTÊ±£¬<=-30000 ±íÊ¾µÈÓÚ(-1*num - 30000)
+        public const int ADJUST_FULL = -32768; // ADJUSTÊ±£¬== -32768 ±íÊ¾ÌîÂú
+        public const int DEFAULT_DEFENCE2 = 10000; // Êý¾Ý¿âÈ±Ê¡Öµ
+
+        public static int ChangeAdjustRate(int nData, int divideBy)
+        {
+            if (divideBy == 0)
+                return nData;
+
+            if (nData >= ADJUST_PERCENT)
+                return ADJUST_PERCENT + ((nData % ADJUST_PERCENT) / divideBy);
+
+            return nData / divideBy;
+        }
+
+        public static int AdjustData(int nData, int nAdjust, int nMaxData = 0)
+        {
+            return AdjustDataEx(nData, nAdjust, nMaxData);
+        }
+
+        public static int AdjustDataEx(int nData, int nAdjust, int nMaxData)
+        {
+            if (nAdjust >= ADJUST_PERCENT)
+                return MulDiv(nData, nAdjust - ADJUST_PERCENT, 100);
+
+            if (nAdjust <= ADJUST_SET)
+                return -1 * nAdjust + ADJUST_SET;
+
+            if (nAdjust == ADJUST_FULL)
+                return nMaxData;
+
+            return nData + nAdjust;
+        }
+
+        public static long AdjustData(long nData, long nAdjust, long nMaxData = 0)
+        {
+            return AdjustDataEx(nData, nAdjust, nMaxData);
+        }
+
+        public static long AdjustDataEx(long nData, long nAdjust, long nMaxData)
+        {
+            if (nAdjust >= ADJUST_PERCENT)
+                return MulDiv(nData, nAdjust - ADJUST_PERCENT, 100);
+
+            if (nAdjust <= ADJUST_SET)
+                return -1 * nAdjust + ADJUST_SET;
+
+            if (nAdjust == ADJUST_FULL)
+                return nMaxData;
+
+            return nData + nAdjust;
+        }
+
         public static int MulDiv(byte number, byte numerator, byte denominator)
         {
             return number * numerator / denominator;

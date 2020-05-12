@@ -617,6 +617,8 @@ namespace Comet.Game.States.Items
             }
         }
 
+        public int AttackRange => m_dbItemtype?.AtkRange ?? 1;
+
         #endregion
 
         #region Change Data
@@ -812,6 +814,11 @@ namespace Comet.Game.States.Items
         public bool IsExpend()
         {
             return IsExpend(Type);
+        }
+
+        public int GetQuality()
+        {
+            return GetQuality(Type);
         }
 
         public static bool IsShield(uint nType)

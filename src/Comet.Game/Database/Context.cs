@@ -51,6 +51,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbGenerator> Generator { get; set; }
         public virtual DbSet<DbPassway> Passway { get; set; }
         public virtual DbSet<DbPortal> Portal { get; set; }
+        public virtual DbSet<DbGameLoginRecord> LoginRcd { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
