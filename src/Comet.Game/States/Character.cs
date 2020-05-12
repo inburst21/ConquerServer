@@ -31,6 +31,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -566,6 +567,148 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Map Item
+
+        public async Task<bool> DropItem(uint idItem, int x, int y, bool force = false)
+        {
+            Point pos = new Point(x, y);
+            if (!Map.FindDropItemCell(9, ref pos))
+                return false;
+
+            Item item = UserPackage[idItem];
+            if (item == null)
+                return false;
+
+            await Log.GmLog("drop_item",
+                $"{Name}({Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.OriginalMaximumDurability}\r\n\t{item.ToJson()}");
+
+            if ((item.CanBeDropped() || force) && item.IsDisappearWhenDropped())
+                return await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
+
+            if (item.CanBeDropped() || force)
+            {
+                await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.RemoveAndDisappear);
+            }
+            else
+            {
+                await SendAsync(string.Format(Language.StrItemCannotDiscard, item.Name));
+                return false;
+            }
+
+            item.Position = Item.ItemPosition.Floor;
+            await item.SaveAsync();
+
+            MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+            if (mapItem.Create(Map, pos, item, Identity))
+            {
+                mapItem.EnterMap();
+            }
+            else
+            {
+                IdentityGenerator.MapItem.ReturnIdentity(mapItem.Identity);
+                if (IsGm())
+                {
+                    await SendAsync($"The MapItem object could not be created. Check Output log");
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> DropSilver(uint amount)
+        {
+            if (amount > 10000000)
+                return false;
+
+            Point pos = new Point(MapX, MapY);
+            if (!Map.FindDropItemCell(1, ref pos))
+                return false;
+
+            if (!await SpendMoney((int) amount, true))
+                return false;
+
+            await Log.GmLog("drop_money", $"drop money: {Identity} {Name} has dropped {amount} silvers");
+
+            MapItem mapItem = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
+            if (mapItem.CreateMoney(Map, pos, amount, 0u))
+                mapItem.EnterMap();
+            else
+            {
+                IdentityGenerator.MapItem.ReturnIdentity(mapItem.Identity);
+                if (IsGm())
+                {
+                    await SendAsync($"The DropSilver MapItem object could not be created. Check Output log");
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> PickMapItem(uint idItem)
+        {
+            MapItem mapItem = Map.QueryAroundRole(this, idItem) as MapItem;
+            if (mapItem == null)
+                return false;
+
+            if (GetDistance(mapItem) > 0)
+            {
+                await SendAsync(Language.StrTargetNotInRange);
+                return false;
+            }
+
+            if (!mapItem.IsMoney() && !UserPackage.IsPackSpare(1))
+            {
+                await SendAsync(Language.StrYourBagIsFull);
+                return false;
+            }
+
+            if (mapItem.OwnerIdentity != Identity && mapItem.IsPrivate())
+            {
+                Character owner = Kernel.RoleManager.GetUser(mapItem.OwnerIdentity);
+                if (owner != null && !IsMate(owner))
+                {
+                    // todo check team
+                    await SendAsync(Language.StrCannotPickupOtherItems);
+                    return false;
+                }
+            }
+
+            if (mapItem.IsMoney())
+            {
+                await AwardMoney((int) mapItem.Money);
+                if (mapItem.Money > 1000)
+                {
+                    await SendAsync(new MsgAction
+                    {
+                        Identity = Identity,
+                        Command = mapItem.Money,
+                        ArgumentX = MapX,
+                        ArgumentY = MapY,
+                        Action = MsgAction.ActionType.MapGold
+                    });
+                }
+                await SendAsync(string.Format(Language.StrPickupSilvers, mapItem.Money));
+
+                Log.GmLog("pickup_money", $"User[{Identity},{Name}] picked up {mapItem.Money} at {MapIdentity}({Map.Name}) {MapX}, {MapY}").Forget();
+            }
+            else
+            {
+                Item item = await mapItem.GetInfo(this);
+
+                await UserPackage.AddItem(item);
+                await SendAsync(string.Format(Language.StrPickupItem, item.Name));
+
+                Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}").Forget();
+            }
+            
+            mapItem.LeaveMap();
+            return true;
+        }
+
+        #endregion
+
         #region Peerage
 
         public NobilityRank NobilityRank => Kernel.PeerageManager.GetRanking(Identity);
@@ -875,7 +1018,7 @@ namespace Comet.Game.States
 
             if (!IsAlive)
             {
-                BeKill(this);
+                await BeKill(this);
             }
 
             if (Action == EntityAction.Sit)
@@ -918,6 +1061,20 @@ namespace Comet.Game.States
                 }
                 return;
             }
+        }
+
+        #endregion
+
+        #region Marriage
+
+        public bool IsMate(Character user)
+        {
+            return user.Name == Mate;
+        }
+
+        public bool IsMate(string name)
+        {
+            return name == Mate;
         }
 
         #endregion
@@ -1070,6 +1227,39 @@ namespace Comet.Game.States
         #endregion
 
         #region Movement
+
+        public async Task<bool> SynPosition(ushort x, ushort y, int nMaxDislocation)
+        {
+            if (nMaxDislocation <= 0 || x == 0 && y == 0) // ignore in this condition
+                return true;
+
+            int nDislocation = GetDistance(x, y);
+            if (nDislocation >= nMaxDislocation)
+                return false;
+
+            if (nDislocation <= 0)
+                return true;
+
+            if (IsGm())
+                await SendAsync($"syn move: ({MapX},{MapY})->({x},{y})", MsgTalk.TalkChannel.Talk, Color.Red);
+
+            if (!Map.IsValidPoint(x, y))
+                return false;
+
+            ProcessOnMove();
+            await JumpPosAsync(x, y);
+            await Screen.BroadcastRoomMsgAsync(new MsgAction
+            {
+                Identity = Identity,
+                Action = MsgAction.ActionType.Kickback,
+                ArgumentX = x,
+                ArgumentY = y,
+                Command = (uint)((y << 16) | x),
+                Direction = (ushort)Direction,
+            });
+            
+            return true;
+        }
 
         public async Task KickbackAsync()
         {

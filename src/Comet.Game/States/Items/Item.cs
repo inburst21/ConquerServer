@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Shared;
+using Newtonsoft.Json;
 
 #endregion
 
@@ -138,6 +139,8 @@ namespace Comet.Game.States.Items
         #endregion
 
         #region Attributes
+
+        public DbItemtype Itemtype => m_dbItemtype;
 
         public uint Identity => m_dbItem.Id;
 
@@ -658,6 +661,17 @@ namespace Comet.Game.States.Items
 
         #region Query info
 
+        public bool IsDisappearWhenDropped()
+        {
+            return (m_dbItemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;
+        }
+
+        public bool CanBeDropped()
+        {
+            // todo check if item is locked
+            return (m_dbItemtype.Monopoly & ITEM_DROP_HINT_MASK) == 0;
+        }
+
         public bool IsHoldEnable()
         {
             return IsWeaponOneHand() || IsWeaponTwoHand() || IsWeaponProBased() || IsBow() || IsShield() ||
@@ -874,6 +888,15 @@ namespace Comet.Game.States.Items
 
         #endregion
 
+        #region Json
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(m_dbItem);
+        }
+
+        #endregion
+
         #region Database
 
         public async Task<bool> SaveAsync()
@@ -1062,6 +1085,30 @@ namespace Comet.Game.States.Items
         #endregion
 
         #region Constants
+
+        /// <summary>
+        /// Item is owned by the holder. Cannot be traded or dropped.
+        /// </summary>
+        public const int ITEM_MONOPOLY_MASK = 1;
+        /// <summary>
+        /// Item cannot be stored.
+        /// </summary>
+        public const int ITEM_STORAGE_MASK = 2;
+        /// <summary>
+        /// Item cannot be dropped.
+        /// </summary>
+        public const int ITEM_DROP_HINT_MASK = 4;
+        /// <summary>
+        /// Item cannot be sold.
+        /// </summary>
+        public const int ITEM_SELL_HINT_MASK = 8;
+        public const int ITEM_NEVER_DROP_WHEN_DEAD_MASK = 16;
+        public const int ITEM_SELL_DISABLE_MASK = 32;
+        public const int ITEM_STATUS_NONE = 0;
+        public const int ITEM_STATUS_NOT_IDENT = 1;
+        public const int ITEM_STATUS_CANNOT_REPAIR = 2;
+        public const int ITEM_STATUS_NEVER_DAMAGE = 4;
+        public const int ITEM_STATUS_MAGIC_ADD = 8;
 
         //
         public const uint TYPE_DRAGONBALL = 1088000;

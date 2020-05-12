@@ -671,7 +671,7 @@ namespace Comet.Game.States.BaseEntities
 
         #region Socket
 
-        public async Task SendAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System, Color? color = null)
+        public async Task SendAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null)
         {
             await SendAsync(new MsgTalk(Identity, channel, color ?? Color.White, message));
         }

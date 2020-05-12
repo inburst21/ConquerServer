@@ -123,6 +123,9 @@
   <data name="StrAnotherLoginSameIp" xml:space="preserve">
     <value>Atention! Your account is trying to login from inside of your network!</value>
   </data>
+  <data name="StrCannotPickupOtherItems" xml:space="preserve">
+    <value>Cannot pick up others items.</value>
+  </data>
   <data name="StrDead" xml:space="preserve">
     <value>You are already dead.</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="StrInvalidMsg" xml:space="preserve">
     <value>Invalid message.</value>
+  </data>
+  <data name="StrItemCannotDiscard" xml:space="preserve">
+    <value>{0} cannot be discarded.</value>
   </data>
   <data name="StrKickout" xml:space="preserve">
     <value>You have been kicked from the game. Reason: {0}.</value>
@@ -179,6 +185,15 @@
   </data>
   <data name="StrPeeragePromptQueen" xml:space="preserve">
     <value>Hear ye, hear ye! All hails to our majesty {0}, new Queen of {1}!</value>
+  </data>
+  <data name="StrPickupItem" xml:space="preserve">
+    <value>You picked up {0}.</value>
+  </data>
+  <data name="StrPickupSilvers" xml:space="preserve">
+    <value>You picked up {0:D0} silvers.</value>
+  </data>
+  <data name="StrTargetNotInRange" xml:space="preserve">
+    <value>The target is not in range.</value>
   </data>
   <data name="StrTargetNotOnline" xml:space="preserve">
     <value>The target is not online.</value>

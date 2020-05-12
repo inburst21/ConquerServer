@@ -284,7 +284,14 @@ namespace Comet.Game.Packets
                         if (awardwskill.Length > 1 && !byte.TryParse(awardwskill[1], out level))
                             return true;
 
-                        await user.WeaponSkill.CreateAsync(type, level);
+                        if (user.WeaponSkill[type] == null)
+                            await user.WeaponSkill.CreateAsync(type, level);
+                        else
+                        {
+                            user.WeaponSkill[type].Level = level;
+                            await user.WeaponSkill.SaveAsync(user.WeaponSkill[type]);
+                            await user.WeaponSkill.SendAsync(user.WeaponSkill[type]);
+                        }
                         return true;
                 }
             }

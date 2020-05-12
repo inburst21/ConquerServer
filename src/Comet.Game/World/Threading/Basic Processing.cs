@@ -34,7 +34,7 @@ namespace Comet.Game.World.Threading
     {
         public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - {2}";
 
-        private TimeOut m_analytics = new TimeOut(60);
+        private TimeOut m_analytics = new TimeOut(300);
 
         private DateTime m_ServerStartTime;
 
@@ -46,6 +46,8 @@ namespace Comet.Game.World.Threading
         public override Task OnStartAsync()
         {
             m_ServerStartTime = DateTime.Now;
+            m_analytics.Update();
+
             return base.OnStartAsync();
         }
 

@@ -228,7 +228,6 @@ namespace Comet.Game.States
 
         public override void LeaveMap()
         {
-            Map?.RemoveAsync(Identity);
             IdentityGenerator.Monster.ReturnIdentity(Identity);
             m_generator.Generated--;
             if (Map != null)

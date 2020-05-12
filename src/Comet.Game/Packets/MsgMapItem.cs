@@ -21,8 +21,10 @@
 
 #region References
 
+using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -30,5 +32,98 @@ namespace Comet.Game.Packets
 {
     public sealed class MsgMapItem : MsgBase<Client>
     {
+        public MsgMapItem()
+        {
+            Type = PacketType.MsgMapItem;
+        }
+
+        public uint Identity;
+        public uint Itemtype;
+        public ushort MapX;
+        public ushort MapY;
+        public DropType Mode;
+
+        /// <summary>
+        ///     Decodes a byte packet into the packet structure defined by this message class.
+        ///     Should be invoked to structure data from the client for processing. Decoding
+        ///     follows TQ Digital's byte ordering rules for an all-binary protocol.
+        /// </summary>
+        /// <param name="bytes">Bytes from the packet processor or client socket</param>
+        public override void Decode(byte[] bytes)
+        {
+            var reader = new PacketReader(bytes);
+            Length = reader.ReadUInt16();
+            Type = (PacketType)reader.ReadUInt16();
+            Identity = reader.ReadUInt32();
+            Itemtype = reader.ReadUInt32();
+            MapX = reader.ReadUInt16();
+            MapY = reader.ReadUInt16();
+            Mode = (DropType) reader.ReadUInt16();
+        }
+
+        /// <summary>
+        ///     Encodes the packet structure defined by this message class into a byte packet
+        ///     that can be sent to the client. Invoked automatically by the client's send
+        ///     method. Encodes using byte ordering rules interoperable with the game client.
+        /// </summary>
+        /// <returns>Returns a byte packet of the encoded packet.</returns>
+        public override byte[] Encode()
+        {
+            var writer = new PacketWriter();
+            writer.Write((ushort)Type);
+            writer.Write(Identity);
+            writer.Write(Itemtype);
+            writer.Write(MapX);
+            writer.Write(MapY);
+            writer.Write((ushort) Mode);
+            return writer.ToArray();
+        }
+
+        /// <summary>
+        ///     Process can be invoked by a packet after decode has been called to structure
+        ///     packet fields and properties. For the server implementations, this is called
+        ///     in the packet handler after the message has been dequeued from the server's
+        ///     <see cref="PacketProcessor{TClient}" />.
+        /// </summary>
+        /// <param name="client">Client requesting packet processing</param>
+        public override async Task ProcessAsync(Client client)
+        {
+            Character user = client.Character;
+
+            if (!user.IsAlive)
+            {
+                await user.SendAsync(Language.StrDead);
+                return;
+            }
+
+            switch (Mode)
+            {
+                case DropType.PickupItem:
+                    if (await user.SynPosition(MapX, MapY, 0))
+                    {
+                        await user.PickMapItem(Identity);
+                        await user.BroadcastRoomMsgAsync(this, true);
+                    }
+                    break;
+                default:
+                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                        $"Missing packet {Type}, Action {Mode}, Length {Length}"));
+                    await Log.WriteLog(LogLevel.Warning,
+                        "Missing packet {0}, Action {1}, Length {2}\n{3}",
+                        Type, Mode, Length, PacketDump.Hex(Encode()));
+                    break;
+            }
+        }
+    }
+
+    public enum DropType : ushort
+    {
+        Unknown = 0,
+        LayItem = 1,
+        DisappearItem = 2,
+        PickupItem = 3,
+        LayTrap = 10,
+        SynchroTrap = 11,
+        DropTrap = 12
     }
 }

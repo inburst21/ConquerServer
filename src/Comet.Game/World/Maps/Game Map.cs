@@ -27,12 +27,15 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Comet.Core.Mathematics;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
+using Comet.Game.States.NPCs;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -74,6 +77,7 @@ namespace Comet.Game.World.Maps
         }
 
         public uint Identity => m_dbMap?.Identity ?? 0;
+        public string Name => m_dbMap?.Name ?? "Invalid";
         public uint MapDoc => m_dbMap?.MapDoc ?? 0;
         public uint Type => m_dbMap?.Type ?? 0;
 
@@ -453,6 +457,88 @@ namespace Comet.Game.World.Maps
         public bool IsMoveEnable(int x, int y)
         {
             return IsValidPoint(x, y) && IsStandEnable(x, y);
+        }
+
+        public bool IsLayItemEnable(int x, int y)
+        {
+            return Query9BlocksByPos(x, y).All(role => (!(role is MapItem) && !(role is Npc)) || role.MapX != x || role.MapY != y);
+        }
+
+        public bool FindDropItemCell(int range, ref Point sender)
+        {
+            if (IsLayItemEnable(sender.X, sender.Y))
+                return true;
+
+            int size = range * 2 + 1;
+            int bufSize = size ^ 2;
+
+            for (int i = 0; i < 8; i++)
+            {
+                int newX = sender.X + WalkXCoords[i];
+                int newY = sender.Y + WalkXCoords[i];
+                if (IsLayItemEnable(newX, newY))
+                {
+                    sender.X = newX;
+                    sender.Y = newY;
+                    return true;
+                }
+            }
+
+            Point pos = sender;
+            var setItem = Query9BlocksByPos(sender.X, sender.Y).Where(x => x is MapItem && x.GetDistance(pos.X, pos.Y) <= range).Cast<MapItem>().ToList();
+            int nMinRange = range + 1;
+            bool ret = false;
+            var posFree = new Point();
+            for (int i = Math.Max(sender.X - range, 0); i <= sender.X + range && i < Width; i++)
+            {
+                for (int j = Math.Max(sender.Y - range, 0); j <= sender.Y + range && j < Height; j++)
+                {
+                    int idx = Pos2Index(i - (sender.X - range), j - (sender.Y - range), size, size);
+
+                    if (idx >= 0 && idx < bufSize)
+                        if (setItem.FirstOrDefault(x =>
+                                Pos2Index(x.MapX - i + range, x.MapY - j + range, range, range) == idx) != null)
+                            continue;
+
+                    if (IsLayItemEnable(sender.X, sender.Y))
+                    {
+                        double nDistance = ScreenCalculations.GetDistance(i, j, sender.X, sender.Y);
+                        if (nDistance < nMinRange)
+                        {
+                            nMinRange = (int)nDistance;
+                            posFree.X = i;
+                            posFree.Y = j;
+                            ret = true;
+                        }
+                    }
+                }
+            }
+
+            if (ret)
+            {
+                sender = posFree;
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Indexes
+
+        public int Pos2Index(int x, int y, int cx, int cy)
+        {
+            return x + y * cx;
+        }
+
+        public int Index2X(int idx, int cx, int cy)
+        {
+            return idx % cy;
+        }
+
+        public int Index2Y(int idx, int cx, int cy)
+        {
+            return idx / cy;
         }
 
         #endregion

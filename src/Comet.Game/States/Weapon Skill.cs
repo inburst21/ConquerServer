@@ -99,6 +99,11 @@ namespace Comet.Game.States
             }
         }
 
+        public async Task SendAsync(DbWeaponSkill skill)
+        {
+            await m_user.SendAsync(new MsgWeaponSkill(skill));
+        }
+
         public async Task SendAsync()
         {
             foreach (var skill in m_skills.Values)

@@ -412,6 +412,8 @@ namespace Comet.Game.States.Items
                     break;
 
                 case RemovalType.Delete:
+                    await Log.GmLog("delete_item",
+                        $"{item.Identity}, {item.Name}, {item.PlayerIdentity}\r\n\t{item.ToJson()}");
                     await item.DeleteAsync();
                     break;
             }
@@ -729,9 +731,21 @@ namespace Comet.Game.States.Items
 
         public enum RemovalType
         {
+            /// <summary>
+            /// Item will be removed and disappear, but wont be deleted.
+            /// </summary>
             RemoveAndDisappear,
+            /// <summary>
+            /// Item will be internally removed only. No client interaction and also wont be deleted.
+            /// </summary>
             RemoveOnly,
+            /// <summary>
+            /// Item will be removed and deleted.
+            /// </summary>
             Delete,
+            /// <summary>
+            /// Item will be set to floor and will be updated. No delete.
+            /// </summary>
             DropItem
         }
     }

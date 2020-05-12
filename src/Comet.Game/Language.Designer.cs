@@ -79,6 +79,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Cannot pick up others items..
+        /// </summary>
+        public static string StrCannotPickupOtherItems {
+            get {
+                return ResourceManager.GetString("StrCannotPickupOtherItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You are already dead..
         /// </summary>
         public static string StrDead {
@@ -102,6 +111,15 @@ namespace Comet.Game {
         public static string StrInvalidMsg {
             get {
                 return ResourceManager.GetString("StrInvalidMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} cannot be discarded..
+        /// </summary>
+        public static string StrItemCannotDiscard {
+            get {
+                return ResourceManager.GetString("StrItemCannotDiscard", resourceCulture);
             }
         }
         
@@ -246,6 +264,33 @@ namespace Comet.Game {
         public static string StrPeeragePromptQueen {
             get {
                 return ResourceManager.GetString("StrPeeragePromptQueen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You picked up {0}..
+        /// </summary>
+        public static string StrPickupItem {
+            get {
+                return ResourceManager.GetString("StrPickupItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You picked up {0:D0} silvers..
+        /// </summary>
+        public static string StrPickupSilvers {
+            get {
+                return ResourceManager.GetString("StrPickupSilvers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target is not in range..
+        /// </summary>
+        public static string StrTargetNotInRange {
+            get {
+                return ResourceManager.GetString("StrTargetNotInRange", resourceCulture);
             }
         }
         

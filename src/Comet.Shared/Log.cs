@@ -111,8 +111,9 @@ namespace Comet.Shared
         {
             RefreshFolders();
 
-            DateTime now = DateTime.Now;
-            message = string.Format(message, values);
+            if (values.Length > 0)
+                message = string.Format(message, values);
+
             message = $"{DateTime.Now:HHmmss.fff} - {message}";
 
             WriteToFile(file, LogFolder.GameLog, message);

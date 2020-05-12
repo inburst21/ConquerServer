@@ -32,6 +32,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -44,6 +45,7 @@ namespace Comet.Game.World.Managers
     {
         private readonly ConcurrentDictionary<uint, Character> m_userSet = new ConcurrentDictionary<uint, Character>();
         private readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
+        private readonly ConcurrentDictionary<uint, MapItem> m_mapItemSet = new ConcurrentDictionary<uint, MapItem>();
 
         private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
@@ -161,11 +163,14 @@ namespace Comet.Game.World.Managers
         /// </summary>
         public bool AddRole(Role role)
         {
+            if (role is MapItem item)
+                m_mapItemSet.TryAdd(role.Identity, item);
             return m_roleSet.TryAdd(role.Identity, role);
         }
 
         public Role GetRole(uint idRole)
         {
+            m_mapItemSet.TryRemove(idRole, out _);
             return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
         }
 

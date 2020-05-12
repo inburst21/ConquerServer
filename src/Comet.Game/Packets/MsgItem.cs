@@ -112,6 +112,14 @@ namespace Comet.Game.Packets
 
             switch (Action)
             {
+                case ItemActionType.InventoryRemove:
+                    await user.DropItem(Identity, user.MapX, user.MapY);
+                    break;
+
+                case ItemActionType.InventoryDropSilver:
+                    await user.DropSilver(Identity);
+                    break;
+
                 case ItemActionType.InventoryEquip:
                 case ItemActionType.EquipmentWear:
                     if (!await user.UserPackage.UseItemAsync(Identity, (Item.ItemPosition) Command))
