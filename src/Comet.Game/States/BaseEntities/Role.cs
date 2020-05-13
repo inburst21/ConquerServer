@@ -380,9 +380,9 @@ namespace Comet.Game.States.BaseEntities
             return false;
         }
 
-        public virtual void Kill(Role target, uint dieWay)
+        public virtual async Task Kill(Role target, uint dieWay)
         {
-            Log.WriteLog(LogLevel.Warning, $"Role::Kill no handler {Identity}").Forget();
+            await Log.WriteLog(LogLevel.Warning, $"Role::Kill no handler {Identity}");
         }
 
         public virtual async Task BeKill(Role attacker)

@@ -560,70 +560,8 @@ namespace Comet.Game.States
         #region Weapon Skill
 
         public WeaponSkill WeaponSkill { get; }
-
-        public async Task AddWeaponSkillExpAsync(ushort type, int exp)
-        {
-            DbWeaponSkill skill = WeaponSkill[type];
-            if (skill == null)
-            {
-                await WeaponSkill.CreateAsync(type, 0);
-                if ((skill = WeaponSkill[type]) == null)
-                    return;
-            }
-
-            if (skill.Level >= MAX_WEAPONSKILLLEVEL)
-                return;
-
-            // exp = (int)(exp * (1 + (VioletGem / 100.0d)));
-
-            uint nIncreaseLev = 0;
-            if (skill.Level > MASTER_WEAPONSKILLLEVEL)
-            {
-                int nRatio = (int)(100 - (skill.Level - MASTER_WEAPONSKILLLEVEL) * 20);
-                if (nRatio < 10)
-                    nRatio = 10;
-                exp = Calculations.MulDiv(exp, nRatio, 100) / 2;
-            }
-
-            int nNewExp = (int)Math.Max(exp + skill.Experience, skill.Experience);
-
-#if DEBUG
-            if (IsPm())
-                await SendAsync($"Add Weapon Skill exp: {exp}, CurExp: {nNewExp}");
-#endif
-
-            int nLevel = (int)skill.Level;
-            if (nLevel >= 1 && nLevel < MAX_WEAPONSKILLLEVEL)
-            {
-                if (nNewExp > MsgWeaponSkill.RequiredExperience[nLevel] ||
-                    nLevel >= skill.OldLevel / 2 && nLevel < skill.OldLevel)
-                {
-                    nNewExp = 0;
-                    nIncreaseLev = 1;
-                }
-            }
-
-            if (skill.Level < Level / 10 + 1
-                || skill.Level >= MASTER_WEAPONSKILLLEVEL)
-            {
-                skill.Experience = (uint)nNewExp;
-
-                if (nIncreaseLev > 0)
-                {
-                    skill.Level += (byte)nIncreaseLev;
-                    await SendAsync(new MsgWeaponSkill(skill));
-                    await SendAsync(Language.StrWeaponSkillUp);
-                }
-                else
-                {
-                    await SendAsync(new MsgWeaponSkill(skill));
-                }
-
-                await WeaponSkill.SaveAsync(skill);
-            }
-        }
-
-        public async Task AddWeaponSkillExp(ushort usType, int nExp)
+        
+        public async Task AddWeaponSkillExpAsync(ushort usType, int nExp)
         {
             DbWeaponSkill skill = WeaponSkill[usType];
             if (skill == null)
@@ -804,6 +742,37 @@ namespace Comet.Game.States
                 }
 
                 m_dbObject.KillPoints = value;
+            }
+        }
+
+        public void ProcessPk(Character target)
+        {
+            if (!Map.IsPkField() && !Map.IsPkGameMap() && !Map.IsSynMap() && !Map.IsPrisionMap())
+            {
+                if (!Map.IsDeadIsland() && !target.IsEvil())
+                {
+                    int nAddPk = 10;
+                    if (target.Level < 130)
+                    {
+                        nAddPk = 20;
+                    }
+                    else
+                    {
+                        //if (Syndicate?.IsHostile((ushort)target.SyndicateIdentity) == true)
+                        //    nAddPk = 3;
+                        //else if (ContainsEnemy(target.Identity))
+                        //    nAddPk = 5;
+                        if (target.PkPoints > 29)
+                            nAddPk /= 2;
+                    }
+
+                    PkPoints += (ushort)nAddPk;
+
+                    SetCrimeStatus(60);
+
+                    if (PkPoints > 29)
+                        SendAsync(Language.StrKillingTooMuch).Forget();
+                }
             }
         }
 
@@ -1247,6 +1216,94 @@ namespace Comet.Game.States
 
         #region Battle
 
+        public bool DecEquipmentDurability(bool bAttack, int hitByMagic, ushort useItemNum)
+        {
+            int nInc = -1 * useItemNum;
+
+            for (Item.ItemPosition i = Item.ItemPosition.Headwear; i <= Item.ItemPosition.Crop; i++)
+            {
+                if (i == Item.ItemPosition.Garment || i == Item.ItemPosition.Gourd || i == Item.ItemPosition.Steed
+                    || i == Item.ItemPosition.SteedArmor || i == Item.ItemPosition.LeftHandAccessory ||
+                    i == Item.ItemPosition.RightHandAccessory)
+                    continue;
+                if (hitByMagic == 1)
+                {
+                    if (i == Item.ItemPosition.Ring
+                        || i == Item.ItemPosition.RightHand
+                        || i == Item.ItemPosition.LeftHand
+                        || i == Item.ItemPosition.Boots)
+                    {
+                        if (!bAttack)
+                            AddEquipmentDurability(i, nInc);
+                    }
+                    else
+                    {
+                        if (bAttack)
+                            AddEquipmentDurability(i, nInc);
+                    }
+                }
+                else
+                {
+                    if (i == Item.ItemPosition.Ring
+                        || i == Item.ItemPosition.RightHand
+                        || i == Item.ItemPosition.LeftHand
+                        || i == Item.ItemPosition.Boots)
+                    {
+                        if (!bAttack)
+                            AddEquipmentDurability(i, -1);
+                    }
+                    else
+                    {
+                        if (bAttack)
+                            AddEquipmentDurability(i, nInc);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public void AddEquipmentDurability(Item.ItemPosition pos, int nInc)
+        {
+            if (nInc >= 0)
+                return;
+
+            Item item = UserPackage[pos];
+            if (item == null
+                || !item.IsEquipment()
+                || item.GetItemSubType() == 2100)
+                return;
+
+            ushort nOldDur = item.Durability;
+            ushort nDurability = (ushort)Math.Max(0, item.Durability + nInc);
+
+            if (nDurability < 100)
+            {
+                if (nDurability % 10 == 0)
+                    SendAsync(string.Format(Language.StrDamagedRepair, item.Itemtype.Name)).Forget();
+            }
+            else if (nDurability < 200)
+            {
+                if (nDurability % 10 == 0)
+                    SendAsync(string.Format(Language.StrDurabilityRepair, item.Itemtype.Name)).Forget();
+            }
+
+            item.Durability = nDurability;
+            item.SaveAsync().Forget();
+
+            int noldDur = (int) Math.Floor(nOldDur / 100f);
+            int nnewDur = (int) Math.Floor(nDurability / 100f);
+
+            if (nDurability <= 0)
+            {
+                SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update)).Forget();
+            }
+            else if (noldDur != nnewDur)
+            {
+                SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update)).Forget();
+            }
+        }
+
         public bool SetAttackTarget(Role target)
         {
             if (target == null)
@@ -1402,6 +1459,41 @@ namespace Comet.Game.States
             return await BattleSystem.CalcPower(BattleSystem.MagicType.MagictypeNone, this, target);
         }
 
+        public override async Task Kill(Role target, uint dieWay)
+        {
+            if (target == null)
+                return;
+
+            Character targetUser = target as Character;
+            if (targetUser != null)
+            {
+                BroadcastRoomMsgAsync(new MsgInteract
+                {
+                    Action = MsgInteractType.Kill,
+                    SenderIdentity = Identity,
+                    TargetIdentity = target.Identity,
+                    PosX = target.MapX,
+                    PosY = target.MapY,
+                    Data = (int) dieWay
+                }, true).Forget();
+
+                ProcessPk(targetUser);
+            }
+            else
+            {
+                AddXp(1).Forget();
+
+                if (QueryStatus(StatusSet.CYCLONE) != null || QueryStatus(StatusSet.SUPERMAN) != null)
+                {
+                    KoCount += 1;
+                    var status = QueryStatus(StatusSet.CYCLONE) ?? QueryStatus(StatusSet.SUPERMAN);
+                    status?.IncTime(700, 30000);
+                }
+            }
+
+            await target.BeKill(this);
+        }
+
         public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int power,
             bool bReflectEnable)
         {
@@ -1427,9 +1519,7 @@ namespace Comet.Game.States
             if (!IsAlive)
             {
                 await BeKill(this);
-            }
-
-            if (Action == EntityAction.Sit)
+            } else if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, Energy / 2);
 
             return true;

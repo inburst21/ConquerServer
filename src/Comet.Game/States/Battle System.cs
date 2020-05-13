@@ -113,10 +113,10 @@ namespace Comet.Game.States
 
                 int nWeaponExp = (int)nExp / 2; //(int) (nExp / 10);
                 if (user.UserPackage[Item.ItemPosition.RightHand] != null)
-                    await user.AddWeaponSkillExp((ushort)user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType(),
+                    await user.AddWeaponSkillExpAsync((ushort)user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType(),
                         nWeaponExp);
                 if (user.UserPackage[Item.ItemPosition.LeftHand] != null && !user.UserPackage[Item.ItemPosition.LeftHand].IsArrowSort())
-                    await user.AddWeaponSkillExp((ushort)user.UserPackage[Item.ItemPosition.LeftHand].GetItemSubType(),
+                    await user.AddWeaponSkillExpAsync((ushort)user.UserPackage[Item.ItemPosition.LeftHand].GetItemSubType(),
                         nWeaponExp / 2);
 
                 if (await Kernel.ChanceCalcAsync(7f))

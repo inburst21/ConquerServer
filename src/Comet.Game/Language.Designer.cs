@@ -88,6 +88,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has been severely damaged. Please repair it soon, otherwise it will break..
+        /// </summary>
+        public static string StrDamagedRepair {
+            get {
+                return ResourceManager.GetString("StrDamagedRepair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You are already dead..
         /// </summary>
         public static string StrDead {
@@ -102,6 +111,15 @@ namespace Comet.Game {
         public static string StrDragonBallDropped {
             get {
                 return ResourceManager.GetString("StrDragonBallDropped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Durability of {0} is too low. Please repair it to prevent further damaging..
+        /// </summary>
+        public static string StrDurabilityRepair {
+            get {
+                return ResourceManager.GetString("StrDurabilityRepair", resourceCulture);
             }
         }
         
@@ -156,6 +174,15 @@ namespace Comet.Game {
         public static string StrKillingExperience {
             get {
                 return ResourceManager.GetString("StrKillingExperience", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are killing too much! You may lose your equipment if killed..
+        /// </summary>
+        public static string StrKillingTooMuch {
+            get {
+                return ResourceManager.GetString("StrKillingTooMuch", resourceCulture);
             }
         }
         

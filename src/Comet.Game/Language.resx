@@ -126,11 +126,17 @@
   <data name="StrCannotPickupOtherItems" xml:space="preserve">
     <value>Cannot pick up others items.</value>
   </data>
+  <data name="StrDamagedRepair" xml:space="preserve">
+    <value>{0} has been severely damaged. Please repair it soon, otherwise it will break.</value>
+  </data>
   <data name="StrDead" xml:space="preserve">
     <value>You are already dead.</value>
   </data>
   <data name="StrDragonBallDropped" xml:space="preserve">
     <value>{0} has dropped a Dragon Ball in {1}.</value>
+  </data>
+  <data name="StrDurabilityRepair" xml:space="preserve">
+    <value>Durability of {0} is too low. Please repair it to prevent further damaging.</value>
   </data>
   <data name="StrGuardYouPay" xml:space="preserve">
     <value>You`ll pay for what you`ve done!</value>
@@ -149,6 +155,9 @@
   </data>
   <data name="StrKillingExperience" xml:space="preserve">
     <value>{0} extra experience points awarded by killing monsters.</value>
+  </data>
+  <data name="StrKillingTooMuch" xml:space="preserve">
+    <value>You are killing too much! You may lose your equipment if killed.</value>
   </data>
   <data name="StrNone" xml:space="preserve">
     <value>None</value>
