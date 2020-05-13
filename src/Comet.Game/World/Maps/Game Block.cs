@@ -22,6 +22,7 @@
 #region References
 
 using System.Collections.Concurrent;
+using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 
 #endregion
@@ -40,26 +41,36 @@ namespace Comet.Game.World.Maps
         /// </summary>
         public const int BLOCK_SIZE = 18;
 
+        private int m_userCount = 0;
+
         /// <summary>
         ///     Collection of roles currently inside of this block.
         /// </summary>
         public ConcurrentDictionary<uint, Role> RoleSet = new ConcurrentDictionary<uint, Role>();
 
-        public bool IsActive => RoleSet.Count > 0;
+        public bool IsActive => m_userCount > 0;
 
         public bool Add(Role role)
         {
+            if (role is Character)
+                m_userCount += 1;
             return RoleSet.TryAdd(role.Identity, role);
         }
 
         public bool Remove(Role role)
         {
-            return RoleSet.TryRemove(role.Identity, out _);
+            bool remove = RoleSet.TryRemove(role.Identity, out _);
+            if (role is Character && remove)
+                m_userCount -= 1;
+            return remove;
         }
 
         public bool Remove(uint role)
         {
-            return RoleSet.TryRemove(role, out _);
+            bool remove = RoleSet.TryRemove(role, out var target);
+            if (target is Character && remove)
+                m_userCount -= 1;
+            return remove;
         }
     }
 }

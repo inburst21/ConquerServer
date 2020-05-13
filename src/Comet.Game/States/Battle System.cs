@@ -21,11 +21,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
-using Microsoft.VisualStudio.Threading;
 
 namespace Comet.Game.States
 {
@@ -33,12 +33,20 @@ namespace Comet.Game.States
     {
         private Role m_owner = null;
 
+        private TimeOutMS m_attackMs = new TimeOutMS();
+
         private uint m_idTarget = 0;
         private bool m_bAutoAttack = false;
 
         public BattleSystem(Role role)
         {
             m_owner = role;
+        }
+
+        public void CreateBattle(uint idTarget)
+        {
+            m_idTarget = idTarget;
+            m_bAutoAttack = true;
         }
 
         public async Task<bool> ProcessAttackAsync()
@@ -68,38 +76,185 @@ namespace Comet.Game.States
                 return false;
             }
 
-            InteractionEffect effect = InteractionEffect.None;
-            int damage = CalcPower(m_owner, target, ref effect);
+            Character user = m_owner as Character;
+
+            var result = await CalcPower(MagicType.MagictypeNone, m_owner, target);
+            InteractionEffect effect = result.effect;
+            int damage = result.Damage;
+            int lifeLost = (int) Math.Min(target.MaxLife, Math.Max(1, damage));
+            long nExp = Math.Min(Math.Max(0, lifeLost), target.MaxLife);
 
             await m_owner.SendDamageMsgAsync(target.Identity, damage);
+            
             m_owner.ProcessOnAttack();
 
             if (damage == 0)
                 return true;
+
+            await target.BeAttack(MagicType.MagictypeNone, m_owner, damage, true);
+
+            if (user != null)
+            {
+                nExp = user.AdjustExperience(target, nExp, false);
+                int nAdditionExp = 0;
+                if (!target.IsAlive)
+                {
+                    nAdditionExp = (int)(target.MaxLife * 0.05f);
+                    nExp += nAdditionExp;
+
+                    //user.Team?.AwardMemberExp(user.Identity, target, nAdditionExp);
+                }
+
+                await user.AwardBattleExp(nExp, true);
+
+                if (!target.IsAlive && nAdditionExp > 0
+                                    && !m_owner.Map.IsTrainingMap())
+                    await user.SendAsync(string.Format(Language.StrKillingExperience, nAdditionExp));
+
+                int nWeaponExp = (int)nExp / 2; //(int) (nExp / 10);
+                if (user.UserPackage[Item.ItemPosition.RightHand] != null)
+                    await user.AddWeaponSkillExp((ushort)user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType(),
+                        nWeaponExp);
+                if (user.UserPackage[Item.ItemPosition.LeftHand] != null && !user.UserPackage[Item.ItemPosition.LeftHand].IsArrowSort())
+                    await user.AddWeaponSkillExp((ushort)user.UserPackage[Item.ItemPosition.LeftHand].GetItemSubType(),
+                        nWeaponExp / 2);
+
+                if (await Kernel.ChanceCalcAsync(7f))
+                    await user.SendGemEffect();
+            }
 
             if (!target.IsAlive)
             {
                 uint dieWay = 1;
                 if (damage > target.MaxLife / 3)
                     dieWay = 2;
+
+                m_owner.Kill(target, dieWay);
             }
 
             return true;
         }
 
-        public int CalcPower(Role attacker, Role target, ref InteractionEffect effect)
+        public async Task<(int Damage, InteractionEffect effect)> CalcPower(MagicType magic, Role attacker, Role target)
         {
-            return 1;
+            if (target.Defense2 == 0)
+                return (1, InteractionEffect.None);
+
+            (int, InteractionEffect None) result;
+            if (magic == MagicType.MagictypeNone)
+                result = await CalcAttackPower(attacker, target);
+            else
+            {
+                result = await CalcMagicAttackPower(attacker, target);
+            }
+
+            return result;
         }
 
-        public int CalcAttackPower(Role attacker, Role target, ref InteractionEffect effect)
+        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPower(Role attacker, Role target)
         {
-            return 1;
+            InteractionEffect effect = InteractionEffect.None;
+            int attack = 0;
+            int damage = 0;
+
+            if (await Kernel.ChanceCalcAsync(50))
+                attack = (int) (attacker.MaxAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1));
+            else
+                attack = (int) (attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1));
+
+            if (attacker.IsBowman)
+                attack = attack * 2;
+
+            Character targetUser = target as Character;
+            int defense = target.Defense;
+            if (targetUser != null && targetUser.Level >= 70 && targetUser.Metempsychosis > 0)
+                defense =  (int) (defense * 1.3d);
+
+            if (target.QueryStatus(StatusSet.SHIELD) != null)
+                defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
+
+            damage = attack - defense;
+            if (targetUser != null)
+            {
+                damage = (int) (damage * (1 - targetUser.Blessing / 100d));
+                damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
+            }
+
+            if (attacker.QueryStatus(StatusSet.STIG) != null)
+                damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIG).Power);
+
+            if (attacker.QueryStatus(StatusSet.INTENSIFY) != null)
+                damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.INTENSIFY).Power);
+
+            if (attacker.QueryStatus(StatusSet.SUPERMAN) != null
+                && !target.IsDynaNpc())
+                damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.SUPERMAN).Power);
+
+            damage = Math.Max(damage, 7);
+
+            if (attacker is Character && target.IsMonster())
+            {
+                damage = CalcDamageUser2Monster(damage, defense, attacker.Level, target.Level);
+                damage = target.AdjustWeaponDamage(damage);
+                damage = AdjustMinDamageUser2Monster(damage, attacker, target);
+            }
+            else if (attacker.IsMonster() && target is Character)
+            {
+                damage = CalcDamageMonster2User(damage, defense, attacker.Level, target.Level);
+                damage = target.AdjustWeaponDamage(damage);
+                damage = AdjustMinDamageMonster2User(damage, attacker, target);
+            }
+            else
+            {
+                damage = attacker.AdjustWeaponDamage(damage);
+            }
+
+            if (target is Monster mob)
+                damage = (int)Math.Min(mob.MaxLife * 700, damage);
+
+            return (damage, effect);
         }
 
-        public int CalcMagicAttackPower(Role attacker, Role target, ref InteractionEffect effect)
+        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPower(Role attacker, Role target)
         {
-            return 1;
+            InteractionEffect effect = InteractionEffect.None;
+            int attack = attacker.MagicAttack;
+
+            int damage = (int) (attack * 0.75);
+            damage = (int) (damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
+            // todo add magic DAMAGE
+
+            int defense = target.MagicDefense;
+            damage -= defense;
+
+            Character targetUser = target as Character;
+            if (targetUser != null)
+            {
+                damage = (int)(damage * (1 - targetUser.Blessing / 100d));
+                damage = (int)(damage * (1 - targetUser.TortoiseGemBonus / 100d));
+            }
+
+            if (attacker is Character && target.IsMonster())
+            {
+                damage = CalcDamageUser2Monster(damage, defense, attacker.Level, target.Level);
+                damage = target.AdjustMagicDamage(damage);
+                damage = AdjustMinDamageUser2Monster(damage, attacker, target);
+            }
+            else if (attacker.IsMonster() && target is Character)
+            {
+                damage = CalcDamageMonster2User(damage, defense, attacker.Level, target.Level);
+                damage = target.AdjustMagicDamage(damage);
+                damage = AdjustMinDamageMonster2User(damage, attacker, target);
+            }
+            else
+            {
+                damage = target.AdjustMagicDamage(damage);
+            }
+
+            if (target is Monster mob)
+                damage = (int)Math.Min(mob.MaxLife * 700, damage);
+
+            return (damage, effect);
         }
 
         public async Task<bool> IsTargetDodged(Role attacker, Role target)
@@ -156,6 +311,16 @@ namespace Comet.Game.States
             if (!m_owner.IsAttackable(target))
                 return false;
             return true;
+        }
+
+        public bool IsActive()
+        {
+            return m_idTarget != 0;
+        }
+
+        public bool NextAttack(int ms)
+        {
+            return m_attackMs.ToNextTime(ms);
         }
 
         public void ResetBattle()
@@ -400,5 +565,12 @@ namespace Comet.Game.States
             NAME_WHITE = 1,
             NAME_RED = 2,
             NAME_BLACK = 3;
+
+        public enum MagicType
+        {
+            MagictypeNone = 0,
+            MagictypeNormal = 1,
+            MagictypeXpskill = 2
+        }
     }
 }

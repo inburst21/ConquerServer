@@ -584,6 +584,31 @@ namespace Comet.Game.World.Maps
 
         #endregion
 
+        #region Ai Timer
+
+        public async Task OnTimerAsync()
+        {
+            if (m_users.Count == 0)
+                return;
+
+            for (int x = 0; x < BlocksX; x++)
+            {
+                for (int y = 0; y < BlocksY; y++)
+                {
+                    GameBlock block = m_blocks[x, y];
+                    if (block.IsActive)
+                    {
+                        foreach (var monster in block.RoleSet.Values.Where(z => z is Monster).Cast<Monster>())
+                        {
+                            await monster.OnTimerAsync();
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         #region Static
 
         public static int GetBlockX(int x)

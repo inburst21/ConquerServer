@@ -26,6 +26,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -53,8 +54,32 @@ namespace Comet.Game.Packets
         public uint Timestamp { get; set; }
         public uint Identity { get; set; }
         public uint Command { get; set; }
-        public ushort ArgumentX { get; set; }
-        public ushort ArgumentY { get; set; }
+
+        public ushort CommandX
+        {
+            get => (ushort) (Command - CommandY);
+            set => Command = (uint) (CommandY << 16 | value);
+        }
+
+        public ushort CommandY
+        {
+            get => (ushort) (Command >> 16);
+            set => Command = (uint) (value << 16) | Command;
+        }
+
+        public uint Argument { get; set; }
+
+        public ushort ArgumentX
+        {
+            get => (ushort)(Argument - ArgumentY);
+            set => Argument = (uint)(ArgumentY << 16 | value);
+        }
+
+        public ushort ArgumentY
+        {
+            get => (ushort)(Argument >> 16);
+            set => Argument = (uint)(value << 16) | Argument;
+        }
         public ushort Direction { get; set; }
         public ActionType Action { get; set; }
 
@@ -72,8 +97,7 @@ namespace Comet.Game.Packets
             Timestamp = reader.ReadUInt32();
             Identity = reader.ReadUInt32();
             Command = reader.ReadUInt32();
-            ArgumentX = reader.ReadUInt16();
-            ArgumentY = reader.ReadUInt16();
+            Argument = reader.ReadUInt32();
             Direction = reader.ReadUInt16();
             Action = (ActionType) reader.ReadUInt16();
         }
@@ -91,8 +115,7 @@ namespace Comet.Game.Packets
             writer.Write(Timestamp);
             writer.Write(Identity);
             writer.Write(Command);
-            writer.Write(ArgumentX);
-            writer.Write(ArgumentY);
+            writer.Write(Argument);
             writer.Write(Direction);
             writer.Write((ushort) Action);
             return writer.ToArray();
@@ -148,6 +171,35 @@ namespace Comet.Game.Packets
 
                 case ActionType.CharacterEmote: // 81
                     await client.Character.SetActionAsync((EntityAction) Command, false);
+
+                    if (user.Action == EntityAction.Cool)
+                    {
+                        //int effect = user.IsFullQuality;
+                        int effect = 0;
+                        for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                            pos <= Item.ItemPosition.EquipmentEnd;
+                            pos++)
+                        {
+                            Item item = user.UserPackage[pos];
+                            if (item != null && 
+                                (item.IsHelmet() || item.IsNeck() || item.IsRing() || item.IsWeapon() || item.IsArmor() || item.IsShield() || item.IsShoes()))
+                            {
+                                effect += item.GetQuality()%5;
+                                if (item.IsBackswordType() || item.GetItemSort() == Item.ItemSort.ItemsortWeaponDoubleHand)
+                                    effect += item.GetQuality() % 5;
+                            }
+                        }
+
+                        if (effect == 7*4)
+                        {
+                            Command |= ((uint)user.Profession * 0x10000 + 0x01000000);
+                        }
+                        else if (effect >= 7*3)
+                        {
+                            Command |= ((uint)user.Profession * 0x10000);
+                        }
+                    }
+
                     await client.SendAsync(this);
                     break;
 

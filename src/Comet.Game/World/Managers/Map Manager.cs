@@ -91,5 +91,7 @@ namespace Comet.Game.World.Managers
         {
             return m_mapData.TryGetValue(idDoc, out var map) ? map : null;
         }
+
+        public ConcurrentDictionary<uint, GameMap> GameMaps => m_maps;
     }
 }

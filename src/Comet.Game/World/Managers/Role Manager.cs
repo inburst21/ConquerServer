@@ -47,6 +47,7 @@ namespace Comet.Game.World.Managers
         private readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
         private readonly ConcurrentDictionary<uint, MapItem> m_mapItemSet = new ConcurrentDictionary<uint, MapItem>();
 
+        private readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new Dictionary<byte, DbLevelExperience>();
         private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
 
@@ -70,6 +71,11 @@ namespace Comet.Game.World.Managers
             foreach (var mob in await MonsterypeRepository.GetAsync())
             {
                 m_dicMonstertype.TryAdd(mob.Id, mob);
+            }
+
+            foreach (var lev in await LevelExperienceRepository.GetAsync())
+            {
+                m_dicLevExp.TryAdd(lev.Level, lev);
             }
         }
 
@@ -233,6 +239,16 @@ namespace Comet.Game.World.Managers
         public DbMonstertype GetMonstertype(uint type)
         {
             return m_dicMonstertype.TryGetValue(type, out var mob) ? mob : null;
+        }
+
+        public DbLevelExperience GetLevelExperience(byte level)
+        {
+            return m_dicLevExp.TryGetValue(level, out var value) ? value : null;
+        }
+
+        public int GetLevelLimit()
+        {
+            return m_dicLevExp.Count;
         }
     }
 }

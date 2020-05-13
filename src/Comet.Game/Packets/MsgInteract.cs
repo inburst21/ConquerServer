@@ -24,7 +24,9 @@
 using System;
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.States.BaseEntities;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -82,7 +84,7 @@ namespace Comet.Game.Packets
             writer.Write(TargetIdentity);
             writer.Write(PosX);
             writer.Write(PosY);
-            writer.Write((ushort)Action);
+            writer.Write((uint)Action);
             writer.Write(Data);
             return writer.ToArray();
         }
@@ -96,16 +98,31 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            Role target = client.Character.Map.QueryAroundRole(client.Character, TargetIdentity);
+
             switch (Action)
             {
                 case MsgInteractType.Attack:
                 case MsgInteractType.Shoot:
+                case MsgInteractType.Unknown:
+                    if (SenderIdentity == client.Identity)
+                    {
+                        client.Character.BattleSystem.CreateBattle(TargetIdentity);
+                        client.Character.SetAttackTarget(target);
+                    }
                     break;
                 case MsgInteractType.MagicAttack:
                     break;
                 case MsgInteractType.Court:
                     break;
                 case MsgInteractType.Marry:
+                    break;
+                default:
+                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                        $"Missing packet {Type}, Action {Action}, Length {Length}"));
+                    await Log.WriteLog(LogLevel.Warning,
+                        "Missing packet {0}, Action {1}, Length {2}\n{3}",
+                        Type, Action, Length, PacketDump.Hex(Encode()));
                     break;
             }
         }

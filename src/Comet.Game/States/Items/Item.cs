@@ -860,7 +860,7 @@ namespace Comet.Game.States.Items
 
         public static bool IsArrowSort(uint type)
         {
-            return GetItemtype(type) == 1050;
+            return GetItemtype(type) == 50000;
         }
 
         public static ItemSort GetItemSort(uint type)

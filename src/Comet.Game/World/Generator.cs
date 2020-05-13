@@ -182,6 +182,12 @@ namespace Comet.Game.World
             }
         }
 
+        public void Remove(uint role)
+        {
+            if (m_dicMonsters.TryRemove(role, out _))
+                Generated--;
+        }
+
         public Point GetCenter()
         {
             return m_pCenter;

@@ -70,5 +70,10 @@ namespace Comet.Game.Database.Models
         [Column("last_login")] public virtual DateTime LoginTime { get; set; }
         [Column("last_logout")] public virtual DateTime LogoutTime { get; set; }
         [Column("online_time")] public virtual int OnlineSeconds { get; set; }
+        [Column("auto_allot")] public virtual byte AutoAllot { get; set; }
+        [Column("mete_lev")] public virtual uint MeteLevel { get; set; }
+        [Column("reincarnation")] public virtual uint Reincarnation { get; set; }
+        [Column("exp_ball_usage")] public virtual uint ExpBallUsage { get; set; }
+        [Column("exp_ball_num")] public virtual uint ExpBallNum { get; set; }
     }
 }

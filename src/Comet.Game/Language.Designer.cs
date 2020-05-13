@@ -97,6 +97,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has dropped a Dragon Ball in {1}..
+        /// </summary>
+        public static string StrDragonBallDropped {
+            get {
+                return ResourceManager.GetString("StrDragonBallDropped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You`ll pay for what you`ve done!.
+        /// </summary>
+        public static string StrGuardYouPay {
+            get {
+                return ResourceManager.GetString("StrGuardYouPay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Invalid coordinate..
         /// </summary>
         public static string StrInvalidCoordinate {
@@ -129,6 +147,15 @@ namespace Comet.Game {
         public static string StrKickout {
             get {
                 return ResourceManager.GetString("StrKickout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} extra experience points awarded by killing monsters..
+        /// </summary>
+        public static string StrKillingExperience {
+            get {
+                return ResourceManager.GetString("StrKillingExperience", resourceCulture);
             }
         }
         

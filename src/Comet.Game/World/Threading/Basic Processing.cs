@@ -69,6 +69,7 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds}ms");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             }
 

@@ -21,11 +21,18 @@
 
 #region References
 
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
+using Comet.Core;
+using Comet.Core.Mathematics;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Game.World;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Microsoft.VisualStudio.Threading;
 
@@ -38,6 +45,19 @@ namespace Comet.Game.States
         private readonly Generator m_generator;
         private readonly DbMonstertype m_dbMonster;
 
+        private TimeOutMS m_tStatusCheck = new TimeOutMS(500);
+        private TimeOutMS m_tAttackMs = new TimeOutMS();
+        private TimeOutMS m_tAction = new TimeOutMS();
+        private TimeOutMS m_tMoveMs = new TimeOutMS();
+        private TimeOut m_tHealPeriod = new TimeOut(2);
+        private TimeOut m_disappear = new TimeOut(5);
+
+        private AiStage m_stage;
+        private FacingDirection m_nextDir = FacingDirection.Invalid;
+
+        private Role m_actTarget;
+        private bool m_bAheadPath;
+
         private uint m_idRole = 0;
 
         public Monster(DbMonstertype type, uint identity, Generator generator)
@@ -47,6 +67,12 @@ namespace Comet.Game.States
             m_idRole = identity;
 
             m_idMap = generator.MapIdentity;
+
+            m_tStatusCheck.Update();
+
+            m_tMoveMs.Startup(m_dbMonster.MoveSpeed);
+            m_tAttackMs.Startup(m_dbMonster.AttackSpeed);
+            m_tAction.Startup(500);
         }
         
         #region Identity
@@ -122,7 +148,7 @@ namespace Comet.Game.States
 
         public override int MagicDefense => m_dbMonster?.MagicDef ?? 0;
 
-        public override int Dodge => m_dbMonster?.AttackMin ?? 0;
+        public override int Dodge => (int) (m_dbMonster?.Dodge ?? 0);
 
         public override int AttackSpeed => m_dbMonster?.AttackSpeed ?? 1000;
 
@@ -130,10 +156,316 @@ namespace Comet.Game.States
 
         public uint AttackUser => m_dbMonster?.AttackUser ?? 0;
 
+        public int ViewRange => m_dbMonster?.ViewRange ?? 1;
+
+        #endregion
+
+        #region Battle
+
+        public async Task Attack()
+        {
+
+        }
+
+        public override bool IsAttackable(Role attacker)
+        {
+            if (!IsAlive)
+                return false;
+
+            return true;
+        }
+
+        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        {
+            if (!IsAlive)
+                return false;
+
+            await AddAttributesAsync(ClientUpdateType.Hitpoints, nPower * -1);
+
+            if (!IsAlive)
+            {
+                await BeKill(attacker);
+                return true;
+            }
+
+            if (m_disappear.IsActive())
+                return false;
+
+            return true;
+        }
+
+        public override async Task BeKill(Role attacker)
+        {
+            if (m_disappear.IsActive())
+                return;
+
+            if (attacker?.BattleSystem.IsActive() == true)
+                attacker.BattleSystem.ResetBattle();
+
+            DetachAllStatus().Forget();
+            AttachStatus(attacker, StatusSet.DEAD, 0, 20, 0, 0).Forget();
+            AttachStatus(attacker, StatusSet.GHOST, 0, 20, 0, 0).Forget();
+            AttachStatus(attacker, StatusSet.FADE, 0, 20, 0, 0).Forget();
+
+            Character user = attacker as Character;
+            int dieType = user?.KoCount * 65541 ?? 1;
+            BroadcastRoomMsgAsync(new MsgInteract
+            {
+                SenderIdentity = attacker.Identity,
+                TargetIdentity = Identity,
+                PosX = MapX,
+                PosY = MapY,
+                Action = MsgInteractType.Kill,
+                Data = dieType
+            }, false).Forget();
+
+            m_disappear.Startup(5);
+
+            uint idDropOwner = user?.Identity ?? 0;
+
+            if (IsGuard())
+                return;
+
+            int chanceAdjust = 25;
+            if (user != null && BattleSystem.GetNameType(user.Level, Level) == BattleSystem.NAME_GREEN)
+                chanceAdjust = 7;
+
+            if (await Kernel.ChanceCalcAsync(chanceAdjust))
+            {
+                int moneyMin = (int)(m_dbMonster.DropMoney * 0.85f);
+                int moneyMax = (int)(m_dbMonster.DropMoney * 1.15f);
+                uint money = (uint)(moneyMin + await Kernel.NextAsync(moneyMin, moneyMax) + 1);
+
+                int heapNum = 1 + await Kernel.NextAsync(1, 3);
+                uint moneyAve = (uint)(money / heapNum);
+
+                for (int i = 0; i < heapNum; i++)
+                {
+                    uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
+                    await DropMoney(moneyTmp, idDropOwner);
+                }
+            }
+
+            if (await Kernel.ChanceCalcAsync(.01d))
+            {
+                DropItem(Item.TYPE_DRAGONBALL, idDropOwner).Forget();
+                Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name)).Forget();
+            }
+
+            if (await Kernel.ChanceCalcAsync(.1d))
+            {
+                DropItem(Item.TYPE_METEOR, idDropOwner).Forget();
+            }
+
+            if (!IsPkKiller() && !IsGuard() && !IsEvilKiller() && !IsDynaNpc())
+            {
+                if (await Kernel.ChanceCalcAsync(.1d))
+                {
+                    uint[] normalGem = { 700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121 };
+                    uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
+                    DropItem(dGem, idDropOwner).Forget(); // normal gems
+                }
+            }
+
+            if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
+            {
+                DropItem(1080001, idDropOwner).Forget(); // emerald
+            }
+
+            int dropNum = 0;
+            int rate = await Kernel.NextAsync(0, 1000);
+            int chance = BattleSystem.AdjustDrop(100, attacker.Level, Level);
+            if (rate < Math.Min(1000, chance))
+            {
+                dropNum = 1 + await Kernel.NextAsync(1, 3); // drop 10-16 items
+            }
+            else
+            {
+                chance += BattleSystem.AdjustDrop(500, attacker.Level, Level);
+                if (rate < Math.Min(1000, chance))
+                    dropNum = 1; // drop 1 item
+            }
+
+            for (int i = 0; i < dropNum; i++)
+            {
+                uint idItemtype = await GetDropItem();
+
+                DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItemtype);
+                if (itemtype == null)
+                    continue;
+
+                DropItem(itemtype, idDropOwner).Forget();
+            }
+        }
+
+        #endregion
+
+        #region Drop Function
+
+        private async Task DropItem(uint type, uint owner)
+        {
+            DbItemtype itemType = Kernel.ItemManager.GetItemtype(type);
+            if (itemType != null) await DropItem(itemType, owner);
+        }
+
+        private async Task DropItem(DbItemtype itemtype, uint idOwner)
+        {
+            Point targetPos = new Point(MapX, MapY);
+            if (Map.FindDropItemCell(4, ref targetPos))
+            {
+                MapItem drop = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
+                if (drop.Create(Map, targetPos, itemtype, idOwner, 0, 0, 0))
+                {
+                    await drop.GenerateRandomInfoAsync();
+                    drop.EnterMap();
+                }
+                else
+                {
+                    IdentityGenerator.MapItem.ReturnIdentity(drop.Identity);
+                }
+            }
+        }
+
+        private Task DropMoney(uint amount, uint idOwner)
+        {
+            Point targetPos = new Point(MapX, MapY);
+            if (Map.FindDropItemCell(4, ref targetPos))
+            {
+                MapItem drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+                if (drop.CreateMoney(Map, targetPos, amount, idOwner))
+                    drop.EnterMap();
+                else
+                {
+                    IdentityGenerator.MapItem.ReturnIdentity(drop.Identity);
+                }
+            }
+            return Task.CompletedTask;
+        }
+
+        private readonly int[] m_dropHeadgear = { 111000, 112000, 113000, 114000, 143000, 118000, 123000, 141000, 142000, 117000 };
+        private readonly int[] m_dropNecklace = { 120000, 121000 };
+        private readonly int[] m_dropArmor = { 130000, 131000, 133000, 134000, 135000, 136000, 139000 };
+        private readonly int[] m_dropRing = { 150000, 151000, 152000 };
+        private readonly int[] m_dropWeapon =
+        {
+            410000, 420000, 421000, 430000, 440000, 450000, 460000, 480000, 481000,
+            490000, 500000, 510000, 530000, 540000, 560000, 561000, 580000, 601000,
+            610000, 611000, 612000, 613000
+        };
+
+        public async Task<uint> GetDropItem()
+        {
+            /*
+             * 0 = armet
+             * 1 = necklace
+             * 2 = armor
+             * 3 = ring
+             * 4 = weapon
+             * 5 = shield
+             * 6 = shoes
+             * 7 = hp
+             * 8 = mp
+             */
+            var possibleDrops = new List<int>();
+            if (m_dbMonster.DropArmet != 0)
+                possibleDrops.Add(0);
+            if (m_dbMonster.DropNecklace != 0)
+                possibleDrops.Add(1);
+            if (m_dbMonster.DropArmor != 0)
+                possibleDrops.Add(2);
+            if (m_dbMonster.DropRing != 0)
+                possibleDrops.Add(3);
+            if (m_dbMonster.DropWeapon != 0)
+                possibleDrops.Add(4);
+            if (m_dbMonster.DropShield != 0)
+                possibleDrops.Add(5);
+            if (m_dbMonster.DropShoes != 0)
+                possibleDrops.Add(6);
+            if (m_dbMonster.DropHp != 0)
+                possibleDrops.Add(7);
+            if (m_dbMonster.DropMp != 0)
+                possibleDrops.Add(8);
+
+            if (possibleDrops.Count <= 0)
+                return 0;
+
+            int type = possibleDrops[await Kernel.NextAsync(0, possibleDrops.Count) % possibleDrops.Count];
+            uint dwItemId = 0;
+
+            switch (type)
+            {
+                case 0:
+                    dwItemId += (uint)m_dropHeadgear[await Kernel.NextAsync(0, m_dropHeadgear.Length - 1)];
+                    dwItemId += (uint)(m_dbMonster.DropArmet * 10);
+                    break;
+                case 1:
+                    dwItemId += (uint)m_dropNecklace[await Kernel.NextAsync(0, m_dropNecklace.Length - 1)];
+                    dwItemId += (uint)(m_dbMonster.DropNecklace * 10);
+                    break;
+                case 2:
+                    dwItemId += (uint)m_dropArmor[await Kernel.NextAsync(0, m_dropArmor.Length - 1)];
+                    dwItemId += (uint)(m_dbMonster.DropArmor * 10);
+                    break;
+                case 3:
+                    dwItemId += (uint)m_dropRing[await Kernel.NextAsync(0, m_dropRing.Length - 1)];
+                    dwItemId += (uint)(m_dbMonster.DropRing * 10);
+                    break;
+                case 4:
+                    dwItemId += (uint)m_dropWeapon[await Kernel.NextAsync(0, m_dropWeapon.Length - 1)];
+                    dwItemId += (uint)(m_dbMonster.DropWeapon * 10);
+                    break;
+                case 5:
+                    dwItemId += 900000;
+                    dwItemId += (uint)(m_dbMonster.DropShield * 10);
+                    break;
+                case 6:
+                    dwItemId += 160000;
+                    dwItemId += (uint)(m_dbMonster.DropShoes * 10);
+                    break;
+                case 7:
+                    return m_dbMonster.DropHp;
+                case 8:
+                    return m_dbMonster.DropMp;
+                default:
+                    return 0;
+            }
+
+            uint nNewLev = (uint)(((dwItemId % 100) / 10) + await Kernel.NextAsync(-5, 5));
+
+            switch (type)
+            {
+                case 0:
+                case 2:
+                case 5:
+                    if (nNewLev > 0 && nNewLev <= 10)
+                        dwItemId += (nNewLev) * 10;
+                    break;
+                case 1:
+                case 3:
+                case 6:
+                    if (nNewLev > 0 && nNewLev <= 24)
+                        dwItemId += (nNewLev) * 10;
+                    break;
+                case 4:
+                    if (nNewLev > 0 && nNewLev <= 33)
+                        dwItemId += (nNewLev) * 10;
+                    break;
+            }
+
+            if (await Kernel.ChanceCalcAsync(0.001f)) dwItemId += 9; // super
+            else if (await Kernel.ChanceCalcAsync(0.005f)) dwItemId += 8; // elite
+            else if (await Kernel.ChanceCalcAsync(0.01f)) dwItemId += 7; // unique
+            else if (await Kernel.ChanceCalcAsync(0.02f)) dwItemId += 6; // refined
+            else if (await Kernel.ChanceCalcAsync(0.01f) && type == 4) dwItemId += 0; // fixed
+            else dwItemId += (uint)await Kernel.NextAsync(3, 5); // normal
+
+            return dwItemId;
+        }
+
         #endregion
 
         #region Checks
-        
+
         public bool IsLockUser()
         {
             return (AttackUser & 256) != 0;
@@ -229,13 +561,171 @@ namespace Comet.Game.States
         public override void LeaveMap()
         {
             IdentityGenerator.Monster.ReturnIdentity(Identity);
-            m_generator.Generated--;
+            m_generator.Remove(Identity);
             if (Map != null)
             {
                 Map.RemoveAsync(Identity).Forget();
                 Kernel.RoleManager.RemoveRole(Identity);
             }
             Map = null;
+        }
+
+        #endregion
+
+        #region AI
+
+        public bool IsCloseAttack()
+        {
+            return !IsBowman;
+        }
+
+        public bool IsMoveEnable()
+        {
+            return IsWalkEnable() || IsJumpEnable();
+        }
+
+        public override bool IsEvil() { return (AttackUser & (4 | 8192)) == 0; }
+
+        public bool CheckTarget()
+        {
+            if (m_actTarget == null || !m_actTarget.IsAlive)
+            {
+                return false;
+            }
+
+            if (m_actTarget.IsWing && !IsWing && !IsCloseAttack())
+                return false;
+
+            int nDistance = ViewRange;
+            int nAtkDistance = Calculations.CutOverflow(nDistance, GetAttackRange(m_actTarget.SizeAddition));
+            int nDist = GetDistance(m_actTarget.MapX, m_actTarget.MapY);
+
+            if (!(nDist <= nDistance) || (nDist <= nAtkDistance && GetAttackRange(m_actTarget.SizeAddition) > 1))
+            {
+                m_actTarget = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool FindNewTarget()
+        {
+            Role target = null;
+
+            // lock target
+            if (IsLockUser() || IsLockOne())
+            {
+                if (CheckTarget())
+                {
+                    if (IsLockOne())
+                        return true;
+                }
+                else
+                {
+                    if (IsLockUser())
+                        return false;
+                }
+            }
+
+            uint idOldTarget = m_actTarget?.Identity ?? 0;
+            int distance = ViewRange;
+            var roles = Map.Query9BlocksByPos(MapX, MapY);
+            foreach (var role in roles)
+            {
+                if (role.Identity == Identity)
+                    continue;
+
+                if (!role.IsAlive)
+                    continue;
+
+                if (role.QueryStatus(StatusSet.INVISIBLE) != null)
+                    continue;
+
+                if (role is Character targetUser)
+                {
+                    bool pkKill = IsPkKiller() && targetUser.IsPker();
+                    bool evilKill = IsEvilKiller() && !targetUser.IsVirtuous();
+                    if ((IsGuard() && targetUser.IsCrime())
+                        || (pkKill)
+                        || (evilKill)
+                        || (IsEvil() && !(IsPkKiller() || IsEvilKiller())))
+                    {
+                        int nDist = GetDistance(targetUser.MapX, targetUser.MapY);
+                        if (nDist <= distance)
+                        {
+                            distance = nDist;
+                            m_actTarget = targetUser;
+
+                            if (pkKill || evilKill)
+                                break;
+                        }
+                    }
+                }
+                else if (role is Monster monster)
+                {
+                    if ((IsEvil() && monster.IsRighteous()
+                                         || IsRighteous() && monster.IsEvil()))
+                    {
+                        if (monster.IsWing && !IsWing) continue;
+
+                        int nDist = GetDistance(monster.MapX, monster.MapY);
+                        if (nDist < distance)
+                        {
+                            distance = nDist;
+                            m_actTarget = monster;
+                        }
+                    }
+                }
+            }
+
+            if (m_actTarget != null)
+            {
+                if (m_actTarget is Character targetUser && targetUser.Identity != idOldTarget)
+                {
+                    if (IsGuard() && targetUser.IsCrime())
+                    {
+                        targetUser.BroadcastRoomMsgAsync(
+                            new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, target.Name, Name,
+                                Language.StrGuardYouPay), true).Forget();
+                    }
+                    else if (IsPkKiller() && targetUser.IsPker() && m_stage == AiStage.Idle)
+                    {
+                        targetUser.BroadcastRoomMsgAsync(
+                            new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, target.Name, Name,
+                                Language.StrGuardYouPay), true).Forget();
+                    }
+                }
+            }
+            return true;
+        }
+
+        #endregion
+
+        #region On Timer
+        
+        public override async Task OnTimerAsync()
+        {
+            if (!IsAlive && m_disappear.IsTimeOut())
+            {
+                LeaveMap();
+                return;
+            }
+
+            if (m_tStatusCheck.ToNextTime())
+            {
+                if (StatusSet.Status.Values.Count > 0)
+                {
+                    foreach (var stts in StatusSet.Status.Values)
+                    {
+                        await stts.OnTimer();
+                        if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
+                        {
+                            await StatusSet.DelObj(stts.Identity);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
@@ -254,5 +744,29 @@ namespace Comet.Game.States
         }
 
         #endregion
+
+        enum AiStage
+        {
+            /// <summary>
+            /// Monster is doing absolutely nothing.
+            /// </summary>
+            Idle,
+            /// <summary>
+            /// Monster wont do nothing, just heal. Activated if on active block but haven't triggered any other action.
+            /// </summary>
+            Dormancy,
+            /// <summary>
+            /// Monster will do some random move?
+            /// </summary>
+            Move,
+            /// <summary>
+            /// Monster is ready for attack.
+            /// </summary>
+            Attack,
+            /// <summary>
+            /// When monster is low life and want to run from the attacker.
+            /// </summary>
+            Escape
+        }
     }
 }

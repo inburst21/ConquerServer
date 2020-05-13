@@ -139,13 +139,13 @@ namespace Comet.Game.States.BaseEntities
 
         #region Movement
 
-        public async Task JumpPosAsync(int x, int y)
+        public async Task<bool> JumpPosAsync(int x, int y)
         {
             if (x == MapX && y == MapY)
-                return;
+                return false;
 
             if (Map == null || !Map.IsValidPoint(x, y))
-                return;
+                return false;
 
             Character user = null;
             if (IsPlayer())
@@ -156,7 +156,7 @@ namespace Comet.Game.States.BaseEntities
                 {
                     await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red);
                     await user.KickbackAsync();
-                    return;
+                    return false;
                 }
             }
 
@@ -168,9 +168,10 @@ namespace Comet.Game.States.BaseEntities
             m_posY = (ushort)y;
 
             ProcessAfterMove();
+            return true;
         }
 
-        public async Task MoveTowardAsync(int direction, int mode)
+        public async Task<bool> MoveTowardAsync(int direction, int mode)
         {
             direction %= 8;
             ushort newX = (ushort)(MapX + GameMap.WalkXCoords[direction]);
@@ -188,13 +189,13 @@ namespace Comet.Game.States.BaseEntities
             if (!IsAlive && user != null && !user.IsGhost())
             {
                 await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
-                return;
+                return false;
             }
 
             if (!Map.IsStandEnable(newX, newY) && user != null)
             {
-                await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red);
-                return;
+                await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red); 
+                return false;
             }
 
             Map.EnterBlock(this, newX, newY, MapX, MapY);
@@ -205,10 +206,14 @@ namespace Comet.Game.States.BaseEntities
             m_posY = newY;
 
             ProcessAfterMove();
+            return true;
         }
 
         public virtual void ProcessOnMove()
         {
+            BattleSystem.ResetBattle();
+
+            DetachStatus(StatusSet.INTENSIFY).Forget();
         }
 
         public virtual void ProcessAfterMove()
@@ -218,6 +223,8 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual void ProcessOnAttack()
         {
+            Action = EntityAction.Stand;
+            DetachStatus(StatusSet.INTENSIFY).Forget();
         }
 
         #endregion
@@ -321,6 +328,7 @@ namespace Comet.Game.States.BaseEntities
         public virtual int AttackSpeed { get; } = 1000;
         public virtual int Accuracy { get; } = 1;
         public virtual int Defense2 => Calculations.DEFAULT_DEFENCE2;
+        public virtual int Blessing { get; } = 0;
 
         #endregion
 
@@ -330,6 +338,17 @@ namespace Comet.Game.States.BaseEntities
 
         public int SizeAddition => 1;
 
+        public virtual int AdjustWeaponDamage(int damage)
+        {
+            return Calculations.MulDiv(damage, Defense2, Calculations.DEFAULT_DEFENCE2);
+        }
+
+        public int AdjustMagicDamage(int damage)
+        {
+            return Calculations.MulDiv(damage, Defense2, Calculations.DEFAULT_DEFENCE2);
+        }
+
+
         public virtual int GetAttackRange(int sizeAdd)
         {
             return sizeAdd + 1;
@@ -337,23 +356,25 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual bool IsAttackable(Role attacker)
         {
-            Log.WriteLog(LogLevel.Warning, $"Role::IsAttackable no handler {Identity}").Forget();
-            return false;
+            return true;
         }
 
         public virtual bool IsImmunity(Role target)
         {
-            Log.WriteLog(LogLevel.Warning, $"Role::IsImmunity no handler {Identity}").Forget();
-            return true;
+            if (target == null)
+                return true;
+            if (target.Identity == Identity)
+                return true;
+            return false;
         }
 
-        public virtual int Attack(Role target, ref InteractionEffect effect)
+        public virtual Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
         {
             Log.WriteLog(LogLevel.Warning, $"Role::Attack no handler {Identity}").Forget();
-            return 1;
+            return Task.FromResult((1, InteractionEffect.None));
         }
 
-        public virtual async Task<bool> BeAttack(int magic, Role attacker, int nPower, bool bReflectEnable)
+        public virtual async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
         {
             await Log.WriteLog(LogLevel.Warning, $"Role::BeAttack no handler {Identity}");
             return false;
@@ -591,9 +612,24 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual bool IsBowman => false;
 
-        public bool IsEvil()
+        public virtual bool IsEvil()
         {
             return QueryStatus(StatusSet.BLUE_NAME) != null || QueryStatus(StatusSet.BLACK_NAME) != null;
+        }
+
+        public bool IsVirtuous()
+        {
+            return (StatusFlag & KEEP_EFFECT_NOT_VIRTUOUS) == 0;
+        }
+
+        public bool IsCrime()
+        {
+            return QueryStatus(StatusSet.BLUE_NAME) != null;
+        }
+
+        public bool IsPker()
+        {
+            return QueryStatus(StatusSet.BLACK_NAME) != null;
         }
 
         #endregion
@@ -624,6 +660,7 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual async Task<bool> SetAttributesAsync(ClientUpdateType type, long value)
         {
+            bool screen = false;
             switch (type)
             {
                 case ClientUpdateType.Hitpoints:
@@ -634,12 +671,17 @@ namespace Comet.Game.States.BaseEntities
                     value = Mana = (uint)Math.Max(0, Math.Min(MaxMana, value));
                     break;
 
+                case ClientUpdateType.StatusFlag:
+                    value = (long) StatusFlag;
+                    screen = true;
+                    break;
+
                 default:
                     await Log.WriteLog(LogLevel.Warning, $"Role::SetAttributes {type} not handled");
                     return false;
             }
 
-            await SynchroAttributesAsync(type, value);
+            await SynchroAttributesAsync(type, value, screen);
             return true;
         }
 
@@ -670,6 +712,16 @@ namespace Comet.Game.States.BaseEntities
         #endregion
 
         #region Socket
+
+        public async Task SendEffectAsync(string effect, bool self)
+        {
+            MsgName msg = new MsgName
+            {
+                Identity = Identity, Action = StringAction.RoleEffect, PositionX = MapX, PositionY = MapY
+            };
+            msg.Strings.Add(effect);
+            await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, self ? 0 : Identity);
+        }
 
         public async Task SendAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null)
         {
@@ -710,6 +762,8 @@ namespace Comet.Game.States.BaseEntities
 
         #region Constants
 
+        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => (ulong)(StatusSet.GetFlag(StatusSet.BLUE_NAME) | StatusSet.GetFlag(StatusSet.RED_NAME) | StatusSet.GetFlag(StatusSet.BLACK_NAME));
+
         public const int SCENEID_FIRST = 1;
         public const int SYSNPCID_FIRST = 1;
         public const int SYSNPCID_LAST = 99999;
@@ -746,6 +800,8 @@ namespace Comet.Game.States.BaseEntities
 
         public const byte MAX_UPLEV = 140;
 
+        public const int EXPBALL_AMOUNT = 600;
+
         public const int ADD_ENERGY_STAND_SECS = 2;
         public const int ADD_ENERGY_STAND = 3;
         public const int ADD_ENERGY_SIT = 10;
@@ -765,7 +821,7 @@ namespace Comet.Game.States.BaseEntities
         public const int PK_DEC_TIME = 180;
         public const int PKVALUE_DEC_ONCE = -1;
         public const int PKVALUE_DEC_ONCE_IN_PRISON = -3;
-        public const int USER_ATTACK_SPEED = 800;
+        public const int USER_ATTACK_SPEED = 1500;
         public const int POISONDAMAGE_INTERVAL = 2;
 
         public const int MASTER_WEAPONSKILLLEVEL = 12;
@@ -776,6 +832,7 @@ namespace Comet.Game.States.BaseEntities
 
     public enum FacingDirection : byte
     {
+        Begin = SouthEast,
         SouthWest = 0,
         West = 1,
         NorthWest = 2,
@@ -783,7 +840,9 @@ namespace Comet.Game.States.BaseEntities
         NorthEast = 4,
         East = 5,
         SouthEast = 6,
-        South = 7
+        South = 7,
+        End = South,
+        Invalid = End+1
     }
 
     public enum EntityAction : ushort

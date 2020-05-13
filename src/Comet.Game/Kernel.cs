@@ -65,10 +65,16 @@ namespace Comet.Game
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
         public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
+        public static AiProcessor AiThread = new AiProcessor();
 
         static Kernel()
         {
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+
+        public static Task<int> NextAsync(int maxValue)
+        {
+            return NextAsync(0, maxValue);
         }
 
         /// <summary>
@@ -93,6 +99,7 @@ namespace Comet.Game
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
             await GeneratorThread.StartAsync();
+            await AiThread.StartAsync();
 
             return true;
         }

@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Core;
@@ -300,6 +301,12 @@ namespace Comet.Game.States
 
         #region Level and Experience
 
+        public bool AutoAllot
+        {
+            get => m_dbObject.AutoAllot != 0;
+            set => m_dbObject.AutoAllot = (byte) (value ? 1 : 0);
+        }
+
         public override byte Level
         {
             get => m_dbObject?.Level ?? 0;
@@ -354,6 +361,198 @@ namespace Comet.Game.States
                 ArgumentY = MapY
             }, true);
             return true;
+        }
+
+        public async Task AwardBattleExp(long nExp, bool bGemEffect)
+        {
+            if (Metempsychosis == 2)
+                nExp /= 3;
+
+            if (nExp == 0)
+                return;
+
+            if (nExp < 0)
+            {
+                await AddAttributesAsync(ClientUpdateType.Experience, nExp);
+                return;
+            }
+
+            nExp = (long) (nExp * 1 + BattlePower / 100d);
+
+            if (bGemEffect)
+            {
+                nExp += (int)(nExp * (1 + (RainbowGemBonus / 100d)));
+
+                if (RainbowGemBonus > 0 && IsPm())
+                    await SendAsync($"got gem exp add percent: {RainbowGemBonus:0.00}%");
+            }
+
+            if (Level >= MAX_UPLEV)
+                return;
+
+            if (Level >= 120)
+                nExp /= 2;
+
+            if (IsPm())
+                await SendAsync($"got battle exp: {nExp}");
+
+            await AwardExperience(nExp);
+        }
+
+        public long AdjustExperience(Role pTarget, long nRawExp, bool bNewbieBonusMsg)
+        {
+            if (pTarget == null) return 0;
+            long nExp = nRawExp;
+            nExp = BattleSystem.AdjustExp(nExp, Level, pTarget.Level);
+            return nExp;
+        }
+
+        public async Task<bool> AwardExperience(long amount)
+        {
+            if (Level > Kernel.RoleManager.GetLevelLimit())
+                return true;
+            
+            amount += (long)Experience;
+            bool leveled = false;
+            uint pointAmount = 0;
+            byte newLevel = Level;
+            while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
+            {
+                amount -= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp;
+                leveled = true;
+                newLevel++;
+                if (!AutoAllot || Level > 120)
+                {
+                    pointAmount += 3;
+                    continue;
+                }
+
+                if (newLevel < Kernel.RoleManager.GetLevelLimit()) continue;
+                amount = 0;
+                break;
+            }
+
+            uint metLev = 0;
+            var leveXp = Kernel.RoleManager.GetLevelExperience(newLevel);
+            if (leveXp != null)
+            {
+                float fExp = amount / (float)leveXp.Exp;
+                metLev = (uint)(newLevel * 10000 + fExp * 1000);
+            }
+
+            byte checkLevel = (byte)(m_dbObject.Reincarnation > 0 ? 110 : 130);
+            if (newLevel >= checkLevel && Metempsychosis > 0 && m_dbObject.MeteLevel > metLev)
+            {
+                byte extra = 0;
+                if (newLevel >= checkLevel && m_dbObject.MeteLevel / 10000 > newLevel)
+                {
+                    var mete = m_dbObject.MeteLevel / 10000;
+                    extra += (byte)(mete - newLevel);
+                    pointAmount += (uint)(extra * 3);
+                    leveled = true;
+                    amount = 0;
+                }
+
+                newLevel += extra;
+
+                if (newLevel >= Kernel.RoleManager.GetLevelLimit())
+                {
+                    newLevel = (byte)Kernel.RoleManager.GetLevelLimit();
+                    amount = 0;
+                }
+                else if (m_dbObject.MeteLevel >= newLevel * 10000)
+                {
+                    amount = (long)(Kernel.RoleManager.GetLevelExperience(newLevel).Exp * ((m_dbObject.MeteLevel % 10000) / 1000d));
+                }
+            }
+
+            if (leveled)
+            {
+                byte job;
+                if ((int)Profession > 100)
+                    job = 10;
+                else
+                    job = (byte)(((int)Profession - (int)Profession % 10) / 10);
+
+                var allot = Kernel.RoleManager.GetPointAllot(job, newLevel);
+                Level = newLevel;
+                if (AutoAllot && allot != null)
+                {
+                    Strength = allot.Strength;
+                    Agility = allot.Agility;
+                    Vitality = allot.Vitality;
+                    Spirit = allot.Spirit;
+                }
+
+                if (pointAmount > 0)
+                    await AddAttributesAsync(ClientUpdateType.Atributes, (int)pointAmount);
+
+                await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
+                await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
+                await Screen.BroadcastRoomMsgAsync(new MsgAction
+                {
+                    Action = MsgAction.ActionType.CharacterLevelUp,
+                    Identity = Identity
+                });
+            }
+
+            Experience = (ulong)amount;
+            SetAttributesAsync(ClientUpdateType.Experience, (long) Experience).Forget();
+            return true;
+        }
+
+        public long CalculateExpBall(int amount = EXPBALL_AMOUNT)
+        {
+            long exp = 0;
+
+            if (Level >= Kernel.RoleManager.GetLevelLimit())
+                return 0;
+
+            byte level = Level;
+            if (Experience > 0)
+            {
+                double pct = 1.00 - Experience / (double)Kernel.RoleManager.GetLevelExperience(Level).Exp;
+                if (amount > pct * Kernel.RoleManager.GetLevelExperience(Level).UpLevTime)
+                {
+                    amount -= (int)(pct * Kernel.RoleManager.GetLevelExperience(Level).UpLevTime);
+                    exp += (long)(Kernel.RoleManager.GetLevelExperience(Level).Exp - Experience);
+                    level++;
+                }
+            }
+
+            while (amount > Kernel.RoleManager.GetLevelExperience(level).UpLevTime)
+            {
+                amount -= Kernel.RoleManager.GetLevelExperience(level).UpLevTime;
+                exp += (long)Kernel.RoleManager.GetLevelExperience(level).Exp;
+
+                if (level >= Kernel.RoleManager.GetLevelLimit())
+                    return exp;
+                level++;
+            }
+
+            exp += (long)(amount / (double)Kernel.RoleManager.GetLevelExperience(Level).UpLevTime *
+                          Kernel.RoleManager.GetLevelExperience(Level).Exp);
+            return exp;
+        }
+
+        public void IncrementExpBall()
+        {
+            m_dbObject.ExpBallUsage = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
+            m_dbObject.ExpBallNum += 1;
+        }
+
+        public bool CanUseExpBall()
+        {
+            if (Level >= Kernel.RoleManager.GetLevelLimit())
+                return false;
+
+            if (m_dbObject.ExpBallUsage < uint.Parse(DateTime.Now.ToString("yyyyMMdd")))
+            {
+                m_dbObject.ExpBallNum = 0;
+                return true;
+            }
+
+            return m_dbObject.ExpBallNum < 10;
         }
 
         #endregion
@@ -412,6 +611,68 @@ namespace Comet.Game.States
                 if (nIncreaseLev > 0)
                 {
                     skill.Level += (byte)nIncreaseLev;
+                    await SendAsync(new MsgWeaponSkill(skill));
+                    await SendAsync(Language.StrWeaponSkillUp);
+                }
+                else
+                {
+                    await SendAsync(new MsgWeaponSkill(skill));
+                }
+
+                await WeaponSkill.SaveAsync(skill);
+            }
+        }
+
+        public async Task AddWeaponSkillExp(ushort usType, int nExp)
+        {
+            DbWeaponSkill skill = WeaponSkill[usType];
+            if (skill == null)
+            {
+                await WeaponSkill.CreateAsync(usType, 0);
+                if ((skill = WeaponSkill[usType]) == null)
+                    return;
+            }
+
+            if (skill.Level >= MAX_WEAPONSKILLLEVEL)
+                return;
+
+            nExp = (int)(nExp * (1 + VioletGemBonus / 100d));
+
+            uint nIncreaseLev = 0;
+            if (skill.Level > MASTER_WEAPONSKILLLEVEL)
+            {
+                int nRatio = (int)(100 - (skill.Level - MASTER_WEAPONSKILLLEVEL) * 20);
+                if (nRatio < 10)
+                    nRatio = 10;
+                nExp = Calculations.MulDiv(nExp, nRatio, 100) / 2;
+            }
+
+            int nNewExp = (int)Math.Max(nExp + skill.Experience, skill.Experience);
+
+#if DEBUG
+            if (IsPm())
+                await SendAsync($"Add Weapon Skill exp: {nExp}, CurExp: {nNewExp}");
+#endif
+
+            int nLevel = (int)skill.Level;
+            if (nLevel >= 1 && nLevel < MAX_WEAPONSKILLLEVEL)
+            {
+                if (nNewExp > MsgWeaponSkill.RequiredExperience[nLevel] ||
+                    nLevel >= skill.OldLevel / 2 && nLevel < skill.OldLevel)
+                {
+                    nNewExp = 0;
+                    nIncreaseLev = 1;
+                }
+            }
+
+            if (skill.Level < Level / 10 + 1
+                || skill.Level >= MASTER_WEAPONSKILLLEVEL)
+            {
+                skill.Experience = (uint)nNewExp;
+
+                if (nIncreaseLev > 0)
+                {
+                    skill.Level += (byte) nIncreaseLev;
                     await SendAsync(new MsgWeaponSkill(skill));
                     await SendAsync(Language.StrWeaponSkillUp);
                 }
@@ -810,6 +1071,10 @@ namespace Comet.Game.States
                 {
                     result += UserPackage[pos]?.Defense ?? 0;
                 }
+
+                if (Metempsychosis > 0 && Level >= 70)
+                    result = (int) (result * 1.3d);
+
                 return result;
             }
         }
@@ -823,6 +1088,10 @@ namespace Comet.Game.States
                 {
                     result += UserPackage[pos]?.MagicDefense ?? 0;
                 }
+
+                if (Metempsychosis > 0 && Level >= 70)
+                    result = (int)(result * 1.3d);
+
                 return result;
             }
         }
@@ -853,13 +1122,26 @@ namespace Comet.Game.States
             }
         }
 
+        public override int Blessing
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Blessing ?? 0;
+                }
+                return result;
+            }
+        }
+
         public override int AttackSpeed { get; } = 1000;
 
         public override int Accuracy
         {
             get
             {
-                int result = Strength;
+                int result = Agility/3;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.Accuracy ?? 0;
@@ -959,9 +1241,93 @@ namespace Comet.Game.States
             }
         }
 
+        public int KoCount { get; set; }
+
         #endregion
 
         #region Battle
+
+        public bool SetAttackTarget(Role target)
+        {
+            if (target == null)
+            {
+                BattleSystem.ResetBattle();
+                return false;
+            }
+
+            if (!target.IsAttackable(this))
+            {
+                BattleSystem.ResetBattle();
+                return false;
+            }
+
+            if (target.IsWing && !IsWing && !IsBowman)
+            {
+                BattleSystem.ResetBattle();
+                return false;
+            }
+
+            if (GetDistance(target) > GetAttackRange(target.SizeAddition))
+            {
+                BattleSystem.ResetBattle();
+                return false;
+            }
+            return true;
+        }
+
+        public int GetInterAtkRate()
+        {
+            int nRate = USER_ATTACK_SPEED;
+            int nRateR = 0, nRateL = 0;
+
+            if (UserPackage[Item.ItemPosition.RightHand] != null)
+                nRateR = UserPackage[Item.ItemPosition.RightHand].Itemtype.AtkSpeed;
+            if (UserPackage[Item.ItemPosition.LeftHand] != null)
+                nRateL = UserPackage[Item.ItemPosition.LeftHand].Itemtype.AtkSpeed;
+
+            if (nRateR > 0 && nRateL > 0)
+                nRate = (nRateR + nRateL) / 2;
+            else if (nRateR > 0)
+                nRate = nRateR;
+            else if (nRateL > 0)
+                nRate = nRateL;
+
+#if DEBUG
+            if (QueryStatus(StatusSet.CYCLONE) != null)
+            {
+                nRate = Calculations.CutTrail(0,
+                    Calculations.AdjustData(nRate, QueryStatus(StatusSet.CYCLONE).Power));
+                if (IsPm())
+                    SendAsync($"attack speed+: {nRate}").Forget();
+            }
+#endif
+
+            return Math.Max(500, 250 + nRate);
+        }
+
+        public override int AdjustWeaponDamage(int damage)
+        {
+            damage = Calculations.MulDiv(damage, Defense2, Calculations.DEFAULT_DEFENCE2);
+
+            int type1 = 0, type2 = 0;
+            if (UserPackage[Item.ItemPosition.RightHand] != null)
+                type1 = UserPackage[Item.ItemPosition.RightHand].GetItemSubType();
+            if (UserPackage[Item.ItemPosition.LeftHand] != null)
+                type2 = UserPackage[Item.ItemPosition.LeftHand].GetItemSubType();
+
+            if (type1 > 0 && WeaponSkill[(ushort)type1] != null &&
+                WeaponSkill[(ushort)type1].Level > 12)
+            {
+                damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type1].Level) / 100f));
+            }
+            else if (type2 > 0 && WeaponSkill[(ushort)type2] != null &&
+                     WeaponSkill[(ushort)type2].Level > 12)
+            {
+                damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type2].Level) / 100f));
+            }
+
+            return damage;
+        }
 
         public override int GetAttackRange(int sizeAdd)
         {
@@ -984,18 +1350,60 @@ namespace Comet.Game.States
             return nRange + 1;
         }
 
-        public override int Attack(Role target, ref InteractionEffect effect)
+        public override bool IsImmunity(Role target)
+        {
+            if (base.IsImmunity(target))
+                return true;
+
+            if (target is Character user)
+            {
+                switch (PkMode)
+                {
+                    case PkModeType.Capture:
+                        return !user.IsEvil();
+                    case PkModeType.Peace:
+                        return true;
+                    case PkModeType.FreePk:
+                        if (Level >= 70 && user.Level < 70)
+                            return true;
+                        return false;
+                    case PkModeType.Team:
+                        return true;
+                }
+            }
+            else if (target is Monster monster)
+            {
+                switch (PkMode)
+                {
+                    case PkModeType.Peace:
+                        return false;
+                    case PkModeType.Team:
+                    case PkModeType.Capture:
+                        if (monster.IsGuard())
+                            return true;
+                        return false;
+                    case PkModeType.FreePk:
+                        return false;
+                }
+            }
+            
+            Log.WriteLog(LogLevel.Warning, $"Character::IsImmunity cant handle this kind of role {target.Identity} {target.GetType().Name}").Forget();
+            return true;
+        }
+
+        public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
         {
             if (target == null)
-                return 0;
+                return (0, InteractionEffect.None);
 
             if (!target.IsEvil() && Map.IsDeadIsland() || (target is Monster mob && mob.IsGuard()))
                 SetCrimeStatus(15);
 
-            return BattleSystem.CalcPower(this, target, ref effect);
+            return await BattleSystem.CalcPower(BattleSystem.MagicType.MagictypeNone, this, target);
         }
 
-        public override async Task<bool> BeAttack(int magic, Role attacker, int power, bool bReflectEnable)
+        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int power,
+            bool bReflectEnable)
         {
             if (attacker == null)
                 return false;
@@ -1061,6 +1469,54 @@ namespace Comet.Game.States
                 }
                 return;
             }
+        }
+
+        public async Task SendGemEffect()
+        {
+            var setGem = new List<Item.SocketGem>();
+
+            for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos < Item.ItemPosition.EquipmentEnd; pos++)
+            {
+                Item item = UserPackage[pos];
+                if (item == null)
+                    continue;
+
+                setGem.Add(item.SocketOne);
+                if (item.SocketTwo != Item.SocketGem.NoSocket)
+                    setGem.Add(item.SocketTwo);
+            }
+
+            int nGems = setGem.Count;
+            if (nGems <= 0)
+                return;
+
+            string strEffect = "";
+            switch (setGem[await Kernel.NextAsync(0, nGems)])
+            {
+                case Item.SocketGem.SuperPhoenixGem:
+                    strEffect = "phoenix";
+                    break;
+                case Item.SocketGem.SuperDragonGem:
+                    strEffect = "goldendragon";
+                    break;
+                case Item.SocketGem.SuperFuryGem:
+                    strEffect = "fastflash";
+                    break;
+                case Item.SocketGem.SuperRainbowGem:
+                    strEffect = "rainbow";
+                    break;
+                case Item.SocketGem.SuperKylinGem:
+                    strEffect = "goldenkylin";
+                    break;
+                case Item.SocketGem.SuperVioletGem:
+                    strEffect = "purpleray";
+                    break;
+                case Item.SocketGem.SuperMoonGem:
+                    strEffect = "moon";
+                    break;
+            }
+
+            await SendEffectAsync(strEffect, true);
         }
 
         #endregion
@@ -1511,9 +1967,10 @@ namespace Comet.Game.States
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.WriteLog(LogLevel.Error, $"Error pk decrease for user {Identity}:{Name}").Forget();
+                await Log.WriteLog(LogLevel.Error, $"Error pk decrease for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -1528,9 +1985,25 @@ namespace Comet.Game.States
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.WriteLog(LogLevel.Error, $"Error in status check for user {Identity}:{Name}").Forget();
+                await Log.WriteLog(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                if (BattleSystem != null
+                    && BattleSystem.IsActive()
+                    && BattleSystem.NextAttack(GetInterAtkRate()))
+                {
+                    await BattleSystem.ProcessAttackAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
             if (!IsAlive)
@@ -1555,9 +2028,10 @@ namespace Comet.Game.States
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.WriteLog(LogLevel.Error, $"Error updating energy for user {Identity}:{Name}").Forget();
+                await Log.WriteLog(LogLevel.Error, $"Error updating energy for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -1567,9 +2041,10 @@ namespace Comet.Game.States
                     await ProcXpVal();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.WriteLog(LogLevel.Error, $"Error updating xp value for user {Identity}:{Name}").Forget();
+                await Log.WriteLog(LogLevel.Error, $"Error updating xp value for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -1579,9 +2054,10 @@ namespace Comet.Game.States
                     await AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.WriteLog(LogLevel.Error, $"Error heal life for usre {Identity}:{Name}").Forget();
+                await Log.WriteLog(LogLevel.Error, $"Error heal life for usre {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
         }
 

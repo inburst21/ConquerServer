@@ -26,6 +26,7 @@ using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Shared;
@@ -136,8 +137,9 @@ namespace Comet.Game.States
 
         public bool IsUserCast => CasterId == m_pOwner.Identity || CasterId == 0;
 
-        public void OnTimer()
+        public Task OnTimer()
         {
+            return Task.CompletedTask;
         }
 
         public bool Create(Role pRole, int nStatus, int nPower, int nSecs, int nTimes, uint caster = 0, byte level = 0)
@@ -239,7 +241,7 @@ namespace Comet.Game.States
 
         public bool IsUserCast => CasterId == m_pOwner.Identity || CasterId == 0;
 
-        public void OnTimer()
+        public async Task OnTimer()
         {
             try
             {
@@ -248,27 +250,26 @@ namespace Comet.Game.States
 
                 if (m_pOwner != null)
                 {
-                    //int nLoseLife = 0;
-
+                    int loseLife = 0;
                     switch (Identity)
                     {
                         case StatusSet.POISONED: // poison
                             if (!m_pOwner.IsAlive)
                                 return;
 
-                            //nLoseLife = (int)Calculations.CutOverflow(m_nData, m_pOwner.Life - 1);
-                            //m_pOwner.AddAttrib(ClientUpdateType.Hitpoints, -1 * nLoseLife);
+                            loseLife = (int)Calculations.CutOverflow(Power, m_pOwner.Life - 1);
+                            await m_pOwner.AddAttributesAsync(ClientUpdateType.Hitpoints, -1 * loseLife);
 
-                            //var msg2 = new MsgMagicEffect
-                            //{
-                            //    Identity = m_pOwner.Identity,
-                            //    SkillIdentity = 10010
-                            //};
-                            //msg2.AppendTarget(m_pOwner.Identity, (uint)nLoseLife, true, 0, 0);
-                            //m_pOwner.Map.SendToRegion(msg2, m_pOwner.MapX, m_pOwner.MapY);
+                            var msg2 = new MsgMagicEffect
+                            {
+                                AttackerIdentity = m_pOwner.Identity,
+                                MagicIdentity = 10010
+                            };
+                            msg2.Append(m_pOwner.Identity, loseLife, true);
+                            await m_pOwner.BroadcastRoomMsgAsync(msg2, true);
 
-                            //if (!m_pOwner.IsAlive)
-                            //    m_pOwner.BeKill(null);
+                            if (!m_pOwner.IsAlive)
+                                await m_pOwner.BeKill(null);
                             break;
                     }
 
@@ -277,8 +278,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                Log.WriteLog(LogLevel.Error, "StatusOnce::OnTimer() error!").Wait();
-                Log.WriteLog(LogLevel.Exception, ex.ToString()).Wait();
+                await Log.WriteLog(LogLevel.Error, "StatusOnce::OnTimer() error!");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
         }
 
@@ -544,6 +545,11 @@ namespace Comet.Game.States
             if (m_pOwner is Character pUsr)
                 await pUsr.SynchroAttributesAsync(ClientUpdateType.StatusFlag, (long) StatusFlag, true);
         }
+
+        public static ulong GetFlag(int status)
+        {
+            return 1UL << (status - 1);
+        }
     }
 
     public interface IStatus
@@ -588,6 +594,6 @@ namespace Comet.Game.States
 
         bool IncTime(int nMilliSecs, int nLimit);
         bool ToFlash();
-        void OnTimer();
+        Task OnTimer();
     }
 }

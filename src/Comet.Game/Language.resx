@@ -129,6 +129,12 @@
   <data name="StrDead" xml:space="preserve">
     <value>You are already dead.</value>
   </data>
+  <data name="StrDragonBallDropped" xml:space="preserve">
+    <value>{0} has dropped a Dragon Ball in {1}.</value>
+  </data>
+  <data name="StrGuardYouPay" xml:space="preserve">
+    <value>You`ll pay for what you`ve done!</value>
+  </data>
   <data name="StrInvalidCoordinate" xml:space="preserve">
     <value>Invalid coordinate.</value>
   </data>
@@ -140,6 +146,9 @@
   </data>
   <data name="StrKickout" xml:space="preserve">
     <value>You have been kicked from the game. Reason: {0}.</value>
+  </data>
+  <data name="StrKillingExperience" xml:space="preserve">
+    <value>{0} extra experience points awarded by killing monsters.</value>
   </data>
   <data name="StrNone" xml:space="preserve">
     <value>None</value>
