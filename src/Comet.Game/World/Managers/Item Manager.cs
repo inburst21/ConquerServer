@@ -69,7 +69,7 @@ namespace Comet.Game.World.Managers
             {
                 key = type / 100000 * 100000 + type % 1000 + 44000;
             }
-            else if (sort == Item.ItemSort.ItemsortWeaponDoubleHand)
+            else if (sort == Item.ItemSort.ItemsortWeaponDoubleHand && !Item.IsBow(type))
             {
                 key = type / 100000 * 100000 + type % 1000 + 55000;
             }
@@ -79,7 +79,7 @@ namespace Comet.Game.World.Managers
             }
             else
             {
-                key = type / 1000 * 1000 + (type % 100 / 10 * 10);
+                key = type / 1000 * 1000 + (type % 1000 - type % 10);
             }
 
             return key << (32 + level);

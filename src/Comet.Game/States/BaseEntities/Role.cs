@@ -351,9 +351,9 @@ namespace Comet.Game.States.BaseEntities
 
         public int SizeAddition => 1;
 
-        public virtual async Task<bool> CheckCrime(Role target)
+        public virtual Task<bool> CheckCrime(Role target)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         public virtual int AdjustWeaponDamage(int damage)
@@ -621,7 +621,7 @@ namespace Comet.Game.States.BaseEntities
 
         public async Task SetCrimeStatus(int nSecs)
         {
-            await AttachStatus(this, StatusSet.BLUE_NAME, 0, nSecs, 1, 0);
+            await AttachStatus(this, StatusSet.BLUE_NAME, 0, nSecs, 0, 0);
         }
 
         public virtual bool IsWing => QueryStatus(StatusSet.FLY) != null;
@@ -710,7 +710,7 @@ namespace Comet.Game.States.BaseEntities
             if (screen)
             {
                 if (this is Character user)
-                    await user.BroadcastRoomMsgAsync(msg, false);
+                    await user.BroadcastRoomMsgAsync(msg, screen);
                 else
                     Map?.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
             }

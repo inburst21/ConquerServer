@@ -55,7 +55,7 @@ namespace Comet.Game.States
         private TimeOut m_energyTm = new TimeOut(ADD_ENERGY_STAND_SECS);
         private TimeOut m_autoHeal = new TimeOut(AUTOHEALLIFE_TIME);
         private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
-        private TimeOut m_xpPoints = new TimeOut(3000);
+        private TimeOut m_xpPoints = new TimeOut(3);
         private TimeOut m_ghost = new TimeOut(3);
         private TimeOut m_transformation = new TimeOut();
         private TimeOut m_tRevive = new TimeOut();
@@ -181,7 +181,7 @@ namespace Comet.Game.States
 
             if (Transformation != null)
             {
-                ClearTransformation();
+                await ClearTransformation();
                 bBack = true;
             }
 
@@ -194,7 +194,8 @@ namespace Comet.Game.States
             {
                 Transformation = pTransform;
                 TransformationMesh = (ushort)pTransform.Lookface;
-
+                await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
+                Life = MaxLife;
                 m_transformation = new TimeOut(nKeepSecs);
                 m_transformation.Startup(nKeepSecs);
                 if (bSynchro)
@@ -211,18 +212,30 @@ namespace Comet.Game.States
             return false;
         }
 
-        public void ClearTransformation()
+        public async Task ClearTransformation()
         {
             TransformationMesh = 0;
             Transformation = null;
             m_transformation.Clear();
+            
+            await SynchroTransform();
+            await MagicData.AbortMagic(true);
+            BattleSystem.ResetBattle();
         }
 
         public async Task<bool> SynchroTransform()
         {
-            await SynchroAttributesAsync(ClientUpdateType.Mesh, Mesh, true);
-            await SynchroAttributesAsync(ClientUpdateType.Hitpoints, Life, true);
-            await SynchroAttributesAsync(ClientUpdateType.MaxHitpoints, MaxLife, true);
+            Life = MaxLife;
+
+            MsgUserAttrib msg = new MsgUserAttrib(Identity, ClientUpdateType.Mesh, Mesh);
+            msg.Append(ClientUpdateType.MaxHitpoints, MaxLife);
+            msg.Append(ClientUpdateType.Hitpoints, Life);
+            await BroadcastRoomMsgAsync(msg, true);
+
+
+            //await SynchroAttributesAsync(ClientUpdateType.Mesh, Mesh, true);
+            //await SynchroAttributesAsync(ClientUpdateType.Hitpoints, Life, true);
+            //await SynchroAttributesAsync(ClientUpdateType.MaxHitpoints, MaxLife, true);
             return true;
         }
 
@@ -310,6 +323,9 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return (uint) Transformation.MaxLife;
+
                 uint result = (uint)(Vitality * 24);
                 switch (Profession)
                 {
@@ -918,8 +934,7 @@ namespace Comet.Game.States
                 }
             }
 
-            item.SaveAsync().ConfigureAwait(false);
-
+            await item.SaveAsync();
             return true;
         }
 
@@ -1073,7 +1088,7 @@ namespace Comet.Game.States
             MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
             if (mapItem.Create(Map, pos, item, Identity))
             {
-                mapItem.EnterMap();
+                await mapItem.EnterMap();
             }
             else
             {
@@ -1104,7 +1119,7 @@ namespace Comet.Game.States
 
             MapItem mapItem = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
             if (mapItem.CreateMoney(Map, pos, amount, 0u))
-                mapItem.EnterMap();
+                await mapItem.EnterMap();
             else
             {
                 IdentityGenerator.MapItem.ReturnIdentity(mapItem.Identity);
@@ -1262,7 +1277,7 @@ namespace Comet.Game.States
         {
             get
             {
-                int result = Spirit;
+                int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.MagicAttack ?? 0;
@@ -1282,10 +1297,6 @@ namespace Comet.Game.States
                 {
                     result += UserPackage[pos]?.Defense ?? 0;
                 }
-
-                if (Metempsychosis > 0 && Level >= 70)
-                    result = (int) (result * 1.3d);
-
                 return result;
             }
         }
@@ -1352,7 +1363,7 @@ namespace Comet.Game.States
         {
             get
             {
-                int result = Agility;
+                int result = Agility/3;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.Accuracy ?? 0;
@@ -1368,7 +1379,13 @@ namespace Comet.Game.States
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
-                    result += UserPackage[pos]?.DragonGemEffect ?? 0;
+                    Item item = UserPackage[pos];
+                    if (item != null)
+                    {
+                        result += item.DragonGemEffect;
+                        //if ((item.IsWeaponTwoHand() || item.IsBow()) && UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == true)
+                            //result += item.DragonGemEffect;
+                    }
                 }
                 return result;
             }
@@ -1541,7 +1558,7 @@ namespace Comet.Game.States
             }
         }
 
-        public bool DecEquipmentDurability(bool bAttack, int hitByMagic, ushort useItemNum)
+        public async Task<bool> DecEquipmentDurability(bool bAttack, int hitByMagic, ushort useItemNum)
         {
             int nInc = -1 * useItemNum;
 
@@ -1559,12 +1576,12 @@ namespace Comet.Game.States
                         || i == Item.ItemPosition.Boots)
                     {
                         if (!bAttack)
-                            AddEquipmentDurability(i, nInc);
+                            await AddEquipmentDurability(i, nInc);
                     }
                     else
                     {
                         if (bAttack)
-                            AddEquipmentDurability(i, nInc);
+                            await AddEquipmentDurability(i, nInc);
                     }
                 }
                 else
@@ -1575,12 +1592,12 @@ namespace Comet.Game.States
                         || i == Item.ItemPosition.Boots)
                     {
                         if (!bAttack)
-                            AddEquipmentDurability(i, -1);
+                            await AddEquipmentDurability(i, -1);
                     }
                     else
                     {
                         if (bAttack)
-                            AddEquipmentDurability(i, nInc);
+                            await AddEquipmentDurability(i, nInc);
                     }
                 }
             }
@@ -1761,7 +1778,7 @@ namespace Comet.Game.States
                         return false;
                     case PkModeType.Team:
                     case PkModeType.Capture:
-                        if (monster.IsGuard())
+                        if (monster.IsGuard() || monster.IsPkKiller())
                             return true;
                         return false;
                     case PkModeType.FreePk:
@@ -1774,7 +1791,7 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
-            return m_respawn.IsActive() && !m_respawn.IsTimeOut();
+            return !m_respawn.IsActive() || m_respawn.IsTimeOut();
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
@@ -1783,7 +1800,7 @@ namespace Comet.Game.States
                 return (0, InteractionEffect.None);
 
             if (!target.IsEvil() && Map.IsDeadIsland() || (target is Monster mob && mob.IsGuard()))
-                SetCrimeStatus(15);
+                await SetCrimeStatus(15);
 
             return await BattleSystem.CalcPower(BattleSystem.MagicType.None, this, target);
         }
@@ -2040,7 +2057,7 @@ namespace Comet.Game.States
                 }
 
                 if (TransformationMesh == 98 || TransformationMesh == 99)
-                    ClearTransformation();
+                    await ClearTransformation();
                 return;
             }
 
@@ -2049,7 +2066,7 @@ namespace Comet.Game.States
             await DetachStatus(StatusSet.GHOST);
             await DetachStatus(StatusSet.DEAD);
             
-            ClearTransformation();
+            await ClearTransformation();
 
             await SetAttributesAsync(ClientUpdateType.Stamina, DEFAULT_USER_ENERGY);
             await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
@@ -2420,7 +2437,7 @@ namespace Comet.Game.States
 
         public async Task SetXp(byte nXp)
         {
-            if (nXp > 100 || QueryStatus(StatusSet.START_XP) != null)
+            if (nXp > 100)
                 return;
             await SetAttributesAsync(ClientUpdateType.XpCircle, nXp);
         }
@@ -2771,7 +2788,9 @@ namespace Comet.Game.States
 
             m_dbObject.LogoutTime = DateTime.Now;
             m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
-            
+
+            await LeaveMap();
+
             await SaveAsync();
 
             try

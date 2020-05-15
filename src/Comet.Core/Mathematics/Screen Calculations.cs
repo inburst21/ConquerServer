@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 #endregion
@@ -113,6 +114,85 @@ namespace Comet.Core.Mathematics
                 return true;
 
             return false;
+        }
+
+        /// <summary>
+        /// Return all points on that line. (From TQ)
+        /// </summary>
+        public static void DDALine(int x0, int y0, int x1, int y1, int nRange, ref List<Point> vctPoint)
+        {
+            if (x0 == x1 && y0 == y1)
+                return;
+
+            float scale = (float)(1.0f * nRange / Math.Sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)));
+            x1 = (int)(0.5f + scale * (x1 - x0) + x0);
+            y1 = (int)(0.5f + scale * (y1 - y0) + y0);
+            DDALineEx(x0, y0, x1, y1, ref vctPoint);
+        }
+
+        /// <summary>
+        /// Return all points on that line. (From TQ)
+        /// </summary>
+        public static void DDALineEx(int x0, int y0, int x1, int y1, ref List<Point> vctPoint)
+        {
+            if (x0 == x1 && y0 == y1)
+                return;
+            if (vctPoint == null)
+                vctPoint = new List<Point>();
+
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            int absDx = Math.Abs(dx);
+            int absDy = Math.Abs(dy);
+            Point point;
+            if (absDx > absDy)
+            {
+                int _0_5 = absDx * (dy > 0 ? 1 : -1);
+                int numerator = dy * 2;
+                int denominator = absDx * 2;
+                if (dx > 0)
+                {
+                    // x0 ++
+                    for (int i = 1; i <= absDx; i++)
+                    {
+                        point = new Point { X = x0 + i, Y = y0 + (numerator * i + _0_5) / denominator };
+                        vctPoint.Add(point);
+                    }
+                }
+                else if (dx < 0)
+                {
+                    // x0 --
+                    for (int i = 1; i <= absDx; i++)
+                    {
+                        point = new Point { X = x0 - i, Y = y0 + (numerator * i + _0_5) / denominator };
+                        vctPoint.Add(point);
+                    }
+                }
+            }
+            else
+            {
+                int _0_5 = absDy * (dx > 0 ? 1 : -1);
+                int numerator = dx * 2;
+                int denominator = absDy * 2;
+                if (dy > 0)
+                {
+                    // y0 ++
+                    for (int i = 1; i <= absDy; i++)
+                    {
+                        point = new Point { Y = y0 + i, X = x0 + (numerator * i + _0_5) / denominator };
+                        vctPoint.Add(point);
+                    }
+                }
+                else if (dy < 0)
+                {
+                    // y0 -- 
+                    for (int i = 1; i <= absDy; i++)
+                    {
+                        point = new Point { Y = y0 - i, X = x0 + (numerator * i + _0_5) / denominator };
+                        vctPoint.Add(point);
+                    }
+                }
+            }
         }
     }
 }

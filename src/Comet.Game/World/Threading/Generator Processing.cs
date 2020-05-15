@@ -24,10 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 

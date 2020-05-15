@@ -180,10 +180,13 @@ namespace Comet.Game
         protected override void Disconnected(Client actor)
         {
             if (actor == null) return;
+            
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
+            
             Processor.DeselectPartition(actor.Partition);
-            Kernel.RoleManager.LogoutUser(actor.Identity);
+
+            Kernel.RoleManager.LogoutUser(actor.Identity).ConfigureAwait(false);
         }
     }
 }

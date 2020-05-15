@@ -297,7 +297,7 @@ namespace Comet.Game.States.Items
                 if (!IsPackSpare(2))
                     return false;
 
-                if (!UnequipAsync(Item.ItemPosition.LeftHand).Result)
+                if (!await UnequipAsync(Item.ItemPosition.LeftHand))
                     return false;
             }
             else
@@ -739,7 +739,7 @@ namespace Comet.Game.States.Items
                         var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                         if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
                         {
-                            pMapItem.EnterMap();
+                            await pMapItem.EnterMap();
                             await Log.GmLog("drop_item",
                                 $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
                         }
@@ -798,7 +798,7 @@ namespace Comet.Game.States.Items
                     var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                     if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
                     {
-                        pMapItem.EnterMap();
+                        await pMapItem.EnterMap();
                         await Log.GmLog("drop_item",
                             $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
                     }

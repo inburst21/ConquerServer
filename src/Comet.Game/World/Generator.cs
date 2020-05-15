@@ -31,7 +31,6 @@ using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.World.Maps;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -39,8 +38,8 @@ namespace Comet.Game.World
 {
     public sealed class Generator
     {
-        private const int _MAX_PER_GEN = 20;
-        private const int _MIN_TIME_BETWEEN_GEN = 10;
+        private const int _MAX_PER_GEN = 25;
+        private const int _MIN_TIME_BETWEEN_GEN = 5;
         private static uint m_idGenerator = 2000000;
 
         private readonly DbGenerator m_dbGen;
@@ -168,6 +167,15 @@ namespace Comet.Game.World
             if (!m_pTimer.ToNextTime())
                 return;
 
+            foreach (var monster in m_dicMonsters.Values)
+            {
+                if (!monster.IsAlive && monster.CanDisappear())
+                {
+                    await monster.LeaveMap();
+                    return;
+                }
+            }
+
             int generate = Math.Min(m_dbGen.MaxPerGen- Generated, _MAX_PER_GEN);
             if (generate <= 0)
                 return;
@@ -177,7 +185,7 @@ namespace Comet.Game.World
                 Monster monster = await GenerateMonsterAsync();
                 if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
                     continue;
-                monster.EnterMap();
+                await monster.EnterMap();
                 Generated++;
             }
         }

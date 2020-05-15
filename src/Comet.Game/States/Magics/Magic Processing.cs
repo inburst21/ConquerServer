@@ -232,11 +232,11 @@ namespace Comet.Game.States.Magics
 
             if (magic.UseMana != 0)
             {
-                if (!map.IsTrainingMap())
-                    user?.DecEquipmentDurability(false, (int) HitByMagic(), (ushort)m_pMagic.UseItemNum);
+                if (!map.IsTrainingMap() && user != null)
+                    await user.DecEquipmentDurability(false, (int) HitByMagic(), (ushort)m_pMagic.UseItemNum);
 
-                if (await Kernel.ChanceCalcAsync(7))
-                    user?.SendGemEffect();
+                if (await Kernel.ChanceCalcAsync(7) && user != null)
+                    await user.SendGemEffect();
             }
 
             if (magic.IntoneSpeed <= 0)
@@ -261,7 +261,7 @@ namespace Comet.Game.States.Magics
                         m_tApply = new TimeOutMS(0);
                     if (m_pMagic == null)
                         return false;
-
+                    
                     m_tApply.Startup((int)m_pMagic.StepSeconds);
                     m_state = MagicState.Launch;
                 }
@@ -303,6 +303,12 @@ namespace Comet.Game.States.Magics
                         break;
                     case MagicSort.Bomb:
                         result = await ProcessBombAsync(magic);
+                        break;
+                    case MagicSort.Line:
+                        result = await ProcessLineAsync(magic);
+                        break;
+                    case MagicSort.Transform:
+                        result = await ProcessTransformAsync(magic);
                         break;
 
                     default:
@@ -561,6 +567,97 @@ namespace Comet.Game.States.Magics
 
             await CheckCrime(result.Roles.ToDictionary(x => x.Identity, x => x));
             await AwardExp(0, exp, exp, magic);
+            return true;
+        }
+
+        private async Task<bool> ProcessLineAsync(Magic magic)
+        {
+            if (magic == null || m_pOwner == null)
+                return false;
+
+            var allTargets = m_pOwner.Map.Query9BlocksByPos(m_pOwner.MapX, m_pOwner.MapY);
+
+            List<Point> setPoint = new List<Point>();
+            var pos = new Point(m_pOwner.MapX, m_pOwner.MapY);
+            ScreenCalculations.DDALine(pos.X, pos.Y, m_targetPos.X, m_targetPos.Y, (int)m_pMagic.Range, ref setPoint);
+
+            MsgMagicEffect msg = new MsgMagicEffect
+            {
+                AttackerIdentity = m_pOwner.Identity,
+                MapX = (ushort) m_targetPos.X,
+                MapY = (ushort) m_targetPos.Y,
+                MagicIdentity = magic.Type,
+                MagicLevel = magic.Level
+            };
+            long exp = 0;
+            Character user = m_pOwner as Character;
+
+            Tile userTile = m_pOwner.Map[m_pOwner.MapX, m_pOwner.MapY];
+            foreach (var point in setPoint)
+            {
+                if (msg.Count >= _MAX_TARGET_NUM)
+                {
+                    await m_pOwner.BroadcastRoomMsgAsync(msg, true);
+                    msg.ClearTargets();
+                }
+
+                Tile targetTile = m_pOwner.Map[point.X, point.Y];
+                if (userTile.Elevation - targetTile.Elevation > 26)
+                    continue;
+
+                Role target = allTargets.FirstOrDefault(x => x.MapX == point.X && x.MapY == point.Y);
+                if (target == null || target.Identity == m_pOwner.Identity)
+                    continue;
+
+                if (m_pOwner.IsImmunity(target)
+                    || !target.IsAttackable(m_pOwner))
+                    continue;
+
+                var result = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
+                int lifeLost = (int)Math.Min(result.Damage, target.Life);
+
+                await target.BeAttack(HitByMagic(), m_pOwner, result.Damage, true);
+
+                if (user != null && target is Monster monster)
+                {
+                    exp = user.AdjustExperience(target, lifeLost, false);
+                    if (!monster.IsAlive)
+                    {
+                        int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
+                        exp += user.AdjustExperience(monster, nBonusExp, false);
+                    }
+                }
+
+                if (!target.IsAlive)
+                    await m_pOwner.Kill(target, GetDieMode());
+
+                msg.Append(target.Identity, result.Damage, true);
+            }
+
+            if (msg.Count > 0)
+                await m_pOwner.BroadcastRoomMsgAsync(msg, true);
+
+            await CheckCrime(allTargets.ToDictionary(x => x.Identity, x => x));
+            await AwardExp(0, exp, exp, magic);
+            return true;
+        }
+
+        private async Task<bool> ProcessTransformAsync(Magic magic)
+        {
+            if (magic == null || m_pOwner == null || !(m_pOwner is Character user))
+                return false;
+
+            MsgMagicEffect msg = new MsgMagicEffect
+            {
+                AttackerIdentity = m_pOwner.Identity,
+                MapX = m_pOwner.MapX,
+                MapY = m_pOwner.MapY,
+                MagicIdentity = magic.Type,
+                MagicLevel = magic.Level
+            };
+            await m_pOwner.BroadcastRoomMsgAsync(msg, true);
+            await user.Transform((uint) magic.Power, (int) magic.StepSeconds, true);
+            await AwardExp(0, 0, 1, magic);
             return true;
         }
 

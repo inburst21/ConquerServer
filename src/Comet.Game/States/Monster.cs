@@ -275,10 +275,10 @@ namespace Comet.Game.States
 
             int dropNum = 0;
             int rate = await Kernel.NextAsync(0, 1000);
-            int chance = BattleSystem.AdjustDrop(100, attacker.Level, Level);
+            int chance = BattleSystem.AdjustDrop(1000, attacker.Level, Level);
             if (rate < Math.Min(1000, chance))
             {
-                dropNum = 1 + await Kernel.NextAsync(1, 3); // drop 10-16 items
+                dropNum = 1 + await Kernel.NextAsync(3, 8); // drop 10-16 items
             }
             else
             {
@@ -318,7 +318,7 @@ namespace Comet.Game.States
                 if (drop.Create(Map, targetPos, itemtype, idOwner, 0, 0, 0))
                 {
                     await drop.GenerateRandomInfoAsync();
-                    drop.EnterMap();
+                    await drop.EnterMap();
                 }
                 else
                 {
@@ -327,31 +327,30 @@ namespace Comet.Game.States
             }
         }
 
-        private Task DropMoney(uint amount, uint idOwner)
+        private async Task DropMoney(uint amount, uint idOwner)
         {
             Point targetPos = new Point(MapX, MapY);
             if (Map.FindDropItemCell(4, ref targetPos))
             {
                 MapItem drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                 if (drop.CreateMoney(Map, targetPos, amount, idOwner))
-                    drop.EnterMap();
+                    await drop.EnterMap();
                 else
                 {
                     IdentityGenerator.MapItem.ReturnIdentity(drop.Identity);
                 }
             }
-            return Task.CompletedTask;
         }
 
-        private readonly int[] m_dropHeadgear = { 111000, 112000, 113000, 114000, 143000, 118000, 123000, 141000, 142000, 117000 };
+        private readonly int[] m_dropHeadgear = { 111000, 112000, 113000, 114000, 143000, 118000, /*123000, 141000, 142000,*/ 117000 };
         private readonly int[] m_dropNecklace = { 120000, 121000 };
-        private readonly int[] m_dropArmor = { 130000, 131000, 133000, 134000, 135000, 136000, 139000 };
+        private readonly int[] m_dropArmor = { 130000, 131000, 133000, 134000/*, 135000, 136000, 139000*/ };
         private readonly int[] m_dropRing = { 150000, 151000, 152000 };
         private readonly int[] m_dropWeapon =
         {
             410000, 420000, 421000, 430000, 440000, 450000, 460000, 480000, 481000,
-            490000, 500000, 510000, 530000, 540000, 560000, 561000, 580000, 601000,
-            610000, 611000, 612000, 613000
+            490000, 500000, 510000, 530000, 540000, 560000, 561000, 580000, 
+            // 601000, 610000, 611000, 612000, 613000
         };
 
         public async Task<uint> GetDropItem()
@@ -368,23 +367,23 @@ namespace Comet.Game.States
              * 8 = mp
              */
             var possibleDrops = new List<int>();
-            if (m_dbMonster.DropArmet != 0)
+            if (m_dbMonster.DropArmet != 99)
                 possibleDrops.Add(0);
-            if (m_dbMonster.DropNecklace != 0)
+            if (m_dbMonster.DropNecklace != 99)
                 possibleDrops.Add(1);
-            if (m_dbMonster.DropArmor != 0)
+            if (m_dbMonster.DropArmor != 99)
                 possibleDrops.Add(2);
-            if (m_dbMonster.DropRing != 0)
+            if (m_dbMonster.DropRing != 99)
                 possibleDrops.Add(3);
-            if (m_dbMonster.DropWeapon != 0)
+            if (m_dbMonster.DropWeapon != 99)
                 possibleDrops.Add(4);
-            if (m_dbMonster.DropShield != 0)
+            if (m_dbMonster.DropShield != 99)
                 possibleDrops.Add(5);
-            if (m_dbMonster.DropShoes != 0)
+            if (m_dbMonster.DropShoes != 99)
                 possibleDrops.Add(6);
-            if (m_dbMonster.DropHp != 0)
+            if (m_dbMonster.DropHp != 99)
                 possibleDrops.Add(7);
-            if (m_dbMonster.DropMp != 0)
+            if (m_dbMonster.DropMp != 99)
                 possibleDrops.Add(8);
 
             if (possibleDrops.Count <= 0)
@@ -466,6 +465,11 @@ namespace Comet.Game.States
         #endregion
 
         #region Checks
+
+        public bool CanDisappear()
+        {
+            return m_disappear.IsActive() && m_disappear.IsTimeOut();
+        }
 
         public bool IsLockUser()
         {
@@ -716,11 +720,8 @@ namespace Comet.Game.States
         
         public override async Task OnTimerAsync()
         {
-            if (!IsAlive && m_disappear.IsTimeOut())
-            {
-                LeaveMap();
+            if (!IsAlive)
                 return;
-            }
 
             if (m_tStatusCheck.ToNextTime())
             {

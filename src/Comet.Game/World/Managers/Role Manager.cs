@@ -117,6 +117,8 @@ namespace Comet.Game.World.Managers
             await user.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}");
 #endif
 
+            await Log.WriteLog(LogLevel.Message, $"{user.Character.Name} has logged in.");
+
             if (OnlinePlayers > MaxOnlinePlayers)
                 MaxOnlinePlayers = OnlinePlayers;
             return true;
@@ -130,13 +132,14 @@ namespace Comet.Game.World.Managers
                 try
                 {
                     await user.OnDisconnectAsync();
-                    user.Client.Disconnect();
                 }
                 catch
                 {
                     // just in case the user is already disconnected and we receive an exception
                 }
 
+                await Log.WriteLog(LogLevel.Message, $"{user.Name} has logged out.");
+                user.Client.Disconnect();
                 return true;
             }
 
@@ -205,7 +208,11 @@ namespace Comet.Game.World.Managers
 
         public async Task OnRoleTimerAsync()
         {
-            
+            foreach (var item in m_mapItemSet.Values)
+            {
+                if (item.CanDisappear())
+                    await item.Disappear();
+            }
         }
 
         public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,

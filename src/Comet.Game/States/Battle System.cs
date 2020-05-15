@@ -94,6 +94,9 @@ namespace Comet.Game.States
             await target.BeAttack(MagicType.None, m_owner, damage, true);
 
             if (user != null)
+                await user.CheckCrime(target);
+
+            if (user != null && target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller())
             {
                 nExp = user.AdjustExperience(target, nExp, false);
                 int nAdditionExp = 0;
@@ -129,7 +132,7 @@ namespace Comet.Game.States
                 if (damage > target.MaxLife / 3)
                     dieWay = 2;
 
-                m_owner.Kill(target, dieWay);
+                await m_owner.Kill(target, dieWay);
             }
 
             return true;
@@ -161,9 +164,6 @@ namespace Comet.Game.States
                 attack = (int) (attacker.MaxAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1));
             else
                 attack = (int) (attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1));
-
-            if (attacker.IsBowman)
-                attack = attack * 2;
 
             Character targetUser = target as Character;
             int defense = target.Defense;
@@ -269,10 +269,7 @@ namespace Comet.Game.States
             int dodge = target.Dodge;
             if (target.QueryStatus(StatusSet.DODGE) != null)
                 dodge = Calculations.AdjustData(dodge, attacker.QueryStatus(StatusSet.DODGE).Power);
-
-            if (target is Character)
-                dodge += 40;
-
+            
             hitRate = Math.Min(99, Math.Max(40, hitRate - dodge));
 
 #if DEBUG

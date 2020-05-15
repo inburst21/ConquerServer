@@ -103,7 +103,7 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
@@ -127,7 +127,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.EquipmentRemove:
-                    if (!user.UserPackage.UnequipAsync((Item.ItemPosition)Command).Result)
+                    if (!await user.UserPackage.UnequipAsync((Item.ItemPosition)Command))
                         await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.System, Color.Red);
                     break;
 
@@ -137,11 +137,10 @@ namespace Comet.Game.Packets
 
                 default:
                     await client.SendAsync(this);
-                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
-                        string.Format("Missing packet {0}, Action {1}, Length {2}",
-                            Type, Action, Length)));
-                    Console.WriteLine(
-                        "Missing packet {0}, action {1}, Length {2}\n{3}",
+                    if (client.Character.IsGm())
+                        await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                            $"Missing packet {Type}, Action {Action}, Length {Length}"));
+                    Console.WriteLine("Missing packet {0}, action {1}, Length {2}\n{3}",
                         Type, Action, Length, PacketDump.Hex(Encode()));
                     break;
             }

@@ -57,7 +57,7 @@ namespace Comet.Game.Packets
 
         public ushort CommandX
         {
-            get => (ushort) (Command - CommandY);
+            get => (ushort) (Command - (CommandY << 16));
             set => Command = (uint) (CommandY << 16 | value);
         }
 
@@ -71,7 +71,7 @@ namespace Comet.Game.Packets
 
         public ushort ArgumentX
         {
-            get => (ushort)(Argument - ArgumentY);
+            get => (ushort)(Argument - (ArgumentY << 16));
             set => Argument = (uint)(ArgumentY << 16 | value);
         }
 
@@ -141,8 +141,8 @@ namespace Comet.Game.Packets
                     ArgumentX = client.Character.MapX;
                     ArgumentY = client.Character.MapY;
 
+                    await client.Character.EnterMap();
                     await client.SendAsync(this);
-                    client.Character.EnterMap();
                     break;
 
                 case ActionType.LoginInventory: // 75
@@ -156,15 +156,14 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginProficiencies: // 77
+                    await client.Character.WeaponSkill.InitializeAsync();
                     await client.Character.WeaponSkill.SendAsync();
-
                     await client.SendAsync(this);
                     break;
 
                 case ActionType.LoginSpells: // 78
                     await client.Character.MagicData.InitializeAsync();
                     await client.Character.MagicData.SendAllAsync();
-
                     await client.SendAsync(this);
                     break;
 
@@ -245,8 +244,7 @@ namespace Comet.Game.Packets
 
                 case ActionType.SpellAbortTransform:
                     if (user.Transformation != null)
-                        user.ClearTransformation();
-
+                        await user.ClearTransformation();
                     break;
 
                 case ActionType.LoginComplete: // 130

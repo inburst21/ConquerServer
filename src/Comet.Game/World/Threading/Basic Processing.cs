@@ -32,7 +32,7 @@ namespace Comet.Game.World.Threading
 {
     public sealed class SystemProcessor : TimerBase
     {
-        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - {2}";
+        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - Players: {3} (max:{4}) - {2}";
 
         private TimeOut m_analytics = new TimeOut(300);
 
@@ -55,7 +55,7 @@ namespace Comet.Game.World.Threading
         {
             DateTime now = DateTime.Now;
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
-                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval));
+                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers);
 
             if (m_analytics.ToNextTime())
             {
@@ -72,6 +72,8 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             }
+
+            await Kernel.RoleManager.OnRoleTimerAsync();
 
             return true;
         }

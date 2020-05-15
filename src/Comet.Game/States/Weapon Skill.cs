@@ -43,10 +43,13 @@ namespace Comet.Game.States
         {
             m_user = user;
             m_skills = new ConcurrentDictionary<ushort, DbWeaponSkill>();
+        }
 
-            foreach (var skill in WeaponSkillRepository.GetAsync(user.Identity).Result)
+        public async Task InitializeAsync()
+        {
+            foreach (var skill in await WeaponSkillRepository.GetAsync(m_user.Identity))
             {
-                m_skills.TryAdd((ushort) skill.Type, skill);
+                m_skills.TryAdd((ushort)skill.Type, skill);
             }
         }
 
@@ -80,7 +83,7 @@ namespace Comet.Game.States
         {
             try
             {
-                using (var db = new ServerDbContext())
+                await using (var db = new ServerDbContext())
                 {
                     if (skill.Identity == 0)
                         db.Add(skill);

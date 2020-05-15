@@ -218,6 +218,16 @@ namespace Comet.Game.States.Items
                 || sort == Item.ItemSort.ItemsortWeaponShield)
             {
                 string message = string.Empty;
+
+                if (Item.GetQuality(Itemtype) == 8)
+                {
+                    message += $"Elite[{Itemtype}]";
+                }
+                else if (Item.GetQuality(Itemtype) == 9)
+                {
+                    message += $"Super[{Itemtype}]";
+                }
+
                 if (sort == Item.ItemSort.ItemsortWeaponSingleHand
                     && sort == Item.ItemSort.ItemsortWeaponDoubleHand
                     && await Kernel.ChanceCalcAsync(0.01d)) // socketed item
@@ -293,6 +303,19 @@ namespace Comet.Game.States.Items
         #endregion
 
         #region Map
+
+        public bool CanDisappear()
+        {
+            return m_tAlive.IsTimeOut();
+        }
+
+        public async Task Disappear()
+        {
+            if (m_itemInfo != null)
+                await m_itemInfo.DeleteAsync();
+
+            await LeaveMap();
+        }
 
         public override async Task EnterMap()
         {
