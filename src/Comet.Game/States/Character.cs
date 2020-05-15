@@ -57,6 +57,9 @@ namespace Comet.Game.States
         private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
         private TimeOut m_xpPoints = new TimeOut(3000);
         private TimeOut m_ghost = new TimeOut(3);
+        private TimeOut m_transformation = new TimeOut();
+        private TimeOut m_tRevive = new TimeOut();
+        private TimeOut m_respawn = new TimeOut();
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -76,6 +79,8 @@ namespace Comet.Game.States
              * Removed the base class because we'll be inheriting role stuff.
              */
             m_dbObject = character;
+
+            m_mesh = m_dbObject.Mesh;
 
             m_posX = character.X;
             m_posY = character.Y;
@@ -121,12 +126,29 @@ namespace Comet.Game.States
         
         #region Appearence
 
+        private uint m_mesh = 0;
+        private ushort m_transformMesh = 0;
+
         public int Gender => Body == BodyType.AgileMale || Body == BodyType.MuscularMale ? 1 : 2;
+
+        public ushort TransformationMesh
+        {
+            get => m_transformMesh;
+            set
+            {
+                m_transformMesh = value;
+                Mesh = (uint)((uint)value * 10000000 + Avatar * 10000 + (uint) Body);
+            }
+        }
 
         public override uint Mesh
         {
-            get => m_dbObject.Mesh;
-            set => m_dbObject.Mesh = value;
+            get => m_mesh;
+            set
+            {
+                m_mesh = value;
+                m_dbObject.Mesh = value % 10000000;
+            }
         }
 
         public BodyType Body
@@ -145,6 +167,73 @@ namespace Comet.Game.States
         {
             get => m_dbObject.Hairstyle;
             set => m_dbObject.Hairstyle = value;
+        }
+
+        #endregion
+
+        #region Transformation
+
+        public Transformation Transformation { get; protected set; }
+
+        public async Task<bool> Transform(uint dwLook, int nKeepSecs, bool bSynchro)
+        {
+            bool bBack = false;
+
+            if (Transformation != null)
+            {
+                ClearTransformation();
+                bBack = true;
+            }
+
+            DbMonstertype pType = Kernel.RoleManager.GetMonstertype(dwLook);
+            if (pType == null)
+                return false;
+
+            Transformation pTransform = new Transformation(this);
+            if (pTransform.Create(pType))
+            {
+                Transformation = pTransform;
+                TransformationMesh = (ushort)pTransform.Lookface;
+
+                m_transformation = new TimeOut(nKeepSecs);
+                m_transformation.Startup(nKeepSecs);
+                if (bSynchro)
+                    await SynchroTransform();
+            }
+            else
+            {
+                pTransform = null;
+            }
+
+            if (bBack)
+                await SynchroTransform();
+
+            return false;
+        }
+
+        public void ClearTransformation()
+        {
+            TransformationMesh = 0;
+            Transformation = null;
+            m_transformation.Clear();
+        }
+
+        public async Task<bool> SynchroTransform()
+        {
+            await SynchroAttributesAsync(ClientUpdateType.Mesh, Mesh, true);
+            await SynchroAttributesAsync(ClientUpdateType.Hitpoints, Life, true);
+            await SynchroAttributesAsync(ClientUpdateType.MaxHitpoints, MaxLife, true);
+            return true;
+        }
+
+        public void SetGhost()
+        {
+            if (IsAlive) return;
+
+            ushort trans = 98;
+            if (Gender == 2)
+                trans = 99;
+            TransformationMesh = trans;
         }
 
         #endregion
@@ -497,7 +586,7 @@ namespace Comet.Game.States
             }
 
             Experience = (ulong)amount;
-            SetAttributesAsync(ClientUpdateType.Experience, (long) Experience).Forget();
+            await SetAttributesAsync(ClientUpdateType.Experience, (long) Experience);
             return true;
         }
 
@@ -657,7 +746,7 @@ namespace Comet.Game.States
         {
             Silvers = (uint) (Silvers + amount);
             await SaveAsync();
-            SynchroAttributesAsync(ClientUpdateType.Money, Silvers).Forget();
+            await SynchroAttributesAsync(ClientUpdateType.Money, Silvers);
         }
 
         public async Task<bool> SpendMoney(int amount, bool notify = false)
@@ -665,13 +754,13 @@ namespace Comet.Game.States
             if (amount > Silvers)
             {
                 if (notify)
-                    SendAsync(Language.StrNotEnoughMoney, MsgTalk.TalkChannel.TopLeft, Color.Red).Forget();
+                    await SendAsync(Language.StrNotEnoughMoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
             Silvers = (uint)(Silvers - amount);
             await SaveAsync();
-            SynchroAttributesAsync(ClientUpdateType.Money, Silvers).Forget();
+            await SynchroAttributesAsync(ClientUpdateType.Money, Silvers);
             return true;
         }
 
@@ -693,7 +782,7 @@ namespace Comet.Game.States
         {
             Silvers = (uint)(ConquerPoints + amount);
             await SaveAsync();
-            SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints).Forget();
+            await SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints);
         }
 
         public async Task<bool> SpendConquerPoints(int amount, bool notify = false)
@@ -701,13 +790,13 @@ namespace Comet.Game.States
             if (amount > ConquerPoints)
             {
                 if (notify)
-                    SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red).Forget();
+                    await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
             ConquerPoints = (uint)(ConquerPoints - amount);
             await SaveAsync();
-            SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints).Forget();
+            await SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints);
             return true;
         }
 
@@ -720,32 +809,10 @@ namespace Comet.Game.States
         public ushort PkPoints
         {
             get => m_dbObject?.KillPoints ?? 0;
-            set
-            {
-                if (m_dbObject.KillPoints != value)
-                {
-                    if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
-                    {
-                        DetachStatus(StatusSet.RED_NAME).Forget();
-                        AttachStatus(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0).Forget();
-                    }
-                    else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
-                    {
-                        DetachStatus(StatusSet.BLACK_NAME).Forget();
-                        AttachStatus(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0).Forget();
-                    }
-                    else
-                    {
-                        DetachStatus(StatusSet.BLACK_NAME).Forget();
-                        DetachStatus(StatusSet.RED_NAME).Forget();
-                    }
-                }
-
-                m_dbObject.KillPoints = value;
-            }
+            set => m_dbObject.KillPoints = value;
         }
 
-        public void ProcessPk(Character target)
+        public async Task ProcessPk(Character target)
         {
             if (!Map.IsPkField() && !Map.IsPkGameMap() && !Map.IsSynMap() && !Map.IsPrisionMap())
             {
@@ -766,14 +833,36 @@ namespace Comet.Game.States
                             nAddPk /= 2;
                     }
 
-                    PkPoints += (ushort)nAddPk;
+                    await AddAttributesAsync(ClientUpdateType.PkPoints, nAddPk);
 
-                    SetCrimeStatus(60);
+                    await SetCrimeStatus(60);
 
                     if (PkPoints > 29)
-                        SendAsync(Language.StrKillingTooMuch).Forget();
+                        await SendAsync(Language.StrKillingTooMuch);
                 }
             }
+        }
+
+        public override async Task<bool> CheckCrime(Role target)
+        {
+            if (target == null) return false;
+            if (!target.IsEvil() && !target.IsMonster())
+            {
+                if (!Map.IsTrainingMap() && !Map.IsDeadIsland() && !Map.IsDeadIsland() && !Map.IsPrisionMap() &&
+                    !Map.IsFamilyMap() && !Map.IsPkGameMap() && !Map.IsPkField())
+                {
+                    await SetCrimeStatus(25);
+                }
+                return true;
+            }
+
+            if (target.IsMonster() && ((Monster) target).IsGuard())
+            {
+                await SetCrimeStatus(25);
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -794,6 +883,159 @@ namespace Comet.Game.States
         #region User Package
 
         public UserPackage UserPackage { get; }
+
+        public async Task<bool> SpendEquipItem(uint dwItem, uint dwAmount, bool bSynchro)
+        {
+            if (dwItem <= 0)
+                return false;
+
+            Item item = null;
+            if (UserPackage[Item.ItemPosition.RightHand]?.GetItemSubType() == dwItem &&
+                UserPackage[Item.ItemPosition.RightHand]?.Durability >= dwAmount)
+                item = UserPackage[Item.ItemPosition.RightHand];
+            else if (UserPackage[Item.ItemPosition.LeftHand]?.GetItemSubType() == dwItem
+                     && UserPackage[Item.ItemPosition.LeftHand]?.Durability >= dwAmount)
+                item = UserPackage[Item.ItemPosition.LeftHand];
+
+            if (item == null)
+                return false;
+
+            if (!item.IsExpend() && item.Durability < dwAmount)
+                return false;
+
+            if (item.IsExpend() && item.Durability >= dwAmount)
+            {
+                item.Durability -= (ushort)dwAmount;
+                if (bSynchro)
+                    await SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+            }
+            else
+            {
+                if (item.IsNonsuchItem())
+                {
+                    await Log.GmLog("SpendEquipItem",
+                        $"{Name}({Identity}) Spend item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}");
+                }
+            }
+
+            item.SaveAsync().ConfigureAwait(false);
+
+            return true;
+        }
+
+        public bool CheckWeaponSubType(uint idItem, uint dwNum = 0)
+        {
+            uint[] items = new uint[idItem.ToString().Length / 3];
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (idItem > 999 && idItem != 40000 && idItem != 50000)
+                {
+                    int idx = i * 3; // + (i > 0 ? -1 : 0);
+                    items[i] = uint.Parse(idItem.ToString().Substring(idx, 3));
+                }
+                else
+                {
+                    items[i] = uint.Parse(idItem.ToString());
+                }
+            }
+
+            if (items.Length <= 0) return false;
+
+            foreach (var dwItem in items)
+            {
+                if (dwItem <= 0) continue;
+
+                if (UserPackage[Item.ItemPosition.RightHand] != null &&
+                    UserPackage[Item.ItemPosition.RightHand].GetItemSubType() == dwItem &&
+                    UserPackage[Item.ItemPosition.RightHand].Durability >= dwNum)
+                    return true;
+                if (UserPackage[Item.ItemPosition.LeftHand] != null &&
+                    UserPackage[Item.ItemPosition.LeftHand].GetItemSubType() == dwItem &&
+                    UserPackage[Item.ItemPosition.LeftHand].Durability >= dwNum)
+                    return true;
+
+                ushort[] set1Hand = { 410, 420, 421, 430, 440, 450, 460, 480, 481, 490 };
+                ushort[] set2Hand = { 510, 530, 540, 560, 561, 580 };
+                ushort[] setSword = { 420, 421 };
+                ushort[] setSpecial = { 601, 610, 611, 612, 613 };
+
+                if (dwItem == 40000 || dwItem == 400)
+                {
+                    if (UserPackage[Item.ItemPosition.RightHand] != null)
+                    {
+                        Item item = UserPackage[Item.ItemPosition.RightHand];
+                        for (int i = 0; i < set1Hand.Length; i++)
+                        {
+                            if (item.GetItemSubType() == set1Hand[i] && item.Durability >= dwNum)
+                                return true;
+                        }
+                    }
+                }
+
+                if (dwItem == 50000)
+                {
+                    if (UserPackage[Item.ItemPosition.RightHand] != null)
+                    {
+                        if (dwItem == 50000) return true;
+
+                        Item item = UserPackage[Item.ItemPosition.RightHand];
+                        for (int i = 0; i < set2Hand.Length; i++)
+                        {
+                            if (item.GetItemSubType() == set2Hand[i] && item.Durability >= dwNum)
+                                return true;
+                        }
+                    }
+                }
+
+                if (dwItem == 50) // arrow
+                {
+                    if (UserPackage[Item.ItemPosition.RightHand] != null &&
+                        UserPackage[Item.ItemPosition.LeftHand] != null)
+                    {
+                        Item item = UserPackage[Item.ItemPosition.RightHand];
+                        Item arrow = UserPackage[Item.ItemPosition.LeftHand];
+                        if (arrow.GetItemSubType() == 1050 && arrow.Durability >= dwNum)
+                            return true;
+                    }
+                }
+
+                if (dwItem == 500)
+                {
+                    if (UserPackage[Item.ItemPosition.RightHand] != null &&
+                        UserPackage[Item.ItemPosition.LeftHand] != null)
+                    {
+                        Item item = UserPackage[Item.ItemPosition.RightHand];
+                        if (item.GetItemSubType() == idItem && item.Durability >= dwNum)
+                            return true;
+                    }
+                }
+
+                if (dwItem == 420)
+                {
+                    if (UserPackage[Item.ItemPosition.RightHand] != null)
+                    {
+                        Item item = UserPackage[Item.ItemPosition.RightHand];
+                        for (int i = 0; i < setSword.Length; i++)
+                        {
+                            if (item.GetItemSubType() == setSword[i] && item.Durability >= dwNum)
+                                return true;
+                        }
+                    }
+                }
+
+                if (dwItem == 601 || dwItem == 610 || dwItem == 611 || dwItem == 612 || dwItem == 613)
+                {
+                    if (UserPackage[Item.ItemPosition.RightHand] != null)
+                    {
+                        Item item = UserPackage[Item.ItemPosition.RightHand];
+                        if (item.GetItemSubType() == dwItem && item.Durability >= dwNum)
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
 
         #endregion
 
@@ -921,7 +1163,7 @@ namespace Comet.Game.States
                 }
                 await SendAsync(string.Format(Language.StrPickupSilvers, mapItem.Money));
 
-                Log.GmLog("pickup_money", $"User[{Identity},{Name}] picked up {mapItem.Money} at {MapIdentity}({Map.Name}) {MapX}, {MapY}").Forget();
+                await Log.GmLog("pickup_money", $"User[{Identity},{Name}] picked up {mapItem.Money} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
             }
             else
             {
@@ -930,10 +1172,10 @@ namespace Comet.Game.States
                 await UserPackage.AddItem(item);
                 await SendAsync(string.Format(Language.StrPickupItem, item.Name));
 
-                Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}").Forget();
+                await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
             }
             
-            mapItem.LeaveMap();
+            await mapItem.LeaveMap();
             return true;
         }
 
@@ -962,7 +1204,7 @@ namespace Comet.Game.States
             await SendAsync(msg);
 
             if (broadcast)
-                BroadcastRoomMsgAsync(msg, false).Forget();
+                await BroadcastRoomMsgAsync(msg, false);
         }
 
         #endregion
@@ -996,7 +1238,7 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.MinAttack ?? 0;
                 }
 
-                result = (int) (result + (result * (1 + (DragonGemBonus / 100d))));
+                result = (int) (result * (1 + (DragonGemBonus / 100d)));
                 return result;
             }
         }
@@ -1011,7 +1253,7 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.MaxAttack ?? 0;
                 }
 
-                result = (int)(result + (result * (1 + (DragonGemBonus / 100d))));
+                result = (int)(result * (1 + (DragonGemBonus / 100d)));
                 return result;
             }
         }
@@ -1026,7 +1268,7 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.MagicAttack ?? 0;
                 }
 
-                result = (int)(result + (result * (1 + (PhoenixGemBonus/ 100d))));
+                result = (int)(result * (1 + (PhoenixGemBonus/ 100d)));
                 return result;
             }
         }
@@ -1110,7 +1352,7 @@ namespace Comet.Game.States
         {
             get
             {
-                int result = Agility/3;
+                int result = Agility;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.Accuracy ?? 0;
@@ -1216,6 +1458,89 @@ namespace Comet.Game.States
 
         #region Battle
 
+        public async Task SendWeaponMagic2(Role pTarget = null)
+        {
+            Item item = null;
+
+            if (UserPackage[Item.ItemPosition.RightHand] != null &&
+                UserPackage[Item.ItemPosition.RightHand].Effect != Item.ItemEffect.None)
+                item = UserPackage[Item.ItemPosition.RightHand];
+            if (UserPackage[Item.ItemPosition.LeftHand] != null &&
+                UserPackage[Item.ItemPosition.LeftHand].Effect != Item.ItemEffect.None)
+                if (item != null && await Kernel.ChanceCalcAsync(50f) || item == null)
+                    item = UserPackage[Item.ItemPosition.LeftHand];
+
+            if (item != null)
+            {
+                switch (item.Effect)
+                {
+                    case Item.ItemEffect.Life:
+                        {
+                            if (!await Kernel.ChanceCalcAsync(15f))
+                                return;
+                            await AddAttributesAsync(ClientUpdateType.Hitpoints, 310);
+                            var msg = new MsgMagicEffect
+                            {
+                                AttackerIdentity = Identity,
+                                MagicIdentity = 1005
+                            };
+                            msg.Append(Identity, 310, false);
+                            await BroadcastRoomMsgAsync(msg, true);
+                            break;
+                        }
+
+                    case Item.ItemEffect.Mana:
+                        {
+                            if (!await Kernel.ChanceCalcAsync(17.5f))
+                                return;
+                            await AddAttributesAsync(ClientUpdateType.Mana, 310);
+                            var msg = new MsgMagicEffect
+                            {
+                                AttackerIdentity = Identity,
+                                MagicIdentity = 1195
+                            };
+                            msg.Append(Identity, 310, false);
+                            await BroadcastRoomMsgAsync(msg, true);
+                            break;
+                        }
+
+                    case Item.ItemEffect.Poison:
+                        {
+                            if (pTarget == null)
+                                return;
+
+                            if (!await Kernel.ChanceCalcAsync(5f))
+                                return;
+
+                            var msg = new MsgMagicEffect
+                            {
+                                AttackerIdentity = Identity,
+                                MagicIdentity = 1320
+                            };
+                            msg.Append(pTarget.Identity, 210, true);
+                            await BroadcastRoomMsgAsync(msg, true);
+
+                            await pTarget.AttachStatus(this, StatusSet.POISONED, 310, 2, 20, 0);
+
+                            var result = await Attack(pTarget);
+                            int nTargetLifeLost = result.Damage;
+
+                            await SendDamageMsgAsync(pTarget.Identity, nTargetLifeLost);
+
+                            if (!pTarget.IsAlive)
+                            {
+                                int dwDieWay = 1;
+                                if (nTargetLifeLost > pTarget.MaxLife / 3)
+                                    dwDieWay = 2;
+
+                                await Kill(pTarget, IsBowman ? 5 : (uint)dwDieWay);
+                            }
+                            break;
+                        }
+                }
+            }
+        }
+
         public bool DecEquipmentDurability(bool bAttack, int hitByMagic, ushort useItemNum)
         {
             int nInc = -1 * useItemNum;
@@ -1263,7 +1588,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public void AddEquipmentDurability(Item.ItemPosition pos, int nInc)
+        public async Task AddEquipmentDurability(Item.ItemPosition pos, int nInc)
         {
             if (nInc >= 0)
                 return;
@@ -1280,27 +1605,27 @@ namespace Comet.Game.States
             if (nDurability < 100)
             {
                 if (nDurability % 10 == 0)
-                    SendAsync(string.Format(Language.StrDamagedRepair, item.Itemtype.Name)).Forget();
+                    await SendAsync(string.Format(Language.StrDamagedRepair, item.Itemtype.Name));
             }
             else if (nDurability < 200)
             {
                 if (nDurability % 10 == 0)
-                    SendAsync(string.Format(Language.StrDurabilityRepair, item.Itemtype.Name)).Forget();
+                    await SendAsync(string.Format(Language.StrDurabilityRepair, item.Itemtype.Name));
             }
 
             item.Durability = nDurability;
-            item.SaveAsync().Forget();
+            await item.SaveAsync();
 
             int noldDur = (int) Math.Floor(nOldDur / 100f);
             int nnewDur = (int) Math.Floor(nDurability / 100f);
 
             if (nDurability <= 0)
             {
-                SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update)).Forget();
+                await SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
             }
             else if (noldDur != nnewDur)
             {
-                SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update)).Forget();
+                await SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
             }
         }
 
@@ -1332,7 +1657,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public int GetInterAtkRate()
+        public async Task<int> GetInterAtkRate()
         {
             int nRate = USER_ATTACK_SPEED;
             int nRateR = 0, nRateL = 0;
@@ -1355,7 +1680,7 @@ namespace Comet.Game.States
                 nRate = Calculations.CutTrail(0,
                     Calculations.AdjustData(nRate, QueryStatus(StatusSet.CYCLONE).Power));
                 if (IsPm())
-                    SendAsync($"attack speed+: {nRate}").Forget();
+                    await SendAsync($"attack speed+: {nRate}");
             }
 #endif
 
@@ -1444,8 +1769,12 @@ namespace Comet.Game.States
                 }
             }
             
-            Log.WriteLog(LogLevel.Warning, $"Character::IsImmunity cant handle this kind of role {target.Identity} {target.GetType().Name}").Forget();
             return true;
+        }
+
+        public override bool IsAttackable(Role attacker)
+        {
+            return m_respawn.IsActive() && !m_respawn.IsTimeOut();
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
@@ -1456,7 +1785,7 @@ namespace Comet.Game.States
             if (!target.IsEvil() && Map.IsDeadIsland() || (target is Monster mob && mob.IsGuard()))
                 SetCrimeStatus(15);
 
-            return await BattleSystem.CalcPower(BattleSystem.MagicType.MagictypeNone, this, target);
+            return await BattleSystem.CalcPower(BattleSystem.MagicType.None, this, target);
         }
 
         public override async Task Kill(Role target, uint dieWay)
@@ -1467,7 +1796,7 @@ namespace Comet.Game.States
             Character targetUser = target as Character;
             if (targetUser != null)
             {
-                BroadcastRoomMsgAsync(new MsgInteract
+                await BroadcastRoomMsgAsync(new MsgInteract
                 {
                     Action = MsgInteractType.Kill,
                     SenderIdentity = Identity,
@@ -1475,13 +1804,13 @@ namespace Comet.Game.States
                     PosX = target.MapX,
                     PosY = target.MapY,
                     Data = (int) dieWay
-                }, true).Forget();
+                }, true);
 
-                ProcessPk(targetUser);
+                await ProcessPk(targetUser);
             }
             else
             {
-                AddXp(1).Forget();
+                await AddXp(1);
 
                 if (QueryStatus(StatusSet.CYCLONE) != null || QueryStatus(StatusSet.SUPERMAN) != null)
                 {
@@ -1556,8 +1885,86 @@ namespace Comet.Game.States
                 if (!Map.IsDeadIsland())
                 {
                     int nChance = Math.Min(90, 20 + PkPoints / 2);
+                    await UserPackage.RandDropItem(3, nChance);
                 }
                 return;
+            }
+
+            if (attacker == null)
+                return;
+
+            if (!Map.IsDeadIsland())
+            {
+                // todo enemy
+
+                int nChance = 0;
+                if (PkPoints < 30)
+                    nChance = 10 + await Kernel.NextAsync(40);
+                else if (PkPoints < 100)
+                    nChance = 50 + await Kernel.NextAsync(50);
+                else
+                    nChance = 100;
+
+                int nItems = UserPackage.InventoryCount;
+                int nDropItem = nItems * nChance / 100;
+
+                await UserPackage.RandDropItem(nDropItem);
+
+                if (attacker.Identity != Identity && attacker is Character targetUser)
+                {
+                    float nLossPercent;
+                    if (PkPoints < 30)
+                        nLossPercent = 0.01f;
+                    else if (PkPoints < 100)
+                        nLossPercent = 0.02f;
+                    else nLossPercent = 0.03f;
+                    long nLevExp = (long)Experience;
+                    long nLostExp = (long)(nLevExp * nLossPercent);
+
+                    if (nLostExp > 0)
+                    {
+                        await AddAttributesAsync(ClientUpdateType.Experience, nLostExp * -1);
+                        await attacker.AddAttributesAsync(ClientUpdateType.Experience, nLostExp / 3);
+                    }
+
+                    if (PkPoints >= 300)
+                    {
+                        await UserPackage.RandDropEquipment(targetUser);
+                        await UserPackage.RandDropEquipment(targetUser);
+                    }
+                    else if (PkPoints >= 100)
+                    {
+                        await UserPackage.RandDropEquipment(targetUser);
+                    }
+                    else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(30))
+                    {
+                        await UserPackage.RandDropEquipment(targetUser);
+                    }
+
+                    if (PkPoints >= 100)
+                    {
+                        await SavePositionAsync(6000, 31, 72);
+                        await FlyMap(6000, 31, 72);
+                        await Kernel.RoleManager.BroadcastMsgAsync(
+                            string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
+                            Color.White);
+                    }
+                }
+            }
+            else if (attacker is Character && Map.IsDeadIsland())
+            {
+
+            }
+            else if (attacker is Monster monster)
+            {
+                if (monster.IsGuard() && PkPoints > 99)
+                {
+                    await SavePositionAsync(6000, 31, 72);
+                    await FlyMap(6000, 31, 72);
+                    await Kernel.RoleManager.BroadcastMsgAsync(
+                        string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
+                        Color.White);
+                }
             }
         }
 
@@ -1607,6 +2014,68 @@ namespace Comet.Game.States
             }
 
             await SendEffectAsync(strEffect, true);
+        }
+
+        #endregion
+
+        #region Revive
+
+        public bool CanRevive()
+        {
+            return !IsAlive && m_tRevive.IsTimeOut();
+        }
+
+        public async Task Reborn(bool chgMap, bool isSpell = false)
+        {
+            if (IsAlive || !CanRevive() && !isSpell)
+            {
+                if (QueryStatus(StatusSet.GHOST) != null)
+                {
+                    await DetachStatus(StatusSet.GHOST);
+                }
+
+                if (QueryStatus(StatusSet.DEAD) != null)
+                {
+                    await DetachStatus(StatusSet.DEAD);
+                }
+
+                if (TransformationMesh == 98 || TransformationMesh == 99)
+                    ClearTransformation();
+                return;
+            }
+
+            BattleSystem.ResetBattle();
+            
+            await DetachStatus(StatusSet.GHOST);
+            await DetachStatus(StatusSet.DEAD);
+            
+            ClearTransformation();
+
+            await SetAttributesAsync(ClientUpdateType.Stamina, DEFAULT_USER_ENERGY);
+            await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
+            await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
+            await SetXp(0);
+
+            if (chgMap || !IsBlessed && !isSpell)
+            {
+                await FlyMap(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
+            }
+            else
+            {
+                if (!isSpell && (Map.IsPrisionMap()
+                                 || Map.IsPkField()
+                                 || Map.IsPkGameMap()
+                                 || Map.IsSynMap()))
+                {
+                    await FlyMap(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
+                }
+                else
+                {
+                    await FlyMap(m_idMap, m_posX, m_posY);
+                }
+            }
+
+            m_respawn.Startup(CHGMAP_LOCK_SECS);
         }
 
         #endregion
@@ -1682,17 +2151,17 @@ namespace Comet.Game.States
         /// <summary>
         /// 
         /// </summary>
-        public override void EnterMap()
+        public override async Task EnterMap()
         {
             Map = Kernel.MapManager.GetMap(m_idMap);
             if (Map != null)
             {
-                Map.AddAsync(this).Forget();
-                Map.SendMapInfoAsync(this).Forget();
+                await Map.AddAsync(this);
+                await Map.SendMapInfoAsync(this);
             }
             else
             {
-                Log.WriteLog(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}").Forget();
+                await Log.WriteLog(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}");
                 m_socket?.Disconnect();
             }
         }
@@ -1700,9 +2169,9 @@ namespace Comet.Game.States
         /// <summary>
         /// 
         /// </summary>
-        public override void LeaveMap()
+        public override async Task LeaveMap()
         {
-            Map?.RemoveAsync(Identity).Forget();
+            await Map.RemoveAsync(Identity);
         }
 
         public async Task SavePositionAsync()
@@ -1728,7 +2197,7 @@ namespace Comet.Game.States
         {
             if (Map == null)
             {
-                Log.WriteLog(LogLevel.Warning, $"FlyMap user not in map").Forget();
+                await Log.WriteLog(LogLevel.Warning, $"FlyMap user not in map");
                 return false;
             }
 
@@ -1738,13 +2207,13 @@ namespace Comet.Game.States
             GameMap newMap = Kernel.MapManager.GetMap(idMap);
             if (newMap == null || !newMap.IsValidPoint(x, y))
             {
-                Log.WriteLog(LogLevel.Warning, $"FlyMap user fly invalid position {idMap}[{x},{y}]").Forget();
+                await Log.WriteLog(LogLevel.Warning, $"FlyMap user fly invalid position {idMap}[{x},{y}]");
                 return false;
             }
 
             try
             {
-                LeaveMap();
+                await LeaveMap();
 
                 m_idMap = newMap.Identity;
                 MapX = (ushort) x;
@@ -1760,11 +2229,11 @@ namespace Comet.Game.States
                     Direction = (ushort) Direction
                 });
 
-                EnterMap();
+                await EnterMap();
             }
             catch
             {
-                Log.WriteLog(LogLevel.Error, "FlyMap error").Forget();
+                await Log.WriteLog(LogLevel.Error, "FlyMap error");
             }
 
             return true;
@@ -1792,7 +2261,7 @@ namespace Comet.Game.States
             if (!Map.IsValidPoint(x, y))
                 return false;
 
-            ProcessOnMove();
+            await ProcessOnMove();
             await JumpPosAsync(x, y);
             await Screen.BroadcastRoomMsgAsync(new MsgAction
             {
@@ -1819,6 +2288,86 @@ namespace Comet.Game.States
                 Action = MsgAction.ActionType.Kickback
             });
         }
+
+        #endregion
+
+        #region Multiple Exp
+
+        public bool HasMultipleExp => m_dbObject.ExperienceMultiplier > 1 && m_dbObject.ExperienceExpires >= DateTime.Now;
+
+        public float ExperienceMultiplier =>
+            !HasMultipleExp || m_dbObject.ExperienceMultiplier <= 0 ? 1f : m_dbObject.ExperienceMultiplier;
+
+        public async Task SendMultipleExp()
+        {
+            if (RemainingExperienceSeconds > 0)
+                await SynchroAttributesAsync(ClientUpdateType.DoubleExpTimer, RemainingExperienceSeconds, false);
+        }
+
+        public uint RemainingExperienceSeconds
+        {
+            get
+            {
+                DateTime now = DateTime.Now;
+                if (m_dbObject.ExperienceExpires < now)
+                {
+                    m_dbObject.ExperienceMultiplier = 1;
+                    m_dbObject.ExperienceExpires = null;
+                    return 0;
+                }
+
+                return (uint)((m_dbObject.ExperienceExpires - now)?.TotalSeconds ?? 0);
+            }
+        }
+
+        public async Task<bool> SetExperienceMultiplier(uint nSeconds, float nMultiplier = 2f)
+        {
+            m_dbObject.ExperienceExpires = DateTime.Now.AddSeconds(nSeconds);
+            m_dbObject.ExperienceMultiplier = nMultiplier;
+            await SendMultipleExp();
+            return true;
+        }
+
+        #endregion
+
+        #region Heaven Blessing
+
+        public async Task SendBless()
+        {
+            if (IsBlessed)
+            {
+                DateTime now = DateTime.Now;
+                await SynchroAttributesAsync(ClientUpdateType.HeavensBlessing, (uint)(HeavenBlessingExpires - now).TotalSeconds);
+
+                if (Map != null && !Map.IsTrainingMap())
+                    await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0, false);
+                else
+                    await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1, false);
+
+                await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
+            }
+        }
+
+        /// <summary>
+        /// This method will update the user blessing time.
+        /// </summary>
+        /// <param name="amount">The amount of minutes to be added.</param>
+        /// <returns>If the heaven blessing has been added successfully.</returns>
+        public async Task<bool> AddBlessing(uint amount)
+        {
+            DateTime now = DateTime.Now;
+            if (m_dbObject.HeavenBlessing != null && m_dbObject.HeavenBlessing > now)
+                m_dbObject.HeavenBlessing = m_dbObject.HeavenBlessing.Value.AddSeconds(60 * amount);
+            else
+                m_dbObject.HeavenBlessing = now.AddSeconds(60 * amount);
+
+            await SendBless();
+            return true;
+        }
+
+        public DateTime HeavenBlessingExpires => m_dbObject.HeavenBlessing ?? DateTime.MinValue;
+
+        public bool IsBlessed => m_dbObject.HeavenBlessing > DateTime.Now;
 
         #endregion
 
@@ -1975,6 +2524,26 @@ namespace Comet.Game.States
 
                 case ClientUpdateType.PkPoints:
                     value = PkPoints = (ushort) Math.Max(0, Math.Min(PkPoints + value, ushort.MaxValue));
+
+                    if (m_dbObject.KillPoints != value)
+                    {
+                        if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
+                        {
+                            await DetachStatus(StatusSet.RED_NAME);
+                            await AttachStatus(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
+                        }
+                        else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
+                        {
+                            await DetachStatus(StatusSet.BLACK_NAME);
+                            await AttachStatus(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
+                        }
+                        else
+                        {
+                            await DetachStatus(StatusSet.BLACK_NAME);
+                            await DetachStatus(StatusSet.RED_NAME);
+                        }
+                    }
+
                     break;
 
                 default:
@@ -2027,6 +2596,26 @@ namespace Comet.Game.States
                     Hairstyle = (ushort)value;
                     break;
 
+                case ClientUpdateType.Strength:
+                    value = Strength = (ushort) Math.Min(ushort.MaxValue, value);
+                    break;
+
+                case ClientUpdateType.Agility:
+                    value = Agility = (ushort)Math.Min(ushort.MaxValue, value);
+                    break;
+
+                case ClientUpdateType.Vitality:
+                    value = Vitality = (ushort)Math.Min(ushort.MaxValue, value);
+                    break;
+
+                case ClientUpdateType.Spirit:
+                    value = Spirit = (ushort)Math.Min(ushort.MaxValue, value);
+                    break;
+
+                case ClientUpdateType.Class:
+                    Profession = (byte) value;
+                    break;
+
                 default:
                     bool result = await base.SetAttributesAsync(type, value);
                     return result && await SaveAsync();
@@ -2067,7 +2656,7 @@ namespace Comet.Game.States
             {
                 foreach (var status in StatusSet.Status.Values)
                 {
-                    status.OnTimer();
+                    await status.OnTimer();
 
                     if (!status.IsValid && status.Identity != StatusSet.GHOST && status.Identity != StatusSet.DEAD)
                     {
@@ -2085,14 +2674,24 @@ namespace Comet.Game.States
             {
                 if (BattleSystem != null
                     && BattleSystem.IsActive()
-                    && BattleSystem.NextAttack(GetInterAtkRate()))
+                    && BattleSystem.NextAttack(await GetInterAtkRate()))
                 {
                     await BattleSystem.ProcessAttackAsync();
                 }
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Error, $"Error in battle processing for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                await MagicData.OnTimerAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error in battle magic processing for user {Identity}:{Name}");
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 

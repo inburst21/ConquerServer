@@ -251,7 +251,7 @@ namespace Comet.Game.States.Items
 
 #if DEBUG
                 if (!string.IsNullOrEmpty(message))
-                    Log.WriteLog(LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}] {message}").Forget();
+                    await Log.WriteLog(LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}] {message}");
 #endif
             }
         }
@@ -283,30 +283,39 @@ namespace Comet.Game.States.Items
 
         #endregion
 
-        #region Map
+        #region Battle
 
-        public override void EnterMap()
+        public override bool IsImmunity(Role target)
         {
-            Map = Kernel.MapManager.GetMap(MapIdentity);
-            Map?.AddAsync(this);
+            return true;
         }
 
-        public override void LeaveMap()
-        {
-            var msg = new MsgMapItem
-            {
-                Identity = Identity,
-                MapX = MapX,
-                MapY = MapY,
-                Itemtype = Itemtype,
-                Mode = DropType.DisappearItem
-            };
-            Map?.BroadcastRoomMsgAsync(MapX, MapY, msg);
+        #endregion
 
+        #region Map
+
+        public override async Task EnterMap()
+        {
+            Map = Kernel.MapManager.GetMap(MapIdentity);
+            if (Map != null)
+                await Map.AddAsync(this);
+        }
+
+        public override async Task LeaveMap()
+        {
             IdentityGenerator.MapItem.ReturnIdentity(Identity);
             if (Map != null)
             {
-                Map.RemoveAsync(Identity).Forget();
+                var msg = new MsgMapItem
+                {
+                    Identity = Identity,
+                    MapX = MapX,
+                    MapY = MapY,
+                    Itemtype = Itemtype,
+                    Mode = DropType.DisappearItem
+                };
+                await Map.BroadcastRoomMsgAsync(MapX, MapY, msg);
+                await Map.RemoveAsync(Identity);
                 Kernel.RoleManager.RemoveRole(Identity);
             }
             Map = null;

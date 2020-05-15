@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - Generator Processing.cs
+// Comet - Comet.Game - Magic Manager.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -21,55 +21,36 @@
 
 #region References
 
-using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
-using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
-namespace Comet.Game.World.Threading
+namespace Comet.Game.World.Managers
 {
-    public sealed class GeneratorProcessor : TimerBase
+    public sealed class MagicManager
     {
-        private List<Generator> m_generators = new List<Generator>();
+        private ConcurrentDictionary<uint, DbMagictype> m_magicType  = new ConcurrentDictionary<uint, DbMagictype>();
 
-        public GeneratorProcessor()
-            : base(5000, "Generator Thread")
+        public async Task InitializeAsync()
         {
+            foreach (var magicType in await MagictypeRepository.GetAsync())
+            {
+                m_magicType.TryAdd(magicType.Id, magicType);
+            }
         }
 
-        public override async Task OnStartAsync()
+        public byte GetMaxLevel(uint idType)
         {
-            // todo make first generation
-
-            foreach (var dbGen in await GeneratorRepository.GetAsync())
-            {
-                Generator gen = new Generator(dbGen);
-                if (gen.CanBeProcessed)
-                    m_generators.Add(gen);
-            }
-
-            await base.OnStartAsync();
+            return (byte) (m_magicType.Values.Where(x => x.Type == idType).OrderByDescending(x => x.Level).FirstOrDefault()?.Level ?? 0);
         }
 
-        public override async Task<bool> OnElapseAsync()
+        public DbMagictype GetMagictype(uint idType, ushort level)
         {
-            try
-            {
-                foreach (var gen in m_generators)
-                {
-                    await gen.GenerateAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
-            }
-            return true;
+            return m_magicType.Values.FirstOrDefault(x => x.Type == idType && x.Level == level);
         }
     }
 }

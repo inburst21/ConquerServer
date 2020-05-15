@@ -135,8 +135,14 @@
   <data name="StrDragonBallDropped" xml:space="preserve">
     <value>{0} has dropped a Dragon Ball in {1}.</value>
   </data>
+  <data name="StrDropEquipment" xml:space="preserve">
+    <value>{0} has dropped part of his equipment for dying as a criminal.</value>
+  </data>
   <data name="StrDurabilityRepair" xml:space="preserve">
     <value>Durability of {0} is too low. Please repair it to prevent further damaging.</value>
+  </data>
+  <data name="StrGoToJail" xml:space="preserve">
+    <value>{0} has killed {1} and sent him/her to jail.</value>
   </data>
   <data name="StrGuardYouPay" xml:space="preserve">
     <value>You`ll pay for what you`ve done!</value>

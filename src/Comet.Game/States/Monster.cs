@@ -202,14 +202,15 @@ namespace Comet.Game.States
             if (attacker?.BattleSystem.IsActive() == true)
                 attacker.BattleSystem.ResetBattle();
 
-            DetachAllStatus().Forget();
-            AttachStatus(attacker, StatusSet.DEAD, 0, 20, 0, 0).Forget();
-            AttachStatus(attacker, StatusSet.GHOST, 0, 20, 0, 0).Forget();
-            AttachStatus(attacker, StatusSet.FADE, 0, 20, 0, 0).Forget();
+            await DetachAllStatus();
+            await AttachStatus(attacker, StatusSet.DEAD, 0, 20, 0, 0);
+            await AttachStatus(attacker, StatusSet.GHOST, 0, 20, 0, 0);
+            await AttachStatus(attacker, StatusSet.FADE, 0, 20, 0, 0);
 
             Character user = attacker as Character;
             int dieType = user?.KoCount * 65541 ?? 1;
-            BroadcastRoomMsgAsync(new MsgInteract
+            
+            await BroadcastRoomMsgAsync(new MsgInteract
             {
                 SenderIdentity = attacker.Identity,
                 TargetIdentity = Identity,
@@ -217,7 +218,7 @@ namespace Comet.Game.States
                 PosY = MapY,
                 Action = MsgInteractType.Kill,
                 Data = dieType
-            }, false).Forget();
+            }, false);
 
             m_disappear.Startup(5);
 
@@ -248,13 +249,13 @@ namespace Comet.Game.States
 
             if (await Kernel.ChanceCalcAsync(.01d))
             {
-                DropItem(Item.TYPE_DRAGONBALL, idDropOwner).Forget();
-                Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name)).Forget();
+                await DropItem(Item.TYPE_DRAGONBALL, idDropOwner);
+                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name));
             }
 
             if (await Kernel.ChanceCalcAsync(.1d))
             {
-                DropItem(Item.TYPE_METEOR, idDropOwner).Forget();
+                await DropItem(Item.TYPE_METEOR, idDropOwner);
             }
 
             if (!IsPkKiller() && !IsGuard() && !IsEvilKiller() && !IsDynaNpc())
@@ -263,13 +264,13 @@ namespace Comet.Game.States
                 {
                     uint[] normalGem = { 700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121 };
                     uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
-                    DropItem(dGem, idDropOwner).Forget(); // normal gems
+                    await DropItem(dGem, idDropOwner); // normal gems
                 }
             }
 
             if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
             {
-                DropItem(1080001, idDropOwner).Forget(); // emerald
+                await DropItem(1080001, idDropOwner); // emerald
             }
 
             int dropNum = 0;
@@ -294,7 +295,7 @@ namespace Comet.Game.States
                 if (itemtype == null)
                     continue;
 
-                DropItem(itemtype, idDropOwner).Forget();
+                await DropItem(itemtype, idDropOwner);
             }
         }
 
@@ -552,19 +553,28 @@ namespace Comet.Game.States
             set => m_posY = value;
         }
 
-        public override void EnterMap()
+        public override async Task EnterMap()
         {
             Map = Kernel.MapManager.GetMap(MapIdentity);
-            Map?.AddAsync(this).Forget();
+            if (Map != null)
+            await Map.AddAsync(this);
+
+            await BroadcastRoomMsgAsync(new MsgAction
+            {
+                Action = MsgAction.ActionType.MapEffect,
+                Identity = Identity,
+                CommandX = MapX,
+                CommandY= MapY
+            }, false);
         }
 
-        public override void LeaveMap()
+        public override async Task LeaveMap()
         {
             IdentityGenerator.Monster.ReturnIdentity(Identity);
             m_generator.Remove(Identity);
             if (Map != null)
             {
-                Map.RemoveAsync(Identity).Forget();
+                await Map.RemoveAsync(Identity);
                 Kernel.RoleManager.RemoveRole(Identity);
             }
             Map = null;
@@ -609,7 +619,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public bool FindNewTarget()
+        public async Task<bool> FindNewTarget()
         {
             Role target = null;
 
@@ -685,15 +695,15 @@ namespace Comet.Game.States
                 {
                     if (IsGuard() && targetUser.IsCrime())
                     {
-                        targetUser.BroadcastRoomMsgAsync(
+                        await  targetUser.BroadcastRoomMsgAsync(
                             new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, target.Name, Name,
-                                Language.StrGuardYouPay), true).Forget();
+                                Language.StrGuardYouPay), true);
                     }
                     else if (IsPkKiller() && targetUser.IsPker() && m_stage == AiStage.Idle)
                     {
-                        targetUser.BroadcastRoomMsgAsync(
+                        await targetUser.BroadcastRoomMsgAsync(
                             new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, target.Name, Name,
-                                Language.StrGuardYouPay), true).Forget();
+                                Language.StrGuardYouPay), true);
                     }
                 }
             }
@@ -744,6 +754,25 @@ namespace Comet.Game.States
         }
 
         #endregion
+
+        public const int ATKUSER_LEAVEONLY = 0, // Ö»»áÌÓÅÜ
+            ATKUSER_PASSIVE = 0x01, // ±»¶¯¹¥»÷
+            ATKUSER_ACTIVE = 0x02, // Ö÷¶¯¹¥»÷
+            ATKUSER_RIGHTEOUS = 0x04, // ÕýÒåµÄ(ÎÀ±ø»òÍæ¼ÒÕÙ»½ºÍ¿ØÖÆµÄ¹ÖÎï)
+            ATKUSER_GUARD = 0x08, // ÎÀ±ø(ÎÞÊÂ»ØÔ­Î»ÖÃ)
+            ATKUSER_PPKER = 0x10, // ×·É±ºÚÃû 
+            ATKUSER_JUMP = 0x20, // »áÌø
+            ATKUSER_FIXED = 0x40, // ²»»á¶¯µÄ
+            ATKUSER_FASTBACK = 0x0080, // ËÙ¹é
+            ATKUSER_LOCKUSER = 0x0100, // Ëø¶¨¹¥»÷Ö¸¶¨Íæ¼Ò£¬Íæ¼ÒÀë¿ª×Ô¶¯ÏûÊ§ 
+            ATKUSER_LOCKONE = 0x0200, // Ëø¶¨¹¥»÷Ê×ÏÈ¹¥»÷×Ô¼ºµÄÍæ¼Ò
+            ATKUSER_ADDLIFE = 0x0400, // ×Ô¶¯¼ÓÑª
+            ATKUSER_EVIL_KILLER = 0x0800, // °×ÃûÉ±ÊÖ
+            ATKUSER_WING = 0x1000, // ·ÉÐÐ×´Ì¬
+            ATKUSER_NEUTRAL = 0x2000, // ÖÐÁ¢
+            ATKUSER_ROAR = 0x4000, // ³öÉúÊ±È«µØÍ¼Å­ºð
+            ATKUSER_NOESCAPE = 0x8000, // ²»»áÌÓÅÜ
+            ATKUSER_EQUALITY = 0x10000; // ²»ÃêÊÓ
 
         enum AiStage
         {

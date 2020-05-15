@@ -24,12 +24,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
+using Comet.Game.World;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -41,9 +44,9 @@ namespace Comet.Game.States.Items
 
         private readonly Character m_user;
 
-        private ConcurrentDictionary<Item.ItemPosition, Item> m_dicEquipment;
-        private ConcurrentDictionary<uint, Item> m_dicInventory;
-        private ConcurrentDictionary<uint, List<Item>> m_dicWarehouses;
+        private readonly ConcurrentDictionary<Item.ItemPosition, Item> m_dicEquipment;
+        private readonly ConcurrentDictionary<uint, Item> m_dicInventory;
+        private readonly ConcurrentDictionary<uint, List<Item>> m_dicWarehouses;
 
         public UserPackage(Character user)
         {
@@ -105,7 +108,8 @@ namespace Comet.Game.States.Items
                 else if (item.Position == Item.ItemPosition.Inventory)
                 {
                     if (!m_dicInventory.TryAdd(item.Identity, item))
-                        await Log.WriteLog(LogLevel.Warning, $"Failed to insert inventory item {item.Identity}: duplicate???");
+                        await Log.WriteLog(LogLevel.Warning,
+                            $"Failed to insert inventory item {item.Identity}: duplicate???");
                 }
                 else
                 {
@@ -698,6 +702,138 @@ namespace Comet.Game.States.Items
             return nAmount >= nNum;
         }
 
+        public async Task<int> RandDropItem(int nMapType, int nChance)
+        {
+            if (m_user == null)
+                return 0;
+            int nDropNum = 0;
+            foreach (var item in m_dicInventory.Values)
+            {
+                if (await Kernel.ChanceCalcAsync(nChance))
+                {
+                    if (item.IsNeverDropWhenDead())
+                        continue;
+
+                    switch (nMapType)
+                    {
+                        case 0: // NONE
+                            break;
+                        case 1: // PK
+                        case 2: // SYN
+                            if (!item.IsArmor())
+                                continue;
+                            break;
+                        case 3: // PRISON
+                            break;
+                    }
+
+                    var pos = new Point(m_user.MapX, m_user.MapY);
+                    if (m_user.Map.FindDropItemCell(5, ref pos))
+                    {
+                        if (!await RemoveFromInventoryAsync(item.Identity, RemovalType.DropItem))
+                            continue;
+
+                        item.PlayerIdentity = 0;
+                        item.OwnerIdentity = m_user.Identity;
+
+                        var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+                        if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
+                        {
+                            pMapItem.EnterMap();
+                            await Log.GmLog("drop_item",
+                                $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
+                        }
+                        else
+                        {
+                            IdentityGenerator.MapItem.ReturnIdentity(pMapItem.Identity);
+                        }
+
+                        nDropNum++;
+                    }
+                }
+            }
+
+            return nDropNum;
+        }
+
+        public async Task<int> RandDropItem(int nDropNum)
+        {
+            if (m_user == null)
+                return 0;
+
+            var temp = new List<Item>();
+            foreach (var item in m_dicInventory.Values)
+            {
+                if (item.IsNeverDropWhenDead())
+                    continue;
+                temp.Add(item);
+            }
+
+            int nTotalItemCount = temp.Count;
+            if (nTotalItemCount == 0)
+                return 0;
+            int nRealDropNum = 0;
+            for (int i = 0; i < Math.Min(nDropNum, nTotalItemCount); i++)
+            {
+                int nIdx = await Kernel.NextAsync(nTotalItemCount);
+                Item item;
+                try
+                {
+                    item = temp[nIdx];
+                }
+                catch
+                {
+                    continue;
+                }
+
+                var pos = new Point(m_user.MapX, m_user.MapY);
+                if (m_user.Map.FindDropItemCell(5, ref pos))
+                {
+                    if (!await RemoveFromInventoryAsync(item.Identity, RemovalType.DropItem))
+                        continue;
+
+                    item.PlayerIdentity = 0;
+                    item.OwnerIdentity = m_user.Identity;
+
+                    var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+                    if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
+                    {
+                        pMapItem.EnterMap();
+                        await Log.GmLog("drop_item",
+                            $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
+                    }
+                    else
+                    {
+                        IdentityGenerator.MapItem.ReturnIdentity(pMapItem.Identity);
+                    }
+
+                    nRealDropNum++;
+                }
+            }
+
+            return nRealDropNum;
+        }
+
+        public async Task<bool> RandDropEquipment(Character attacker)
+        {
+            if (m_dicEquipment.Count == 0)
+                return false;
+
+            List<Item> items = m_dicEquipment.Values.Where(x => !x.IsArrowSort() && !x.IsGourd() && !x.IsGourd()).ToList();
+            Item item = items[await Kernel.NextAsync(items.Count) % items.Count];
+
+            if (!await UnequipAsync(item.Position))
+                return false;
+
+            if (await m_user.DropItem(item.Identity, m_user.MapX, m_user.MapY, true) && attacker != null)
+            {
+                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
+            }
+            return true;
+        }
+
+        public int InventoryCount => m_dicInventory.Count;
+
         public bool IsPackSpare(int size)
         {
             return m_dicInventory.Count + size <= MAX_INVENTORY_CAPACITY;
@@ -732,19 +868,22 @@ namespace Comet.Game.States.Items
         public enum RemovalType
         {
             /// <summary>
-            /// Item will be removed and disappear, but wont be deleted.
+            ///     Item will be removed and disappear, but wont be deleted.
             /// </summary>
             RemoveAndDisappear,
+
             /// <summary>
-            /// Item will be internally removed only. No client interaction and also wont be deleted.
+            ///     Item will be internally removed only. No client interaction and also wont be deleted.
             /// </summary>
             RemoveOnly,
+
             /// <summary>
-            /// Item will be removed and deleted.
+            ///     Item will be removed and deleted.
             /// </summary>
             Delete,
+
             /// <summary>
-            /// Item will be set to floor and will be updated. No delete.
+            ///     Item will be set to floor and will be updated. No delete.
             /// </summary>
             DropItem
         }

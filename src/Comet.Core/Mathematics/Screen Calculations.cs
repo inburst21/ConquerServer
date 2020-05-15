@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Drawing;
 
 #endregion
 
@@ -63,6 +64,55 @@ namespace Comet.Core.Mathematics
         public static int GetDistance(int x1, int y1, int x2, int y2)
         {
             return (int) Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        }
+
+        private static unsafe double SquareRootFloat(double number)
+        {
+            const double f = 1.5d;
+            var x = number * 0.5d;
+            var y = number;
+            var i = *(long*)&y;
+            i = 0x5f3759df - (i >> 1);
+            y = *(double*)&i;
+            y *= f - x * y * y;
+            y *= f - x * y * y;
+            return number * y;
+        }
+
+        public static double GetRadian(double posSourX, double posSourY, double posTargetX, double posTargetY)
+        {
+            const double pi = 3.1415926535f;
+            double fDeltaX = posTargetX - posSourX;
+            double fDeltaY = posTargetY - posSourY;
+            double fDistance = SquareRootFloat(fDeltaX * fDeltaX + fDeltaY * fDeltaY);
+            if (fDeltaX <= fDistance && fDistance > 0)
+                return 0f;
+            double fRadian = Math.Asin(fDeltaX / fDistance);
+            return (double)(fDeltaY > 0 ? pi / 2 - fRadian : pi + fRadian + pi / 2);
+        }
+
+        public static bool IsInFan(Point pos, Point posSource, int nRange, int nWidth, Point posCenter)
+        {
+            if (nWidth <= 0 || nWidth > 360)
+                return false;
+
+            if (posCenter.X == posSource.X && posCenter.Y == posSource.Y)
+                return false;
+            if (pos.X == posSource.X && pos.Y == posSource.Y)
+                return false;
+
+            if (GetDistance((ushort)posSource.X, (ushort)posSource.Y, (ushort)pos.X, (ushort)pos.Y) > nRange)
+                return false;
+
+            const double pi = 3.1415926535d;
+            double fRadianDelta = pi * nWidth / 180d / 2d;
+            double fCenterLine = GetRadian(posSource.X, posSource.Y, posCenter.X, posCenter.Y);
+            double fTargetLine = GetRadian(posSource.X, posSource.Y, pos.X, pos.Y);
+            double fDelta = Math.Abs(fCenterLine - fTargetLine);
+            if (fDelta <= fRadianDelta || fDelta >= 2 * pi - fRadianDelta)
+                return true;
+
+            return false;
         }
     }
 }

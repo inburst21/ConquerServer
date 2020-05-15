@@ -19,6 +19,8 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define NO_COLOR
+
 #region References
 
 using System.Collections.Generic;
@@ -60,6 +62,12 @@ namespace Comet.Game.Packets
             LeftHand = user.LeftHand?.Type ?? 0;
             LeftHandColor = (ushort) (user.LeftHand?.Color ?? Item.ItemColor.None);
             Armor = user.Armor?.Type ?? 0;
+
+#if NO_COLOR
+            if (Armor != 0)
+                Armor += (uint) user.Armor.Color * 100;
+#endif
+
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 

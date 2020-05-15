@@ -320,7 +320,7 @@ namespace Comet.Game.States.Items
                     ret += (int) SocketTwo % 10 == 3 ? 1 : 0;
                 }
 
-                if ((IsBackswordType() || IsWeaponTwoHand()) && m_user?.UserPackage[ItemPosition.LeftHand] == null)
+                if ((IsBackswordType() || IsWeaponTwoHand()) && (m_user?.UserPackage[ItemPosition.LeftHand] == null || m_user.UserPackage[ItemPosition.LeftHand].IsArrowSort()))
                     ret *= 2;
 
                 return ret;
@@ -661,6 +661,67 @@ namespace Comet.Game.States.Items
 
         #region Query info
 
+        public bool IsGem()
+        {
+            return GetItemSubType() == 700;
+        }
+
+        public bool IsNonsuchItem()
+        {
+            switch (Type)
+            {
+                case TYPE_DRAGONBALL:
+                case TYPE_METEOR:
+                case TYPE_METEORTEAR:
+                    return true;
+            }
+
+            // precious gem
+            if (IsGem() && Type % 10 >= 2)
+                return true;
+
+            // todo handle chests inside of inventory
+
+            // other type
+            if (GetItemSort() == ItemSort.ItemsortUsable
+                || GetItemSort() == ItemSort.ItemsortUsable2
+                || GetItemSort() == ItemSort.ItemsortUsable3)
+                return false;
+
+            // high quality
+            if (GetQuality() >= 8)
+                return true;
+
+            int nGem1 = (int)SocketOne % 10;
+            int nGem2 = (int)SocketTwo % 10;
+
+            bool bIsnonsuch = false;
+
+            if (IsWeapon())
+            {
+                if (SocketOne != SocketGem.EmptySocket && nGem1 >= 2
+                    || SocketTwo != SocketGem.EmptySocket && nGem2 >= 2)
+                    bIsnonsuch = true;
+            }
+            else if (IsShield())
+            {
+                if (SocketOne != SocketGem.NoSocket || SocketTwo != SocketGem.NoSocket)
+                    bIsnonsuch = true;
+            }
+
+            return bIsnonsuch;
+        }
+
+        public bool IsMonopoly()
+        {
+            return (m_dbItemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;
+        }
+
+        public bool IsNeverDropWhenDead()
+        {
+            return (m_dbItemtype.Monopoly & ITEM_NEVER_DROP_WHEN_DEAD_MASK) != 0 || IsMonopoly();
+        }
+
         public bool IsDisappearWhenDropped()
         {
             return (m_dbItemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;
@@ -722,7 +783,7 @@ namespace Comet.Game.States.Items
 
         public bool IsEquipEnable()
         {
-            return IsEquipment() || IsArrowSort();
+            return IsEquipment() || IsArrowSort() || IsGourd() || IsGarment();
         }
 
         public bool IsBackswordType()
@@ -737,7 +798,7 @@ namespace Comet.Game.States.Items
 
         public bool IsEquipment()
         {
-            return !IsArrowSort() && (int) GetItemSort() < 7 || IsShield() || GetItemSubType() == 2100;
+            return IsHelmet() || IsNeck() || IsRing() || IsWeapon() || IsArmor() || IsShoes() || IsShield();
         }
 
         public int GetItemSubType()
@@ -855,7 +916,7 @@ namespace Comet.Game.States.Items
 
         public static bool IsBow(uint type)
         {
-            return GetItemtype(type) == 500;
+            return GetItemSubType(type) == 500;
         }
 
         public static bool IsArrowSort(uint type)
@@ -1163,5 +1224,7 @@ namespace Comet.Game.States.Items
         public const uint SMALL_LOTTERY_TICKET = 711504;
 
         #endregion
+
+        
     }
 }

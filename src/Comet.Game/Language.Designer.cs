@@ -115,11 +115,29 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has dropped part of his equipment for dying as a criminal..
+        /// </summary>
+        public static string StrDropEquipment {
+            get {
+                return ResourceManager.GetString("StrDropEquipment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Durability of {0} is too low. Please repair it to prevent further damaging..
         /// </summary>
         public static string StrDurabilityRepair {
             get {
                 return ResourceManager.GetString("StrDurabilityRepair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has killed {1} and sent him/her to jail..
+        /// </summary>
+        public static string StrGoToJail {
+            get {
+                return ResourceManager.GetString("StrGoToJail", resourceCulture);
             }
         }
         

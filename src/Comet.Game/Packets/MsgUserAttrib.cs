@@ -124,10 +124,10 @@ namespace Comet.Game.Packets
         DoubleExpTimer = 18,
         CursedTimer = 20,
         Reborn = 22,
-        StatusFlag = 24,
-        HairStyle = 26,
-        XpCircle = 27,
-        LuckyTimeTimer = 28,
+        StatusFlag = 26,
+        HairStyle = 27,
+        XpCircle = 28,
+        LuckyTimeTimer = 29,
         ConquerPoints = 30,
         OnlineTraining = 31
     }

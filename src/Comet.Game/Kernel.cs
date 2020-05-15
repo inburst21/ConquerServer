@@ -47,7 +47,7 @@ namespace Comet.Game
     public static class Kernel
     {
         public const int SERVER_VERSION = 1000;
-        public static readonly string Version = "";
+        public static readonly string Version;
 
         // State caches
         public static MemoryCache Logins = MemoryCache.Default;
@@ -59,6 +59,7 @@ namespace Comet.Game
         public static RoleManager RoleManager = new RoleManager();
         public static ItemManager ItemManager = new ItemManager();
         public static PeerageManager PeerageManager = new PeerageManager();
+        public static MagicManager MagicManager = new MagicManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -72,6 +73,10 @@ namespace Comet.Game
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
+        /// <summary>
+        /// Returns the next random number from the generator.
+        /// </summary>
+        /// <param name="maxValue">One greater than the greatest legal return value.</param>
         public static Task<int> NextAsync(int maxValue)
         {
             return NextAsync(0, maxValue);
@@ -94,6 +99,7 @@ namespace Comet.Game
 
             await ItemManager.InitializeAsync();
             await RoleManager.InitializeAsync();
+            await MagicManager.InitializeAsync();
             await PeerageManager.InitializeAsync();
 
             await SystemThread.StartAsync();
@@ -112,10 +118,11 @@ namespace Comet.Game
 
         public static async Task<bool> ChanceCalcAsync(double chance)
         {
-            const int DIVISOR_I = 100;
+            const int DIVISOR_I = 10000;
+            const int MAX_VALUE = 100 * DIVISOR_I;
             try
             {
-                return await NextAsync(0, DIVISOR_I) <= chance * (DIVISOR_I / 100d);
+                return await NextAsync(0, MAX_VALUE) <= chance * DIVISOR_I;
             }
             catch (Exception ex)
             {

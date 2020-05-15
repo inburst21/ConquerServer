@@ -157,10 +157,14 @@ namespace Comet.Game.Packets
 
                 case ActionType.LoginProficiencies: // 77
                     await client.Character.WeaponSkill.SendAsync();
+
                     await client.SendAsync(this);
                     break;
 
                 case ActionType.LoginSpells: // 78
+                    await client.Character.MagicData.InitializeAsync();
+                    await client.Character.MagicData.SendAllAsync();
+
                     await client.SendAsync(this);
                     break;
 
@@ -214,6 +218,13 @@ namespace Comet.Game.Packets
                     await client.Character.FlyMap(idMap, tgtPos.X, tgtPos.Y);
                     break;
 
+                case ActionType.CharacterRevive:
+                    if (user.IsAlive || !user.CanRevive())
+                        return;
+
+                    await user.Reborn(Command == 0);
+                    break;
+
                 case ActionType.CharacterPkMode:
                     if (!Enum.IsDefined(typeof(PkModeType), (int) Command))
                         Command = (uint) PkModeType.Capture;
@@ -230,6 +241,12 @@ namespace Comet.Game.Packets
                     Character targetUser = Kernel.RoleManager.GetUser(Identity);
                     if (targetUser != null)
                         await targetUser.SendSpawnToAsync(user);
+                    break;
+
+                case ActionType.SpellAbortTransform:
+                    if (user.Transformation != null)
+                        user.ClearTransformation();
+
                     break;
 
                 case ActionType.LoginComplete: // 130
@@ -256,7 +273,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        user.ProcessOnMove();
+                        await user.ProcessOnMove();
                         await user.JumpPosAsync(newX, newY);
                         await user.SendAsync(this);
                         await user.Screen.UpdateAsync(this);
@@ -300,6 +317,7 @@ namespace Comet.Game.Packets
             MapMine = 99,
             MapTeamLeaderStar = 101,
             MapQuery,
+            AbortMagic = 103,
             MapArgb = 104,
             MapTeamMemberStar = 106,
             Kickback = 108,

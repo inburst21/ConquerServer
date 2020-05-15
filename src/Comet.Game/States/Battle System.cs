@@ -78,7 +78,7 @@ namespace Comet.Game.States
 
             Character user = m_owner as Character;
 
-            var result = await CalcPower(MagicType.MagictypeNone, m_owner, target);
+            var result = await CalcPower(MagicType.None, m_owner, target);
             InteractionEffect effect = result.effect;
             int damage = result.Damage;
             int lifeLost = (int) Math.Min(target.MaxLife, Math.Max(1, damage));
@@ -86,12 +86,12 @@ namespace Comet.Game.States
 
             await m_owner.SendDamageMsgAsync(target.Identity, damage);
             
-            m_owner.ProcessOnAttack();
+            await m_owner.ProcessOnAttack();
 
             if (damage == 0)
                 return true;
 
-            await target.BeAttack(MagicType.MagictypeNone, m_owner, damage, true);
+            await target.BeAttack(MagicType.None, m_owner, damage, true);
 
             if (user != null)
             {
@@ -141,7 +141,7 @@ namespace Comet.Game.States
                 return (1, InteractionEffect.None);
 
             (int, InteractionEffect None) result;
-            if (magic == MagicType.MagictypeNone)
+            if (magic == MagicType.None)
                 result = await CalcAttackPower(attacker, target);
             else
             {
@@ -283,7 +283,7 @@ namespace Comet.Game.States
                 await targetUser.SendAsync($"Attacker({attacker.Name}), Target({target.Name}), Hit Rate: {hitRate}, Target Dodge: {dodge}");
 #endif
 
-            return await Kernel.ChanceCalcAsync(hitRate);
+            return !await Kernel.ChanceCalcAsync(hitRate);
         }
 
         public bool IsBattleMaintain()
@@ -308,7 +308,7 @@ namespace Comet.Game.States
             if (m_owner.GetDistance(target) > m_owner.GetAttackRange(target.SizeAddition))
                 return false;
 
-            if (!m_owner.IsAttackable(target))
+            if (!target.IsAttackable(m_owner))
                 return false;
             return true;
         }
@@ -568,9 +568,9 @@ namespace Comet.Game.States
 
         public enum MagicType
         {
-            MagictypeNone = 0,
-            MagictypeNormal = 1,
-            MagictypeXpskill = 2
+            None = 0,
+            Normal = 1,
+            XpSkill = 2
         }
     }
 }

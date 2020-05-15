@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Magics;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -253,6 +254,34 @@ namespace Comet.Game.Packets
             {
                 switch (cmd.ToLower())
                 {
+                    case "/pro":
+                        if (byte.TryParse(param, out byte proProf))
+                            await user.SetAttributesAsync(ClientUpdateType.Class, proProf);
+
+                        return true;
+
+                    case "/life":
+                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife);
+                        return true;
+
+                    case "/mana":
+                        await user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana);
+                        return true;
+
+                    case "/superman":
+                        await user.SetAttributesAsync(ClientUpdateType.Strength, 176);
+                        await user.SetAttributesAsync(ClientUpdateType.Agility, 256);
+                        await user.SetAttributesAsync(ClientUpdateType.Vitality, 110);
+                        await user.SetAttributesAsync(ClientUpdateType.Spirit, 125);
+
+                        return true;
+
+                    case "/uplev":
+                        if (byte.TryParse(param, out byte uplevValue))
+                            await user.AwardLevelAsync(uplevValue);
+
+                        return true;
+
                     case "/awarditem":
                         if (!uint.TryParse(param, out uint idAwardItem))
                             return true;
@@ -268,13 +297,35 @@ namespace Comet.Game.Packets
                         return true;
                     case "/awardmoney":
                         if (int.TryParse(param, out int moneyAmount))
-                            user.AwardMoney(moneyAmount).Forget();
+                            await user.AwardMoney(moneyAmount);
                         return true;
                     case "/awardemoney":
                         if (int.TryParse(param, out int emoneyAmount))
-                            user.AwardConquerPoints(emoneyAmount).Forget();
+                            await user.AwardConquerPoints(emoneyAmount);
                         return true;
+                    case "/awardmagic":
                     case "/awardskill":
+                        byte skillLevel = 1;
+                        string[] awardSkill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        if (!ushort.TryParse(awardSkill[0], out var skillType))
+                            return true;
+                        if (awardSkill.Length > 1 && !byte.TryParse(awardSkill[1], out skillLevel))
+                            return true;
+
+                        Magic magic;
+                        if (user.MagicData.CheckType(skillType))
+                        {
+                            magic = user.MagicData[skillType];
+                            magic.Level = Math.Min(magic.MaxLevel, Math.Max((byte) 0, skillLevel));
+                            await magic.SaveAsync();
+                            await magic.SendAsync();
+                        }
+                        else
+                        {
+                            if (!await user.MagicData.Create(skillType, skillLevel))
+                                await user.SendAsync("[Award Skill] Could not create skill!");
+                        }
+
                         return true;
                     case "/awardwskill":
                         byte level = 1;
@@ -306,15 +357,23 @@ namespace Comet.Game.Packets
                         }
 
                         if (target.Identity == user.Identity)
-                            await user.SendAsync($"Battle Attributes for yourself: {user.Name}", TalkChannel.Talk, Color.White);
+                            await user.SendAsync($"Battle Attributes for yourself: {user.Name} [Potency: {user.BattlePower}]", TalkChannel.Talk, Color.White);
                         else
-                            await user.SendAsync($"Battle Attributes for target: {target.Name}", TalkChannel.Talk, Color.White);
+                            await user.SendAsync($"Battle Attributes for target: {target.Name} [Potency: {target.BattlePower}]", TalkChannel.Talk, Color.White);
 
+                        await user.SendAsync($"Life: {target.Life}-{target.MaxLife}, Mana: {target.Mana}-{target.MaxMana}", TalkChannel.Talk, Color.White);
                         await user.SendAsync($"Attack: {target.MinAttack}-{target.MaxAttack}, Magic Attack: {target.MagicAttack}", TalkChannel.Talk, Color.White);
                         await user.SendAsync($"Defense: {target.Defense}, Defense2: {target.Defense2}, MagicDefense: {target.MagicDefense}, MagicDefenseBonus: {target.MagicDefenseBonus}%", TalkChannel.Talk, Color.White);
                         await user.SendAsync($"Accuracy: {target.Accuracy}, Dodge: {target.Dodge}, Attack Speed: {target.AttackSpeed}", TalkChannel.Talk, Color.White);
                         if (target is Character tgtUsr)
                             await user.SendAsync($"DG: {tgtUsr.DragonGemBonus}%, PG: {tgtUsr.PhoenixGemBonus}%, Blessing: {tgtUsr.Blessing}%, TG: {tgtUsr.TortoiseGemBonus}%", TalkChannel.Talk, Color.White);
+                        return true;
+
+                    case "/status":
+                        if (int.TryParse(param, out int flag))
+                        {
+                            await user.AttachStatus(user, flag, 0, 10, 0, 0);
+                        }
                         return true;
                 }
             }
@@ -323,7 +382,55 @@ namespace Comet.Game.Packets
             {
                 switch (cmd.ToLower())
                 {
+                    case "/cmd":
+                        string[] cmdParams = param.Split(new[] {' '}, 2, StringSplitOptions.RemoveEmptyEntries);
+                        string subCmd = cmdParams[0];
+
+                        if (cmd.Length > 1)
+                        {
+                            string subParam = cmdParams[1];
+
+                            switch (subCmd.ToLower())
+                            {
+                                case "broadcast":
+                                    await Kernel.RoleManager.BroadcastMsgAsync(subParam, TalkChannel.Center, Color.White);
+                                    break;
+
+                                case "gmmsg":
+                                    await Kernel.RoleManager.BroadcastMsgAsync($"{user.Name} says: {subParam}", TalkChannel.Center, Color.White);
+                                    break;
+
+                                case "player":
+                                    if (subParam.Equals("all", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        await user.SendAsync($"Players Online: {Kernel.RoleManager.OnlinePlayers} (max: {Kernel.RoleManager.MaxOnlinePlayers})", TalkChannel.TopLeft, Color.White);
+                                    }
+                                    else if (subParam.Equals("map", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        await user.SendAsync($"Map Online Players: {user.Map.PlayerCount} ({user.Map.Name})", TalkChannel.TopLeft, Color.White);
+                                    }
+                                    break;
+                            }
+
+                            return true;
+                        }
+
+                        return true;
+
+                    case "/chgmap":
+                        string[] chgMapParams = param.Split(new []{ ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
+                        if (chgMapParams.Length < 3)
+                            return true;
+
+                        if (uint.TryParse(chgMapParams[0], out uint chgMapId)
+                            && ushort.TryParse(chgMapParams[1], out ushort chgMapX)
+                            && ushort.TryParse(chgMapParams[2], out ushort chgMapY))
+                            await user.FlyMap(chgMapId, chgMapX, chgMapY);
+
+                        return true;
+
                     case "/openui":
+
                         if (uint.TryParse(param, out uint ui))
                             await user.SendAsync(new MsgAction
                             {
@@ -334,6 +441,7 @@ namespace Comet.Game.Packets
                                 ArgumentY = user.MapY
                             });
                         return true;
+
                     case "/openwindow":
                         if (uint.TryParse(param, out uint window))
                             await user.SendAsync(new MsgAction

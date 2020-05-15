@@ -65,7 +65,7 @@ namespace Comet.Game.World
             if (m_pMap == null)
             {
                 Log.WriteLog(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
-                    .Forget();
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace Comet.Game.World
             if (m_dbMonster == null)
             {
                 Log.WriteLog(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
-                    .Forget();
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -100,7 +100,7 @@ namespace Comet.Game.World
             if (m_pMap == null)
             {
                 Log.WriteLog(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
-                    .Forget();
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -108,7 +108,7 @@ namespace Comet.Game.World
             if (m_dbMonster == null)
             {
                 Log.WriteLog(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
-                    .Forget();
+                    .ConfigureAwait(false);
                 return;
             }
 

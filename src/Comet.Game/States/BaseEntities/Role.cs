@@ -24,6 +24,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
+using Comet.Game.States.Magics;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -44,6 +45,7 @@ namespace Comet.Game.States.BaseEntities
         {
             StatusSet = new StatusSet(this);
             BattleSystem = new BattleSystem(this);
+            MagicData = new MagicData(this);
         }
 
         #region Identity
@@ -125,14 +127,16 @@ namespace Comet.Game.States.BaseEntities
 
         /// <summary>
         /// </summary>
-        public virtual void EnterMap()
+        public virtual Task EnterMap()
         {
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// </summary>
-        public virtual void LeaveMap()
+        public virtual Task LeaveMap()
         {
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -167,7 +171,7 @@ namespace Comet.Game.States.BaseEntities
             m_posX = (ushort)x;
             m_posY = (ushort)y;
 
-            ProcessAfterMove();
+            await ProcessAfterMove();
             return true;
         }
 
@@ -205,26 +209,28 @@ namespace Comet.Game.States.BaseEntities
             m_posX = newX;
             m_posY = newY;
 
-            ProcessAfterMove();
+            await ProcessAfterMove();
             return true;
         }
 
-        public virtual void ProcessOnMove()
+        public virtual async Task ProcessOnMove()
         {
             BattleSystem.ResetBattle();
 
-            DetachStatus(StatusSet.INTENSIFY).Forget();
+            await DetachStatus(StatusSet.INTENSIFY);
         }
 
-        public virtual void ProcessAfterMove()
+        public virtual Task ProcessAfterMove()
         {
             Action = EntityAction.Stand;
+
+            return Task.CompletedTask;
         }
 
-        public virtual void ProcessOnAttack()
+        public virtual async Task ProcessOnAttack()
         {
             Action = EntityAction.Stand;
-            DetachStatus(StatusSet.INTENSIFY).Forget();
+            await DetachStatus(StatusSet.INTENSIFY);
         }
 
         #endregion
@@ -335,8 +341,20 @@ namespace Comet.Game.States.BaseEntities
         #region Battle Processing
 
         public BattleSystem BattleSystem { get; }
+        public MagicData MagicData { get; }
+
+        public async Task<bool> ProcessMagicAttack(ushort usMagicType, uint idTarget, ushort x, ushort y,
+            byte ucAutoActive = 0)
+        {
+            return await MagicData.ProcessMagicAttackAsync(usMagicType, idTarget, x, y, ucAutoActive);
+        }
 
         public int SizeAddition => 1;
+
+        public virtual async Task<bool> CheckCrime(Role target)
+        {
+            return false;
+        }
 
         public virtual int AdjustWeaponDamage(int damage)
         {
@@ -370,24 +388,22 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
         {
-            Log.WriteLog(LogLevel.Warning, $"Role::Attack no handler {Identity}").Forget();
             return Task.FromResult((1, InteractionEffect.None));
         }
 
-        public virtual async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        public virtual Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
         {
-            await Log.WriteLog(LogLevel.Warning, $"Role::BeAttack no handler {Identity}");
-            return false;
+            return Task.FromResult(false);
         }
 
-        public virtual async Task Kill(Role target, uint dieWay)
+        public virtual Task Kill(Role target, uint dieWay)
         {
-            await Log.WriteLog(LogLevel.Warning, $"Role::Kill no handler {Identity}");
+            return Task.CompletedTask;
         }
 
-        public virtual async Task BeKill(Role attacker)
+        public virtual Task BeKill(Role attacker)
         {
-            await Log.WriteLog(LogLevel.Warning, $"Role::BeKill no handler {Identity}");
+            return Task.CompletedTask;
         }
 
         public async Task SendDamageMsgAsync(uint idTarget, int nDamage)
@@ -603,9 +619,9 @@ namespace Comet.Game.States.BaseEntities
             return QueryStatus(StatusSet.GHOST) != null;
         }
 
-        public void SetCrimeStatus(int nSecs)
+        public async Task SetCrimeStatus(int nSecs)
         {
-            AttachStatus(this, StatusSet.BLUE_NAME, 0, nSecs, 1, 0).Forget();
+            await AttachStatus(this, StatusSet.BLUE_NAME, 0, nSecs, 1, 0);
         }
 
         public virtual bool IsWing => QueryStatus(StatusSet.FLY) != null;
@@ -801,7 +817,7 @@ namespace Comet.Game.States.BaseEntities
         public const byte MAX_UPLEV = 140;
 
         public const int EXPBALL_AMOUNT = 600;
-
+        public const int CHGMAP_LOCK_SECS = 10;
         public const int ADD_ENERGY_STAND_SECS = 2;
         public const int ADD_ENERGY_STAND = 3;
         public const int ADD_ENERGY_SIT = 10;

@@ -61,14 +61,14 @@ namespace Comet.Game.World.Managers
                     Donation = user.NobilityDonation + amount,
                     FirstDonation = DateTime.Now
                 };
-                SaveAsync(peerage).Forget();
+                await SaveAsync(peerage);
 
                 PeerageSet.TryAdd(user.Identity, peerage);
             }
             else
             {
                 peerage.Donation += amount;
-                SaveAsync(peerage).Forget();
+                await SaveAsync(peerage);
             }
 
             user.NobilityDonation = peerage.Donation;
@@ -76,7 +76,7 @@ namespace Comet.Game.World.Managers
             NobilityRank rank = GetRanking(user.Identity);
             int position = GetPosition(user.Identity);
 
-            user.SendNobilityInfo().Forget();
+            await user.SendNobilityInfo();
 
             if (position != oldPosition && position < 50)
             {
@@ -84,7 +84,7 @@ namespace Comet.Game.World.Managers
                     .ThenBy(y => y.FirstDonation))
                 {
                     Character targetUser = Kernel.RoleManager.GetUser(peer.UserIdentity);
-                    targetUser?.SendNobilityInfo(true).Forget();
+                    await targetUser?.SendNobilityInfo(true);
                 }
             }
 
@@ -118,7 +118,7 @@ namespace Comet.Game.World.Managers
                         else message = string.Format(Language.StrPeeragePromptLady, user.Name);
                         break;
                 }
-                Kernel.RoleManager.BroadcastMsgAsync(message, MsgTalk.TalkChannel.Center, Color.Red).Forget();
+                await Kernel.RoleManager.BroadcastMsgAsync(message, MsgTalk.TalkChannel.Center, Color.Red);
             }
         }
 

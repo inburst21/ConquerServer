@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - MsgWalk.cs
+// Comet - Comet.Game - MsgMagicInfo.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -29,17 +29,16 @@ using Comet.Network.Packets;
 
 namespace Comet.Game.Packets
 {
-    public sealed class MsgWalk : MsgBase<Client>
+    public sealed class MsgMagicInfo : MsgBase<Client>
     {
-        public MsgWalk()
+        public MsgMagicInfo()
         {
-            Type = PacketType.MsgWalk;
+            Type = PacketType.MsgMagicInfo;
         }
 
-        public uint Identity { get; set; }
-        public byte Direction { get; set; }
-        public byte Mode { get; set; }
-        public ushort Padding { get; set; }
+        public uint Experience { get; set; }
+        public ushort Magictype { get; set; }
+        public ushort Level { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -51,11 +50,10 @@ namespace Comet.Game.Packets
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType) reader.ReadUInt16();
-            Identity = reader.ReadUInt32();
-            Direction = reader.ReadByte();
-            Mode = reader.ReadByte();
-            Padding = reader.ReadUInt16();
+            Type = (PacketType)reader.ReadUInt16();
+            Experience = reader.ReadUInt32();
+            Magictype = reader.ReadUInt16();
+            Level = reader.ReadUInt16();
         }
 
         /// <summary>
@@ -67,11 +65,10 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort) Type);
-            writer.Write(Identity);
-            writer.Write(Direction);
-            writer.Write(Mode);
-            writer.Write(Padding);
+            writer.Write((ushort)Type);
+            writer.Write(Experience);
+            writer.Write(Magictype);
+            writer.Write(Level);
             return writer.ToArray();
         }
 
@@ -79,39 +76,12 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            await client.Character.ProcessOnMove();
-            await client.Character.MoveTowardAsync(Direction, Mode);
-            await client.SendAsync(this);
-            await client.Character.Screen.UpdateAsync(this);
+
         }
-    }
-
-    public enum RoleMoveMode
-    {
-        MOVEMODE_WALK = 0,
-
-        // PathMove()
-        MOVEMODE_RUN,
-        MOVEMODE_SHIFT,
-
-        // to server only
-        MOVEMODE_JUMP,
-        MOVEMODE_TRANS,
-        MOVEMODE_CHGMAP,
-        MOVEMODE_JUMPMAGICATTCK,
-        MOVEMODE_COLLIDE,
-        MOVEMODE_SYNCHRO,
-
-        // to server only
-        MOVEMODE_TRACK,
-
-        MOVEMODE_RUN_DIR0 = 20,
-
-        MOVEMODE_RUN_DIR7 = 27
     }
 }

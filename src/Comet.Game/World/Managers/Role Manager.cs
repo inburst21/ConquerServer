@@ -122,14 +122,14 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public bool LogoutUser(uint idUser)
+        public async Task<bool> LogoutUser(uint idUser)
         {
             if (m_userSet.TryRemove(idUser, out var user))
             {
                 m_roleSet.TryRemove(idUser, out _);
                 try
                 {
-                    user.OnDisconnectAsync().Forget();
+                    await user.OnDisconnectAsync();
                     user.Client.Disconnect();
                 }
                 catch

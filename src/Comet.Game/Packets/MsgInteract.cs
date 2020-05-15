@@ -103,7 +103,6 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case MsgInteractType.Attack:
-                case MsgInteractType.Shoot:
                 case MsgInteractType.Unknown:
                     if (SenderIdentity == client.Identity)
                     {
@@ -111,8 +110,41 @@ namespace Comet.Game.Packets
                         client.Character.SetAttackTarget(target);
                     }
                     break;
-                case MsgInteractType.MagicAttack:
+
+                case MsgInteractType.Unknown21:
+                    byte[] dataArray = BitConverter.GetBytes(Data);
+                    ushort magicType = Convert.ToUInt16((dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8));
+                    magicType ^= 0x915d;
+                    magicType ^= (ushort) client.Identity;
+                    magicType = (ushort) ((magicType << 0x3) | (magicType >> 0xd));
+                    magicType -= 0xeb42;
+
+                    dataArray = BitConverter.GetBytes(TargetIdentity);
+                    TargetIdentity = ((uint)dataArray[0] & 0xFF) | (((uint)dataArray[1] & 0xFF) << 8) |
+                                    (((uint)dataArray[2] & 0xFF) << 16) | (((uint)dataArray[3] & 0xFF) << 24);
+                    TargetIdentity = ((((TargetIdentity & 0xffffe000) >> 13) | ((TargetIdentity & 0x1fff) << 19)) ^ 0x5F2D2463 ^ client.Identity) -
+                        0x746F4AE6;
+
+                    dataArray = BitConverter.GetBytes(PosX);
+                    long xx = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
+                    dataArray = BitConverter.GetBytes(PosY);
+                    long yy = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
+                    xx = xx ^ (client.Identity & 0xffff) ^ 0x2ed6;
+                    xx = ((xx << 1) | ((xx & 0x8000) >> 15)) & 0xffff;
+                    xx |= 0xffff0000;
+                    xx -= 0xffff22ee;
+                    yy = yy ^ (client.Identity & 0xffff) ^ 0xb99b;
+                    yy = ((yy << 5) | ((yy & 0xF800) >> 11)) & 0xffff;
+                    yy |= 0xffff0000;
+                    yy -= 0xffff8922;
+                    PosX = Convert.ToUInt16(xx);
+                    PosY = Convert.ToUInt16(yy);
+
+                    if (client.Character.IsAlive)
+                        await client.Character.ProcessMagicAttack(magicType, TargetIdentity, PosX, PosY);
+
                     break;
+                
                 case MsgInteractType.Court:
                     break;
                 case MsgInteractType.Marry:

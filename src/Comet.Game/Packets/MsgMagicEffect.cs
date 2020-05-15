@@ -56,6 +56,12 @@ namespace Comet.Game.Packets
             });
         }
 
+        public void ClearTargets()
+        {
+            Count = 0;
+            Targets.Clear();
+        }
+
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
         ///     Should be invoked to structure data from the client for processing. Decoding
@@ -99,7 +105,7 @@ namespace Comet.Game.Packets
             writer.Write(MapY);
             writer.Write(MagicIdentity);
             writer.Write(MagicLevel);
-            writer.Write(Count);
+            writer.Write((uint) Count);
             foreach (var target in Targets)
             {
                 writer.Write(target.Identity);

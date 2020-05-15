@@ -90,6 +90,7 @@ namespace Comet.Game.World.Maps
         public int BlocksY => Height / GameBlock.BLOCK_SIZE;
 
         public ulong Flag { get; set; }
+        public int PlayerCount => m_users.Count;
 
         public async Task<bool> Initialize()
         {
@@ -551,7 +552,7 @@ namespace Comet.Game.World.Maps
             GameMap targetMap = Kernel.MapManager.GetMap(idMap);
             if (targetMap == null)
             {
-                Log.WriteLog(LogLevel.Error, $"Could not get reborn map [{Identity}]!").Forget();
+                Log.WriteLog(LogLevel.Error, $"Could not get reborn map [{Identity}]!").ConfigureAwait(false);
                 return false;
             }
 
@@ -606,6 +607,12 @@ namespace Comet.Game.World.Maps
                 }
             }
         }
+
+        #endregion
+
+        #region Tiles
+
+        public Tile this[int x, int y] => m_mapData[x, y];
 
         #endregion
 
