@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter;
 using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
@@ -1537,7 +1538,7 @@ namespace Comet.Game.States
                             msg.Append(pTarget.Identity, 210, true);
                             await BroadcastRoomMsgAsync(msg, true);
 
-                            await pTarget.AttachStatus(this, StatusSet.POISONED, 310, 2, 20, 0);
+                            await pTarget.AttachStatus(this, StatusSet.POISONED, 310, POISONDAMAGE_INTERVAL, 20, 0);
 
                             var result = await Attack(pTarget);
                             int nTargetLifeLost = result.Damage;
@@ -2093,6 +2094,55 @@ namespace Comet.Game.States
             }
 
             m_respawn.Startup(CHGMAP_LOCK_SECS);
+        }
+
+        #endregion
+
+        #region Game Action
+
+        private List<uint> m_setTaskId = new List<uint>();
+
+        public uint InteractingItem { get; private set; }
+        public uint InteractingNpc { get; private set; }
+
+        public bool CheckItem(DbTask task)
+        {
+            if (task.Itemname1.Length > 0)
+            {
+                if (UserPackage[task.Itemname1] == null)
+                    return false;
+
+                if (task.Itemname2.Length > 0)
+                {
+                    if (UserPackage[task.Itemname2] == null)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        public void CancelInteraction()
+        {
+            m_setTaskId.Clear();
+            InteractingItem = 0;
+            InteractingNpc = 0;
+        }
+
+        public byte PushTaskId(uint idTask)
+        {
+            if (idTask != 0 && m_setTaskId.Count < MAX_MENUTASKSIZE)
+            {
+                m_setTaskId.Add(idTask);
+                return (byte)m_setTaskId.Count;
+            }
+
+            return 0;
+        }
+
+        public uint GetTaskId(int idx)
+        {
+            return idx > 0 && idx <= m_setTaskId.Count ? m_setTaskId[idx - 1] : 0u;
         }
 
         #endregion

@@ -462,7 +462,7 @@ namespace Comet.Game.World.Maps
 
         public bool IsLayItemEnable(int x, int y)
         {
-            return Query9BlocksByPos(x, y).All(role => (!(role is MapItem) && !(role is Npc)) || role.MapX != x || role.MapY != y);
+            return Query9BlocksByPos(x, y).All(role => (!(role is MapItem) && !(role is BaseNpc)) || role.MapX != x || role.MapY != y);
         }
 
         public bool FindDropItemCell(int range, ref Point sender)

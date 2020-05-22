@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - Npc.cs
+// Comet - Comet.Game - NpcRepository.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -21,13 +21,21 @@
 
 #region References
 
-using Comet.Game.States.BaseEntities;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 
 #endregion
 
-namespace Comet.Game.States.NPCs
+namespace Comet.Game.Database.Repositories
 {
-    public abstract class Npc : Role
+    public static class NpcRepository
     {
+        public static async Task<List<DbNpc>> GetAsync()
+        {
+            await using ServerDbContext context = new ServerDbContext();
+            return context.Npcs.ToList();
+        }
     }
 }

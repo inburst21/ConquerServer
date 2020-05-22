@@ -55,6 +55,11 @@ namespace Comet.Game.Database
         public virtual DbSet<DbLevelExperience> LevelExperience { get; set; }
         public virtual DbSet<DbMagictype> Magictype { get; set; }
         public virtual DbSet<DbMagic> Magic { get; set; }
+        public virtual DbSet<DbGoods> Goods { get; set; }
+        public virtual DbSet<DbTask> Tasks { get; set; }
+        public virtual DbSet<DbAction> Actions { get; set; }
+        public virtual DbSet<DbNpc> Npcs { get; set; }
+        public virtual DbSet<DbDynanpc> DynaNpcs { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
@@ -66,7 +71,8 @@ namespace Comet.Game.Database
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseLazyLoadingProxies(false);
-            options.UseMySql($"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}");
+            options.UseMySql(
+                $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}");
         }
 
         /// <summary>

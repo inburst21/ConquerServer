@@ -32,7 +32,6 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.World;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -57,14 +56,7 @@ namespace Comet.Game.States.Items
             m_dicWarehouses = new ConcurrentDictionary<uint, List<Item>>();
         }
 
-        public Item this[Item.ItemPosition position]
-        {
-            get => m_dicEquipment.TryGetValue(position, out var item) ? item : null;
-            set
-            {
-                // todo make equip call
-            }
-        }
+        public Item this[Item.ItemPosition position] => m_dicEquipment.TryGetValue(position, out var item) ? item : null;
 
         public Item this[uint uid] => m_dicInventory.TryGetValue(uid, out var item) ? item : null;
 
@@ -74,6 +66,8 @@ namespace Comet.Game.States.Items
         public Item this[uint storage, uint uid] => m_dicWarehouses.TryGetValue(storage, out var items)
             ? items.FirstOrDefault(x => x.Identity == uid)
             : null;
+
+        public Item this[string name] => m_dicInventory.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
         public async Task<bool> CreateAsync()
         {

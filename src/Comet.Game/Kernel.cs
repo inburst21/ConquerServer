@@ -60,6 +60,7 @@ namespace Comet.Game
         public static ItemManager ItemManager = new ItemManager();
         public static PeerageManager PeerageManager = new PeerageManager();
         public static MagicManager MagicManager = new MagicManager();
+        public static EventManager EventManager = new EventManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -101,6 +102,7 @@ namespace Comet.Game
             await RoleManager.InitializeAsync();
             await MagicManager.InitializeAsync();
             await PeerageManager.InitializeAsync();
+            await EventManager.InitializeAsync();
 
             await SystemThread.StartAsync();
             await UserThread.StartAsync();

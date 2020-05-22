@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - Game Npc.cs
+// Comet - Comet.Game - DbAction.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -19,50 +19,23 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System.Threading.Tasks;
-using Comet.Game.Database.Models;
-using Comet.Game.Packets;
+#region References
 
-namespace Comet.Game.States.NPCs
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+#endregion
+
+namespace Comet.Game.Database.Models
 {
-    public sealed class Npc : BaseNpc
+    [Table("cq_action")]
+    public class DbAction
     {
-        private DbNpc m_dbNpc;
-
-        public Npc(DbNpc npc) 
-            : base(npc.Id)
-        {
-            m_dbNpc = npc;
-
-            m_idMap = npc.Mapid;
-            m_posX = npc.Cellx;
-            m_posY = npc.Celly;
-
-            Name = npc.Name;
-        }
-
-        #region Map and Position
-
-
-
-        #endregion
-
-        #region Socket
-
-        public override async Task SendSpawnToAsync(Character player)
-        {
-            await player.SendAsync(new MsgNpcInfo
-            {
-                Identity = Identity,
-                Lookface = m_dbNpc.Lookface,
-                Sort = m_dbNpc.Sort,
-                PosX = MapX,
-                PosY = MapY,
-                Name = Name,
-                NpcType = m_dbNpc.Type
-            });
-        }
-
-        #endregion
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
+        [Column("id_next")] public virtual uint IdNext { get; set; }
+        [Column("id_nextfail")] public virtual uint IdNextfail { get; set; }
+        [Column("type")] public virtual uint Type { get; set; }
+        [Column("data")] public virtual uint Data { get; set; }
+        [Column("param")] public virtual string Param { get; set; }
     }
 }

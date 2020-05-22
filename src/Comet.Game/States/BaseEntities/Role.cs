@@ -28,7 +28,6 @@ using Comet.Game.States.Magics;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 namespace Comet.Game.States.BaseEntities
 {
@@ -842,6 +841,8 @@ namespace Comet.Game.States.BaseEntities
 
         public const int MASTER_WEAPONSKILLLEVEL = 12;
         public const int MAX_WEAPONSKILLLEVEL = 20;
+
+        public const int MAX_MENUTASKSIZE = 8;
 
         #endregion
     }
