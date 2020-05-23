@@ -68,6 +68,17 @@ namespace Comet.Game.World.Maps
             }
         }
 
+        public async Task SynchroScreenAsync()
+        {
+            foreach (var role in Roles.Values)
+            {
+                await role.SendSpawnToAsync(m_user);
+
+                if (role is Character user)
+                    await m_user.SendSpawnToAsync(user);
+            }
+        }
+
         public async Task UpdateAsync(IPacket msg = null)
         {
             var targets = m_user.Map.Query9BlocksByPos(m_user.MapX, m_user.MapY);

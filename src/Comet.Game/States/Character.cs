@@ -2225,6 +2225,7 @@ namespace Comet.Game.States
             {
                 await Map.AddAsync(this);
                 await Map.SendMapInfoAsync(this);
+                await Screen.SynchroScreenAsync();
             }
             else
             {

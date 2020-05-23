@@ -60,6 +60,8 @@ namespace Comet.Game.Database
         public virtual DbSet<DbAction> Actions { get; set; }
         public virtual DbSet<DbNpc> Npcs { get; set; }
         public virtual DbSet<DbDynanpc> DynaNpcs { get; set; }
+        public virtual DbSet<DbFriend> Friends { get; set; }
+        public virtual DbSet<DbEnemy> Enemies { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

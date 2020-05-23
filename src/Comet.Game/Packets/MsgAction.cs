@@ -242,7 +242,11 @@ namespace Comet.Game.Packets
                         await targetUser.SendSpawnToAsync(user);
                     break;
 
-                case ActionType.SpellAbortTransform:
+                case ActionType.BoothLeave:
+                    await user.Screen.SynchroScreenAsync();
+                    break;
+
+                case ActionType.SpellAbortTransform: // 118
                     if (user.Transformation != null)
                         await user.ClearTransformation();
                     break;

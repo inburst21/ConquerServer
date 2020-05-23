@@ -132,6 +132,10 @@ namespace Comet.Game
                         msg = new MsgName();
                         break;
 
+                    case PacketType.MsgFriend:
+                        msg = new MsgFriend();
+                        break;
+
                     case PacketType.MsgInteract:
                         msg = new MsgInteract();
                         break;

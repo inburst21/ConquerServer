@@ -73,6 +73,7 @@ namespace Comet.Network.Packets
         MsgNpcInfo = 2030,
         MsgNpc,
         MsgTaskDialog,
+        MsgFriendInfo,
         MsgDataArray = 2036,
         MsgPeerage = 2064,
     }
