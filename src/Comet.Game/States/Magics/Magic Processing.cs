@@ -373,7 +373,7 @@ namespace Comet.Game.States.Magics
             {
                 int lifeLost = (int) Math.Min(targetRole.MaxLife, power);
                 await targetRole.BeAttack(byMagic, m_pOwner, power, true);
-
+                await targetRole.AddAttributesAsync(ClientUpdateType.Hitpoints, power * -1);
                 totalExp = lifeLost;
             }
 
@@ -486,6 +486,7 @@ namespace Comet.Game.States.Magics
 
                 int lifeLost = (int)Math.Min(target.Life, result.Damage);
                 await target.BeAttack(byMagic, m_pOwner, lifeLost, true);
+                await target.AddAttributesAsync(ClientUpdateType.Hitpoints, result.Damage * -1);
 
                 if (user != null && target is Monster monster)
                 {
@@ -543,8 +544,9 @@ namespace Comet.Game.States.Magics
 
                 var atkResult = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
                 int lifeLost = (int) Math.Min(atkResult.Damage, target.Life);
-
+                
                 await target.BeAttack(HitByMagic(), m_pOwner, atkResult.Damage, true);
+                await target.AddAttributesAsync(ClientUpdateType.Hitpoints, atkResult.Damage * -1);
 
                 if (user != null && target is Monster monster)
                 {
@@ -617,6 +619,7 @@ namespace Comet.Game.States.Magics
                 int lifeLost = (int)Math.Min(result.Damage, target.Life);
 
                 await target.BeAttack(HitByMagic(), m_pOwner, result.Damage, true);
+                await target.AddAttributesAsync(ClientUpdateType.Hitpoints, result.Damage * -1);
 
                 if (user != null && target is Monster monster)
                 {

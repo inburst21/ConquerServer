@@ -123,8 +123,14 @@
   <data name="StrAnotherLoginSameIp" xml:space="preserve">
     <value>Atention! Your account is trying to login from inside of your network!</value>
   </data>
+  <data name="StrBreakFriend" xml:space="preserve">
+    <value>{0} broke up friendship with {1}.</value>
+  </data>
   <data name="StrCannotPickupOtherItems" xml:space="preserve">
     <value>Cannot pick up others items.</value>
+  </data>
+  <data name="StrClose" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="StrDamagedRepair" xml:space="preserve">
     <value>{0} has been severely damaged. Please repair it soon, otherwise it will break.</value>
@@ -141,6 +147,9 @@
   <data name="StrDurabilityRepair" xml:space="preserve">
     <value>Durability of {0} is too low. Please repair it to prevent further damaging.</value>
   </data>
+  <data name="StrFriendListFull" xml:space="preserve">
+    <value>Your friend list is full.</value>
+  </data>
   <data name="StrGoToJail" xml:space="preserve">
     <value>{0} has killed {1} and sent him/her to jail.</value>
   </data>
@@ -152,6 +161,9 @@
   </data>
   <data name="StrInvalidMsg" xml:space="preserve">
     <value>Invalid message.</value>
+  </data>
+  <data name="StrInviteSent" xml:space="preserve">
+    <value>Team invitation has been sent.</value>
   </data>
   <data name="StrItemCannotDiscard" xml:space="preserve">
     <value>{0} cannot be discarded.</value>
@@ -165,14 +177,29 @@
   <data name="StrKillingTooMuch" xml:space="preserve">
     <value>You are killing too much! You may lose your equipment if killed.</value>
   </data>
+  <data name="StrMakeFriend" xml:space="preserve">
+    <value>{0} and {1] are friends from now on.</value>
+  </data>
+  <data name="StrMakeFriendSent" xml:space="preserve">
+    <value>A request to be friends has been sent.</value>
+  </data>
   <data name="StrNone" xml:space="preserve">
     <value>None</value>
+  </data>
+  <data name="StrNoTeam" xml:space="preserve">
+    <value>Inexistent team.</value>
+  </data>
+  <data name="StrNoTeamToInvite" xml:space="preserve">
+    <value>You are not in a team.</value>
   </data>
   <data name="StrNotEnoughEmoney" xml:space="preserve">
     <value>You don't have enough Conquer Points.</value>
   </data>
   <data name="StrNotEnoughMoney" xml:space="preserve">
     <value>You don't have enough Silvers.</value>
+  </data>
+  <data name="StrOpen" xml:space="preserve">
+    <value>Open</value>
   </data>
   <data name="StrPeeragePromptBaron" xml:space="preserve">
     <value>{0} has become a Baron.</value>
@@ -216,11 +243,74 @@
   <data name="StrPickupSilvers" xml:space="preserve">
     <value>You picked up {0:D0} silvers.</value>
   </data>
+  <data name="StrTargetFriendListFull" xml:space="preserve">
+    <value>Your target friend list is full.</value>
+  </data>
+  <data name="StrTargetHasNoTeam" xml:space="preserve">
+    <value>The target doen't have a team.</value>
+  </data>
+  <data name="StrTargetIsNotAlive" xml:space="preserve">
+    <value>The target is not alive.</value>
+  </data>
   <data name="StrTargetNotInRange" xml:space="preserve">
     <value>The target is not in range.</value>
   </data>
   <data name="StrTargetNotOnline" xml:space="preserve">
     <value>The target is not online.</value>
+  </data>
+  <data name="StrTeamAlreadyNoJoin" xml:space="preserve">
+    <value>You are already in a team.</value>
+  </data>
+  <data name="StrTeamApplySent" xml:space="preserve">
+    <value>Your team application has been sent.</value>
+  </data>
+  <data name="StrTeamClosed" xml:space="preserve">
+    <value>The target team is not accepting new members.</value>
+  </data>
+  <data name="StrTeamDismissNoLeader" xml:space="preserve">
+    <value>Only the team leader can dismiss the team.</value>
+  </data>
+  <data name="StrTeamFull" xml:space="preserve">
+    <value>The team is full.</value>
+  </data>
+  <data name="StrTeamGems" xml:space="preserve">
+    <value>Precious: {0}</value>
+  </data>
+  <data name="StrTeamInvitedNotFound" xml:space="preserve">
+    <value>The user you're trying to invite does not exist.</value>
+  </data>
+  <data name="StrTeamItems" xml:space="preserve">
+    <value>Items: {0}</value>
+  </data>
+  <data name="StrTeamLeaderDead" xml:space="preserve">
+    <value>The team leader is not alive.</value>
+  </data>
+  <data name="StrTeamLeaderNotInRange" xml:space="preserve">
+    <value>The leader is not in range.</value>
+  </data>
+  <data name="StrTeamNoCapitain" xml:space="preserve">
+    <value>Youa not leader of the team.</value>
+  </data>
+  <data name="StrTeamNoLeader" xml:space="preserve">
+    <value>The target isn't leader of a team.</value>
+  </data>
+  <data name="StrTeamNotInvited" xml:space="preserve">
+    <value>You haven't been invited to this team.</value>
+  </data>
+  <data name="StrTeamSilver" xml:space="preserve">
+    <value>Silvers: {0}</value>
+  </data>
+  <data name="StrTeamTargetAlreadyTeam" xml:space="preserve">
+    <value>The target is already in a team.</value>
+  </data>
+  <data name="StrTeamTargetHasNotApplied" xml:space="preserve">
+    <value>The target has not applied for this team.</value>
+  </data>
+  <data name="StrTeamTargetNotInRange" xml:space="preserve">
+    <value>The target is not in range.</value>
+  </data>
+  <data name="StrToMakeFriend" xml:space="preserve">
+    <value>{0} has sent you a friend request.</value>
   </data>
   <data name="StrUnableToUseItem" xml:space="preserve">
     <value>Unable to use item.</value>
@@ -230,5 +320,8 @@
   </data>
   <data name="StrYourBagIsFull" xml:space="preserve">
     <value>Your bag is full.</value>
+  </data>
+  <data name="StrYourFriendAlready" xml:space="preserve">
+    <value>The target already is your friend.</value>
   </data>
 </root>

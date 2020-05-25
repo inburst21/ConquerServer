@@ -125,7 +125,6 @@ namespace Comet.Game.States.Items
             m_info.Type = pInfo.Type;
             m_itemInfo.OwnerIdentity = 0;
             m_itemInfo.PlayerIdentity = 0;
-
             m_itemInfo.Position = Item.ItemPosition.Floor;
             return true;
         }

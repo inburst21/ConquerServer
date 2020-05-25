@@ -37,5 +37,11 @@ namespace Comet.Game.Database.Repositories
             await using var db = new ServerDbContext();
             return db.Enemies.Where(x => x.UserIdentity == idUser).ToList();
         }
+
+        public static async Task<List<DbEnemy>> GetOwnEnemyAsync(uint idUser)
+        {
+            await using var db = new ServerDbContext();
+            return db.Enemies.Where(x => x.TargetIdentity == idUser).ToList();
+        }
     }
 }

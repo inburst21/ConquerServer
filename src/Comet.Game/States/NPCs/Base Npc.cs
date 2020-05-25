@@ -168,6 +168,22 @@ namespace Comet.Game.States.NPCs
             }
         }
 
+        public uint GetTask(string task)
+        {
+            switch (task.ToLower())
+            {
+                case "task0": return Task0;
+                case "task1": return Task1;
+                case "task2": return Task2;
+                case "task3": return Task3;
+                case "task4": return Task4;
+                case "task5": return Task5;
+                case "task6": return Task6;
+                case "task7": return Task7;
+                default: return 0;
+            }
+        }
+
         public virtual uint OwnerIdentity { get; set; }
         public virtual bool Vending { get; set; }
         public virtual uint Task0 { get; }
@@ -191,6 +207,35 @@ namespace Comet.Game.States.NPCs
         #region Shop
 
         public List<DbGoods> ShopGoods = new List<DbGoods>();
+
+        #endregion
+
+        #region Task
+
+        public async Task<bool> ActivateNpc(Character user)
+        {
+            bool result = false;
+
+            if (IsTaskNpc())
+            {
+                uint task = await TestTasks(user);
+                if (task != 0)
+                    result = await GameAction.ExecuteActionAsync(task, user, this, null, "");
+            }
+
+            return result;
+        }
+
+        private async Task<uint> TestTasks(Character user)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                DbTask task = Kernel.EventManager.GetTask(GetTask($"task{i}"));
+                if (task != null && await user.TestTask(task))
+                    return task.IdNext;
+            }
+            return 0;
+        }
 
         #endregion
 

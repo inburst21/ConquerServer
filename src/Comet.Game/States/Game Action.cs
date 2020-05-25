@@ -19,8 +19,10 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
+using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Shared;
@@ -38,6 +40,7 @@ namespace Comet.Game.States
                 return false;
 
             int actionCount = 0;
+            int deadLookCount = 0;
             uint idNext = idAction, idOld = idAction;
             while (idNext > 0)
             {
@@ -47,6 +50,16 @@ namespace Comet.Game.States
                     return false;
                 }
 
+                if (idAction == idOld && deadLookCount++ >= _DEADLOCK_CHECK_I)
+                {
+                    await Log.WriteLog(LogLevel.Error, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
+                    return false;
+                }
+                else
+                {
+                    deadLookCount = 0;
+                }
+
                 DbAction action = Kernel.EventManager.GetAction(idNext);
                 if (action == null)
                 {
@@ -54,16 +67,103 @@ namespace Comet.Game.States
                     return false;
                 }
 
+                string param = FormatParam(action, user, role, item, input);
+                if (user?.IsPm() == true)
+                {
+                    await user.SendAsync(
+                        $"{action.Identity}: [{action.IdNext},{action.IdNextfail}]. type[{action.Type}], data[{action.Data}], param:[{param}].",
+                        MsgTalk.TalkChannel.System,
+                        Color.White);
+                }
+
                 bool result = false;
                 switch ((TaskActionType) action.Type)
                 {
-                    
+                    case TaskActionType.ActionMenutext: result = await ExecuteActionMenuText(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMenulink: result = await ExecuteActionMenuLink(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionBrocastmsg: result = await ExecuteActionBrocastmsg(action, param, user, role, item, input); break;
+
+                    case TaskActionType.ActionUserTalk: result = await ExecuteActionUserTalk(action, param, user, role, item, input); break;
+
+                    default:
+                        await Log.WriteLog(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
+                        break;
                 }
 
+                idOld = idAction;
                 idNext = result ? action.IdNext : action.IdNextfail;
             }
             return true;
         }
+
+        #region Action
+        
+        private static async Task<bool> ExecuteActionMenuText(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Action[{action.Identity}] type 101 non character");
+                return false;
+            }
+
+            await user.SendAsync(new MsgTaskDialog
+            {
+                InteractionType = MsgTaskDialog.TaskInteraction.Dialog,
+                Text = param,
+                Data = (ushort) action.Data
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMenuLink(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Action[{action.Identity}] type 101 non character");
+                return false;
+            }
+
+            uint task = 0;
+            int align = 0;
+            string[] parsed = param.Split(' ');
+            if (parsed.Length > 1)
+                uint.TryParse(parsed[1], out task);
+            if (parsed.Length > 2)
+                int.TryParse(parsed[2], out align);
+
+            await user.SendAsync(new MsgTaskDialog
+            {
+                InteractionType = MsgTaskDialog.TaskInteraction.Option,
+                Text = param,
+                OptionIndex = user.PushTaskId(task),
+                Data = (ushort) align
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionBrocastmsg(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            await Kernel.RoleManager.BroadcastMsgAsync(param, (MsgTalk.TalkChannel) action.Data, Color.White);
+            return true;
+        }
+
+        #endregion
+
+        #region User
+
+        private static async Task<bool> ExecuteActionUserTalk(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Action type 1010 {action.Identity} no user");
+                return false;
+            }
+
+            await user.SendAsync(param, (MsgTalk.TalkChannel) action.Data, Color.White);
+            return true;
+        }
+
+        #endregion
 
         private static string FormatParam(DbAction action, Character user, Role role, Item item, string input)
         {

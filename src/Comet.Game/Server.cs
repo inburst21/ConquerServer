@@ -140,6 +140,10 @@ namespace Comet.Game
                         msg = new MsgInteract();
                         break;
 
+                    case PacketType.MsgTeam:
+                        msg = new MsgTeam();
+                        break;
+
                     case PacketType.MsgAllot:
                         msg = new MsgAllot();
                         break;
@@ -150,6 +154,14 @@ namespace Comet.Game
 
                     case PacketType.MsgMapItem:
                         msg = new MsgMapItem();
+                        break;
+
+                    case PacketType.MsgNpc:
+                        msg = new MsgNpc();
+                        break;
+
+                    case PacketType.MsgTaskDialog:
+                        msg = new MsgTaskDialog();
                         break;
 
                     case PacketType.MsgPeerage:

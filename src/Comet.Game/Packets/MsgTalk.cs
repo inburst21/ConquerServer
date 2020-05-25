@@ -213,12 +213,12 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            if (sender.IsGm())
+            if (sender.IsGm() || target?.IsGm() == true)
             {
                 await Log.GmLog("gm_talk", $"{sender.Name} says to {RecipientName}: {Message}");
             }
 
-            if (await ProcessCommand(Message, sender))
+            if (await ProcessCommandAsync(Message, sender))
             {
                 await Log.GmLog("gm_cmd", $"{sender.Name}: {Message}");
                 return;
@@ -236,10 +236,17 @@ namespace Comet.Game.Packets
                         return;
                     }
                     break;
+                case TalkChannel.Team:
+                    if (sender.Team != null)
+                        await sender.Team.SendAsync(this, sender.Identity);
+                    break;
+                case TalkChannel.Friend:
+                    await sender.SendToFriendsAsync(this);
+                    break;
             }
         }
 
-        private async Task<bool> ProcessCommand(string fullCmd, Character user)
+        private async Task<bool> ProcessCommandAsync(string fullCmd, Character user)
         {
             if (fullCmd[0] != '/')
                 return false;

@@ -179,7 +179,6 @@ namespace Comet.Game.World.Managers
 
         public Role GetRole(uint idRole)
         {
-            m_mapItemSet.TryRemove(idRole, out _);
             return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
         }
 
@@ -188,6 +187,7 @@ namespace Comet.Game.World.Managers
         /// </summary>
         public bool RemoveRole(uint idRole)
         {
+            m_mapItemSet.TryRemove(idRole, out _);
             return m_roleSet.TryRemove(idRole, out _);
         }
 
@@ -211,7 +211,10 @@ namespace Comet.Game.World.Managers
             foreach (var item in m_mapItemSet.Values)
             {
                 if (item.CanDisappear())
+                {
                     await item.Disappear();
+                    m_mapItemSet.TryRemove(item.Identity, out _);
+                }
             }
         }
 

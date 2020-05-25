@@ -105,6 +105,10 @@ namespace Comet.Game.States.Items
                         await Log.WriteLog(LogLevel.Warning,
                             $"Failed to insert inventory item {item.Identity}: duplicate???");
                 }
+                else if (item.Position == Item.ItemPosition.Floor)
+                {
+                    await item.DeleteAsync();
+                }
                 else
                 {
                     await Log.WriteLog(LogLevel.Warning,
@@ -734,6 +738,7 @@ namespace Comet.Game.States.Items
                         if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
                         {
                             await pMapItem.EnterMap();
+                            await item.SaveAsync();
                             await Log.GmLog("drop_item",
                                 $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
                         }
@@ -793,6 +798,7 @@ namespace Comet.Game.States.Items
                     if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
                     {
                         await pMapItem.EnterMap();
+                        await item.SaveAsync();
                         await Log.GmLog("drop_item",
                             $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
                     }

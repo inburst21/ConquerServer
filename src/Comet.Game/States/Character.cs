@@ -22,22 +22,27 @@
 #region References
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
 using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.Relationship;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
+using Org.BouncyCastle.Asn1.IsisMtt.X509;
 
 #endregion
 
@@ -61,6 +66,8 @@ namespace Comet.Game.States
         private TimeOut m_transformation = new TimeOut();
         private TimeOut m_tRevive = new TimeOut();
         private TimeOut m_respawn = new TimeOut();
+
+        private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -188,7 +195,9 @@ namespace Comet.Game.States
 
             DbMonstertype pType = Kernel.RoleManager.GetMonstertype(dwLook);
             if (pType == null)
+            {
                 return false;
+            }
 
             Transformation pTransform = new Transformation(this);
             if (pTransform.Create(pType))
@@ -226,11 +235,13 @@ namespace Comet.Game.States
 
         public async Task<bool> SynchroTransform()
         {
-            Life = MaxLife;
-
             MsgUserAttrib msg = new MsgUserAttrib(Identity, ClientUpdateType.Mesh, Mesh);
-            msg.Append(ClientUpdateType.MaxHitpoints, MaxLife);
-            msg.Append(ClientUpdateType.Hitpoints, Life);
+            if (TransformationMesh != 98 && TransformationMesh != 99)
+            {
+                Life = MaxLife;
+                msg.Append(ClientUpdateType.MaxHitpoints, MaxLife);
+                msg.Append(ClientUpdateType.Hitpoints, Life);
+            }
             await BroadcastRoomMsgAsync(msg, true);
 
 
@@ -240,14 +251,17 @@ namespace Comet.Game.States
             return true;
         }
 
-        public void SetGhost()
+        public async Task SetGhost()
         {
             if (IsAlive) return;
 
             ushort trans = 98;
             if (Gender == 2)
                 trans = 99;
+            //TransformationMesh = trans;
+            //await Transform(trans, int.MaxValue, true);
             TransformationMesh = trans;
+            await SynchroTransform();
         }
 
         #endregion
@@ -1090,6 +1104,7 @@ namespace Comet.Game.States
             if (mapItem.Create(Map, pos, item, Identity))
             {
                 await mapItem.EnterMap();
+                await item.SaveAsync();
             }
             else
             {
@@ -1222,6 +1237,12 @@ namespace Comet.Game.States
             if (broadcast)
                 await BroadcastRoomMsgAsync(msg, false);
         }
+
+        #endregion
+
+        #region Team
+
+        public Team Team { get; set; }
 
         #endregion
 
@@ -1768,6 +1789,12 @@ namespace Comet.Game.States
                             return true;
                         return false;
                     case PkModeType.Team:
+                        if (IsFriend(user.Identity))
+                            return false;
+                        if (IsMate(user.Name))
+                            return false;
+                        if (Team?.IsMember(user.Identity) == true)
+                            return false;
                         return true;
                 }
             }
@@ -1792,7 +1819,7 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
-            return !m_respawn.IsActive() || m_respawn.IsTimeOut();
+            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive;
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
@@ -1866,7 +1893,8 @@ namespace Comet.Game.States
             if (!IsAlive)
             {
                 await BeKill(this);
-            } else if (Action == EntityAction.Sit)
+            } 
+            else if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, Energy / 2);
 
             return true;
@@ -1884,7 +1912,7 @@ namespace Comet.Game.States
             await AttachStatus(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
             await AttachStatus(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
-            m_ghost.Update();
+            m_ghost.Startup(4);
 
             uint idMap = 0;
             Point posTarget = new Point();
@@ -1930,6 +1958,8 @@ namespace Comet.Game.States
 
                 if (attacker.Identity != Identity && attacker is Character targetUser)
                 {
+                    await CreateEnemy(targetUser);
+
                     float nLossPercent;
                     if (PkPoints < 30)
                         nLossPercent = 0.01f;
@@ -1969,9 +1999,9 @@ namespace Comet.Game.States
                     }
                 }
             }
-            else if (attacker is Character && Map.IsDeadIsland())
+            else if (attacker is Character atkUser && Map.IsDeadIsland())
             {
-
+                await CreateEnemy(atkUser);
             }
             else if (attacker is Monster monster)
             {
@@ -2145,6 +2175,44 @@ namespace Comet.Game.States
             return idx > 0 && idx <= m_setTaskId.Count ? m_setTaskId[idx - 1] : 0u;
         }
 
+        public async Task<bool> TestTask(DbTask task)
+        {
+            if (task == null) return false;
+
+            try
+            {
+                if (!CheckItem(task))
+                    return false;
+
+                if (Silvers < task.Money)
+                    return false;
+
+                if (task.Profession != 0 && Profession != task.Profession)
+                    return false;
+
+                if (task.Sex != 0 && task.Sex != 999 && task.Sex != Gender)
+                    return false;
+
+                if (PkPoints < task.MinPk || PkPoints > task.MaxPk)
+                    return false;
+
+                if (task.Marriage >= 0)
+                {
+                    if (task.Marriage == 0 && Mate != Language.StrNone)
+                        return false;
+                    if (task.Marriage == 1 && Mate == Language.StrNone)
+                        return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Test task error");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                return false;
+            }
+            return true;
+        }
+
         #endregion
 
         #region Marriage
@@ -2157,6 +2225,226 @@ namespace Comet.Game.States
         public bool IsMate(string name)
         {
             return name == Mate;
+        }
+
+        #endregion
+
+        #region Requests
+
+        public void SetRequest(RequestType type, uint target)
+        {
+            m_dicRequests.TryRemove(type, out _);
+            if (target == 0)
+                return;
+
+            m_dicRequests.TryAdd(type, target);
+        }
+
+        public uint QueryRequest(RequestType type)
+        {
+            return m_dicRequests.TryGetValue(type, out var value) ? value : 0;
+        }
+
+        public uint PopRequest(RequestType type)
+        {
+            return m_dicRequests.TryRemove(type, out var value) ? value : 0;
+        }
+
+        #endregion
+
+        #region Friend
+
+        private ConcurrentDictionary<uint, Friend> m_dicFriends = new ConcurrentDictionary<uint, Friend>();
+
+        public int FriendAmount => m_dicFriends.Count;
+        
+        public int MaxFriendAmount => 50;
+
+        public bool AddFriend(Friend friend)
+        {
+            return m_dicFriends.TryAdd(friend.Identity, friend);
+        }
+
+        public async Task<bool> CreateFriend(Character target)
+        {
+            if (IsFriend(target.Identity))
+                return false;
+
+            Friend friend = new Friend(this);
+            if (!await friend.CreateAsync(target))
+                return false;
+
+            Friend targetFriend = new Friend(target);
+            if (!await targetFriend.CreateAsync(this))
+                return false;
+
+            await friend.SaveAsync();
+            await targetFriend.SaveAsync();
+            await friend.SendAsync();
+            await targetFriend.SendAsync();
+
+            AddFriend(friend);
+            target.AddFriend(targetFriend);
+
+            await BroadcastRoomMsgAsync(string.Format(Language.StrMakeFriend, Name, target.Name));
+            return true;
+        }
+
+        public bool IsFriend(uint idTarget)
+        {
+            return m_dicFriends.ContainsKey(idTarget);
+        }
+
+        public Friend GetFriend(uint idTarget)
+        {
+            return m_dicFriends.TryGetValue(idTarget, out var friend) ? friend : null;
+        }
+
+        public async Task<bool> DeleteFriend(uint idTarget, bool notify = false)
+        {
+            if (!IsFriend(idTarget) || !m_dicFriends.TryRemove(idTarget, out var target))
+                return false;
+            
+            if (target.Online)
+            {
+                await target.User.DeleteFriend(Identity);
+            }
+            else
+            {
+                DbFriend targetFriend = await FriendRepository.GetAsync(Identity, idTarget);
+                await using ServerDbContext ctx = new ServerDbContext();
+                ctx.Remove(targetFriend);
+                await ctx.SaveChangesAsync();
+            }
+
+            await target.DeleteAsync();
+
+            await SendAsync(new MsgFriend
+            {
+                Identity = target.Identity,
+                Name = target.Name,
+                Action = MsgFriend.MsgFriendAction.RemoveFriend,
+                Online = target.Online
+            });
+
+            if (notify)
+                await BroadcastRoomMsgAsync(string.Format(Language.StrBreakFriend, Name, target.Name));
+            return true;
+        }
+
+        public async Task SendAllFriendAsync()
+        {
+            foreach (var friend in m_dicFriends.Values)
+            {
+                await friend.SendAsync();
+                if (friend.Online)
+                {
+                    await friend.User.SendAsync(new MsgFriend
+                    {
+                        Identity = Identity,
+                        Name = Name,
+                        Action = MsgFriend.MsgFriendAction.SetOnlineFriend,
+                        Online = true
+                    });
+                }
+            }
+        }
+
+        public async Task NotifyOfflineFriendAsync()
+        {
+            foreach (var friend in m_dicFriends.Values)
+            {
+                if (friend.Online)
+                {
+                    await friend.User.SendAsync(new MsgFriend
+                    {
+                        Identity = Identity,
+                        Name = Name,
+                        Action = MsgFriend.MsgFriendAction.SetOfflineFriend,
+                        Online = true
+                    });
+                }
+            }
+        }
+
+        public async Task SendToFriendsAsync(IPacket msg)
+        {
+            foreach (var friend in m_dicFriends.Values.Where(x => x.Online))
+                await friend.User.SendAsync(msg);
+        }
+
+        #endregion
+
+        #region Enemy
+
+        private ConcurrentDictionary<uint, Enemy> m_dicEnemies = new ConcurrentDictionary<uint, Enemy>();
+
+        public bool AddEnemy(Enemy friend)
+        {
+            return m_dicEnemies.TryAdd(friend.Identity, friend);
+        }
+
+        public async Task<bool> CreateEnemy(Character target)
+        {
+            if (IsEnemy(target.Identity))
+                return false;
+
+            Enemy enemy = new Enemy(this);
+            if (!await enemy.CreateAsync(target))
+                return false;
+
+            await enemy.SaveAsync();
+            await enemy.SendAsync();
+            AddEnemy(enemy);
+            return true;
+        }
+
+        public bool IsEnemy(uint idTarget)
+        {
+            return m_dicEnemies.ContainsKey(idTarget);
+        }
+
+        public Enemy GetEnemy(uint idTarget)
+        {
+            return m_dicEnemies.TryGetValue(idTarget, out var friend) ? friend : null;
+        }
+
+        public async Task<bool> DeleteEnemy(uint idTarget)
+        {
+            if (!IsFriend(idTarget) || !m_dicEnemies.TryRemove(idTarget, out var target))
+                return false;
+
+            await target.DeleteAsync();
+
+            await SendAsync(new MsgFriend
+            {
+                Identity = target.Identity,
+                Name = target.Name,
+                Action = MsgFriend.MsgFriendAction.RemoveEnemy,
+                Online = true
+            });
+            return true;
+        }
+
+        public async Task SendAllEnemiesAsync()
+        {
+            foreach (var enemy in m_dicEnemies.Values)
+            {
+                await enemy.SendAsync();
+            }
+
+            foreach (var enemy in await EnemyRepository.GetOwnEnemyAsync(Identity))
+            {
+                Character user = Kernel.RoleManager.GetUser(enemy.UserIdentity);
+                if (user != null)
+                    await user.SendAsync(new MsgFriend
+                    {
+                        Identity = Identity,
+                        Name = Name,
+                        Action = MsgFriend.MsgFriendAction.SetOnlineEnemy,
+                        Online = true
+                    });
+            }
         }
 
         #endregion
@@ -2179,12 +2467,17 @@ namespace Comet.Game.States
 
         public Screen Screen { get; }
 
+        public async Task BroadcastRoomMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null, bool self = true)
+        {
+            await BroadcastRoomMsgAsync(new MsgTalk(Identity, channel, color ?? Color.Red, message), self);
+        }
+
         public override async Task BroadcastRoomMsgAsync(IPacket msg, bool self)
         {
             await Screen.BroadcastRoomMsgAsync(msg, self);
         }
 
-#endregion
+        #endregion
 
         #region Map and Position
 
@@ -2307,6 +2600,11 @@ namespace Comet.Game.States
             return true;
         }
 
+        public Role QueryRole(uint idRole)
+        {
+            return Map.QueryAroundRole(this, idRole);
+        }
+
         #endregion
 
         #region Movement
@@ -2358,7 +2656,7 @@ namespace Comet.Game.States
         }
 
         #endregion
-
+        
         #region Multiple Exp
 
         public bool HasMultipleExp => m_dbObject.ExperienceMultiplier > 1 && m_dbObject.ExperienceExpires >= DateTime.Now;
@@ -2763,6 +3061,12 @@ namespace Comet.Game.States
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
+            if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
+            {
+                await SetGhost();
+                m_ghost.Clear();
+            }
+
             if (!IsAlive)
                 return;
 
@@ -2806,7 +3110,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_autoHeal.ToNextTime())
+                if (m_autoHeal.ToNextTime() && IsAlive)
                 {
                     await AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD);
                 }
@@ -2839,6 +3143,8 @@ namespace Comet.Game.States
 
             m_dbObject.LogoutTime = DateTime.Now;
             m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+
+            await NotifyOfflineFriendAsync();
 
             await LeaveMap();
 
@@ -2922,5 +3228,14 @@ namespace Comet.Game.States
         Peace,
         Team,
         Capture
+    }
+
+    public enum RequestType
+    {
+        Friend,
+        Syndicate,
+        TeamApply,
+        TeamInvite
+
     }
 }

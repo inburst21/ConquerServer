@@ -43,6 +43,7 @@ namespace Comet.Game.Packets
         public ushort SyndicateIdentity { get; set; }
         public byte SyndicateRank { get; set; }
         public string Mate { get; set; }
+        public bool IsEnemy { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -63,6 +64,7 @@ namespace Comet.Game.Packets
             writer.Write((byte)0);
             writer.Write(SyndicateRank);
             writer.Write(Mate, 16);
+            writer.Write(IsEnemy);
             return writer.ToArray();
         }
     }

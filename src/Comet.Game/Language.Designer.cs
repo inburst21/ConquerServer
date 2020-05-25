@@ -79,11 +79,29 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} broke up friendship with {1}..
+        /// </summary>
+        public static string StrBreakFriend {
+            get {
+                return ResourceManager.GetString("StrBreakFriend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Cannot pick up others items..
         /// </summary>
         public static string StrCannotPickupOtherItems {
             get {
                 return ResourceManager.GetString("StrCannotPickupOtherItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Close.
+        /// </summary>
+        public static string StrClose {
+            get {
+                return ResourceManager.GetString("StrClose", resourceCulture);
             }
         }
         
@@ -133,6 +151,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your friend list is full..
+        /// </summary>
+        public static string StrFriendListFull {
+            get {
+                return ResourceManager.GetString("StrFriendListFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has killed {1} and sent him/her to jail..
         /// </summary>
         public static string StrGoToJail {
@@ -165,6 +192,15 @@ namespace Comet.Game {
         public static string StrInvalidMsg {
             get {
                 return ResourceManager.GetString("StrInvalidMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Team invitation has been sent..
+        /// </summary>
+        public static string StrInviteSent {
+            get {
+                return ResourceManager.GetString("StrInviteSent", resourceCulture);
             }
         }
         
@@ -205,11 +241,47 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1] are friends from now on..
+        /// </summary>
+        public static string StrMakeFriend {
+            get {
+                return ResourceManager.GetString("StrMakeFriend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A request to be friends has been sent..
+        /// </summary>
+        public static string StrMakeFriendSent {
+            get {
+                return ResourceManager.GetString("StrMakeFriendSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a None.
         /// </summary>
         public static string StrNone {
             get {
                 return ResourceManager.GetString("StrNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Inexistent team..
+        /// </summary>
+        public static string StrNoTeam {
+            get {
+                return ResourceManager.GetString("StrNoTeam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are not in a team..
+        /// </summary>
+        public static string StrNoTeamToInvite {
+            get {
+                return ResourceManager.GetString("StrNoTeamToInvite", resourceCulture);
             }
         }
         
@@ -228,6 +300,15 @@ namespace Comet.Game {
         public static string StrNotEnoughMoney {
             get {
                 return ResourceManager.GetString("StrNotEnoughMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Open.
+        /// </summary>
+        public static string StrOpen {
+            get {
+                return ResourceManager.GetString("StrOpen", resourceCulture);
             }
         }
         
@@ -358,6 +439,33 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your target friend list is full..
+        /// </summary>
+        public static string StrTargetFriendListFull {
+            get {
+                return ResourceManager.GetString("StrTargetFriendListFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target doen&apos;t have a team..
+        /// </summary>
+        public static string StrTargetHasNoTeam {
+            get {
+                return ResourceManager.GetString("StrTargetHasNoTeam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target is not alive..
+        /// </summary>
+        public static string StrTargetIsNotAlive {
+            get {
+                return ResourceManager.GetString("StrTargetIsNotAlive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The target is not in range..
         /// </summary>
         public static string StrTargetNotInRange {
@@ -372,6 +480,168 @@ namespace Comet.Game {
         public static string StrTargetNotOnline {
             get {
                 return ResourceManager.GetString("StrTargetNotOnline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are already in a team..
+        /// </summary>
+        public static string StrTeamAlreadyNoJoin {
+            get {
+                return ResourceManager.GetString("StrTeamAlreadyNoJoin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your team application has been sent..
+        /// </summary>
+        public static string StrTeamApplySent {
+            get {
+                return ResourceManager.GetString("StrTeamApplySent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target team is not accepting new members..
+        /// </summary>
+        public static string StrTeamClosed {
+            get {
+                return ResourceManager.GetString("StrTeamClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Only the team leader can dismiss the team..
+        /// </summary>
+        public static string StrTeamDismissNoLeader {
+            get {
+                return ResourceManager.GetString("StrTeamDismissNoLeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The team is full..
+        /// </summary>
+        public static string StrTeamFull {
+            get {
+                return ResourceManager.GetString("StrTeamFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Precious: {0}.
+        /// </summary>
+        public static string StrTeamGems {
+            get {
+                return ResourceManager.GetString("StrTeamGems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The user you&apos;re trying to invite does not exist..
+        /// </summary>
+        public static string StrTeamInvitedNotFound {
+            get {
+                return ResourceManager.GetString("StrTeamInvitedNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Items: {0}.
+        /// </summary>
+        public static string StrTeamItems {
+            get {
+                return ResourceManager.GetString("StrTeamItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The team leader is not alive..
+        /// </summary>
+        public static string StrTeamLeaderDead {
+            get {
+                return ResourceManager.GetString("StrTeamLeaderDead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The leader is not in range..
+        /// </summary>
+        public static string StrTeamLeaderNotInRange {
+            get {
+                return ResourceManager.GetString("StrTeamLeaderNotInRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Youa not leader of the team..
+        /// </summary>
+        public static string StrTeamNoCapitain {
+            get {
+                return ResourceManager.GetString("StrTeamNoCapitain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target isn&apos;t leader of a team..
+        /// </summary>
+        public static string StrTeamNoLeader {
+            get {
+                return ResourceManager.GetString("StrTeamNoLeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You haven&apos;t been invited to this team..
+        /// </summary>
+        public static string StrTeamNotInvited {
+            get {
+                return ResourceManager.GetString("StrTeamNotInvited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Silvers: {0}.
+        /// </summary>
+        public static string StrTeamSilver {
+            get {
+                return ResourceManager.GetString("StrTeamSilver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target is already in a team..
+        /// </summary>
+        public static string StrTeamTargetAlreadyTeam {
+            get {
+                return ResourceManager.GetString("StrTeamTargetAlreadyTeam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target has not applied for this team..
+        /// </summary>
+        public static string StrTeamTargetHasNotApplied {
+            get {
+                return ResourceManager.GetString("StrTeamTargetHasNotApplied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target is not in range..
+        /// </summary>
+        public static string StrTeamTargetNotInRange {
+            get {
+                return ResourceManager.GetString("StrTeamTargetNotInRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has sent you a friend request..
+        /// </summary>
+        public static string StrToMakeFriend {
+            get {
+                return ResourceManager.GetString("StrToMakeFriend", resourceCulture);
             }
         }
         
@@ -399,6 +669,15 @@ namespace Comet.Game {
         public static string StrYourBagIsFull {
             get {
                 return ResourceManager.GetString("StrYourBagIsFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target already is your friend..
+        /// </summary>
+        public static string StrYourFriendAlready {
+            get {
+                return ResourceManager.GetString("StrYourFriendAlready", resourceCulture);
             }
         }
     }

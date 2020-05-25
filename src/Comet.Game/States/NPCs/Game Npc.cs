@@ -41,9 +41,33 @@ namespace Comet.Game.States.NPCs
             Name = npc.Name;
         }
 
+        #region 
+
+        public override ushort Type => m_dbNpc.Type;
+
+        #endregion
+
         #region Map and Position
 
 
+
+        #endregion
+
+        #region Task and Data
+
+        public override uint Task0 => m_dbNpc.Task0;
+        public override uint Task1 => m_dbNpc.Task1;
+        public override uint Task2 => m_dbNpc.Task2;
+        public override uint Task3 => m_dbNpc.Task3;
+        public override uint Task4 => m_dbNpc.Task4;
+        public override uint Task5 => m_dbNpc.Task5;
+        public override uint Task6 => m_dbNpc.Task6;
+        public override uint Task7 => m_dbNpc.Task7;
+
+        public override int Data0 { get => m_dbNpc.Data0; set => m_dbNpc.Data0 = value; }
+        public override int Data1 { get => m_dbNpc.Data1; set => m_dbNpc.Data1 = value; }
+        public override int Data2 { get => m_dbNpc.Data2; set => m_dbNpc.Data2 = value; }
+        public override int Data3 { get => m_dbNpc.Data3; set => m_dbNpc.Data3 = value; }
 
         #endregion
 

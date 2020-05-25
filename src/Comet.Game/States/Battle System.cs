@@ -92,6 +92,7 @@ namespace Comet.Game.States
                 return true;
 
             await target.BeAttack(MagicType.None, m_owner, damage, true);
+            await target.AddAttributesAsync(ClientUpdateType.Hitpoints, result.Damage * -1);
 
             if (user != null)
                 await user.CheckCrime(target);

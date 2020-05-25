@@ -67,13 +67,12 @@ namespace Comet.Shared
             RefreshFolders();
         }
 
-        public static Task WriteLog(LogLevel level, string message, params object[] values)
+        public static async Task WriteLog(LogLevel level, string message, params object[] values)
         {
-            WriteLog(DefaultFileName, level, message, values);
-            return Task.CompletedTask;
+            await WriteLog(DefaultFileName, level, message, values);
         }
 
-        public static Task WriteLog(string file, LogLevel level, string message, params object[] values)
+        public static async Task WriteLog(string file, LogLevel level, string message, params object[] values)
         {
             RefreshFolders();
 
@@ -81,7 +80,7 @@ namespace Comet.Shared
             message = string.Format(message, values);
             message = $"{DateTime.Now:HH:mm:ss.fff} [{level.ToString()}] - {message}";
 
-            WriteToFile(file, LogFolder.SystemLog, message);
+            await WriteToFile(file, LogFolder.SystemLog, message);
 
             switch (level)
             {
@@ -103,12 +102,10 @@ namespace Comet.Shared
             }
 
             Console.WriteLine(message);
-
             Console.ForegroundColor = ConsoleColor.White;
-            return Task.CompletedTask;
         }
 
-        public static Task GmLog(string file, string message, params object[] values)
+        public static async Task GmLog(string file, string message, params object[] values)
         {
             RefreshFolders();
 
@@ -117,11 +114,10 @@ namespace Comet.Shared
 
             message = $"{DateTime.Now:HHmmss.fff} - {message}";
 
-            WriteToFile(file, LogFolder.GameLog, message);
-            return Task.CompletedTask;
+            await WriteToFile(file, LogFolder.GameLog, message);
         }
 
-        private static Task WriteToFile(string file, LogFolder eFolder, string value)
+        private static async Task WriteToFile(string file, LogFolder eFolder, string value)
         {
             DateTime now = DateTime.Now;
             if (!Files.TryGetValue(file, out var fileHandle))
@@ -135,10 +131,8 @@ namespace Comet.Shared
                     $".\\{LogFolder.SystemLog.ToString()}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log";
             }
 
-            using (StreamWriter writer = new StreamWriter(fileHandle.Path, true))
-            {
-                return writer.WriteLineAsync(value);
-            }
+            using StreamWriter writer = new StreamWriter(fileHandle.Path, true);
+            await writer.WriteLineAsync(value);
         }
 
         private static LogFile CreateHandle(string file, LogFolder folder)

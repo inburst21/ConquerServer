@@ -24,9 +24,11 @@
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
+using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.Relationship;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -143,6 +145,8 @@ namespace Comet.Game.Packets
 
                     await client.Character.EnterMap();
                     await client.SendAsync(this);
+
+                    await GameAction.ExecuteActionAsync(1000000, user, null, null, "");
                     break;
 
                 case ActionType.LoginInventory: // 75
@@ -152,6 +156,22 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginRelationships: // 76
+                    foreach (var dbFriend in await FriendRepository.GetAsync(user.Identity))
+                    {
+                        Friend friend = new Friend(user);
+                        await friend.CreateAsync(dbFriend);
+                        user.AddFriend(friend);
+                    }
+                    await user.SendAllFriendAsync();
+
+                    foreach (var dbEnemy in await EnemyRepository.GetAsync(user.Identity))
+                    {
+                        Enemy enemy = new Enemy(user);
+                        await enemy.CreateAsync(dbEnemy);
+                        user.AddEnemy(enemy);
+                    }
+                    await user.SendAllEnemiesAsync();
+
                     await client.SendAsync(this);
                     break;
 
@@ -177,7 +197,6 @@ namespace Comet.Game.Packets
 
                     if (user.Action == EntityAction.Cool)
                     {
-                        //int effect = user.IsFullQuality;
                         int effect = 0;
                         for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
                             pos <= Item.ItemPosition.EquipmentEnd;
@@ -251,12 +270,24 @@ namespace Comet.Game.Packets
                         await user.ClearTransformation();
                     break;
 
+                case ActionType.RelationshipsEnemy: // 123
+                    Enemy fetchEnemy = user.GetEnemy(Command);
+                    if (fetchEnemy == null)
+                    {
+                        await user.SendAsync(this);
+                        return;
+                    }
+
+                    await fetchEnemy.SendInfoAsync();
+                    break;
+
                 case ActionType.LoginComplete: // 130
                     await client.Character.SendNobilityInfo();
+                    await user.Screen.SynchroScreenAsync();
                     await client.SendAsync(this);
                     break;
 
-                case ActionType.MapJump:
+                case ActionType.MapJump: // 133
                     if (user != null) // todo handle ai 
                     {
                         if (!user.IsAlive)
@@ -281,6 +312,23 @@ namespace Comet.Game.Packets
                         await user.Screen.UpdateAsync(this);
                     }
 
+                    break;
+
+                case ActionType.RelationshipsFriend:
+                    Friend fetchFriend = user.GetFriend(Command);
+                    if (fetchFriend == null)
+                    {
+                        await user.SendAsync(this);
+                        return;
+                    }
+                    await fetchFriend.SendInfoAsync();
+                    break;
+
+                case ActionType.CharacterDead:
+                    if (user.IsAlive)
+                        return;
+
+                    await user.SetGhost();
                     break;
 
                 default:
@@ -342,7 +390,8 @@ namespace Comet.Game.Packets
             MapJump,
             CharacterDead = 137,
             RelationshipsFriend = 140,
-            CharacterAvatar = 142
+            CharacterAvatar = 142,
+            SetGhost = 145,
         }
     }
 }
