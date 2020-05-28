@@ -136,5 +136,23 @@ namespace Comet.Game.World.Maps
 
             return false;
         }
+
+        public async Task ClearAsync(bool sync = false)
+        {
+            if (sync)
+            {
+                foreach (var role in Roles.Values)
+                {
+                    MsgAction msg = new MsgAction
+                    {
+                        Identity = role.Identity,
+                        Action = MsgAction.ActionType.RemoveEntity
+                    };
+                    await m_user.SendAsync(msg);
+                }
+            }
+
+            Roles.Clear();
+        }
     }
 }

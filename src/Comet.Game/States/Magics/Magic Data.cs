@@ -286,6 +286,8 @@ namespace Comet.Game.States.Magics
 
         #endregion
 
+        public Magic QueryMagic => m_pMagic;
+
         public Magic this[ushort nType] => Magics.TryGetValue(nType, out var ret) ? ret : null;
     }
 }

@@ -117,11 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="StrAccuracyActiveP" xml:space="preserve">
+    <value>Accuracy for {0} seconds, your hit rate will be increased by {1} percent.</value>
+  </data>
+  <data name="StrAccuracyActiveT" xml:space="preserve">
+    <value>Accuracy for {0} seconds, your hit rate will be increased by {1} times.</value>
+  </data>
   <data name="StrAnotherLoginOtherIp" xml:space="preserve">
     <value>Atention! Your account may have been hacked! Someone outside of your network is trying to login.</value>
   </data>
   <data name="StrAnotherLoginSameIp" xml:space="preserve">
     <value>Atention! Your account is trying to login from inside of your network!</value>
+  </data>
+  <data name="StrAwardVirtue" xml:space="preserve">
+    <value>{0} has earned {1} virtue points for helping newbies.</value>
   </data>
   <data name="StrBreakFriend" xml:space="preserve">
     <value>{0} broke up friendship with {1}.</value>
@@ -137,6 +146,15 @@
   </data>
   <data name="StrDead" xml:space="preserve">
     <value>You are already dead.</value>
+  </data>
+  <data name="StrDispatchXp" xml:space="preserve">
+    <value>{0} roared and the teammates XP boosts immediatly.</value>
+  </data>
+  <data name="StrDodgeActiveP" xml:space="preserve">
+    <value>Dodge for {0} seconds, your dodge will be increased by {1} percent.</value>
+  </data>
+  <data name="StrDodgeActiveT" xml:space="preserve">
+    <value>Dodge for {0} seconds, your dodge will be increased by {1} times.</value>
   </data>
   <data name="StrDragonBallDropped" xml:space="preserve">
     <value>{0} has dropped a Dragon Ball in {1}.</value>
@@ -243,6 +261,18 @@
   <data name="StrPickupSilvers" xml:space="preserve">
     <value>You picked up {0:D0} silvers.</value>
   </data>
+  <data name="StrShieldActiveP" xml:space="preserve">
+    <value>Shield for {0} seconds, your defense will be increased by {1} percent.</value>
+  </data>
+  <data name="StrShieldActiveT" xml:space="preserve">
+    <value>Shield for {0} seconds, your defense will be increased by {1} times.</value>
+  </data>
+  <data name="StrStigmaActiveP" xml:space="preserve">
+    <value>Stigma for {0} seconds, your attack will be increased by {1} percent.</value>
+  </data>
+  <data name="StrStigmaActiveT" xml:space="preserve">
+    <value>Stigma for {0} seconds, your attack will be increased by {1} times.</value>
+  </data>
   <data name="StrTargetFriendListFull" xml:space="preserve">
     <value>Your target friend list is full.</value>
   </data>
@@ -269,6 +299,9 @@
   </data>
   <data name="StrTeamDismissNoLeader" xml:space="preserve">
     <value>Only the team leader can dismiss the team.</value>
+  </data>
+  <data name="StrTeamExperience" xml:space="preserve">
+    <value>{0} team experience awarded.</value>
   </data>
   <data name="StrTeamFull" xml:space="preserve">
     <value>The team is full.</value>

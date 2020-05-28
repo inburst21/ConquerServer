@@ -141,6 +141,17 @@ namespace Comet.Game.States.Items
             if (item == null)
                 return false;
 
+            if (item.Type == Item.TYPE_EXP_BALL)
+            {
+                if (!m_user.CanUseExpBall())
+                    return false;
+
+                m_user.IncrementExpBall();
+                await m_user.AwardExperience(m_user.CalculateExpBall());
+                await SpendItem(item);
+                return true;
+            }
+
             if (item.IsEquipEnable())
                 return await EquipItemAsync(item, position);
 

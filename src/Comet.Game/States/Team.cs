@@ -19,10 +19,15 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Comet.Core.Mathematics;
+using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 
 namespace Comet.Game.States
@@ -41,12 +46,16 @@ namespace Comet.Game.States
             MoneyEnable = true;
         }
 
+        public Character Leader => m_leader;
+
         public bool JoinEnable { get; set; }
         public bool MoneyEnable { get; set; }
         public bool ItemEnable { get; set; }
         public bool JewelEnable { get; set; }
 
-        public int Members => m_dicPlayers.Count;
+        public ICollection<Character> Members => m_dicPlayers.Values;
+
+        public int MemberCount => m_dicPlayers.Count;
 
 
         public bool Create()
@@ -182,6 +191,44 @@ namespace Comet.Game.States
                 if (exclude == player.Identity)
                     continue;
                 await player.SendAsync(msg);
+            }
+        }
+
+        public async Task AwardMemberExp(uint idKiller, Role target, long exp)
+        {
+            if (target == null || exp == 0)
+                return;
+
+            if (!m_dicPlayers.TryGetValue(idKiller, out var killer))
+                return;
+
+            foreach (var user in m_dicPlayers.Values)
+            {
+                if (user.Identity == idKiller)
+                    continue;
+
+                if (!user.IsAlive)
+                    continue;
+
+                if (user.MapIdentity != killer.MapIdentity)
+                    continue;
+
+                if (user.GetDistance(killer) > Screen.VIEW_SIZE * 2)
+                    continue;
+
+                DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(user.Level);
+                if (dbExp == null)
+                    continue;
+
+                long addExp = user.AdjustExperience(target, exp, false);
+                addExp = (long) Math.Min(dbExp.Exp, (ulong) addExp);
+                addExp = Math.Max(1, Math.Min(user.Level * 360, addExp));
+
+                if (user.IsMate(killer))
+                    addExp *= 2;
+
+                await user.AwardBattleExp(addExp, false);
+                await user.SendAsync(string.Format(Language.StrTeamExperience, addExp));
             }
         }
     }

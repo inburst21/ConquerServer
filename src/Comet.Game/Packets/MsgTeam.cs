@@ -141,7 +141,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (target.Team.Members >= Team.MAX_MEMBERS)
+                    if (target.Team.MemberCount >= Team.MAX_MEMBERS)
                     {
                         await user.SendAsync(Language.StrTeamFull);
                         return;
@@ -181,7 +181,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (user.Team.Members >= Team.MAX_MEMBERS)
+                    if (user.Team.MemberCount >= Team.MAX_MEMBERS)
                     {
                         await user.SendAsync(Language.StrTeamFull);
                         return;
@@ -236,7 +236,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (user.Team.Members >= Team.MAX_MEMBERS)
+                    if (user.Team.MemberCount >= Team.MAX_MEMBERS)
                     {
                         await user.SendAsync(Language.StrTeamFull);
                         return;
@@ -279,7 +279,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (target.Team.Members >= Team.MAX_MEMBERS)
+                    if (target.Team.MemberCount >= Team.MAX_MEMBERS)
                     {
                         await user.SendAsync(Language.StrTeamFull);
                         return;

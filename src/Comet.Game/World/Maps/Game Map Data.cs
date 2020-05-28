@@ -21,11 +21,13 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Comet.Game.States.BaseEntities;
 using Comet.Shared;
+using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -144,7 +146,7 @@ namespace Comet.Game.World.Maps
                 if (checkSum != tmp)
                 {
                     Log.WriteLog(LogLevel.Error, $"Invalid checksum for block of cells (mapdata: {m_idDoc}), y: {y}")
-                        .Wait();
+                        .Forget();
                 }
             }
         }
@@ -182,11 +184,13 @@ namespace Comet.Game.World.Maps
                         int startX = reader.ReadInt32();
                         int startY = reader.ReadInt32();
 
+                        file = file.Substring(0, file.IndexOf('\0'));
                         if (File.Exists(file))
                         {
                             var memory = new MemoryStream(File.ReadAllBytes(file));
                             var scenery = new BinaryReader(memory);
 
+#if NEW_DMAP
                             memory.Seek(332, SeekOrigin.Current);
                             int width = scenery.ReadInt32();
                             int height = scenery.ReadInt32();
@@ -206,9 +210,48 @@ namespace Comet.Game.World.Maps
                                     int posX = startX + sceneOffsetX + x - width;
                                     int posY = startY + sceneOffsetY + y - height;
 
-                                    m_cell[x, y] = new Tile(altitude, mask, terrain);
+                                    if (posX < 0 || posX >= ushort.MaxValue
+                                                 || posY < 0 || posY >= ushort.MaxValue)
+                                        continue;
+
+                                    m_cell[posX, posY] = new Tile(altitude, mask, terrain);
                                 }
                             }
+#else
+                            int amount = scenery.ReadInt32();
+                            //memory.Seek(332, SeekOrigin.Current);
+                            for (int parts = 0; parts < amount; parts++)
+                            {
+                                string temp0 = Encoding.ASCII.GetString(scenery.ReadBytes(256));
+                                string temp1 = Encoding.ASCII.GetString(scenery.ReadBytes(64));
+                                memory.Seek(12, SeekOrigin.Current);
+                                int width = scenery.ReadInt32();
+                                int height = scenery.ReadInt32();
+                                memory.Seek(4, SeekOrigin.Current);
+                                int sceneOffsetX = scenery.ReadInt32();
+                                int sceneOffsetY = scenery.ReadInt32();
+                                memory.Seek(4, SeekOrigin.Current);
+
+                                for (int y = 0; y < height; y++)
+                                {
+                                    for (int x = 0; x < width; x++)
+                                    {
+                                        short mask = (short) scenery.ReadInt32();
+                                        short terrain = (short) scenery.ReadInt32();
+                                        short altitude = (short) scenery.ReadInt32();
+
+                                        int posX = startX + sceneOffsetX + x - width;
+                                        int posY = startY + sceneOffsetY + y - height;
+
+                                        if (posX < 0 || posX >= ushort.MaxValue
+                                                     || posY < 0 || posY >= ushort.MaxValue)
+                                            continue;
+
+                                        m_cell[posX, posY] = new Tile(altitude, mask, terrain);
+                                    }
+                                }
+                            }
+#endif
 
                             memory.Close();
                             scenery.Close();

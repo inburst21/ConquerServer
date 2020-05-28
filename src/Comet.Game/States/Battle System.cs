@@ -57,6 +57,8 @@ namespace Comet.Game.States
                 return false;
             }
 
+            await m_owner.MagicData.AbortMagic(true);
+
             Role target = Kernel.RoleManager.GetRole(m_idTarget);
             if (target == null)
             {
@@ -70,13 +72,17 @@ namespace Comet.Game.States
                 return false;
             }
 
+            Character user = m_owner as Character;
+            if (user != null && await user.AutoSkillAttack(target))
+            {
+                return true;
+            }
+
             if (await IsTargetDodged(m_owner, target))
             {
                 await m_owner.SendDamageMsgAsync(m_idTarget, 0);
                 return false;
             }
-
-            Character user = m_owner as Character;
 
             var result = await CalcPower(MagicType.None, m_owner, target);
             InteractionEffect effect = result.effect;
@@ -92,7 +98,6 @@ namespace Comet.Game.States
                 return true;
 
             await target.BeAttack(MagicType.None, m_owner, damage, true);
-            await target.AddAttributesAsync(ClientUpdateType.Hitpoints, result.Damage * -1);
 
             if (user != null)
                 await user.CheckCrime(target);
@@ -106,7 +111,8 @@ namespace Comet.Game.States
                     nAdditionExp = (int)(target.MaxLife * 0.05f);
                     nExp += nAdditionExp;
 
-                    //user.Team?.AwardMemberExp(user.Identity, target, nAdditionExp);
+                    if (user.Team != null)
+                        await user.Team.AwardMemberExp(user.Identity, target, nAdditionExp);
                 }
 
                 await user.AwardBattleExp(nExp, true);
@@ -181,6 +187,9 @@ namespace Comet.Game.States
                 damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
 
+            if (attacker.MagicData.QueryMagic != null)
+                damage = Calculations.AdjustData(damage, attacker.MagicData.QueryMagic.Power);
+
             if (attacker.QueryStatus(StatusSet.STIG) != null)
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIG).Power);
 
@@ -223,7 +232,9 @@ namespace Comet.Game.States
 
             int damage = (int) (attack * 0.75);
             damage = (int) (damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
-            // todo add magic DAMAGE
+
+            if (target.MagicData.QueryMagic != null)
+                damage = Calculations.AdjustData(damage,  target.MagicData.QueryMagic.Power);
 
             int defense = target.MagicDefense;
             damage -= defense;
@@ -557,6 +568,15 @@ namespace Comet.Game.States
             }
 
             return Calculations.CutTrail(0, nExp);
+        }
+
+        public async Task OtherMemberAwardExp(Role target, long nBonusExp)
+        {
+            if (m_owner.Map.IsTrainingMap())
+                return;
+
+            if (m_owner is Character user && user.Team != null)
+                await user.Team.AwardMemberExp(m_owner.Identity, target, nBonusExp);
         }
 
         public const int NAME_GREEN = 0,

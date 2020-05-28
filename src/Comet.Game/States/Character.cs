@@ -491,6 +491,12 @@ namespace Comet.Game.States
             if (nExp == 0)
                 return;
 
+            if (HasMultipleExp)
+                nExp = (long) (nExp * Math.Max(1, ExperienceMultiplier));
+
+            if (Level >= 70 && ProfessionSort == 13 && ProfessionLevel >= 3)
+                nExp *= 2;
+
             if (nExp < 0)
             {
                 await AddAttributesAsync(ClientUpdateType.Experience, nExp);
@@ -536,13 +542,16 @@ namespace Comet.Game.States
             bool leveled = false;
             uint pointAmount = 0;
             byte newLevel = Level;
+            ushort virtue = 0;
             while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
             {
-                amount -= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp;
+                DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(newLevel);
+                amount -= (long) dbExp.Exp;
                 leveled = true;
                 newLevel++;
                 if (!AutoAllot || Level > 120)
                 {
+                    virtue += (ushort) dbExp.UpLevTime;
                     pointAmount += 3;
                     continue;
                 }
@@ -614,6 +623,13 @@ namespace Comet.Game.States
                     Action = MsgAction.ActionType.CharacterLevelUp,
                     Identity = Identity
                 });
+            }
+
+            if (Team != null && !Team.IsLeader(Identity) && virtue > 0)
+            {
+                Team.Leader.VirtuePoints += virtue;
+                await Team.SendAsync(new MsgTalk(Identity, MsgTalk.TalkChannel.Team, Color.White, 
+                    string.Format(Language.StrAwardVirtue, Team.Leader.Name, virtue)));
             }
 
             Experience = (ulong)amount;
@@ -1242,6 +1258,12 @@ namespace Comet.Game.States
 
         #region Team
 
+        public uint VirtuePoints
+        {
+            get => m_dbObject.Virtue;
+            set => m_dbObject.Virtue = value;
+        }
+
         public Team Team { get; set; }
 
         #endregion
@@ -1496,6 +1518,24 @@ namespace Comet.Game.States
         #endregion
 
         #region Battle
+
+        public async Task<bool> AutoSkillAttack(Role target)
+        {
+            foreach (var magic in MagicData.Magics.Values)
+            {
+                float percent = magic.Percent;
+                if (magic.AutoActive > 0
+                    && Transformation == null
+                    && (magic.WeaponSubtype == 0
+                        || CheckWeaponSubType(magic.WeaponSubtype, magic.UseItemNum))
+                    && await Kernel.ChanceCalcAsync(percent))
+                {
+                    return await ProcessMagicAttack(magic.Type, target.Identity, target.MapX, target.MapY, magic.AutoActive);
+                }
+            }
+
+            return false;
+        }
 
         public async Task SendWeaponMagic2(Role pTarget = null)
         {
@@ -1888,6 +1928,11 @@ namespace Comet.Game.States
                     TargetIdentity = attacker.Identity
                 }, true);
                 return true;
+            }
+
+            if (power > 0)
+            {
+                await AddAttributesAsync(ClientUpdateType.Hitpoints, power * -1);
             }
 
             if (!IsAlive)
@@ -2533,6 +2578,7 @@ namespace Comet.Game.States
         public override async Task LeaveMap()
         {
             await Map.RemoveAsync(Identity);
+            await Screen.ClearAsync();
         }
 
         public async Task SavePositionAsync()

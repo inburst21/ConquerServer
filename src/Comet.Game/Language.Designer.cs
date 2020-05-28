@@ -61,6 +61,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Accuracy for {0} seconds, your hit rate will be increased by {1} percent..
+        /// </summary>
+        public static string StrAccuracyActiveP {
+            get {
+                return ResourceManager.GetString("StrAccuracyActiveP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Accuracy for {0} seconds, your hit rate will be increased by {1} times..
+        /// </summary>
+        public static string StrAccuracyActiveT {
+            get {
+                return ResourceManager.GetString("StrAccuracyActiveT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Atention! Your account may have been hacked! Someone outside of your network is trying to login..
         /// </summary>
         public static string StrAnotherLoginOtherIp {
@@ -75,6 +93,15 @@ namespace Comet.Game {
         public static string StrAnotherLoginSameIp {
             get {
                 return ResourceManager.GetString("StrAnotherLoginSameIp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has earned {1} virtue points for helping newbies..
+        /// </summary>
+        public static string StrAwardVirtue {
+            get {
+                return ResourceManager.GetString("StrAwardVirtue", resourceCulture);
             }
         }
         
@@ -120,6 +147,33 @@ namespace Comet.Game {
         public static string StrDead {
             get {
                 return ResourceManager.GetString("StrDead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} roared and the teammates XP boosts immediatly..
+        /// </summary>
+        public static string StrDispatchXp {
+            get {
+                return ResourceManager.GetString("StrDispatchXp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Dodge for {0} seconds, your dodge will be increased by {1} percent..
+        /// </summary>
+        public static string StrDodgeActiveP {
+            get {
+                return ResourceManager.GetString("StrDodgeActiveP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Dodge for {0} seconds, your dodge will be increased by {1} times..
+        /// </summary>
+        public static string StrDodgeActiveT {
+            get {
+                return ResourceManager.GetString("StrDodgeActiveT", resourceCulture);
             }
         }
         
@@ -439,6 +493,42 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Shield for {0} seconds, your defense will be increased by {1} percent..
+        /// </summary>
+        public static string StrShieldActiveP {
+            get {
+                return ResourceManager.GetString("StrShieldActiveP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Shield for {0} seconds, your defense will be increased by {1} times..
+        /// </summary>
+        public static string StrShieldActiveT {
+            get {
+                return ResourceManager.GetString("StrShieldActiveT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Stigma for {0} seconds, your attack will be increased by {1} percent..
+        /// </summary>
+        public static string StrStigmaActiveP {
+            get {
+                return ResourceManager.GetString("StrStigmaActiveP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Stigma for {0} seconds, your attack will be increased by {1} times..
+        /// </summary>
+        public static string StrStigmaActiveT {
+            get {
+                return ResourceManager.GetString("StrStigmaActiveT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your target friend list is full..
         /// </summary>
         public static string StrTargetFriendListFull {
@@ -516,6 +606,15 @@ namespace Comet.Game {
         public static string StrTeamDismissNoLeader {
             get {
                 return ResourceManager.GetString("StrTeamDismissNoLeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} team experience awarded..
+        /// </summary>
+        public static string StrTeamExperience {
+            get {
+                return ResourceManager.GetString("StrTeamExperience", resourceCulture);
             }
         }
         

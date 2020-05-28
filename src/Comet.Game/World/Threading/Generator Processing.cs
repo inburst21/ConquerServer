@@ -36,14 +36,12 @@ namespace Comet.Game.World.Threading
         private List<Generator> m_generators = new List<Generator>();
 
         public GeneratorProcessor()
-            : base(5000, "Generator Thread")
+            : base(1000, "Generator Thread")
         {
         }
 
         public override async Task OnStartAsync()
         {
-            // todo make first generation
-
             foreach (var dbGen in await GeneratorRepository.GetAsync())
             {
                 Generator gen = new Generator(dbGen);
