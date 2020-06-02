@@ -616,6 +616,7 @@ namespace Comet.Game.States
                 if (pointAmount > 0)
                     await AddAttributesAsync(ClientUpdateType.Atributes, (int)pointAmount);
 
+                await SetAttributesAsync(ClientUpdateType.Level, Level);
                 await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
                 await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
                 await Screen.BroadcastRoomMsgAsync(new MsgAction
@@ -2551,6 +2552,24 @@ namespace Comet.Game.States
         {
             get => m_posY;
             set => m_posY = value;
+        }
+
+        public uint RecordMapIdentity
+        {
+            get => m_dbObject.MapID;
+            set => m_dbObject.MapID = value;
+        }
+
+        public ushort RecordMapX
+        {
+            get => m_dbObject.X;
+            set => m_dbObject.X = value;
+        }
+
+        public ushort RecordMapY
+        {
+            get => m_dbObject.Y;
+            set => m_dbObject.Y = value;
         }
 
         /// <summary>

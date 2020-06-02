@@ -468,7 +468,7 @@ namespace Comet.Game.States
 
         public bool CanDisappear()
         {
-            return m_disappear.IsActive() && m_disappear.IsTimeOut();
+            return m_disappear.IsTimeOut();
         }
 
         public bool IsLockUser()
@@ -561,7 +561,7 @@ namespace Comet.Game.States
         {
             Map = Kernel.MapManager.GetMap(MapIdentity);
             if (Map != null)
-            await Map.AddAsync(this);
+                await Map.AddAsync(this);
 
             await BroadcastRoomMsgAsync(new MsgAction
             {
@@ -751,7 +751,8 @@ namespace Comet.Game.States
 
         public override async Task SendSpawnToAsync(Character player)
         {
-            await player.SendAsync(new MsgPlayer(this));
+            if (IsAlive)
+                await player.SendAsync(new MsgPlayer(this));
         }
 
         #endregion

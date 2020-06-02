@@ -34,6 +34,7 @@ namespace Comet.Game.Packets
         public MsgTaskDialog()
         {
             Type = PacketType.MsgTaskDialog;
+            Text = string.Empty;
         }
 
         public uint TaskIdentity { get; set; }

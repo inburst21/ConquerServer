@@ -26,6 +26,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Account.Tests", "test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Shared", "src\Comet.Shared\Comet.Shared.csproj", "{83EFAE67-FB03-4A6A-8A08-2628AEDD9C7C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{FA6B5995-7C50-482D-9E46-730B14ED997C}"
+	ProjectSection(SolutionItems) = preProject
+		GuildDirector.sql = GuildDirector.sql
+		GuruTodd.sql = GuruTodd.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -168,7 +168,7 @@ namespace Comet.Game.States.Magics
             return false;
         }
 
-        public bool UpLevelByTask(ushort type)
+        public async Task<bool> UpLevelByTask(ushort type)
         {
             Magic pMagic;
             if (!Magics.TryGetValue(type, out pMagic))
@@ -182,7 +182,7 @@ namespace Comet.Game.States.Magics
 
             pMagic.Experience = 0;
             pMagic.Level = nNewLevel;
-
+            await pMagic.SendAsync();
             return true;
         }
 

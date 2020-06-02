@@ -256,7 +256,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.MapQuery: // 102
-                    Character targetUser = Kernel.RoleManager.GetUser(Identity);
+                    Character targetUser = Kernel.RoleManager.GetUser(Command);
                     if (targetUser != null)
                         await targetUser.SendSpawnToAsync(user);
                     break;

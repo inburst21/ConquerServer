@@ -49,7 +49,7 @@ namespace Comet.Game.World
         private TimeOut m_pTimer = new TimeOut(_MIN_TIME_BETWEEN_GEN);
         private Monster m_pDemo;
 
-        public int Generated = 0;
+        public int Generated => m_dicMonsters.Count;
 
         private ConcurrentDictionary<uint, Monster> m_dicMonsters = new ConcurrentDictionary<uint, Monster>();
 
@@ -124,16 +124,6 @@ namespace Comet.Game.World
 
         public string MonsterName => m_dbMonster.Name;
 
-        public void IncreaseCount()
-        {
-            Interlocked.Increment(ref Generated);
-        }
-
-        public void DecreaseCount()
-        {
-            Interlocked.Decrement(ref Generated);
-        }
-
         public async Task<Point> FindGenPosAsync()
         {
             Point result = new Point();
@@ -164,9 +154,6 @@ namespace Comet.Game.World
 
         public async Task GenerateAsync()
         {
-            if (!m_pTimer.ToNextTime())
-                return;
-
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanDisappear())
@@ -176,7 +163,10 @@ namespace Comet.Game.World
                 }
             }
 
-            int generate = Math.Min(m_dbGen.MaxPerGen- Generated, _MAX_PER_GEN);
+            if (!m_pTimer.ToNextTime())
+                return;
+
+            int generate = Math.Min(m_dbGen.MaxPerGen - Generated, _MAX_PER_GEN);
             if (generate <= 0)
                 return;
 
@@ -186,14 +176,12 @@ namespace Comet.Game.World
                 if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
                     continue;
                 await monster.EnterMap();
-                Generated++;
             }
         }
 
         public void Remove(uint role)
         {
-            if (m_dicMonsters.TryRemove(role, out _))
-                Generated--;
+            m_dicMonsters.TryRemove(role, out _);
         }
 
         public Point GetCenter()

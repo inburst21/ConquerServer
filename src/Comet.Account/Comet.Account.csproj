@@ -30,7 +30,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2020.149.0</AssemblyVersion>
-    <FileVersion>1.0528.0647.0</FileVersion> 
+    <FileVersion>1.0528.1734.0</FileVersion> 
   </PropertyGroup>
 
 </Project>

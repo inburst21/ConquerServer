@@ -136,6 +136,29 @@ namespace Comet.Game.States.Items
             }
         }
 
+        public static DbItem CreateEntity(uint type, bool bound = false)
+        {
+            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(type);
+            if (itemtype == null)
+                return null;
+
+            DbItem entity = new DbItem
+            {
+                Magic1 = itemtype.Magic1,
+                Magic2 = itemtype.Magic2,
+                Magic3 = itemtype.Magic3,
+                Type = type,
+                Amount = itemtype.Amount,
+                AmountLimit = itemtype.AmountLimit,
+                StackAmount = 1,
+                Gem1 = itemtype.Gem1,
+                Gem2 = itemtype.Gem2,
+                Monopoly = (byte)(bound ? 3 : itemtype.Monopoly),
+                Color = (byte)ItemColor.Orange
+            };
+            return entity;
+        }
+
         #endregion
 
         #region Attributes
@@ -1224,7 +1247,5 @@ namespace Comet.Game.States.Items
         public const uint SMALL_LOTTERY_TICKET = 711504;
 
         #endregion
-
-        
     }
 }

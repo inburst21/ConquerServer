@@ -76,8 +76,14 @@ namespace Comet.Game.World.Maps
             m_dbMap = map;
         }
 
+        public GameMap()
+        {
+            
+        }
+
         public uint Identity => m_dbMap?.Identity ?? 0;
         public string Name => m_dbMap?.Name ?? "Invalid";
+        public uint OwnerIdentity => m_dbMap?.OwnerIdentity ?? 0;
         public uint MapDoc => m_dbMap?.MapDoc ?? 0;
         public uint Type => m_dbMap?.Type ?? 0;
 

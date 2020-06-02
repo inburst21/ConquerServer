@@ -382,6 +382,26 @@ namespace Comet.Game.Packets
                             await user.AttachStatus(user, flag, 0, 10, 0, 0);
                         }
                         return true;
+
+                    case "/bring":
+                        Character bringTarget;
+                        if (uint.TryParse(param, out uint idFindTarget))
+                        {
+                            bringTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                        }
+                        else
+                        {
+                            bringTarget = Kernel.RoleManager.GetUser(param);
+                        }
+
+                        if (bringTarget == null)
+                        {
+                            await user.SendAsync("Target not found");
+                            return true;
+                        }
+
+                        await bringTarget.FlyMap(user.MapIdentity, user.MapX, user.MapY);
+                        return true;
                 }
             }
 
@@ -459,6 +479,26 @@ namespace Comet.Game.Packets
                                 ArgumentX = user.MapX,
                                 ArgumentY = user.MapY
                             });
+                        return true;
+
+                    case "/find":
+                        Character findTarget;
+                        if (uint.TryParse(param, out uint idFindTarget))
+                        {
+                            findTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                        }
+                        else
+                        {
+                            findTarget = Kernel.RoleManager.GetUser(param);
+                        }
+
+                        if (findTarget == null)
+                        {
+                            await user.SendAsync("Target not found");
+                            return true;
+                        }
+
+                        await user.FlyMap(findTarget.MapIdentity, findTarget.MapX, findTarget.MapY);
                         return true;
                 }
             }

@@ -47,7 +47,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2020.149.0</AssemblyVersion>
-    <FileVersion>1.0528.0653.0</FileVersion>
+    <FileVersion>1.0528.1737.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
