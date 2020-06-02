@@ -94,9 +94,6 @@ namespace Comet.Game.States
 
         public async Task<bool> DismissMember(Character user)
         {
-            if (user.Identity != m_leader.Identity)
-                return false;
-
             if (!m_dicPlayers.TryRemove(user.Identity, out var target))
                 return false;
 

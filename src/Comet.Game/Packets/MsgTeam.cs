@@ -82,11 +82,13 @@ namespace Comet.Game.Packets
                 return;
             }
 
+#if !DEBUG
             if (user.IsGm() && target != null && !target.IsPm())
             {
                 await Log.WriteLog(LogLevel.Warning, $"GM Character trying to team with no GM");
                 return;
             }
+#endif
 
             if (user.Map.IsTeamDisable())
                 return;
@@ -315,6 +317,15 @@ namespace Comet.Game.Packets
                     }
 
                     await user.Team.DismissMember(user);
+                    break;
+
+                case TeamAction.Kick:
+                    if (user.Team == null || user.Team.IsLeader(user.Identity))
+                        return;
+                    if (target?.Team == null || target.Team.IsLeader(target.Identity))
+                        return;
+
+                    await user.Team.KickMember(user, Identity);
                     break;
 
                 case TeamAction.Forbid:

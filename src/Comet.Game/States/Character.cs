@@ -3211,6 +3211,11 @@ namespace Comet.Game.States
 
             await NotifyOfflineFriendAsync();
 
+            if (Team != null && Team.IsLeader(Identity))
+                await Team.Dismiss(this);
+            else if (Team != null)
+                await Team.DismissMember(this);
+
             await LeaveMap();
 
             await SaveAsync();
