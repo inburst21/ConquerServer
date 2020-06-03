@@ -62,6 +62,10 @@ namespace Comet.Game.Database
         public virtual DbSet<DbDynanpc> DynaNpcs { get; set; }
         public virtual DbSet<DbFriend> Friends { get; set; }
         public virtual DbSet<DbEnemy> Enemies { get; set; }
+        public virtual DbSet<DbSyndicate> Syndicates { get; set; }
+        public virtual DbSet<DbSyndicateAttr> SyndicatesAttr { get; set; }
+        public virtual DbSet<DbSyndicateAllies> SyndicatesAlly { get; set; }
+        public virtual DbSet<DbSyndicateEnemy> SyndicatesEnemy { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
