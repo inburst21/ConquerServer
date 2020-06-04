@@ -35,7 +35,15 @@ namespace Comet.Game.Packets
         {
             Type = PacketType.MsgItemInfo;
 
-            Identity = item.Identity;
+            if (mode == ItemMode.View)
+            {
+                Identity = item.PlayerIdentity;
+            }
+            else
+            {
+                Identity = item.Identity;
+            }
+
             if (item.IsArmor() || item.IsHelmet())
                 Itemtype = item.Type + (uint) item.Color * 100;
             else

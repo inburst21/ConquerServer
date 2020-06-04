@@ -367,6 +367,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} is observing your equipments carefully..
+        /// </summary>
+        public static string StrObservingEquipment {
+            get {
+                return ResourceManager.GetString("StrObservingEquipment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Open.
         /// </summary>
         public static string StrOpen {

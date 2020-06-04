@@ -2568,6 +2568,7 @@ namespace Comet.Game.States
                     LeaderName = Syndicate.Leader.UserName
                 });
                 await SendAsync(Syndicate.Announce, MsgTalk.TalkChannel.Announce);
+                await Syndicate.SendAsync(this);
             }
             else
             {

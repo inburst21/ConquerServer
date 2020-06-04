@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
@@ -265,8 +266,36 @@ namespace Comet.Game.Packets
                         await targetUser.SendSpawnToAsync(user);
                     break;
 
-                case ActionType.BoothLeave:
+                case ActionType.BoothLeave: // 114
                     await user.Screen.SynchroScreenAsync();
+                    break;
+
+                case ActionType.CharacterObservation: // 117
+                    targetUser = Kernel.RoleManager.GetUser(Command);
+                    if (targetUser == null)
+                        return;
+
+                    for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                        pos <= Item.ItemPosition.EquipmentEnd;
+                        pos++)
+                    {
+                        if (targetUser.UserPackage[pos] != null)
+                        {
+                            await user.SendAsync(new MsgItemInfo(targetUser.UserPackage[pos], MsgItemInfo.ItemMode.View));
+                        }
+                    }
+
+                    await targetUser.SendAsync(string.Format(Language.StrObservingEquipment, user.Name));
+
+                    await client.SendAsync(new MsgName
+                    {
+                        Identity = targetUser.Identity,
+                        Action = StringAction.QueryMate,
+                        Strings = new List<string>
+                        {
+                            targetUser.Mate
+                        }
+                    });
                     break;
 
                 case ActionType.SpellAbortTransform: // 118
@@ -320,7 +349,7 @@ namespace Comet.Game.Packets
 
                     break;
 
-                case ActionType.RelationshipsFriend:
+                case ActionType.RelationshipsFriend: // 140
                     Friend fetchFriend = user.GetFriend(Command);
                     if (fetchFriend == null)
                     {
@@ -330,7 +359,7 @@ namespace Comet.Game.Packets
                     await fetchFriend.SendInfoAsync();
                     break;
 
-                case ActionType.CharacterDead:
+                case ActionType.CharacterDead: // 137
                     if (user.IsAlive)
                         return;
 

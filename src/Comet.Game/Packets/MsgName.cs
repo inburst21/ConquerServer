@@ -87,7 +87,7 @@ namespace Comet.Game.Packets
             Character targetUser = null;
             switch (Action)
             {
-                case StringAction.Mate:
+                case StringAction.QueryMate:
                     targetUser = Kernel.RoleManager.GetUser(Identity);
                     if (targetUser == null)
                         return;

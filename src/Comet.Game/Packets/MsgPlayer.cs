@@ -75,6 +75,7 @@ namespace Comet.Game.Packets
             Garment = user.Garment?.Type ?? 0;
 
             Name = user.Name;
+            Mate = user.Mate;
         }
 
         public MsgPlayer(Monster monster)
@@ -104,6 +105,7 @@ namespace Comet.Game.Packets
             }
 
             Name = monster.Name;
+            Mate = "";
         }
 
         public uint Identity { get; set; }
@@ -167,6 +169,7 @@ namespace Comet.Game.Packets
         public ushort LeftHandColor { get; set; }
 
         public string Name { get; set; }
+        public string Mate { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -224,7 +227,8 @@ namespace Comet.Game.Packets
             writer.Write(NobilityPosition); // 76
             writer.Write(new List<string> // 80
             {
-                Name
+                Name,
+                Mate
             });
 
             return writer.ToArray();

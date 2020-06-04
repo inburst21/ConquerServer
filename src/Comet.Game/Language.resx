@@ -219,6 +219,9 @@
   <data name="StrNotEnoughMoney" xml:space="preserve">
     <value>You don't have enough Silvers.</value>
   </data>
+  <data name="StrObservingEquipment" xml:space="preserve">
+    <value>{0} is observing your equipments carefully.</value>
+  </data>
   <data name="StrOpen" xml:space="preserve">
     <value>Open</value>
   </data>
