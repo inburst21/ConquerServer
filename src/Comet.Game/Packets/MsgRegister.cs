@@ -23,9 +23,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
+using Comet.Game.States.Items;
 using Comet.Network.Packets;
 
 #endregion
@@ -135,6 +137,9 @@ namespace Comet.Game.Packets
                           + character.Vitality * 24);
             character.ManaPoints = (ushort) (character.Spirit * 5);
             character.Registered = DateTime.Now;
+            character.ExperienceMultiplier = 2;
+            character.ExperienceExpires = DateTime.Now.AddHours(12);
+            character.HeavenBlessing = DateTime.Now.AddDays(30);
 
             // Generate a random look for the character
             character.Mesh += 10000;
@@ -148,11 +153,43 @@ namespace Comet.Game.Packets
                 await CharactersRepository.CreateAsync(character);
                 Kernel.Registration.Remove(client.Creation.Token);
                 await client.SendAsync(RegisterOk);
+
+                await GenerateInitialEquipment(character);
             }
             catch
             {
                 await client.SendAsync(RegisterTryAgain);
             }
+        }
+
+        private async Task GenerateInitialEquipment(DbCharacter user)
+        {
+            await CreateItemAsync((uint) await Kernel.NextAsync(132003, 132005), user.Identity, Item.ItemPosition.Armor);
+            switch (user.Profession)
+            {
+                case 10:
+                case 20:
+                    await CreateItemAsync((uint)await Kernel.NextAsync(150003, 150005), user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync(410301 + (uint) (await Kernel.NextAsync(0, 6) * 100), user.Identity, Item.ItemPosition.RightHand);
+                    break;
+                case 40:
+                    await CreateItemAsync((uint)await Kernel.NextAsync(150003, 150005), user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync(500301, user.Identity, Item.ItemPosition.RightHand);
+                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.LeftHand);
+                    break;
+                case 100:
+                    await CreateItemAsync((uint)await Kernel.NextAsync(152003, 152005), user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync(421301, user.Identity, Item.ItemPosition.RightHand);
+                    break;
+            }
+        }
+
+        private async Task CreateItemAsync(uint type, uint idOwner, Item.ItemPosition position)
+        {
+            DbItem item = Item.CreateEntity(type);
+            item.Position = (byte)position;
+            item.PlayerId = idOwner;
+            await BaseRepository.SaveAsync(item);
         }
     }
 }

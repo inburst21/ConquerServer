@@ -252,6 +252,10 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginGuild: // 97
+                    client.Character.Syndicate = Kernel.SyndicateManager.FindByUser(client.Identity);
+                    await client.Character.SendSyndicateAsync();
+                    if (client.Character.Syndicate != null)
+                        await client.Character.Syndicate.SendRelationAsync(client.Character);
                     await client.SendAsync(this);
                     break;
 
@@ -282,6 +286,8 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginComplete: // 130
+                    await client.Character.SendMultipleExp();
+                    await client.Character.SendBless();
                     await client.Character.SendNobilityInfo();
                     await user.Screen.SynchroScreenAsync();
                     await client.SendAsync(this);

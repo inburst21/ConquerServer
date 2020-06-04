@@ -37,6 +37,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.Relationship;
+using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
@@ -2178,8 +2179,8 @@ namespace Comet.Game.States
 
         private List<uint> m_setTaskId = new List<uint>();
 
-        public uint InteractingItem { get; private set; }
-        public uint InteractingNpc { get; private set; }
+        public uint InteractingItem { get; set; }
+        public uint InteractingNpc { get; set; }
 
         public bool CheckItem(DbTask task)
         {
@@ -2216,6 +2217,10 @@ namespace Comet.Game.States
             return 0;
         }
 
+        public void ClearTaskId()
+        {
+            m_setTaskId.Clear();
+        }
         public uint GetTaskId(int idx)
         {
             return idx > 0 && idx <= m_setTaskId.Count ? m_setTaskId[idx - 1] : 0u;
@@ -2490,6 +2495,86 @@ namespace Comet.Game.States
                         Action = MsgFriend.MsgFriendAction.SetOnlineEnemy,
                         Online = true
                     });
+            }
+        }
+
+        #endregion
+
+        #region Syndicate
+
+        public Syndicate Syndicate { get; set; }
+        public SyndicateMember SyndicateMember => Syndicate?.QueryMember(Identity);
+
+        public ushort SyndicateIdentity => Syndicate?.Identity ?? 0;
+        public string SyndicateName => Syndicate?.Name ?? Language.StrNone;
+        public SyndicateMember.SyndicateRank SyndicateRank => SyndicateMember?.Rank ?? SyndicateMember.SyndicateRank.None;
+
+        public async Task<bool> CreateSyndicateAsync(string name, int price = 1000000)
+        {
+            if (Syndicate != null)
+            {
+                await SendAsync(Language.StrSynAlreadyJoined);
+                return false;
+            }
+
+            // todo check string and name
+
+            if (Kernel.SyndicateManager.GetSyndicate(name) != null)
+            {
+                await SendAsync(Language.StrSynNameInUse);
+                return false;
+            }
+
+            if (!await SpendMoney(price))
+            {
+                await SendAsync(Language.StrNotEnoughMoney);
+                return false;
+            }
+
+            Syndicate = new Syndicate();
+            if (!await Syndicate.CreateAsync(name, price, this))
+            {
+                Syndicate = null;
+                await AwardMoney(price);
+                return false;
+            }
+
+            if (!Kernel.SyndicateManager.AddSyndicate(Syndicate))
+            {
+                await Syndicate.DeleteAsync();
+                Syndicate = null;
+                await AwardMoney(price);
+                return false;
+            }
+            
+            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynCreate, Name, name), MsgTalk.TalkChannel.Talk, Color.White);
+            await SendSyndicateAsync();
+            await Screen.SynchroScreenAsync();
+            await Syndicate.BroadcastNameAsync();
+            return true;
+        }
+
+        public async Task SendSyndicateAsync()
+        {
+            if (Syndicate != null)
+            {
+                await SendAsync(new MsgSyndicateAttributeInfo
+                {
+                    Identity = SyndicateIdentity,
+                    Rank = SyndicateRank,
+                    MemberAmount = Syndicate.MemberCount,
+                    Funds = Syndicate.Money,
+                    PlayerDonation = SyndicateMember.Donation,
+                    LeaderName = Syndicate.Leader.UserName
+                });
+                await SendAsync(Syndicate.Announce, MsgTalk.TalkChannel.Announce);
+            }
+            else
+            {
+                await SendAsync(new MsgSyndicateAttributeInfo
+                {
+                    Rank = SyndicateMember.SyndicateRank.None
+                });
             }
         }
 
@@ -3251,6 +3336,9 @@ namespace Comet.Game.States
         public override async Task SendSpawnToAsync(Character player)
         {
             await player.SendAsync(new MsgPlayer(this));
+            
+            if (Syndicate != null)
+                await Syndicate.SendAsync(player);
         }
 
         #endregion

@@ -27,6 +27,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.States.Syndicates;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 
@@ -55,7 +56,7 @@ namespace Comet.Game.States
 
                 if (idAction == idOld && deadLookCount++ >= _DEADLOCK_CHECK_I)
                 {
-                    await Log.WriteLog(LogLevel.Error, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
+                    await Log.WriteLog(LogLevel.Deadloop, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
                     return false;
                 }
                 else
@@ -93,6 +94,8 @@ namespace Comet.Game.States
                     case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionItemAdd: result = await ExecuteActionItemAdd(action, param, user, role, item, input); break;
+
+                    case TaskActionType.ActionSynCreate: result = await ExecuteActionSynCreate(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionUserAttr: result = await ExecuteUserAttr(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserFull: result = await ExecuteUserFull(action, param, user, role, item, input); break;
@@ -468,6 +471,47 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Syndicate
+
+        private static async Task<bool> ExecuteActionSynCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null || user.Syndicate != null)
+                return false;
+
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 2)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Invalid param count for guild creation: {param}, {action.Identity}");
+                return false;
+            }
+
+            if (!int.TryParse(splitParam[0], out var level))
+            {
+                return false;
+            }
+
+            if (user.Level < level)
+            {
+                await user.SendAsync(Language.StrNotEnoughLevel);
+                return false;
+            }
+
+            if (!int.TryParse(splitParam[1], out var price))
+            {
+                return false;
+            }
+
+            if (user.Silvers < price)
+            {
+                await user.SendAsync(Language.StrNotEnoughMoney);
+                return false;
+            }
+
+            return await user.CreateSyndicateAsync(input, price);
+        }
+
+        #endregion
+
         #region User
 
         private static async Task<bool> ExecuteUserAttr(DbAction action, string param, Character user, Role role, Item item, string input)
@@ -751,14 +795,22 @@ namespace Comet.Game.States
 
                 #region Rankshow (>, >=, <, <=, =)
 
+                case "rankshow":
                 case "rank_show":
                     int rankShowValue = int.Parse(value);
-                    // hummmm
+                    if (opt.Equals(">"))
+                        return user.SyndicateRank > (SyndicateMember.SyndicateRank) rankShowValue;
+                    if (opt.Equals(">="))
+                        return user.SyndicateRank >= (SyndicateMember.SyndicateRank)rankShowValue;
+                    if (opt.Equals("<"))
+                        return user.SyndicateRank < (SyndicateMember.SyndicateRank)rankShowValue;
+                    if (opt.Equals("<="))
+                        return user.SyndicateRank <= (SyndicateMember.SyndicateRank)rankShowValue;
+                    if (opt.Equals("==") || opt.Equals("="))
+                        return user.SyndicateRank == (SyndicateMember.SyndicateRank)rankShowValue;
                     break;
 
                 #endregion
-
-
             }
 
             return false;
@@ -1096,6 +1148,19 @@ namespace Comet.Game.States
         {
             return count > 0 ? param.Split(new[] {' '}, count, StringSplitOptions.RemoveEmptyEntries) : param.Split(' ');
         }
+
+        private static string GetParenthesys(string szParam)
+        {
+            int varIdx = szParam.IndexOf("(", StringComparison.CurrentCulture) + 1;
+            int endIdx = szParam.IndexOf(")", StringComparison.CurrentCulture);
+            return szParam.Substring(varIdx, endIdx - varIdx);
+        }
+
+        private static byte VarId(string szParam)
+        {
+            int varIdx = szParam.IndexOf("(", StringComparison.CurrentCulture) + 1;
+            return byte.Parse(szParam.Substring(varIdx, 1));
+        }
     }
 
     public enum TaskActionType
@@ -1192,8 +1257,14 @@ namespace Comet.Game.States
         ActionSynFirst = 700,
         ActionSynCreate = 701,
         ActionSynDestroy = 702,
-        ActionSynAttr = 717,
+        ActionSynSetAssistant = 705,
+        ActionSynClearRank = 706,
         ActionSynChangeLeader = 709,
+        ActionSynAntagonize = 711,
+        ActionSynClearAntagonize = 712,
+        ActionSynAlly = 713,
+        ActionSynClearAlly = 714,
+        ActionSynAttr = 717,
         ActionSynLimit = 799,
 
         //Monsters

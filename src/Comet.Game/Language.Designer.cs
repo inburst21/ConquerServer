@@ -349,6 +349,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You haven&apos;t reached the required level..
+        /// </summary>
+        public static string StrNotEnoughLevel {
+            get {
+                return ResourceManager.GetString("StrNotEnoughLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have enough Silvers..
         /// </summary>
         public static string StrNotEnoughMoney {
@@ -525,6 +534,33 @@ namespace Comet.Game {
         public static string StrStigmaActiveT {
             get {
                 return ResourceManager.GetString("StrStigmaActiveT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are already in a guild..
+        /// </summary>
+        public static string StrSynAlreadyJoined {
+            get {
+                return ResourceManager.GetString("StrSynAlreadyJoined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has created the guild {1} successfully..
+        /// </summary>
+        public static string StrSynCreate {
+            get {
+                return ResourceManager.GetString("StrSynCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The guild name is already in use..
+        /// </summary>
+        public static string StrSynNameInUse {
+            get {
+                return ResourceManager.GetString("StrSynNameInUse", resourceCulture);
             }
         }
         

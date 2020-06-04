@@ -34,10 +34,10 @@ namespace Comet.Game.Database.Repositories
 {
     public static class SyndicateAttrRepository
     {
-        public static async Task<List<DbSyndicateAttr>> GetAsync()
+        public static async Task<List<DbSyndicateAttr>> GetAsync(uint idSyn)
         {
             await using var db = new ServerDbContext();
-            return db.SyndicatesAttr.ToList();
+            return db.SyndicatesAttr.Where(x => x.SynId == idSyn).ToList();
         }
 
         public static async Task<bool> SaveAsync(DbSyndicateAttr entity)

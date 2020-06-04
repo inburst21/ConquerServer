@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - MsgName.cs
+// Comet - Comet.Game - MsgSyndicate.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -21,29 +21,25 @@
 
 #region References
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
-using Comet.Game.States.BaseEntities;
-using Comet.Game.States.Syndicates;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
 namespace Comet.Game.Packets
 {
-    public sealed class MsgName : MsgBase<Client>
+    public sealed class MsgSyndicate : MsgBase<Client>
     {
-        public MsgName()
+        public MsgSyndicate()
         {
-            Type = PacketType.MsgName;
+            Type = PacketType.MsgSyndicate;
         }
 
+        public SyndicateRequest Mode { get; set; }
+
         public uint Identity { get; set; }
-        public ushort PositionX { get; set; }
-        public ushort PositionY { get; set; }
-        public StringAction Action { get; set; }
-        public List<string> Strings = new List<string>();
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -56,11 +52,8 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Mode = (SyndicateRequest) reader.ReadUInt32();
             Identity = reader.ReadUInt32();
-            //PositionX = reader.ReadUInt16();
-            //PositionY = reader.ReadUInt16();
-            Action = (StringAction) reader.ReadByte();
-            Strings = reader.ReadStrings();
         }
 
         /// <summary>
@@ -73,73 +66,52 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
+            writer.Write((uint) Mode);
             writer.Write(Identity);
-            //writer.Write(PositionX);
-            //writer.Write(PositionY);
-            writer.Write((byte) Action);
-            writer.Write(Strings);
             return writer.ToArray();
         }
 
+        /// <summary>
+        ///     Process can be invoked by a packet after decode has been called to structure
+        ///     packet fields and properties. For the server implementations, this is called
+        ///     in the packet handler after the message has been dequeued from the server's
+        ///     <see cref="PacketProcessor{TClient}" />.
+        /// </summary>
+        /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            Role target = null;
-            Character targetUser = null;
-            switch (Action)
+            Character user = client.Character;
+
+            switch (Mode)
             {
-                case StringAction.Mate:
-                    targetUser = Kernel.RoleManager.GetUser(Identity);
-                    if (targetUser == null)
-                        return;
-
-                    Strings.Add(targetUser.Mate);
-                    await client.Character.SendAsync(this);
-                    break;
-
-                case StringAction.Guild:
-                    Syndicate syndicate = Kernel.SyndicateManager.GetSyndicate((int) Identity);
-                    if (syndicate == null)
-                        return;
-
-                    Strings.Add(syndicate.Name);
-                    await client.Character.SendAsync(this);
-                    break;
-
-                case StringAction.MemberList:
-                    if (client.Character.Syndicate == null)
-                        return;
-
-                    await client.Character.Syndicate.SendMembersAsync((int) Identity, client.Character);
+                default:
+                    await Log.WriteLog(LogLevel.Warning, $"Type: {Type}, Subtype: {Mode} not handled");
                     break;
             }
         }
-    }
 
-    public enum StringAction : byte
-    {
-        None = 0,
-        Fireworks,
-        CreateGuild,
-        Guild,
-        ChangeTitle,
-        DeleteRole = 5,
-        Mate,
-        QueryNpc,
-        Wanted,
-        MapEffect,
-        RoleEffect = 10,
-        MemberList,
-        KickoutGuildMember,
-        QueryWanted,
-        QueryPoliceWanted,
-        PoliceWanted = 15,
-        QueryMate,
-        AddDicePlayer,
-        DeleteDicePlayer,
-        DiceBonus,
-        PlayerWave = 20,
-        SetAlly,
-        SetEnemy,
-        WhisperWindowInfo = 26
+        public enum SyndicateRequest : uint
+        {
+            JoinRequest = 1,
+            InviteRequest = 2,
+            Quit = 3,
+            Query = 6,
+            Ally = 7,
+            Unally = 8,
+            Enemy = 9,
+            Unenemy = 10,
+            DonateSilvers = 11,
+            Refresh = 12,
+            Disband = 19,
+            DonateConquerPoints = 20,
+            Bulletin = 27,
+            SendRequest = 28,
+            AcceptRequest = 29,
+            Discharge = 30,
+            Resign = 32,
+            Discharge2 = 33,
+            PaidPromote = 34,
+            Promote = 37
+        }
     }
 }

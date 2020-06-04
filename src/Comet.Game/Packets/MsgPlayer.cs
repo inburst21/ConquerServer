@@ -52,6 +52,9 @@ namespace Comet.Game.Packets
             Metempsychosis = user.Metempsychosis;
             Level = user.Level;
 
+            SyndicateIdentity = user.SyndicateIdentity;
+            SyndicatePosition = (byte) user.SyndicateRank;
+
             NobilityRank = (uint) user.NobilityRank;
             NobilityIdentity = user.Identity;
             NobilityPosition = (uint) user.NobilityPosition;
@@ -65,7 +68,7 @@ namespace Comet.Game.Packets
 
 #if NO_COLOR
             if (Armor != 0)
-                Armor += (uint) user.Armor.Color * 100;
+                Armor += (uint) (user.Armor?.Color ?? 0) * 100;
 #endif
 
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);

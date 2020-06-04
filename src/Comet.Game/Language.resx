@@ -213,6 +213,9 @@
   <data name="StrNotEnoughEmoney" xml:space="preserve">
     <value>You don't have enough Conquer Points.</value>
   </data>
+  <data name="StrNotEnoughLevel" xml:space="preserve">
+    <value>You haven't reached the required level.</value>
+  </data>
   <data name="StrNotEnoughMoney" xml:space="preserve">
     <value>You don't have enough Silvers.</value>
   </data>
@@ -272,6 +275,15 @@
   </data>
   <data name="StrStigmaActiveT" xml:space="preserve">
     <value>Stigma for {0} seconds, your attack will be increased by {1} times.</value>
+  </data>
+  <data name="StrSynAlreadyJoined" xml:space="preserve">
+    <value>You are already in a guild.</value>
+  </data>
+  <data name="StrSynCreate" xml:space="preserve">
+    <value>{0} has created the guild {1} successfully.</value>
+  </data>
+  <data name="StrSynNameInUse" xml:space="preserve">
+    <value>The guild name is already in use.</value>
   </data>
   <data name="StrTargetFriendListFull" xml:space="preserve">
     <value>Your target friend list is full.</value>

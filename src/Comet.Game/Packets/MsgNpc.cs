@@ -84,12 +84,14 @@ namespace Comet.Game.Packets
             switch (RequestType)
             {
                 case NpcActionType.Activate:
+                    user.ClearTaskId();
                     Role role = Kernel.RoleManager.GetRole(Identity);
                     if (role is Npc npc
                         && (role.MapIdentity == user.MapIdentity
                             && role.GetDistance(user) <= 18
                             || role.MapIdentity == 5000))
                     {
+                        user.InteractingNpc = npc.Identity;
                         await npc.ActivateNpc(user);
                     }
                     break;

@@ -66,6 +66,14 @@ namespace Comet.Game.Database.Repositories
                 .SingleOrDefaultAsync();
         }
 
+        public static async Task<DbCharacter> FindByIdentityAsync(uint id)
+        {
+            await using var db = new ServerDbContext();
+            return await db.Characters
+                .Where(x => x.Identity == id)
+                .SingleOrDefaultAsync();
+        }
+
         /// <summary>Checks if a character exists in the database by name.</summary>
         /// <param name="name">Character's name</param>
         /// <returns>Returns true if the character exists.</returns>

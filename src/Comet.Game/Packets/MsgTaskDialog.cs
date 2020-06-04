@@ -22,8 +22,13 @@
 #region References
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -78,6 +83,63 @@ namespace Comet.Game.Packets
             writer.Write((byte) InteractionType);
             writer.Write(new List<string> { Text } );
             return writer.ToArray();
+        }
+
+        public override async Task ProcessAsync(Client client)
+        {
+            Character user = client.Character;
+
+            switch (InteractionType)
+            {
+                case TaskInteraction.Answer:
+                    if (OptionIndex == byte.MaxValue)
+                    {
+                        user.CancelInteraction();
+                        return;
+                    }
+
+                    Role targetRole = Kernel.RoleManager.GetRole(user.InteractingNpc);
+                    if (targetRole != null
+                        && targetRole.MapIdentity != 5000
+                        && targetRole.MapIdentity != user.MapIdentity)
+                    {
+                        user.CancelInteraction();
+                        return;
+                    }
+
+                    if (targetRole != null
+                        && targetRole.GetDistance(user) > Screen.VIEW_SIZE)
+                    {
+                        user.CancelInteraction();
+                        return;
+                    }
+
+                    if (user.InteractingNpc == 0 && user.InteractingItem == 0)
+                    {
+                        user.CancelInteraction();
+                        return;
+                    }
+
+                    uint idTask = user.GetTaskId(OptionIndex);
+                    DbTask task = Kernel.EventManager.GetTask(idTask);
+                    if (task == null)
+                    {
+                        user.CancelInteraction();
+
+                        if (user.IsGm() && idTask != 0)
+                            await user.SendAsync($"Could not find InteractionAsnwer for task {idTask}");
+                        return;
+                    }
+
+                    user.ClearTaskId();
+                    await GameAction.ExecuteActionAsync(await user.TestTask(task) ? task.IdNext : task.IdNextfail, user,
+                        targetRole, user.UserPackage[user.InteractingItem], Text);
+                    break;
+
+                default:
+                    await Log.WriteLog(LogLevel.Warning, $"MsgTaskDialog: {Type}, {InteractionType} unhandled");
+                    break;
+            }
         }
 
         public enum TaskInteraction : byte

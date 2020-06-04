@@ -33,6 +33,7 @@ namespace Comet.Game.Database.Models
     public class DbSyndicateAttr
     {
         [Key] [Column("id")] public virtual uint Id { get; set; }
+        [Column("user_id")] public virtual uint UserIdentity { get; set; }
         [Column("syn_id")] public virtual uint SynId { get; set; }
         [Column("rank")] public virtual ushort Rank { get; set; }
         [Column("proffer")] public virtual long Proffer { get; set; }

@@ -32,10 +32,10 @@ namespace Comet.Game.Database.Repositories
 {
     public static class SyndicateAllyRepository
     {
-        public static async Task<List<DbSyndicateAllies>> GetAsync()
+        public static async Task<List<DbSyndicateAllies>> GetAsync(uint id)
         {
             await using var db = new ServerDbContext();
-            return db.SyndicatesAlly.ToList();
+            return db.SyndicatesAlly.Where(x => x.Identity == id).ToList();
         }
     }
 }

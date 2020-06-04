@@ -156,6 +156,10 @@ namespace Comet.Game
                         msg = new MsgMapItem();
                         break;
 
+                    case PacketType.MsgSyndicate:
+                        msg = new MsgSyndicate();
+                        break;
+
                     case PacketType.MsgNpc:
                         msg = new MsgNpc();
                         break;

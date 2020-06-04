@@ -37,7 +37,7 @@ namespace Comet.Game.Database.Models
         [Column("leader_name")] public virtual string LeaderName { get; set; }
         [Column("money")] public virtual ulong Money { get; set; }
         [Column("emoney")] public virtual uint ConquerPoints { get; set; }
-        [Column("del_flag")] public virtual byte DelFlag { get; set; }
+        [Column("del_flag")] public virtual DateTime? DelFlag { get; set; }
         [Column("amount")] public virtual uint Amount { get; set; }
         [Column("totem_pole")] public virtual int TotemPole { get; set; }
         [Column("last_totem")] public virtual DateTime? LastTotem { get; set; }
