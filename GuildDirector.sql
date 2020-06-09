@@ -12,7 +12,7 @@ INSERT INTO `cq_action` VALUES ('11006', '11007', '0000', '0102', '0', 'Add~alli
 INSERT INTO `cq_action` VALUES ('11007', '11008', '0000', '0102', '0', 'Add~enemy. 11250');
 INSERT INTO `cq_action` VALUES ('11008', '11009', '0000', '0102', '0', 'Promote~Deputy~Leader. 11300');
 INSERT INTO `cq_action` VALUES ('11009', '11010', '0000', '0102', '0', 'Demote~Deputy~Leader. 11350');
-INSERT INTO `cq_action` VALUES ('11013', '610007', '0000', '0102', '0', 'More~options. 11020');
+INSERT INTO `cq_action` VALUES ('11010', '610007', '0000', '0102', '0', 'More~options. 11020');
 
 INSERT INTO `cq_action` VALUES ('11020', '11021', '0000', '0101', '0', 'What can I do for you?');
 INSERT INTO `cq_action` VALUES ('11021', '11022', '0000', '0102', '0', 'Remove~Ally. 11400');

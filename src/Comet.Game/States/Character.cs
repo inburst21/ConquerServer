@@ -26,6 +26,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
 using Comet.Core;
@@ -3330,8 +3331,16 @@ namespace Comet.Game.States
 
         public override async Task SendAsync(IPacket msg)
         {
-            if (m_socket != null)
-                await m_socket.SendAsync(msg);
+            try
+            {
+                if (m_socket != null)
+                    await m_socket.SendAsync(msg);
+            }
+            catch (SocketException ex)
+            {
+                if (ex.ErrorCode == 10054)
+                    m_socket?.Disconnect();
+            }
         }
 
         public override async Task SendSpawnToAsync(Character player)
