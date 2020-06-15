@@ -108,6 +108,42 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserMagic: result = await ExecuteActionUserMagic(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserWeaponskill: result = await ExecuteActionUserWeaponSkill(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserLog: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserBonus: result = await ExecuteActionUserBonus(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserDivorce:
+                    case TaskActionType.ActionUserMarriage:
+                    case TaskActionType.ActionUserSex:
+                    case TaskActionType.ActionUserEffect:
+                    case TaskActionType.ActionUserTaskmask:
+                    case TaskActionType.ActionUserMediaplay:
+                    case TaskActionType.ActionUserCreatemap:
+                    case TaskActionType.ActionUserEnterHome:
+                    case TaskActionType.ActionUserEnterMateHome:
+                    case TaskActionType.ActionUserFlyNeighbor:
+                    case TaskActionType.ActionUserUnlearnMagic:
+                    case TaskActionType.ActionUserRebirth:
+                    case TaskActionType.ActionUserWebpage:
+                    case TaskActionType.ActionUserBbs:
+                    case TaskActionType.ActionUserUnlearnSkill:
+                    case TaskActionType.ActionUserDropMagic:
+                    case TaskActionType.ActionUserFixAttr:
+                    case TaskActionType.ActionUserOpenDialog:
+                    case TaskActionType.ActionUserPointAllot:
+                    case TaskActionType.ActionUserExpMultiply:
+                    case TaskActionType.ActionUserWhPassword:
+                    case TaskActionType.ActionUserSetWhPassword:
+                    case TaskActionType.ActionUserOpeninterface:
+                    case TaskActionType.ActionUserVarCompare:
+                    case TaskActionType.ActionUserVarDefine:
+                    case TaskActionType.ActionUserVarCalc:
+                    case TaskActionType.ActionUserStcCompare:
+                    case TaskActionType.ActionUserStcOpe:
+                    case TaskActionType.ActionUserTaskManager:
+                    case TaskActionType.ActionUserTaskOpe:
+                    case TaskActionType.ActionUserAttachStatus:
+                    case TaskActionType.ActionUserGodTime:
+                    case TaskActionType.ActionUserExpballExp:
+                    case TaskActionType.ActionUserStatusCreate:
+                    case TaskActionType.ActionUserStatusCheck:
 
                     default:
                         await Log.WriteLog(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
@@ -1070,48 +1106,45 @@ namespace Comet.Game.States
             return true;
         }
 
+        private static async Task<bool> ExecuteActionUserBonus(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+            return await user.DoBonusAsync();
+        }
+
         #endregion
 
         private static string FormatParam(DbAction action, Character user, Role role, Item item, string input)
         {
             string result = action.Param;
 
+            result = result.Replace("%user_name", user?.Name ?? Language.StrNone)
+                .Replace("%user_id", user?.Identity.ToString() ?? "0")
+                .Replace("%user_lev", user?.Level.ToString() ?? "0")
+                .Replace("%user_mate", user?.Mate ?? Language.StrNone)
+                .Replace("%user_pro", user?.Profession.ToString() ?? "0")
+                .Replace("%user_map_id", user?.Map.Identity.ToString() ?? "0")
+                .Replace("%user_map_name", user?.Map.Name ?? Language.StrNone)
+                .Replace("%user_map_x", user?.MapX.ToString() ?? "0")
+                .Replace("%user_map_y", user?.MapY.ToString() ?? "0")
+                .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
+                .Replace("%user_nobility_rank", ((int)(user?.NobilityRank ?? 0)).ToString())
+                .Replace("%user_nobility_position", user?.NobilityPosition.ToString() ?? "0");
+
+            if (result.Contains("%levelup_exp"))
+            {
+                DbLevelExperience db = Kernel.RoleManager.GetLevelExperience(user?.Level ?? 0);
+                result = result.Replace("%levelup_exp", db != null ? db.Exp.ToString() : "0");
+            }
+
             if (user != null)
             {
-                result = result.Replace("%user_name", user.Name)
-                    .Replace("%user_id", user.Identity.ToString())
-                    .Replace("%user_lev", user.Level.ToString())
-                    .Replace("%user_mate", user.Mate)
-                    .Replace("%user_pro", user.Profession.ToString())
-                    .Replace("%user_map_id", user.Map.Identity.ToString())
-                    .Replace("%user_map_name", user.Map.Name)
-                    .Replace("%user_map_x", user.MapX.ToString())
-                    .Replace("%user_map_y", user.MapY.ToString())
-                    .Replace("%map_owner_id", user.Map.OwnerIdentity.ToString())
-                    .Replace("%user_nobility_rank", ((int)user.NobilityRank).ToString())
-                    .Replace("%user_nobility_position", user.NobilityPosition.ToString());
-
-                if (result.Contains("%levelup_exp"))
+                for (int i = 0; i < Role.MAX_VAR_AMOUNT; i++)
                 {
-                    DbLevelExperience db = Kernel.RoleManager.GetLevelExperience(user.Level);
-                    result = result.Replace("%levelup_exp", db != null ? db.Exp.ToString() : "0");
+                    result = result.Replace($"%iter_var_data{i}", user?.VarData[i].ToString());
+                    result = result.Replace($"%iter_var_str{i}", user?.VarString[i]);
                 }
-            }
-            else
-            {
-                result = result.Replace("%user_name", "None")
-                    .Replace("%user_id", "0")
-                    .Replace("%user_lev", "0")
-                    .Replace("%user_mate", "None")
-                    .Replace("%user_pro", "0")
-                    .Replace("%user_map_id", "0")
-                    .Replace("%user_map_name", "None")
-                    .Replace("%user_map_x", "0")
-                    .Replace("%user_map_y", "0")
-                    .Replace("%map_owner_id", "0")
-                    .Replace("%user_nobility_rank", "0")
-                    .Replace("%user_nobility_position", "0")
-                    .Replace("%levelup_exp", "0");
             }
 
             if (role != null)
@@ -1138,6 +1171,33 @@ namespace Comet.Game.States
                     .Replace("%item_name", item.Name)
                     .Replace("%item_type", item.Type.ToString())
                     .Replace("%item_id", item.Identity.ToString());
+
+                if (result.Contains("%iter_upquality_gem"))
+                {
+                    Item pItem = user.UserPackage[(Item.ItemPosition)user.Iterator];
+                    if (pItem != null)
+                        result = result.Replace("%iter_upquality_gem", pItem.GetUpQualityGemAmount().ToString());
+                    else
+                        result = result.Replace("%iter_upquality_gem", "0");
+                }
+
+                if (result.Contains("%iter_itembound"))
+                {
+                    Item pItem = user.UserPackage[(Item.ItemPosition)user.Iterator];
+                    if (pItem != null)
+                        result = result.Replace("%iter_itembound", pItem.IsBound ? "1" : "0");
+                    else
+                        result = result.Replace("%iter_itembound", "0");
+                }
+
+                if (result.Contains("%iter_uplevel_gem"))
+                {
+                    Item pItem = user.UserPackage[(Item.ItemPosition)user.Iterator];
+                    if (pItem != null)
+                        result = result.Replace("%iter_uplevel_gem", pItem.GetUpgradeGemAmount().ToString());
+                    else
+                        result = result.Replace("%iter_uplevel_gem", "0");
+                }
             }
 
             result = result.Replace("%map_name", user?.Map?.Name ?? role?.Map?.Name ?? Language.StrNone);

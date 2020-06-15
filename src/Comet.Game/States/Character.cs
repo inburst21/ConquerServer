@@ -99,6 +99,7 @@ namespace Comet.Game.States
             Screen = new Screen(this);
             WeaponSkill = new WeaponSkill(this);
             UserPackage = new UserPackage(this);
+            Statistic = new UserStatistic(this);
 
             m_energyTm.Update();
             m_autoHeal.Update();
@@ -2173,6 +2174,27 @@ namespace Comet.Game.States
 
             m_respawn.Startup(CHGMAP_LOCK_SECS);
         }
+
+        #endregion
+
+        #region Bonus
+
+        public async Task<bool> DoBonusAsync()
+        {
+
+
+            return true;
+        }
+
+        #endregion
+
+        #region Statistic
+
+        public UserStatistic Statistic { get; }
+
+        public long Iterator = -1;
+        public long[] VarData = new long[MAX_VAR_AMOUNT];
+        public string[] VarString = new string[MAX_VAR_AMOUNT];
 
         #endregion
 

@@ -843,6 +843,7 @@ namespace Comet.Game.States.BaseEntities
         public const int MAX_WEAPONSKILLLEVEL = 20;
 
         public const int MAX_MENUTASKSIZE = 8;
+        public const int MAX_VAR_AMOUNT = 16;
 
         #endregion
     }

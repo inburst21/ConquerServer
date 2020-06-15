@@ -186,6 +186,27 @@
   <data name="StrItemCannotDiscard" xml:space="preserve">
     <value>{0} cannot be discarded.</value>
   </data>
+  <data name="StrItemErrMaxLevel" xml:space="preserve">
+    <value>The item is already at the maximum level.</value>
+  </data>
+  <data name="StrItemErrMaxQuality" xml:space="preserve">
+    <value>This item is at maximum quality or cannot be upgraded.</value>
+  </data>
+  <data name="StrItemErrNoDragonBall" xml:space="preserve">
+    <value>You don't have a Dragon Ball.</value>
+  </data>
+  <data name="StrItemErrNotEnoughDragonBalls" xml:space="preserve">
+    <value>You don't have {0} Dragon Balls.</value>
+  </data>
+  <data name="StrItemErrNotEnoughLevel" xml:space="preserve">
+    <value>The equipment level is higher than yours.</value>
+  </data>
+  <data name="StrItemErrNotEnoughMeteors" xml:space="preserve">
+    <value>You don't have {0} Meteors.</value>
+  </data>
+  <data name="StrItemErrRepairItem" xml:space="preserve">
+    <value>Please repair your item before upgrading.</value>
+  </data>
   <data name="StrKickout" xml:space="preserve">
     <value>You have been kicked from the game. Reason: {0}.</value>
   </data>

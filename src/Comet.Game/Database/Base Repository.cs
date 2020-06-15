@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Shared;
 
@@ -47,12 +48,44 @@ namespace Comet.Game.Database
             }
         }
 
+        public static async Task<bool> SaveAsync<T>(List<T> entity) where T : class
+        {
+            try
+            {
+                await using var db = new ServerDbContext();
+                db.UpdateRange(entity);
+                await db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                return false;
+            }
+        }
+
         public static async Task<bool> DeleteAsync<T>(T entity) where T : class
         {
             try
             {
                 await using var db = new ServerDbContext();
                 db.Remove(entity);
+                await db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                return false;
+            }
+        }
+
+        public static async Task<bool> DeleteAsync<T>(List<T> entity) where T : class
+        {
+            try
+            {
+                await using var db = new ServerDbContext();
+                db.RemoveRange(entity);
                 await db.SaveChangesAsync();
                 return true;
             }

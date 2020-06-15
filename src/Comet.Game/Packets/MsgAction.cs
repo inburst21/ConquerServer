@@ -153,6 +153,7 @@ namespace Comet.Game.Packets
                 case ActionType.LoginInventory: // 75
                     await user.UserPackage.CreateAsync();
                     await user.UserPackage.SendAsync();
+                    await user.Statistic.InitializeAsync();
                     await client.SendAsync(this);
                     break;
 
@@ -237,14 +238,19 @@ namespace Comet.Game.Packets
                     await client.Character.FlyMap(idMap, tgtPos.X, tgtPos.Y);
                     break;
 
-                case ActionType.CharacterRevive:
+                case ActionType.SpellAbortXp: // 93
+                    if (client.Character.QueryStatus(StatusSet.START_XP) != null)
+                        await client.Character.DetachStatus(StatusSet.START_XP);
+                    break;
+
+                case ActionType.CharacterRevive: // 94
                     if (user.IsAlive || !user.CanRevive())
                         return;
 
                     await user.Reborn(Command == 0);
                     break;
 
-                case ActionType.CharacterPkMode:
+                case ActionType.CharacterPkMode: // 95
                     if (!Enum.IsDefined(typeof(PkModeType), (int) Command))
                         Command = (uint) PkModeType.Capture;
 
@@ -301,6 +307,11 @@ namespace Comet.Game.Packets
                 case ActionType.SpellAbortTransform: // 118
                     if (user.Transformation != null)
                         await user.ClearTransformation();
+                    break;
+
+                case ActionType.SpellAbortFlight:
+                    if (user.QueryStatus(StatusSet.FLY) != null)
+                        await user.DetachStatus(StatusSet.FLY);
                     break;
 
                 case ActionType.RelationshipsEnemy: // 123

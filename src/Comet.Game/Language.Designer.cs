@@ -268,6 +268,69 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The item is already at the maximum level..
+        /// </summary>
+        public static string StrItemErrMaxLevel {
+            get {
+                return ResourceManager.GetString("StrItemErrMaxLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item is at maximum quality or cannot be upgraded..
+        /// </summary>
+        public static string StrItemErrMaxQuality {
+            get {
+                return ResourceManager.GetString("StrItemErrMaxQuality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have a Dragon Ball..
+        /// </summary>
+        public static string StrItemErrNoDragonBall {
+            get {
+                return ResourceManager.GetString("StrItemErrNoDragonBall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have {0} Dragon Balls..
+        /// </summary>
+        public static string StrItemErrNotEnoughDragonBalls {
+            get {
+                return ResourceManager.GetString("StrItemErrNotEnoughDragonBalls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The equipment level is higher than yours..
+        /// </summary>
+        public static string StrItemErrNotEnoughLevel {
+            get {
+                return ResourceManager.GetString("StrItemErrNotEnoughLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have {0} Meteors..
+        /// </summary>
+        public static string StrItemErrNotEnoughMeteors {
+            get {
+                return ResourceManager.GetString("StrItemErrNotEnoughMeteors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Please repair your item before upgrading..
+        /// </summary>
+        public static string StrItemErrRepairItem {
+            get {
+                return ResourceManager.GetString("StrItemErrRepairItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You have been kicked from the game. Reason: {0}..
         /// </summary>
         public static string StrKickout {

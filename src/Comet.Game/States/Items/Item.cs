@@ -682,6 +682,458 @@ namespace Comet.Game.States.Items
 
         #endregion
 
+        #region Update And Upgrade
+
+        public bool GetUpLevelChance(int itemtype, out double chance, out int nextId)
+        {
+            nextId = 0;
+            chance = 0;
+            int sort = itemtype / 10000, subtype = itemtype / 1000;
+
+            if (NextItemLevel(itemtype).Type == itemtype)
+                return false;
+
+            DbItemtype info = NextItemLevel(itemtype);
+            nextId = (int)info.Type;
+
+            if (info.ReqLevel >= 120)
+                return false;
+
+            chance = 100.00;
+            if (sort == 11 || sort == 14 || sort == 13 || sort == 90 || subtype == 123) //Head || Armor || Shield
+            {
+                switch ((Int32)(info.Type % 100 / 10))
+                {
+                    //case 5:
+                    //    nChance = 50.00;
+                    //    break;
+                    case 6:
+                        chance = 40.00;
+                        break;
+                    case 7:
+                        chance = 30.00;
+                        break;
+                    case 8:
+                        chance = 20.00;
+                        break;
+                    case 9:
+                        chance = 15.00;
+                        break;
+                    default:
+                        chance = 500.00;
+                        break;
+                }
+
+                switch (info.Type % 10)
+                {
+                    case 6:
+                        chance = chance * 0.90;
+                        break;
+                    case 7:
+                        chance = chance * 0.70;
+                        break;
+                    case 8:
+                        chance = chance * 0.30;
+                        break;
+                    case 9:
+                        chance = chance * 0.10;
+                        break;
+                }
+            }
+            else
+            {
+                switch ((Int32)(info.Type % 1000 / 10))
+                {
+                    //case 11:
+                    //    nChance = 95.00;
+                    //    break;
+                    case 12:
+                        chance = 90.00;
+                        break;
+                    case 13:
+                        chance = 85.00;
+                        break;
+                    case 14:
+                        chance = 80.00;
+                        break;
+                    case 15:
+                        chance = 75.00;
+                        break;
+                    case 16:
+                        chance = 70.00;
+                        break;
+                    case 17:
+                        chance = 65.00;
+                        break;
+                    case 18:
+                        chance = 60.00;
+                        break;
+                    case 19:
+                        chance = 55.00;
+                        break;
+                    case 20:
+                        chance = 50.00;
+                        break;
+                    case 21:
+                        chance = 45.00;
+                        break;
+                    case 22:
+                        chance = 40.00;
+                        break;
+                    default:
+                        chance = 500.00;
+                        break;
+                }
+
+                switch (info.Type % 10)
+                {
+                    case 6:
+                        chance = chance * 0.90;
+                        break;
+                    case 7:
+                        chance = chance * 0.70;
+                        break;
+                    case 8:
+                        chance = chance * 0.30;
+                        break;
+                    case 9:
+                        chance = chance * 0.10;
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        public DbItemtype NextItemLevel()
+        {
+            return NextItemLevel((int)Type);
+        }
+
+        public DbItemtype NextItemLevel(Int32 id)
+        {
+            // By CptSky
+            Int32 nextId = id;
+
+            var sort = (Byte)(id / 100000);
+            var type = (Byte)(id / 10000);
+            var subType = (Int16)(id / 1000);
+
+            if (sort == 1) //!Weapon
+            {
+                if (type == 12 && (subType == 120 || subType == 121) || type == 15 || type == 16
+                ) //Necklace || Ring || Boots
+                {
+                    var level = (Byte)((id % 1000 - id % 10) / 10);
+                    if (type == 12 && level < 8 || type == 15 && subType != 152 && level > 0 && level < 21 ||
+                        type == 15 && subType == 152 && level >= 4 && level < 22 ||
+                        type == 16 && level > 0 && level < 21)
+                    {
+                        //Check if it's still the same type of item...
+                        if ((Int16)((nextId + 20) / 1000) == subType)
+                            nextId += 20;
+                    }
+                    else if (type == 12 && level == 8 || type == 12 && level >= 21 ||
+                             type == 15 && subType != 152 && level == 0
+                             || type == 15 && subType != 152 && level >= 21 ||
+                             type == 15 && subType == 152 && level >= 22 || type == 16 && level >= 21)
+                    {
+                        //Check if it's still the same type of item...
+                        if ((Int16)((nextId + 10) / 1000) == subType)
+                            nextId += 10;
+                    }
+                    else if (type == 12 && level >= 9 && level < 21 || type == 15 && subType == 152 && level == 1)
+                    {
+                        //Check if it's still the same type of item...
+                        if ((Int16)((nextId + 30) / 1000) == subType)
+                            nextId += 30;
+                    }
+                }
+                else
+                {
+                    var Quality = (Byte)(id % 10);
+                    if (type == 11 || type == 14 || type == 13 || subType == 123) //Head || Armor
+                    {
+                        var level = (Byte)((id % 100 - id % 10) / 10);
+
+                        //Check if it's still the same type of item...
+                        if ((Int16)((nextId + 10) / 1000) == subType)
+                            nextId += 10;
+                    }
+                }
+            }
+            else if (sort == 4 || sort == 5 || sort == 6) //Weapon
+            {
+                //Check if it's still the same type of item...
+                if ((Int16)((nextId + 10) / 1000) == subType)
+                    nextId += 10;
+
+                //Invalid Backsword ID
+                if (nextId / 10 == 42103 || nextId / 10 == 42105 || nextId / 10 == 42109 || nextId / 10 == 42111)
+                    nextId += 10;
+            }
+            else if (sort == 9)
+            {
+                var Level = (Byte)((id % 100 - id % 10) / 10);
+                if (Level != 30) //!Max...
+                {
+                    //Check if it's still the same type of item...
+                    if ((Int16)((nextId + 10) / 1000) == subType)
+                        nextId += 10;
+                }
+            }
+
+            return Kernel.ItemManager.GetItemtype((uint) nextId);
+        }
+
+        public uint ChkUpEqQuality(uint type)
+        {
+            if (type == TYPE_MOUNT_ID)
+                return 0;
+
+            uint nQuality = type % 10;
+
+            if (nQuality < 3 || nQuality >= 9)
+                return 0;
+
+            nQuality++;
+            if (nQuality < 5)
+                nQuality = nQuality + (5 - nQuality) + 1;
+
+            type = type - type % 10 + nQuality;
+
+            return Kernel.ItemManager.GetItemtype(type)?.Type ?? 0;
+        }
+
+        public bool GetUpEpQualityInfo(out double nChance, out uint idNewType)
+        {
+            nChance = 0;
+            idNewType = 0;
+
+            if (Type == 150000 || Type == 150310 || Type == 150320 || Type == 410301 || Type == 421301 ||
+                Type == 500301)
+                return false;
+
+            idNewType = ChkUpEqQuality(Type);
+            nChance = 100;
+
+            switch (Type % 10)
+            {
+                case 6:
+                    nChance = 50;
+                    break;
+                case 7:
+                    nChance = 33;
+                    break;
+                case 8:
+                    nChance = 20;
+                    break;
+                default:
+                    nChance = 100;
+                    break;
+            }
+
+            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idNewType);
+            if (itemtype == null)
+                return false;
+
+            uint nFactor = itemtype.ReqLevel;
+
+            if (nFactor > 70)
+                nChance = (uint)(nChance * (100 - (nFactor - 70) * 1.0) / 100);
+
+            nChance = Math.Max(1, nChance);
+            return true;
+        }
+
+        public uint GetFirstId()
+        {
+            uint firstId = Type;
+
+            var sort = (byte)(Type / 100000);
+            var type = (byte)(Type / 10000);
+            var subType = (short)(Type / 1000);
+
+            if (Type == 150000 || Type == 150310 || Type == 150320 || Type == 410301 || Type == 421301 || Type == 500301
+                || Type == 601301 || Type == 610301)
+                return Type;
+
+            if (Type >= 120310 && Type <= 120319)
+                return Type;
+
+            if (sort == 1) //!Weapon
+            {
+                if (subType == 120 || subType == 121) //Necklace
+                    firstId = Type - Type % 1000 + Type % 10;
+                else if (type == 15 || type == 16) //Ring || Boots
+                    firstId = Type - Type % 1000 + 10 + Type % 10;
+                else if (type == 11 || subType == 114 || subType == 123 || type == 14) //Head
+                {
+                    if (subType != 112 && subType != 115 && subType != 116)
+                        firstId = Type - Type % 1000 + Type % 10;
+                    else
+                    {
+                        firstId = Type - Type % 1000 + Type % 10;
+                    }
+                }
+                else if (type == 14)
+                {
+                    firstId = Type - Type % 1000 + Type % 10;
+                }
+                else if (type == 13) //Armor
+                {
+                    firstId = Type - Type % 1000 + Type % 10;
+                }
+            }
+            else if (sort == 4 || sort == 5 || sort == 6) //Weapon
+                firstId = Type - Type % 1000 + 20 + Type % 10;
+            else if (sort == 9)
+                firstId = Type - Type % 1000 + Type % 10;
+
+            return Kernel.ItemManager.GetItemtype(firstId)?.Type ?? Type;
+        }
+
+        public uint GetUpQualityGemAmount()
+        {
+            if (!GetUpEpQualityInfo(out var nChance, out _))
+                return 0;
+            return (uint)(100 / nChance + 1) * 12 / 10;
+        }
+
+        public uint GetUpgradeGemAmount()
+        {
+            if (!GetUpLevelChance((int)Type, out var nChance, out _))
+                return 0;
+            return (uint)(100 / nChance + 1) * 12 / 10;
+        }
+
+        public async Task<bool> DegradeItem(bool bCheckDura = true)
+        {
+            if (!IsEquipment())
+                return false;
+            if (bCheckDura)
+                if (Durability / 100 < MaximumDurability / 100)
+                {
+                    await m_user.SendAsync(Language.StrItemErrRepairItem);
+                    return false;
+                }
+
+            uint newId = GetFirstId();
+            DbItemtype newType = Kernel.ItemManager.GetItemtype(newId);
+            if (newType == null || newType.Type == Type)
+                return false;
+            return ChangeType(newType.Type);
+        }
+
+        public async Task<bool> UpItemQuality()
+        {
+            if (Durability / 100 < MaximumDurability / 100)
+            {
+                await m_user.SendAsync(Language.StrItemErrRepairItem);
+                return false;
+            }
+
+            if (!GetUpEpQualityInfo(out var nChance, out var newId))
+            {
+                await m_user.SendAsync(Language.StrItemErrMaxQuality);
+                return false;
+            }
+
+            DbItemtype newType = Kernel.ItemManager.GetItemtype(newId);
+            if (newType == null)
+            {
+                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                return false;
+            }
+
+            int gemCost = (int)(100 / nChance + 1) * 12 / 10;
+
+            if (!m_user.UserPackage.SpendDragonBalls(gemCost, IsBound))
+            {
+                await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughDragonBalls, gemCost));
+                return false;
+            }
+
+            return ChangeType(newType.Type);
+        }
+
+        /// <summary>
+        /// This method will upgrade an equipment level using meteors.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> UpEquipmentLevel()
+        {
+            if (Durability / 100 < MaximumDurability / 100)
+            {
+                await m_user.SendAsync(Language.StrItemErrRepairItem);
+                return false;
+            }
+
+            if (!GetUpLevelChance((int)Type, out var nChance, out var newId))
+            {
+                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                return false;
+            }
+
+
+            DbItemtype newType = Kernel.ItemManager.GetItemtype((uint) newId);
+            if (newType == null)
+            {
+                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                return false;
+            }
+
+            if (newType.ReqLevel > m_user.Level)
+            {
+                await m_user.SendAsync(Language.StrItemErrNotEnoughLevel);
+                return false;
+            }
+
+            int gemCost = (int)(100 / nChance + 1) * 12 / 10;
+            if (!m_user.UserPackage.SpendMeteors(gemCost))
+            {
+                await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
+                return false;
+            }
+
+            Durability = newType.AmountLimit;
+            MaximumDurability = newType.AmountLimit;
+            return ChangeType(newType.Type);
+        }
+
+        public async Task<bool> UpUltraEquipmentLevel()
+        {
+            if (Durability / 100 < MaximumDurability / 100)
+            {
+                await m_user.SendAsync(Language.StrItemErrRepairItem);
+                return false;
+            }
+
+            DbItemtype newType = NextItemLevel((int)Type);
+
+            if (newType == null || newType.Type == Type)
+            {
+                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                return false;
+            }
+
+            if (newType.ReqLevel > m_user.Level)
+            {
+                await m_user.SendAsync(Language.StrItemErrNotEnoughLevel);
+                return false;
+            }
+
+            if (!m_user.UserPackage.SpendDragonBalls(1, IsBound))
+            {
+                await m_user.SendAsync(Language.StrItemErrNoDragonBall);
+                return false;
+            }
+
+            return ChangeType(newType.Type);
+        }
+
+        #endregion
+
         #region Query info
 
         public bool IsGem()

@@ -21,6 +21,7 @@
 
 #region References
 
+using System.Collections.Generic;
 using Comet.Game.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,6 +67,8 @@ namespace Comet.Game.Database
         public virtual DbSet<DbSyndicateAttr> SyndicatesAttr { get; set; }
         public virtual DbSet<DbSyndicateAllies> SyndicatesAlly { get; set; }
         public virtual DbSet<DbSyndicateEnemy> SyndicatesEnemy { get; set; }
+        public virtual DbSet<DbStatistic> Statistic { get; set; }
+        public virtual DbSet<DbBonus> Bonus { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

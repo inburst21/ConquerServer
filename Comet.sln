@@ -28,8 +28,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Shared", "src\Comet.S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{FA6B5995-7C50-482D-9E46-730B14ED997C}"
 	ProjectSection(SolutionItems) = preProject
-		GuildDirector.sql = GuildDirector.sql
-		GuruTodd.sql = GuruTodd.sql
+		sql\ArtisanOu.sql = sql\ArtisanOu.sql
+		sql\comet.account.sql = sql\comet.account.sql
+		sql\comet.game.sql = sql\comet.game.sql
+		sql\Conductress.sql = sql\Conductress.sql
+		sql\Events IDs.txt = sql\Events IDs.txt
+		sql\GuildDirector.sql = sql\GuildDirector.sql
+		sql\GuruTodd.sql = sql\GuruTodd.sql
 	EndProjectSection
 EndProject
 Global
