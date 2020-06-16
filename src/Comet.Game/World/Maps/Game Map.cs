@@ -62,6 +62,7 @@ namespace Comet.Game.World.Maps
         public static readonly sbyte[] WalkYCoords = {1, 1, 0, -1, -1, -1, 0, 1, 0};
 
         private readonly DbMap m_dbMap;
+        private readonly DbDynamap m_dbDynamap;
         private GameMapData m_mapData;
 
         private GameBlock[,] m_blocks;
@@ -76,16 +77,19 @@ namespace Comet.Game.World.Maps
             m_dbMap = map;
         }
 
-        public GameMap()
+        public GameMap(DbDynamap map)
         {
-            
+            m_dbDynamap = map;
         }
 
-        public uint Identity => m_dbMap?.Identity ?? 0;
-        public string Name => m_dbMap?.Name ?? "Invalid";
-        public uint OwnerIdentity => m_dbMap?.OwnerIdentity ?? 0;
-        public uint MapDoc => m_dbMap?.MapDoc ?? 0;
-        public uint Type => m_dbMap?.Type ?? 0;
+        public uint Identity => m_dbMap?.Identity ?? m_dbDynamap?.Identity ?? 0;
+        public string Name => m_dbMap?.Name ?? m_dbDynamap?.Name ?? "Invalid";
+        public uint OwnerIdentity => m_dbMap?.OwnerIdentity ?? m_dbDynamap?.OwnerIdentity ?? 0;
+        public uint MapDoc => m_dbMap?.MapDoc ?? m_dbDynamap?.MapDoc ?? 0;
+        public uint Type => m_dbMap?.Type ?? m_dbDynamap?.Type ?? 0;
+
+        public ushort PortalX => (ushort) (m_dbMap?.PortalX ?? m_dbDynamap?.PortalX ?? 0);
+        public ushort PortalY => (ushort) (m_dbMap?.PortalY ?? m_dbDynamap?.PortalY ?? 0);
 
         public int Width => m_mapData?.Width ?? 0;
         public int Height => m_mapData?.Height ?? 0;
@@ -98,9 +102,9 @@ namespace Comet.Game.World.Maps
         public ulong Flag { get; set; }
         public int PlayerCount => m_users.Count;
 
-        public async Task<bool> Initialize()
+        public async Task<bool> InitializeAsync()
         {
-            if (m_dbMap == null) return false;
+            if (m_dbMap == null && m_dbDynamap == null) return false;
 
             m_mapData = Kernel.MapManager.GetMapData(MapDoc);
             if (m_mapData == null)

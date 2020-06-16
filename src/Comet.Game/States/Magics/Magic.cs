@@ -125,6 +125,12 @@ namespace Comet.Game.States.Magics
             set => m_dbMagic.OldLevel = value;
         }
 
+        public bool Unlearn
+        {
+            get => m_dbMagic.Unlearn != 0;
+            set => m_dbMagic.Unlearn = (byte) (value ? 1 : 0);
+        }
+
         public ushort MaxLevel => m_pMaxLevel;
         public MagicData.MagicSort Sort => (MagicData.MagicSort) m_dbMagictype.Sort;
         public byte AutoActive => m_dbMagictype.AutoActive;

@@ -42,7 +42,7 @@ namespace Comet.Game.Database.Models
         [Column("id")] public virtual uint Identity { get; set; }
         [Column("account_id")] public virtual uint AccountIdentity { get; set; }
         [Column("name")] public virtual string Name { get; set; }
-        [Column("mate")] public virtual string Mate { get; set; }
+        [Column("mateid")] public virtual uint Mate { get; set; }
         [Column("lookface")] public virtual uint Mesh { get; set; }
         [Column("hair")] public virtual ushort Hairstyle { get; set; }
         [Column("money")] public virtual uint Silver { get; set; }
@@ -77,6 +77,9 @@ namespace Comet.Game.Database.Models
         [Column("exp_ball_num")] public virtual uint ExpBallNum { get; set; }
         [Column("exp_multiply")] public virtual float ExperienceMultiplier { get; set; }
         [Column("exp_expires")] public virtual DateTime? ExperienceExpires { get; set; }
-        [Column("god_status")] public DateTime? HeavenBlessing { get; set; }
+        [Column("god_status")] public virtual DateTime? HeavenBlessing { get; set; }
+        [Column("task_mask")] public virtual uint TaskMask { get; set; }
+        [Column("home_id")] public virtual uint HomeIdentity { get; set; }
+        [Column("lock_key")] public virtual ulong LockKey { get; set; }
     }
 }

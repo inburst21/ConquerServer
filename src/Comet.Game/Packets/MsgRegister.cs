@@ -118,7 +118,7 @@ namespace Comet.Game.Packets
             var character = new DbCharacter();
             character.AccountIdentity = client.Creation.AccountID;
             character.Name = CharacterName;
-            character.Mate = "None";
+            character.Mate = 0;
             character.Profession = (byte) Class;
             character.Mesh = Mesh;
             character.Silver = 1000;

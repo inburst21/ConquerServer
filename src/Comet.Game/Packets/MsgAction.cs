@@ -299,7 +299,7 @@ namespace Comet.Game.Packets
                         Action = StringAction.QueryMate,
                         Strings = new List<string>
                         {
-                            targetUser.Mate
+                            targetUser.MateName
                         }
                     });
                     break;

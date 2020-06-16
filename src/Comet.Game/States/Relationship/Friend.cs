@@ -84,7 +84,7 @@ namespace Comet.Game.States.Relationship
                 Identity = Identity,
                 PkPoints = user?.PkPoints ?? 0,
                 Level = user?.Level ?? 0,
-                Mate = user?.Mate ?? "",
+                Mate = user?.MateName ?? Language.StrNone,
                 Profession = user?.Profession ?? 0,
                 Lookface = user?.Mesh ?? 0
             });

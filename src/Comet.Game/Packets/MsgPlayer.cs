@@ -75,7 +75,7 @@ namespace Comet.Game.Packets
             Garment = user.Garment?.Type ?? 0;
 
             Name = user.Name;
-            Mate = user.Mate;
+            Mate = user.MateName;
         }
 
         public MsgPlayer(Monster monster)

@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Database.Repositories;
+using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 
@@ -245,6 +246,35 @@ namespace Comet.Game.States.Magics
             return false;
         }
 
+        public async Task<bool> UnlearnMagic(ushort type, bool drop)
+        {
+            Magic magic = this[type];
+            if (magic == null)
+                return false;
+
+            if (drop)
+            {
+                await magic.DeleteAsync();
+            }
+            else
+            {
+                magic.OldLevel = (byte) magic.Level;
+                magic.Level = 0;
+                magic.Experience = 0;
+                magic.Unlearn = true;
+                await magic.SaveAsync();
+            }
+
+            await m_pOwner.SendAsync(new MsgAction
+            {
+                Identity = m_pOwner.Identity,
+                Command = type,
+                Action = MsgAction.ActionType.SpellRemove
+            });
+
+            return Magics.TryRemove(type, out _);
+        }
+
         #endregion
 
         #region Crime
@@ -278,7 +308,7 @@ namespace Comet.Game.States.Magics
 
         public async Task SendAllAsync()
         {
-            foreach (var magic in Magics.Values)
+            foreach (var magic in Magics.Values.Where(x => !x.Unlearn))
             {
                 await magic.SendAsync();
             }

@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - MapsRepository.cs
+// Comet - Comet.Game - StatusRepository.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -30,20 +30,12 @@ using Comet.Game.Database.Models;
 
 namespace Comet.Game.Database.Repositories
 {
-    public static class MapsRepository
+    public static class StatusRepository
     {
-        public static async Task<List<DbMap>> GetAsync()
+        public static async Task<List<DbStatus>> GetAsync(uint idUser)
         {
             await using var db = new ServerDbContext();
-            return db.Maps.Where(x => x.ServerIndex == -1 || x.ServerIndex == Kernel.Configuration.ServerIdentity)
-                .ToList();
-        }
-
-        public static async Task<List<DbDynamap>> GetDynaAsync()
-        {
-            await using var db = new ServerDbContext();
-            return db.DynaMaps.Where(x => x.ServerIndex == -1 || x.ServerIndex == Kernel.Configuration.ServerIdentity)
-                .ToList();
+            return db.Status.Where(x => x.OwnerId == idUser).ToList();
         }
     }
 }

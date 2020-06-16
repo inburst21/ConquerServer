@@ -28,7 +28,6 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Castle.Components.DictionaryAdapter;
 using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
@@ -37,14 +36,13 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.Magics;
 using Comet.Game.States.Relationship;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
-using Org.BouncyCastle.Asn1.IsisMtt.X509;
 
 #endregion
 
@@ -127,7 +125,9 @@ namespace Comet.Game.States
             set => m_dbObject.Name = value;
         }
 
-        public string Mate
+        public string MateName { get; set; }
+
+        public uint MateIdentity
         {
             get => m_dbObject.Mate;
             set => m_dbObject.Mate = value;
@@ -713,6 +713,9 @@ namespace Comet.Game.States
 
             if (skill.Level >= MAX_WEAPONSKILLLEVEL)
                 return;
+
+            if (skill.Unlearn != 0)
+                skill.Unlearn = 0;
 
             nExp = (int)(nExp * (1 + VioletGemBonus / 100d));
 
@@ -1835,7 +1838,7 @@ namespace Comet.Game.States
                     case PkModeType.Team:
                         if (IsFriend(user.Identity))
                             return false;
-                        if (IsMate(user.Name))
+                        if (IsMate(user.Identity))
                             return false;
                         if (Team?.IsMember(user.Identity) == true)
                             return false;
@@ -2177,12 +2180,230 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Rebirth
+
+        public async Task<bool> RebirthAsync(ushort prof, ushort look)
+        {
+            DbRebirth data = Kernel.RoleManager.GetRebirth(Profession, prof);
+
+            if (data == null)
+            {
+                if (IsPm())
+                    await SendAsync($"No rebirth set for {Profession} -> {prof}");
+                return false;
+            }
+
+            if (Level < data.NeedLevel)
+            {
+                await SendAsync(Language.StrNotEnoughLevel);
+                return false;
+            }
+
+            if (Level >= 130)
+            {
+                DbLevelExperience levExp = Kernel.RoleManager.GetLevelExperience(Level);
+                if (levExp != null)
+                {
+                    float fExp = Experience / (float)levExp.Exp;
+                    uint metLev = (uint)(Level * 10000 + fExp * 1000);
+                    if (metLev > m_dbObject.MeteLevel)
+                        m_dbObject.MeteLevel = metLev;
+                }
+                else if (Level >= MAX_UPLEV)
+                    m_dbObject.MeteLevel = MAX_UPLEV * 10000;
+            }
+
+            int oldProf = Profession;
+            await ResetUserAttributesAsync(Metempsychosis, prof, look, data.NewLevel);
+
+            for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+            {
+                UserPackage[pos]?.DegradeItem(false);
+            }
+
+            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf, prof/10)?.Magics;
+            var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf, prof/10)?.Magics;
+            var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf, prof/10)?.Magics;
+
+            if (removeSkills != null)
+            {
+                foreach (var skill in removeSkills)
+                {
+                    await MagicData.UnlearnMagic(skill, true);
+                }
+            }
+
+            if (resetSkills != null)
+            {
+                foreach (var skill in resetSkills)
+                {
+                    await MagicData.UnlearnMagic(skill, false);
+                }
+            }
+
+            if (learnSkills != null)
+            {
+                foreach (var skill in learnSkills)
+                {
+                    await MagicData.Create(skill, 0);
+                }
+            }
+
+            if (!UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == false)
+                await UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
+
+            return true;
+        }
+
+        public async Task ResetUserAttributesAsync(byte mete, ushort newProf, ushort newLook, int newLev)
+        {
+            if (newProf == 0) newProf = (ushort) (Profession / 10 * 10 + 1);
+            byte prof = (byte) (newProf > 100 ? 10 : newProf / 10);
+
+            int force = 0, speed = 0, health = 0, soul = 0;
+            DbPointAllot pointAllot = Kernel.RoleManager.GetPointAllot(prof, 1);
+            if (pointAllot != null)
+            {
+                force = pointAllot.Strength;
+                speed = pointAllot.Agility;
+                health = pointAllot.Vitality;
+                soul = pointAllot.Spirit;
+            }
+            else if (prof == 1)
+            {
+                force = 5;
+                speed = 2;
+                health = 3;
+                soul = 0;
+            }
+            else if (prof == 2)
+            {
+                force = 5;
+                speed = 2;
+                health = 3;
+                soul = 0;
+            }
+            else if (prof == 4)
+            {
+                force = 2;
+                speed = 7;
+                health = 1;
+                soul = 0;
+            }
+            else if (prof == 10)
+            {
+                force = 0;
+                speed = 2;
+                health = 3;
+                soul = 5;
+            }
+            else
+            {
+                force = 5;
+                speed = 2;
+                health = 3;
+                soul = 0;
+            }
+
+            AutoAllot = false;
+
+            int newAttrib = GetRebirthAddPoint(Profession, Level, mete) + (15 * 3) - (Level * 3);
+            await SetAttributesAsync(ClientUpdateType.Atributes, newAttrib);
+            await SetAttributesAsync(ClientUpdateType.Strength, force);
+            await SetAttributesAsync(ClientUpdateType.Agility, speed);
+            await SetAttributesAsync(ClientUpdateType.Vitality, health);
+            await SetAttributesAsync(ClientUpdateType.Spirit, soul);
+            await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
+            await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
+            await SetAttributesAsync(ClientUpdateType.Stamina, MaxEnergy);
+            await SetAttributesAsync(ClientUpdateType.XpCircle, 0);
+
+            if (newLook > 0 && newLook != Mesh % 10)
+                await SetAttributesAsync(ClientUpdateType.Mesh, Mesh - Mesh % 10 + newLook);
+
+            await SetAttributesAsync(ClientUpdateType.Level, newLev);
+            await SetAttributesAsync(ClientUpdateType.Experience, 0);
+
+            if (mete == 0)
+            {
+                FirstProfession = Profession;
+                
+            }
+            else if (mete == 1)
+            {
+                PreviousProfession = Profession;
+            }
+            else
+            {
+                FirstProfession = PreviousProfession;
+                PreviousProfession = Profession;
+            }
+
+            await SetAttributesAsync(ClientUpdateType.Class, newProf);
+            await SetAttributesAsync(ClientUpdateType.Reborn, mete);
+            await SaveAsync();
+        }
+
+        public int GetRebirthAddPoint(int oldProf, int oldLev, int metempsychosis)
+        {
+            int points = 0;
+
+            if (metempsychosis == 1)
+            {
+                if (oldProf == HIGHEST_WATER_WIZARD_PROF)
+                {
+                    points += Math.Min((1 + (oldLev - 110) / 2) * ((oldLev - 110) / 2) / 2, 55);
+                }
+                else
+                {
+                    points += Math.Min((1 + (oldLev - 120)) * (oldLev - 120) / 2, 55);
+                }
+            }
+            else
+            {
+                if (oldProf == HIGHEST_WATER_WIZARD_PROF)
+                    points += 52 + Math.Min((1 + (oldLev - 110) / 2) * ((oldLev - 110) / 2) / 2, 55);
+                else
+                    points += 52 + Math.Min((1 + (oldLev - 120)) * (oldLev - 120) / 2, 55);
+            }
+
+            return points;
+        }
+
+        public async Task<bool> UnlearnAllSkill()
+        {
+            return await WeaponSkill.UnearnAll();
+        }
+
+        #endregion
+
         #region Bonus
 
         public async Task<bool> DoBonusAsync()
         {
+            if (!UserPackage.IsPackSpare(10))
+            {
+                await SendAsync(string.Format(Language.StrNotEnoughSpaceN, 10));
+                return false;
+            }
 
+            DbBonus bonus = await BonusRepository.GetAsync(m_dbObject.AccountIdentity);
+            if (bonus == null || bonus.Flag != 0 || bonus.Time != null)
+            {
+                await SendAsync(Language.StrNoBonus);
+                return false;
+            }
 
+            bonus.Flag = 1;
+            bonus.Time = DateTime.Now;
+            await BaseRepository.SaveAsync(bonus);
+            if (!await GameAction.ExecuteActionAsync(bonus.Action, this, null, null, ""))
+            {
+                await Log.GmLog("bonus_error", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
+                return false;
+            }
+
+            await Log.GmLog("bonus", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
             return true;
         }
 
@@ -2272,9 +2493,9 @@ namespace Comet.Game.States
 
                 if (task.Marriage >= 0)
                 {
-                    if (task.Marriage == 0 && Mate != Language.StrNone)
+                    if (task.Marriage == 0 && MateIdentity != 0)
                         return false;
-                    if (task.Marriage == 1 && Mate == Language.StrNone)
+                    if (task.Marriage == 1 && MateIdentity == 0)
                         return false;
                 }
             }
@@ -2287,18 +2508,53 @@ namespace Comet.Game.States
             return true;
         }
 
+        public async Task AddTaskMask(int idx)
+        {
+            if (idx < 0 || idx >= 32)
+                return;
+
+            m_dbObject.TaskMask |= (1u << idx);
+            await SaveAsync();
+        }
+
+        public async Task ClearTaskMask(int idx)
+        {
+            if (idx < 0 || idx >= 32)
+                return;
+
+            m_dbObject.TaskMask &= ~(1u << idx);
+            await SaveAsync();
+        }
+
+        public bool CheckTaskMask(int idx)
+        {
+            if (idx < 0 || idx >= 32)
+                return false;
+            return (m_dbObject.TaskMask & (1u << idx)) != 0;
+        }
+
+        #endregion
+
+        #region Home
+
+        public uint HomeIdentity
+        {
+            get => m_dbObject?.HomeIdentity ?? 0u;
+            set => m_dbObject.HomeIdentity = value;
+        }
+
         #endregion
 
         #region Marriage
 
         public bool IsMate(Character user)
         {
-            return user.Name == Mate;
+            return user.Identity == MateIdentity;
         }
 
-        public bool IsMate(string name)
+        public bool IsMate(uint idMate)
         {
-            return name == Mate;
+            return idMate == MateIdentity;
         }
 
         #endregion
@@ -2600,6 +2856,41 @@ namespace Comet.Game.States
                     Rank = SyndicateMember.SyndicateRank.None
                 });
             }
+        }
+
+        #endregion
+
+        #region User Secondary Password
+
+        public ulong SecondaryPassword
+        {
+            get => m_dbObject.LockKey;
+            set => m_dbObject.LockKey = value;
+        }
+
+        public bool IsUnlocked()
+        {
+            return SecondaryPassword == 0 || VarData[0] != 0;
+        }
+
+        public void UnlockSecondaryPassword()
+        {
+            VarData[0] = 1;
+        }
+
+        public bool CanUnlock2ndPassword()
+        {
+            return VarData[1] <= 2;
+        }
+
+        public void Increment2ndPasswordAttempts()
+        {
+            VarData[1] += 1;
+        }
+
+        public async Task SendSecondaryPasswordInterface()
+        {
+            await GameAction.ExecuteActionAsync(100, this, null, null, string.Empty);
         }
 
         #endregion

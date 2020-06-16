@@ -33,6 +33,7 @@ using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.Magics;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -50,6 +51,9 @@ namespace Comet.Game.World.Managers
         private readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new Dictionary<byte, DbLevelExperience>();
         private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
+
+        private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
+        private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
 
         public RoleManager()
         {
@@ -76,6 +80,13 @@ namespace Comet.Game.World.Managers
             foreach (var lev in await LevelExperienceRepository.GetAsync())
             {
                 m_dicLevExp.TryAdd(lev.Level, lev);
+            }
+
+            m_dicRebirths.AddRange(await RebirthRepository.GetAsync());
+
+            foreach (var dbOp in await MagictypeOpRepository.GetAsync())
+            {
+                m_magicOps.Add(new MagicTypeOp(dbOp));
             }
         }
 
@@ -259,6 +270,16 @@ namespace Comet.Game.World.Managers
         public int GetLevelLimit()
         {
             return m_dicLevExp.Count;
+        }
+
+        public DbRebirth GetRebirth(int profNow, int profNext)
+        {
+            return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext);
+        }
+
+        public MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext)
+        {
+            return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext && x.Operation == op);
         }
     }
 }

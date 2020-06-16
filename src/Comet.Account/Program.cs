@@ -77,7 +77,9 @@ namespace Comet.Account
             // Recover caches from the database
             var tasks = new List<Task>();
             tasks.Add(RealmsRepository.LoadAsync());
+#pragma warning disable VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono
             Task.WaitAll(tasks.ToArray());
+#pragma warning restore VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono
 
             // Start the server listener
             await Log.WriteLog(LogLevel.Message, "Launching server listener...");

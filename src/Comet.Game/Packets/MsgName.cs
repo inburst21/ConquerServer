@@ -23,6 +23,8 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
@@ -92,7 +94,7 @@ namespace Comet.Game.Packets
                     if (targetUser == null)
                         return;
 
-                    Strings.Add(targetUser.Mate);
+                    Strings.Add(targetUser.MateName);
                     await client.Character.SendAsync(this);
                     break;
 

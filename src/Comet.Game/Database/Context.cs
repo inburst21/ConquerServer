@@ -38,10 +38,11 @@ namespace Comet.Game.Database
     {
         // Connection String Configuration
         public static ServerConfiguration.DatabaseConfiguration Configuration;
-
+        
         // Table Definitions
         public virtual DbSet<DbCharacter> Characters { get; set; }
         public virtual DbSet<DbMap> Maps { get; set; }
+        public virtual DbSet<DbDynamap> DynaMaps { get; set; }
         public virtual DbSet<DbItemAddition> ItemAdditions { get; set; }
         public virtual DbSet<DbItem> Items { get; set; }
         public virtual DbSet<DbItemtype> Itemtypes { get; set; }
@@ -69,6 +70,9 @@ namespace Comet.Game.Database
         public virtual DbSet<DbSyndicateEnemy> SyndicatesEnemy { get; set; }
         public virtual DbSet<DbStatistic> Statistic { get; set; }
         public virtual DbSet<DbBonus> Bonus { get; set; }
+        public virtual DbSet<DbMagictypeOp> MagictypeOps { get; set; }
+        public virtual DbSet<DbRebirth> Rebirths { get; set; }
+        public virtual DbSet<DbStatus> Status { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

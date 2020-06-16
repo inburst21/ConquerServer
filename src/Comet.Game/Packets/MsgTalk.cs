@@ -550,6 +550,7 @@ namespace Comet.Game.Packets
             TeamBoard,
             GuildBoard,
             OthersBoard,
+            Bbs,
             Broadcast = 2500,
             Monster = 2600
         }

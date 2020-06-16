@@ -29,7 +29,6 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.World.Maps;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -40,15 +39,15 @@ namespace Comet.Game.World.Managers
         private readonly ConcurrentDictionary<uint, GameMapData> m_mapData =
             new ConcurrentDictionary<uint, GameMapData>();
 
-        private readonly ConcurrentDictionary<uint, GameMap> m_maps = new ConcurrentDictionary<uint, GameMap>();
+        public ConcurrentDictionary<uint, GameMap> GameMaps { get; } = new ConcurrentDictionary<uint, GameMap>();
 
-        public void LoadData()
+        public async Task LoadDataAsync()
         {
             var stream = File.OpenRead(@".\ini\GameMap.dat");
             BinaryReader reader = new BinaryReader(stream);
 
             int mapDataCount = reader.ReadInt32();
-            _ = Log.WriteLog(LogLevel.Debug, $"Loading {mapDataCount} maps...");
+            await Log.WriteLog(LogLevel.Debug, $"Loading {mapDataCount} maps...");
 
             for (int i = 0; i < mapDataCount; i++)
             {
@@ -60,31 +59,38 @@ namespace Comet.Game.World.Managers
                 GameMapData mapData = new GameMapData(idMap);
                 mapData.Load(name);
 
-                _ = Log.WriteLog(LogLevel.Debug, $"Map [{idMap}] loaded...");
+                await Log.WriteLog(LogLevel.Debug, $"Map [{idMap}] loaded...");
                 m_mapData.TryAdd(idMap, mapData);
             }
 
             reader.Close();
             stream.Close();
             reader.Dispose();
-            stream.Dispose();
+            await stream.DisposeAsync();
         }
 
-        public async Task LoadMaps()
+        public async Task LoadMapsAsync()
         {
-            var jtf = new JoinableTaskFactory(new JoinableTaskContext());
-            List<DbMap> maps = jtf.Run(MapsRepository.GetAsync);
+            List<DbMap> maps = await MapsRepository.GetAsync();
             foreach (var dbmap in maps)
             {
                 GameMap map = new GameMap(dbmap);
-                if (await map.Initialize())
-                    m_maps.TryAdd(map.Identity, map);
+                if (await map.InitializeAsync())
+                    GameMaps.TryAdd(map.Identity, map);
+            }
+
+            List<DbDynamap> dynaMaps = await MapsRepository.GetDynaAsync();
+            foreach (var dbmap in dynaMaps)
+            {
+                GameMap map = new GameMap(dbmap);
+                if (await map.InitializeAsync())
+                    GameMaps.TryAdd(map.Identity, map);
             }
         }
 
         public GameMap GetMap(uint idMap)
         {
-            return m_maps.TryGetValue(idMap, out var value) ? value : null;
+            return GameMaps.TryGetValue(idMap, out var value) ? value : null;
         }
 
         public GameMapData GetMapData(uint idDoc)
@@ -92,6 +98,14 @@ namespace Comet.Game.World.Managers
             return m_mapData.TryGetValue(idDoc, out var map) ? map : null;
         }
 
-        public ConcurrentDictionary<uint, GameMap> GameMaps => m_maps;
+        public bool AddMap(GameMap map)
+        {
+            return GameMaps.TryAdd(map.Identity, map);
+        }
+
+        public bool RemoveMap(uint idMap)
+        {
+            return GameMaps.TryRemove(idMap, out _);
+        }
     }
 }

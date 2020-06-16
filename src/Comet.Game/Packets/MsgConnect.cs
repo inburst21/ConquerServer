@@ -110,6 +110,7 @@ namespace Comet.Game.Packets
                 client.Character = new Character(character, client);
                 if (await Kernel.RoleManager.LoginUserAsync(client))
                 {
+                    client.Character.MateName = (await CharactersRepository.FindByIdentityAsync(client.Character.MateIdentity))?.Name ?? Game.Language.StrNone;
                     await client.SendAsync(LoginOk);
                     await client.SendAsync(new MsgUserInfo(client.Character));
                 }

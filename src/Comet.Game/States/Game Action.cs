@@ -21,8 +21,11 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
@@ -30,6 +33,7 @@ using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World.Maps;
 using Comet.Shared;
+using Newtonsoft.Json;
 
 namespace Comet.Game.States
 {
@@ -109,41 +113,39 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserWeaponskill: result = await ExecuteActionUserWeaponSkill(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserLog: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserBonus: result = await ExecuteActionUserBonus(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserDivorce:
-                    case TaskActionType.ActionUserMarriage:
-                    case TaskActionType.ActionUserSex:
-                    case TaskActionType.ActionUserEffect:
-                    case TaskActionType.ActionUserTaskmask:
-                    case TaskActionType.ActionUserMediaplay:
-                    case TaskActionType.ActionUserCreatemap:
-                    case TaskActionType.ActionUserEnterHome:
-                    case TaskActionType.ActionUserEnterMateHome:
-                    case TaskActionType.ActionUserFlyNeighbor:
-                    case TaskActionType.ActionUserUnlearnMagic:
-                    case TaskActionType.ActionUserRebirth:
-                    case TaskActionType.ActionUserWebpage:
-                    case TaskActionType.ActionUserBbs:
-                    case TaskActionType.ActionUserUnlearnSkill:
-                    case TaskActionType.ActionUserDropMagic:
-                    case TaskActionType.ActionUserFixAttr:
-                    case TaskActionType.ActionUserOpenDialog:
-                    case TaskActionType.ActionUserPointAllot:
-                    case TaskActionType.ActionUserExpMultiply:
-                    case TaskActionType.ActionUserWhPassword:
-                    case TaskActionType.ActionUserSetWhPassword:
-                    case TaskActionType.ActionUserOpeninterface:
-                    case TaskActionType.ActionUserVarCompare:
-                    case TaskActionType.ActionUserVarDefine:
-                    case TaskActionType.ActionUserVarCalc:
-                    case TaskActionType.ActionUserStcCompare:
-                    case TaskActionType.ActionUserStcOpe:
-                    case TaskActionType.ActionUserTaskManager:
-                    case TaskActionType.ActionUserTaskOpe:
-                    case TaskActionType.ActionUserAttachStatus:
-                    case TaskActionType.ActionUserGodTime:
-                    case TaskActionType.ActionUserExpballExp:
-                    case TaskActionType.ActionUserStatusCreate:
-                    case TaskActionType.ActionUserStatusCheck:
+                    case TaskActionType.ActionUserDivorce: result = await ExecuteActionUserDivorce(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserMarriage: result = await ExecuteActionUserMarriage(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserSex: result = await ExecuteActionUserSex(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserEffect: result = await ExecuteActionUserEffect(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskmask: result = await ExecuteActionUserTaskmask(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserMediaplay: result = await ExecuteActionUserMediaplay(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserCreatemap: result = await ExecuteActionUserCreatemap(action, param, user, role, item, input);break; 
+                    case TaskActionType.ActionUserEnterHome: result = await ExecuteActionUserEnterHome(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserEnterMateHome: result = await ExecuteActionUserEnterMateHome(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserUnlearnMagic: result = await ExecuteActionUserUnlearnMagic(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserRebirth: result = await ExecuteActionUserRebirth(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserWebpage: result = await ExecuteActionUserWebpage(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserBbs: result = await ExecuteActionUserBbs(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserUnlearnSkill: result = await ExecuteActionUserUnlearnSkill(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserDropMagic: result = await ExecuteActionUserDropMagic(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserOpenDialog: result = await ExecuteActionUserOpenDialog(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserPointAllot: result = await ExecuteActionUserFixAttr(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserExpMultiply: result = await ExecuteActionUserExpMultiply(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserWhPassword: result = await ExecuteActionUserWhPassword(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserSetWhPassword: result = await ExecuteActionUserSetWhPassword(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserOpeninterface: result = await ExecuteActionUserOpeninterface(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserVarCompare: result = await ExecuteActionUserVarCompare(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserVarDefine: result = await ExecuteActionUserVarDefine(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskManager: result = await ExecuteActionUserTaskManager(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskOpe: result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserAttachStatus: result = await ExecuteActionUserAttachStatus(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserGodTime: result = await ExecuteActionUserGodTime(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserExpballExp: result = await ExecuteActionUserExpballExp(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStatusCreate: result = await ExecuteActionUserStatusCreate(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStatusCheck: result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input); break;
 
                     default:
                         await Log.WriteLog(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
@@ -1113,6 +1115,936 @@ namespace Comet.Game.States
             return await user.DoBonusAsync();
         }
 
+        private static async Task<bool> ExecuteActionUserDivorce(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            if (user.MateIdentity == 0)
+                return false;
+
+            Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+            if (mate == null)
+            {
+                DbCharacter dbMate = await CharactersRepository.FindByIdentityAsync(user.MateIdentity);
+                if (dbMate == null)
+                    return false;
+                dbMate.Mate = 0;
+                await BaseRepository.SaveAsync(dbMate);
+            }
+            
+            if (mate == null)
+            {
+                DbItem dbItem = Item.CreateEntity(Item.TYPE_METEORTEAR);
+                dbItem.PlayerId = user.Identity;
+                await BaseRepository.SaveAsync(dbItem);
+            }
+            else
+            {
+                await mate.UserPackage.AwardItemAsync(Item.TYPE_METEORTEAR);
+            }
+
+            user.MateIdentity = 0;
+            user.MateName = Language.StrNone;
+            await user.SaveAsync();
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserMarriage(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return user?.MateIdentity != 0;
+        }
+
+        private static async Task<bool> ExecuteActionUserSex(DbAction action, string param, Character user, Role role, Item item, string input) 
+        {
+            return user?.Gender != 0;
+        }
+
+        private static async Task<bool> ExecuteActionUserEffect(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] parsedString = SplitParam(param);
+            if (parsedString.Length < 2)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Invalid parsed param[{param}] ExecuteActionUserEffect[{action.Identity}]");
+                return false;
+            }
+
+            MsgName msg = new MsgName
+            {
+                Identity = user.Identity,
+                Action = StringAction.RoleEffect
+            };
+            msg.Strings.Add(parsedString[1]);
+            switch (parsedString[0].ToLower())
+            {
+                case "self":
+                    await user.BroadcastRoomMsgAsync(msg, true);
+                    return true;
+
+                case "couple":
+                    await user.BroadcastRoomMsgAsync(msg, true);
+
+                    Character couple = Kernel.RoleManager.GetUser(user.MateIdentity);
+                    if (couple == null)
+                        return true;
+
+                    msg.Identity = couple.Identity;
+                    await couple.BroadcastRoomMsgAsync(msg, true);
+                    return true;
+
+                case "team":
+                    if (user.Team == null)
+                        return false;
+
+                    foreach (var member in user.Team.Members)
+                    {
+                        msg.Identity = member.Identity;
+                        await member.BroadcastRoomMsgAsync(msg, true);
+                    }
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserTaskmask(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] parsedParam = SplitParam(param);
+            if (parsedParam.Length < 2)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid param num [{param}] for action {action.Identity}");
+                return false;
+            }
+
+            if (!int.TryParse(parsedParam[1], out var flag) || flag < 0 || flag >= 32)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid mask num {param}");
+                return false;
+            }
+
+            switch (parsedParam[0].ToLower())
+            {
+                case "check":
+                case "chk":
+                    return user.CheckTaskMask(flag);
+                case "add":
+                    await user.AddTaskMask(flag);
+                    return true;
+                case "cls":
+                case "clear":
+                    await user.ClearTaskMask(flag);
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserMediaplay(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 2)
+                return false;
+
+            var msg = new MsgName { Action = StringAction.PlayerWave };
+            msg.Strings.Add(pszParam[1]);
+
+            switch (pszParam[0].ToLower())
+            {
+                case "play":
+                    await user.SendAsync(msg);
+                    return true;
+                case "broadcast":
+                    await user.BroadcastRoomMsgAsync(msg, true);
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserCreatemap(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] safeParam = SplitParam(param);
+
+            if (safeParam.Length < 10)
+            {
+                await Log.WriteLog(LogLevel.Error, $"ExecuteActionUserCreatemap ({action.Identity}) with invalid param length [{param}]");
+                return false;
+            }
+
+            string szName = safeParam[0];
+            uint idOwner = uint.Parse(safeParam[2]),
+                idRebornMap = uint.Parse(safeParam[7]);
+            byte nOwnerType = byte.Parse(safeParam[1]);
+            uint nMapDoc = uint.Parse(safeParam[3]);
+            uint nType = uint.Parse(safeParam[4]);
+            uint nRebornPortal = uint.Parse(safeParam[8]);
+            byte nResLev = byte.Parse(safeParam[9]);
+            ushort usPortalX = ushort.Parse(safeParam[5]),
+                usPortalY = ushort.Parse(safeParam[6]);
+
+            DbDynamap pMapInfo = new DbDynamap
+            {
+                Name = szName,
+                OwnerIdentity = idOwner,
+                OwnerType = nOwnerType,
+                Description = $"{user.Name}`{szName}",
+                RebornMap = idRebornMap,
+                PortalX = usPortalX,
+                PortalY = usPortalY,
+                LinkMap = user.MapIdentity,
+                LinkX = user.MapX,
+                LinkY = user.MapY,
+                MapDoc = nMapDoc,
+                Type = nType,
+                RebornPortal = nRebornPortal,
+                ResourceLevel = nResLev,
+                ServerIndex = (int) Kernel.Configuration.ServerIdentity
+            };
+
+            if (!await BaseRepository.SaveAsync(pMapInfo) || pMapInfo.Identity < 1000000)
+            {
+                await Log.WriteLog(LogLevel.Error, $"ExecuteActionUserCreatemap error when saving map\n\t{JsonConvert.SerializeObject(pMapInfo)}");
+                return false;
+            }
+
+            GameMap map = new GameMap(pMapInfo);
+            if (!await map.InitializeAsync())
+                return false;
+
+            user.HomeIdentity = pMapInfo.Identity;
+            await user.SaveAsync();
+            return Kernel.MapManager.AddMap(map);
+        }
+
+        private static async Task<bool> ExecuteActionUserEnterHome(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null || user.HomeIdentity == 0)
+                return false;
+
+            GameMap target = Kernel.MapManager.GetMap(user.HomeIdentity);
+
+            await user.FlyMap(target.Identity, target.PortalX, target.PortalY);
+
+            if (user.Team != null)
+            {
+                foreach (var member in user.Team.Members)
+                {
+                    if (member.Identity == user.Identity || member.GetDistance(user) > 5)
+                        continue;
+                    await member.FlyMap(target.Identity, target.PortalX, target.PortalY);
+                }
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserEnterMateHome(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            uint idMap = 0;
+            Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+            if (mate == null)
+            {
+                DbCharacter dbMate = await CharactersRepository.FindByIdentityAsync(user.MateIdentity);
+                idMap = dbMate.HomeIdentity;
+            }
+            else
+            {
+                idMap = mate.HomeIdentity;
+            }
+
+            if (idMap == 0)
+                return false;
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+                return false;
+
+            await user.FlyMap(map.Identity, map.PortalX, map.PortalY);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserUnlearnMagic(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] magicsIds = SplitParam(param);
+
+            foreach (var id in magicsIds)
+            {
+                ushort idMagic = ushort.Parse(id);
+                if (user.MagicData.CheckType(idMagic))
+                {
+                    await user.MagicData.UnlearnMagic(idMagic, false);
+                }
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserRebirth(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] splitParam = SplitParam(param);
+
+            if (!ushort.TryParse(splitParam[0], out var prof)
+                || !ushort.TryParse(splitParam[1], out var look))
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Invalid parameter to rebirth {param}, {action.Identity}");
+                return false;
+            }
+
+            return await user.RebirthAsync(prof, look);
+        }
+
+        private static async Task<bool> ExecuteActionUserWebpage(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            await user.SendAsync(param, MsgTalk.TalkChannel.Website);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserBbs(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            await user.SendAsync(param, MsgTalk.TalkChannel.Bbs);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserUnlearnSkill(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+            
+            return await user.UnlearnAllSkill();
+        }
+
+        private static async Task<bool> ExecuteActionUserDropMagic(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] magicsIds = SplitParam(param);
+
+            foreach (var id in magicsIds)
+            {
+                ushort idMagic = ushort.Parse(id);
+                if (user.MagicData.CheckType(idMagic))
+                {
+                    await user.MagicData.UnlearnMagic(idMagic, true);
+                }
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserOpenDialog(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            switch ((OpenWindow) action.Data)
+            {
+                case OpenWindow.VipWarehouse:
+                    if (user.Client.VipLevel == 0)
+                        return false;
+                    break;
+            }
+
+            await user.SendAsync(new MsgAction
+            {
+                Identity = user.Identity,
+                Command = action.Data,
+                Action = MsgAction.ActionType.ClientDialog,
+                ArgumentX = user.MapX,
+                ArgumentY = user.MapY
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserFixAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            ushort attr = (ushort)(user.Agility + user.Vitality + user.Strength + user.Spirit + user.AttributePoints - 10);
+            ushort profSort = user.ProfessionSort;
+            if (profSort == 13 || profSort == 14)
+                profSort = 10;
+
+            DbPointAllot pointAllot = Kernel.RoleManager.GetPointAllot(profSort, 1);
+            if (pointAllot != null)
+            {
+                await user.SetAttributesAsync(ClientUpdateType.Strength, pointAllot.Strength);
+                await user.SetAttributesAsync(ClientUpdateType.Agility, pointAllot.Agility);
+                await user.SetAttributesAsync(ClientUpdateType.Vitality, pointAllot.Vitality);
+                await user.SetAttributesAsync(ClientUpdateType.Spirit, pointAllot.Spirit);
+            }
+            else
+            {
+                await user.SetAttributesAsync(ClientUpdateType.Strength, 5);
+                await user.SetAttributesAsync(ClientUpdateType.Agility, 2);
+                await user.SetAttributesAsync(ClientUpdateType.Vitality, 3);
+                await user.SetAttributesAsync(ClientUpdateType.Spirit, 0);
+            }
+
+            await user.SetAttributesAsync(ClientUpdateType.Atributes, attr);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserExpMultiply(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 2)
+                return false;
+
+            uint time = uint.Parse(pszParam[1]);
+            float multiply = int.Parse(pszParam[0]) / 100f;
+            await user.SetExperienceMultiplier(time, multiply);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserWhPassword(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            if (user.SecondaryPassword == 0 || user.IsUnlocked())
+                return true;
+
+            if (string.IsNullOrEmpty(input))
+                return false;
+
+            if (input.Length < 4 || input.Length > ulong.MaxValue.ToString().Length)
+                return false;
+
+            if (!ulong.TryParse(input, out var password))
+                return false;
+
+            return user.SecondaryPassword == password;
+        }
+
+        private static async Task<bool> ExecuteActionUserSetWhPassword(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null || string.IsNullOrEmpty(input) || input.Length < 4 || !ulong.TryParse(input, out var password))
+                return false;
+
+            if (password < 1000)
+                return false;
+
+            user.SecondaryPassword = password;
+            await user.SaveAsync();
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserOpeninterface(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null) return false;
+
+            await user.SendAsync(new MsgAction
+            {
+                Identity = user.Identity,
+                Command = action.Data,
+                Action = MsgAction.ActionType.ClientCommand,
+                ArgumentX = user.MapX,
+                ArgumentY = user.MapY
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserVarCompare(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 3)
+                return false;
+
+            byte varId = VarId(pszParam[0]);
+            string opt = pszParam[1];
+            long value = long.Parse(pszParam[2]);
+
+            if (varId >= Role.MAX_VAR_AMOUNT)
+                return false;
+
+            switch (opt)
+            {
+                case "==":
+                    return user.VarData[varId] == value;
+                case ">=":
+                    return user.VarData[varId] >= value;
+                case "<=":
+                    return user.VarData[varId] <= value;
+                case ">":
+                    return user.VarData[varId] > value;
+                case "<":
+                    return user.VarData[varId] < value;
+                case "!=":
+                    return user.VarData[varId] != value;
+                default:
+                    return false;
+            }
+        }
+
+        private static async Task<bool> ExecuteActionUserVarDefine(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] safeParam = SplitParam(param);
+            if (safeParam.Length < 3)
+                return false;
+
+            byte varId = VarId(safeParam[0]);
+            string opt = safeParam[1];
+            long value = long.Parse(safeParam[2]);
+
+            if (varId >= Role.MAX_VAR_AMOUNT)
+                return false;
+
+            try
+            {
+                switch (opt)
+                {
+                    case "set":
+                        user.VarData[varId] = value;
+                        return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserVarCalc(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] safeParam = SplitParam(param);
+            if (safeParam.Length < 3)
+                return false;
+
+            byte varId = VarId(safeParam[0]);
+            string opt = safeParam[1];
+            long value = long.Parse(safeParam[2]);
+
+            if (opt == "/=" && value == 0)
+                return false; // division by zero
+
+            if (varId >= Role.MAX_VAR_AMOUNT)
+                return false;
+
+            switch (opt)
+            {
+                case "+=":
+                    user.VarData[varId] += value;
+                    return true;
+                case "-=":
+                    user.VarData[varId] -= value;
+                    return true;
+                case "*=":
+                    user.VarData[varId] *= value;
+                    return true;
+                case "/=":
+                    user.VarData[varId] /= value;
+                    return true;
+                case "mod=":
+                    user.VarData[varId] %= value;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static async Task<bool> ExecuteActionUserStcCompare(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 3)
+                return false;
+
+            string szStc = GetParenthesys(pszParam[0]);
+            string opt = pszParam[1];
+            long value = long.Parse(pszParam[2]);
+
+            string[] pStc = szStc.Trim().Split(',');
+
+            if (pStc.Length < 2)
+                return false;
+
+            uint idEvent = uint.Parse(pStc[0]);
+            uint idType = uint.Parse(pStc[1]);
+
+            DbStatistic dbStc = user.Statistic.GetStc(idEvent, idType);
+            if (dbStc == null)
+                return false;
+
+            switch (opt)
+            {
+                case ">=":
+                    return dbStc.Data >= value;
+                case "<=":
+                    return dbStc.Data <= value;
+                case ">":
+                    return dbStc.Data > value;
+                case "<":
+                    return dbStc.Data < value;
+                case "!=":
+                case "<>":
+                    return dbStc.Data != value;
+                case "==":
+                    return dbStc.Data == value;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserStcOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 3)
+                return false;
+
+            string szStc = GetParenthesys(pszParam[0]);
+            string opt = pszParam[1];
+            long value = long.Parse(pszParam[2]);
+            bool bUpdate = pszParam[3] != "0";
+
+            string[] pStc = szStc.Trim().Split(',');
+
+            if (pStc.Length < 2)
+                return false;
+
+            uint idEvent = uint.Parse(pStc[0]);
+            uint idType = uint.Parse(pStc[1]);
+
+            if (!user.Statistic.HasEvent(idEvent, idType))
+            {
+                return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)value, bUpdate);
+            }
+
+            switch (opt)
+            {
+                case "+=":
+                    if (value == 0) return false;
+
+                    long tempValue = user.Statistic.GetValue(idEvent, idType) + value;
+                    return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)Math.Max(0, tempValue), bUpdate);
+                case "=":
+                    if (value < 0) return false;
+                    return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)Math.Max(0, value), bUpdate);
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserTaskManager(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 3)
+                return false;
+
+            string szStc = GetParenthesys(pszParam[0]);
+            string opt = pszParam[1];
+            long value = long.Parse(pszParam[2]);
+
+            string[] pStc = szStc.Trim().Split(',');
+
+            if (pStc.Length <= 2)
+                return false;
+
+            uint idEvent = uint.Parse(pStc[0]);
+            uint idType = uint.Parse(pStc[1]);
+            byte mode = byte.Parse(pStc[2]);
+
+            if (value < 0)
+                return false;
+
+            DbStatistic dbStc = user.Statistic.GetStc(idEvent, idType);
+            if (dbStc?.Timestamp == null)
+                return true;
+
+            switch (mode)
+            {
+                case 0: // seconds
+                    {
+                        DateTime timeStamp = DateTime.Now;
+                        int nDiff = (int) ((timeStamp - dbStc.Timestamp.Value).TotalSeconds + value);
+                        switch (opt)
+                        {
+                            case "==": return nDiff == value;
+                            case "<": return nDiff < value;
+                            case ">": return nDiff > value;
+                            case "<=": return nDiff <= value;
+                            case ">=": return nDiff >= value;
+                            case "<>":
+                            case "!=": return nDiff != value;
+                        }
+
+                        return false;
+                    }
+
+                case 1: // days
+                    int interval = int.Parse(DateTime.Now.ToString("yyyyMMdd")) -
+                                   int.Parse(dbStc.Timestamp.Value.ToString("yyyyMMdd"));
+                    switch (opt)
+                    {
+                        case "==": return interval == value;
+                        case "<": return interval < value;
+                        case ">": return interval > value;
+                        case "<=": return interval <= value;
+                        case ">=": return interval >= value;
+                        case "!=":
+                        case "<>": return interval != value;
+                    }
+
+                    return false;
+                default:
+                    await Log.WriteLog(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
+                    return false;
+            }
+        }
+
+        private static async Task<bool> ExecuteActionUserTaskOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 3)
+                return false;
+
+            string szStc = GetParenthesys(pszParam[0]);
+            string opt = pszParam[1];
+            long value = long.Parse(pszParam[2]);
+
+            string[] pStc = szStc.Trim().Split(',');
+
+            uint idEvent = uint.Parse(pStc[0]);
+            uint idType = uint.Parse(pStc[1]);
+
+            switch (opt)
+            {
+                case "set":
+                {
+                    if (value > 0)
+                        return await user.Statistic.SetTimestampAsync(idEvent, idType, DateTime.Now.AddSeconds(value));
+                    return await user.Statistic.SetTimestampAsync(idEvent, idType, null);
+                }
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserAttachStatus(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            // self add 64 200 900 0
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 6)
+                return false;
+
+            string target = pszParam[0].ToLower();
+            string opt = pszParam[1].ToLower();
+            int status = StatusSet.InvertFlag(ulong.Parse(pszParam[2]));
+            int multiply = int.Parse(pszParam[3]);
+            uint seconds = uint.Parse(pszParam[4]);
+            int times = int.Parse(pszParam[5]);
+            // last param unknown
+
+            if (target == "team" && user.Team == null)
+                return false;
+
+            if (target == "self")
+            {
+                if (opt == "add")
+                    await user.AttachStatus(user, status, multiply, (int)seconds, times, 0);
+                else if (opt == "del")
+                    await user.DetachStatus(status);
+                return true;
+            }
+
+            if (target == "team")
+            {
+                foreach (var member in user.Team.Members)
+                {
+                    if (opt == "add")
+                        await member.AttachStatus(member, status, multiply, (int)seconds, times, 0);
+                    else if (opt == "del")
+                        await member.DetachStatus(status);
+                }
+                return true;
+            }
+
+            if (target == "couple")
+            {
+                Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+                if (mate == null)
+                    return false;
+
+                if (opt == "add")
+                {
+                    await user.AttachStatus(user, status, multiply, (int) seconds, times, 0);
+                    await mate.AttachStatus(user, status, multiply, (int) seconds, times, 0);
+                }
+                else if (opt == "del")
+                {
+                    await user.DetachStatus(status);
+                    await mate.DetachStatus(status);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserGodTime(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParma = SplitParam(param);
+
+            if (pszParma.Length < 2)
+                return false;
+
+            string opt = pszParma[0];
+            uint minutes = uint.Parse(pszParma[1]);
+
+            switch (opt)
+            {
+                case "+=":
+                {
+                    return await user.AddBlessing(minutes);
+                }
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserExpballExp(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 2)
+                return false;
+
+            int dwExpTimes = int.Parse(pszParam[0]);
+            byte idData = byte.Parse(pszParam[1]);
+
+            if (idData >= user.VarData.Length) return false;
+
+            long exp = user.CalculateExpBall(dwExpTimes);
+            user.VarData[idData] = exp;
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserStatusCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            // sort leave_times remain_time end_time interval_time
+            // 200 0 604800 0 604800 1
+            if (action.Data == 0)
+            {
+                await Log.WriteLog(LogLevel.Error, $"ERROR: invalid data num {action.Identity}");
+                return false;
+            }
+
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 5)
+            {
+                await Log.WriteLog(LogLevel.Error, $"ERROR: invalid param num {action.Identity}");
+                return false;
+            }
+
+            uint sort = uint.Parse(pszParam[0]);
+            uint leaveTimes = uint.Parse(pszParam[1]);
+            uint remainTime = uint.Parse(pszParam[2]);
+            uint intervalTime = uint.Parse(pszParam[4]);
+            bool unknown = pszParam[5] != "0"; // ??
+
+            var status =  (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == action.Data);
+            if (status != null)
+            {
+                status.EndTime = DateTime.Now.AddSeconds(remainTime);
+                status.IntervalTime = intervalTime;
+                status.LeaveTimes = leaveTimes;
+                status.RemainTime = remainTime;
+                status.Sort = sort;
+                if (!await BaseRepository.SaveAsync(status))
+                {
+                    await Log.WriteLog(LogLevel.Error,
+                        string.Format("ERROR: Could not update status {0}[{2}] to {1}", status.Id, action.Data,
+                            status.Status));
+                    return false;
+                }
+            }
+            else
+            {
+                status = new DbStatus
+                {
+                    EndTime = DateTime.Now.AddSeconds(remainTime),
+                    IntervalTime = intervalTime,
+                    LeaveTimes = leaveTimes,
+                    OwnerId = user.Identity,
+                    Power = 0,
+                    RemainTime = remainTime,
+                    Status = action.Data,
+                    Sort = sort
+                };
+                if (!await BaseRepository.SaveAsync(status))
+                {
+                    await Log.WriteLog(LogLevel.Error, "ERROR: Could not save status");
+                    return false;
+                }
+            }
+
+            await user.AttachStatus(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserStatusCheck(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.StatusSet == null) return false;
+
+            string[] status = SplitParam(action.Param);
+
+            switch (action.Data)
+            {
+                case 0: // check
+                    foreach (var st in status)
+                        if (user.QueryStatus(int.Parse(st)) == null)
+                            return false;
+                    return true;
+
+                case 1:
+                    foreach (var st in status)
+                        if (user.QueryStatus(int.Parse(st)) != null)
+                        {
+                            await user.DetachStatus(int.Parse(st));
+                            DbStatus db = (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == uint.Parse(st));
+                            if (db != null)
+                                await BaseRepository.DeleteAsync(db);
+                        }
+
+                    return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         private static string FormatParam(DbAction action, Character user, Role role, Item item, string input)
@@ -1122,7 +2054,7 @@ namespace Comet.Game.States
             result = result.Replace("%user_name", user?.Name ?? Language.StrNone)
                 .Replace("%user_id", user?.Identity.ToString() ?? "0")
                 .Replace("%user_lev", user?.Level.ToString() ?? "0")
-                .Replace("%user_mate", user?.Mate ?? Language.StrNone)
+                .Replace("%user_mate", user?.MateName ?? Language.StrNone)
                 .Replace("%user_pro", user?.Profession.ToString() ?? "0")
                 .Replace("%user_map_id", user?.Map.Identity.ToString() ?? "0")
                 .Replace("%user_map_name", user?.Map.Name ?? Language.StrNone)
@@ -1468,5 +2400,28 @@ namespace Comet.Game.States
         ActionMagicAttachstatus = 4001,
         ActionMagicAttack = 4002,
         ActionMagicLimit = 4099
+    }
+
+    public enum OpenWindow
+    {
+        Compose = 1,
+        Craft = 2,
+        Warehouse = 4,
+        ClanWindow = 64,
+        DetainRedeem = 336,
+        DetainClaim = 337,
+        VipWarehouse = 341,
+        Breeding = 368,
+        PurificationWindow = 455,
+        StabilizationWindow = 459,
+        TalismanUpgrade = 347,
+        GemComposing = 422,
+        OpenSockets = 425,
+        Blessing = 426,
+        TortoiseGemComposing = 438,
+        HorseRacingStore = 464,
+        EditCharacterName = 489,
+        GarmentTrade = 502,
+        DegradeEquipment = 506
     }
 }

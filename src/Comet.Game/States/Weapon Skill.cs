@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
@@ -102,6 +103,26 @@ namespace Comet.Game.States
             }
         }
 
+        public async Task<bool> UnearnAll()
+        {
+            foreach (var skill in m_skills.Values)
+            {
+                skill.Unlearn = 1;
+                skill.OldLevel = skill.Level;
+                skill.Level = 0;
+                skill.Experience = 0;
+
+                await m_user.SendAsync(new MsgAction
+                {
+                    Action = MsgAction.ActionType.ProficiencyRemove,
+                    Identity = m_user.Identity,
+                    Command = skill.Type,
+                    Argument = skill.Type
+                });
+            }
+            return true;
+        }
+
         public async Task SendAsync(DbWeaponSkill skill)
         {
             await m_user.SendAsync(new MsgWeaponSkill(skill));
@@ -109,7 +130,7 @@ namespace Comet.Game.States
 
         public async Task SendAsync()
         {
-            foreach (var skill in m_skills.Values)
+            foreach (var skill in m_skills.Values.Where(x => x.Unlearn == 0))
                 await m_user.SendAsync(new MsgWeaponSkill(skill));
         }
     }

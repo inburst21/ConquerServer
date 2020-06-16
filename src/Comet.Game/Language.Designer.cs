@@ -376,6 +376,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Sorry, you have no prize available or it hasn&apos;t been claimed at the event page..
+        /// </summary>
+        public static string StrNoBonus {
+            get {
+                return ResourceManager.GetString("StrNoBonus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a None.
         /// </summary>
         public static string StrNone {
@@ -426,6 +435,15 @@ namespace Comet.Game {
         public static string StrNotEnoughMoney {
             get {
                 return ResourceManager.GetString("StrNotEnoughMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You need to leave at least {0} empty spaces in your inventory..
+        /// </summary>
+        public static string StrNotEnoughSpaceN {
+            get {
+                return ResourceManager.GetString("StrNotEnoughSpaceN", resourceCulture);
             }
         }
         

@@ -96,8 +96,8 @@ namespace Comet.Game
 
         public static async Task<bool> StartupAsync()
         {
-            MapManager.LoadData();
-            await MapManager.LoadMaps();
+            await MapManager.LoadDataAsync();
+            await MapManager.LoadMapsAsync();
 
             await ItemManager.InitializeAsync();
             await RoleManager.InitializeAsync();
@@ -110,7 +110,6 @@ namespace Comet.Game
             await UserThread.StartAsync();
             await GeneratorThread.StartAsync();
             await AiThread.StartAsync();
-
             return true;
         }
 

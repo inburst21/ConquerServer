@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - DbMap.cs
+// Comet - Comet.Game - DbDynamap.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -29,11 +29,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Comet.Game.Database.Models
 {
     [Table("cq_map")]
-    public class DbMap
+    public class DbDynamap
     {
         // Column Properties
-        [Key]
-        [Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("name")] public virtual string Name { get; set; }
         [Column("describe_text")] public virtual string Description { get; set; }
         [Column("mapdoc")] public virtual uint MapDoc { get; set; }
