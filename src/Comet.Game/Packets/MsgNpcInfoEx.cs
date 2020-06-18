@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - MsgNpc.cs
+// Comet - Comet.Game - MsgNpcInfoEx.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -21,27 +21,30 @@
 
 #region References
 
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using Comet.Game.States;
-using Comet.Game.States.BaseEntities;
-using Comet.Game.States.NPCs;
 using Comet.Network.Packets;
 
 #endregion
 
 namespace Comet.Game.Packets
 {
-    public sealed class MsgNpc : MsgBase<Client>
+    public sealed class MsgNpcInfoEx : MsgBase<Client>
     {
-        public MsgNpc()
+        public MsgNpcInfoEx()
         {
-            Type = PacketType.MsgNpc;
+            Type = PacketType.MsgNpcInfoEx;
         }
 
         public uint Identity { get; set; }
-        public uint Data { get; set; }
-        public NpcActionType RequestType { get; set; }
-        public ushort Event { get; set; }
+        public uint MaxLife { get; set; }
+        public uint Life { get; set; }
+        public ushort PosX { get; set; }
+        public ushort PosY { get; set; }
+        public ushort Lookface { get; set; }
+        public ushort NpcType { get; set; }
+        public ushort Sort { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -55,9 +58,15 @@ namespace Comet.Game.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
             Identity = reader.ReadUInt32();
-            Data = reader.ReadUInt32();
-            RequestType = (NpcActionType) reader.ReadUInt16();
-            Event = reader.ReadUInt16();
+            MaxLife = reader.ReadUInt32();
+            Life = reader.ReadUInt32();
+            PosX = reader.ReadUInt16();
+            PosY = reader.ReadUInt16();
+            Lookface = reader.ReadUInt16();
+            NpcType = reader.ReadUInt16();
+            List<string> names = reader.ReadStrings();
+            if (names.Count > 0)
+                Name = names[0];
         }
 
         /// <summary>
@@ -71,46 +80,15 @@ namespace Comet.Game.Packets
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
             writer.Write(Identity);
-            writer.Write(Data);
-            writer.Write((ushort) RequestType);
-            writer.Write(Event);
+            writer.Write(MaxLife);
+            writer.Write(Life);
+            writer.Write(PosX);
+            writer.Write(PosY);
+            writer.Write(Lookface);
+            writer.Write(NpcType);
+            writer.Write(Sort);
+            writer.Write(new List<string> { Name });
             return writer.ToArray();
-        }
-
-        public override async Task ProcessAsync(Client client)
-        {
-            Character user = client.Character;
-
-            switch (RequestType)
-            {
-                case NpcActionType.Activate:
-                    user.ClearTaskId();
-                    Role role = Kernel.RoleManager.GetRole(Identity);
-                    if (role is BaseNpc npc
-                        && (role.MapIdentity == user.MapIdentity
-                            && role.GetDistance(user) <= 18
-                            || role.MapIdentity == 5000))
-                    {
-                        user.InteractingNpc = npc.Identity;
-                        await npc.ActivateNpc(user);
-                    }
-                    break;
-                case NpcActionType.CancelInteraction:
-                    user.CancelInteraction();
-                    break;
-            }
-        }
-
-        public enum NpcActionType : ushort
-        {
-            Activate = 0,
-            AddNpc = 1,
-            LeaveMap = 2,
-            DeleteNpc = 3,
-            ChangePosition = 4,
-            LayNpc = 5,
-
-            CancelInteraction = 255
         }
     }
 }

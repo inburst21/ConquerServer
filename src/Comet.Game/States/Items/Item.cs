@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Packets;
 using Comet.Shared;
 using Newtonsoft.Json;
 
@@ -1048,7 +1049,7 @@ namespace Comet.Game.States.Items
 
             int gemCost = (int)(100 / nChance + 1) * 12 / 10;
 
-            if (!m_user.UserPackage.SpendDragonBalls(gemCost, IsBound))
+            if (!await m_user.UserPackage.SpendDragonBalls(gemCost, IsBound))
             {
                 await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughDragonBalls, gemCost));
                 return false;
@@ -1090,7 +1091,7 @@ namespace Comet.Game.States.Items
             }
 
             int gemCost = (int)(100 / nChance + 1) * 12 / 10;
-            if (!m_user.UserPackage.SpendMeteors(gemCost))
+            if (!await m_user.UserPackage.SpendMeteors(gemCost))
             {
                 await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
                 return false;
@@ -1123,13 +1124,53 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            if (!m_user.UserPackage.SpendDragonBalls(1, IsBound))
+            if (!await m_user.UserPackage.SpendDragonBalls(1, IsBound))
             {
                 await m_user.SendAsync(Language.StrItemErrNoDragonBall);
                 return false;
             }
 
             return ChangeType(newType.Type);
+        }
+
+        public int GetRecoverDurCost()
+        {
+            if (Durability > 0 && Durability < MaximumDurability)
+            {
+                var price = (int)m_dbItemtype.Price;
+                double qualityMultiplier = 0;
+
+                switch (Type % 10)
+                {
+                    case 9:
+                        qualityMultiplier = 1.125;
+                        break;
+                    case 8:
+                        qualityMultiplier = 0.975;
+                        break;
+                    case 7:
+                        qualityMultiplier = 0.9;
+                        break;
+                    case 6:
+                        qualityMultiplier = 0.825;
+                        break;
+                    default:
+                        qualityMultiplier = 0.75;
+                        break;
+                }
+
+                return (int)Math.Ceiling(price * ((MaximumDurability - Durability) / MaximumDurability) * qualityMultiplier);
+            }
+
+            return 0;
+        }
+
+        public async Task<bool> RecoverDurability()
+        {
+            MaximumDurability = OriginalMaximumDurability;
+            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
+            await SaveAsync();
+            return true;
         }
 
         #endregion
@@ -1415,6 +1456,11 @@ namespace Comet.Game.States.Items
         public static int GetItemSubType(uint type)
         {
             return (int) (type % 1000000 / 1000);
+        }
+
+        public int GetLevel()
+        {
+            return GetLevel(Type);
         }
 
         public static int GetLevel(uint type)

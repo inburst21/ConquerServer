@@ -32,6 +32,6 @@ namespace Comet.Game.Database.Models
         [Column("new_prof")] public virtual ushort NewProfession { get; set; }
         [Column("need_level")] public virtual byte NeedLevel { get; set; }
         [Column("new_level")] public virtual byte NewLevel { get; set; }
-        [Column("metempsychosis")] public virtual byte Metempsychosis { get; set; }
+        [Column("metepsychosis")] public virtual byte Metempsychosis { get; set; }
     }
 }

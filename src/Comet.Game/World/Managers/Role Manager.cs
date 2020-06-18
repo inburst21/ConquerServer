@@ -272,9 +272,9 @@ namespace Comet.Game.World.Managers
             return m_dicLevExp.Count;
         }
 
-        public DbRebirth GetRebirth(int profNow, int profNext)
+        public DbRebirth GetRebirth(int profNow, int profNext, int currMete)
         {
-            return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext);
+            return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext && x.Metempsychosis == currMete);
         }
 
         public MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext)

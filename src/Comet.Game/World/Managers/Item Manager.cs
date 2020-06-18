@@ -33,8 +33,8 @@ namespace Comet.Game.World.Managers
 {
     public sealed class ItemManager
     {
-        public Dictionary<uint, DbItemtype> m_dicItemtype;
-        public Dictionary<ulong, DbItemAddition> m_dicItemAddition;
+        private Dictionary<uint, DbItemtype> m_dicItemtype;
+        private Dictionary<ulong, DbItemAddition> m_dicItemAddition;
 
         public async Task InitializeAsync()
         {

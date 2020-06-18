@@ -21,8 +21,11 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Comet.Game.Database.Models;
+using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
 
 #endregion
@@ -102,15 +105,16 @@ namespace Comet.Game.Database
         /// <summary>
         ///     Tests that the database connection is alive and configured.
         /// </summary>
-        public static bool Ping()
+        public static async Task<bool> PingAsync()
         {
             try
             {
-                using (ServerDbContext ctx = new ServerDbContext())
-                    return ctx.Database.CanConnect();
+                await using ServerDbContext ctx = new ServerDbContext();
+                return ctx.Database.CanConnect();
             }
-            catch
+            catch (Exception ex)
             {
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }

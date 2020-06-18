@@ -49,7 +49,7 @@ namespace Comet.Game.World.Managers
                     {
                         await Log.WriteLog(LogLevel.Warning, $"Action [{action.Identity}] Type 102 doesn't set a task [param: {action.Param}]");
                     }
-                    else
+                    else if (response[1] != "0")
                     {
                         if (!uint.TryParse(response[1], out uint taskId) || !m_dicTasks.ContainsKey(taskId))
                         {
@@ -73,17 +73,17 @@ namespace Comet.Game.World.Managers
                     await Log.WriteLog(LogLevel.Warning, $"Npc {npc.Identity} {npc.Name} no task found [taskid: {npc.Task0}]");
             }
 
-            //foreach (var dbDynaNpc in await DynaNpcRespository.GetAsync())
-            //{
-            //    Npc npc = new Npc(dbDynaNpc);
-            //    if (!await npc.InitializeAsync())
-            //    {
-            //        await Log.WriteLog(LogLevel.Warning, $"Could not load NPC {dbNpc.Id} {dbNpc.Name}");
-            //    }
+            foreach (var dbDynaNpc in await DynaNpcRespository.GetAsync())
+            {
+                DynamicNpc npc = new DynamicNpc(dbDynaNpc);
+                if (!await npc.InitializeAsync())
+                {
+                    await Log.WriteLog(LogLevel.Warning, $"Could not load NPC {dbDynaNpc.Id} {dbDynaNpc.Name}");
+                }
 
-            //    if (npc.Task0 != 0 && !m_dicTasks.ContainsKey(npc.Task0))
-            //        await Log.WriteLog(LogLevel.Warning, $"Npc {npc.Identity} {npc.Name} no task found [taskid: {npc.Task0}]");
-            //}
+                if (npc.Task0 != 0 && !m_dicTasks.ContainsKey(npc.Task0))
+                    await Log.WriteLog(LogLevel.Warning, $"Npc {npc.Identity} {npc.Name} no task found [taskid: {npc.Task0}]");
+            }
 
             return true;
         }

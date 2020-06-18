@@ -834,7 +834,7 @@ namespace Comet.Game.States
 
         public async Task AwardConquerPoints(int amount)
         {
-            Silvers = (uint)(ConquerPoints + amount);
+            ConquerPoints = (uint)(ConquerPoints + amount);
             await SaveAsync();
             await SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints);
         }
@@ -2184,7 +2184,7 @@ namespace Comet.Game.States
 
         public async Task<bool> RebirthAsync(ushort prof, ushort look)
         {
-            DbRebirth data = Kernel.RoleManager.GetRebirth(Profession, prof);
+            DbRebirth data = Kernel.RoleManager.GetRebirth(Profession, prof, Metempsychosis);
 
             if (data == null)
             {
@@ -3188,9 +3188,9 @@ namespace Comet.Game.States
         {
             DateTime now = DateTime.Now;
             if (m_dbObject.HeavenBlessing != null && m_dbObject.HeavenBlessing > now)
-                m_dbObject.HeavenBlessing = m_dbObject.HeavenBlessing.Value.AddSeconds(60 * amount);
+                m_dbObject.HeavenBlessing = m_dbObject.HeavenBlessing.Value.AddHours(amount);
             else
-                m_dbObject.HeavenBlessing = now.AddSeconds(60 * amount);
+                m_dbObject.HeavenBlessing = now.AddHours(amount);
 
             await SendBless();
             return true;

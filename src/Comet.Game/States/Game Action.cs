@@ -20,9 +20,11 @@
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
@@ -31,6 +33,7 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 using Newtonsoft.Json;
@@ -98,6 +101,20 @@ namespace Comet.Game.States
                     case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionItemAdd: result = await ExecuteActionItemAdd(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemDel: result = await ExecuteActionItemDel(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemCheck: result = await ExecuteActionItemCheck(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemHole: result = await ExecuteActionItemHole(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemMultidel: result = await ExecuteActionItemMultidel(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemMultichk: result = await ExecuteActionItemMultichk(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemLeavespace: result = await ExecuteActionItemLeavespace(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemUpequipment: result = await ExecuteActionItemUpequipment(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemEquiptest: result = await ExecuteActionItemEquiptest(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemEquipexist: result = await ExecuteActionItemEquipexist(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemEquipcolor: result = await ExecuteActionItemEquipcolor(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemCheckrand: result = await ExecuteActionItemCheckrand(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemModify: result = await ExecuteActionItemModify(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemJarCreate: result = await ExecuteActionItemJarCreate(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemJarVerify: result = await ExecuteActionItemJarVerify(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionSynCreate: result = await ExecuteActionSynCreate(action, param, user, role, item, input); break;
 
@@ -107,7 +124,9 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserRecordpoint: result = await ExecuteUserRecordpoint(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserHair: result = await ExecuteUserHair(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserChgmaprecord: result = await ExecuteUserChgmaprecord(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserChglinkmap: result = await ExecuteActionUserChglinkmap(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserTransform: result = await ExecuteUserTransform(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserIspure: result = await ExecuteActionUserIspure(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserTalk: result = await ExecuteActionUserTalk(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserMagic: result = await ExecuteActionUserMagic(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserWeaponskill: result = await ExecuteActionUserWeaponSkill(action, param, user, role, item, input); break;
@@ -139,13 +158,28 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskManager: result = await ExecuteActionUserTaskManager(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskOpe: result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserTaskManager(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStcTimeOperation: result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserAttachStatus: result = await ExecuteActionUserAttachStatus(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserGodTime: result = await ExecuteActionUserGodTime(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserLogEvent: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserExpballExp: result = await ExecuteActionUserExpballExp(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStatusCreate: result = await ExecuteActionUserStatusCreate(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStatusCheck: result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input); break;
+
+                    case TaskActionType.ActionEventSetstatus: result = await ExecuteActionEventSetstatus(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventDelnpcGenid: result = await ExecuteActionEventDelnpcGenid(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventCompare: result = await ExecuteActionEventCompare(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventCompareUnsigned: result = await ExecuteActionEventCompareUnsigned(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventChangeweather: result = await ExecuteActionEventChangeweather(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventCreatepet: result = await ExecuteActionEventCreatepet(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventCreatenewNpc: result = await ExecuteActionEventCreatenewNpc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventCountmonster: result = await ExecuteActionEventCountmonster(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventDeletemonster: result = await ExecuteActionEventDeletemonster(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventBbs: result = await ExecuteActionEventBbs(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventErase: result = await ExecuteActionEventErase(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventTeleport: result = await ExecuteActionEventTeleport(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventMassaction: result = await ExecuteActionEventMassaction(action, param, user, role, item, input); break;
 
                     default:
                         await Log.WriteLog(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
@@ -507,6 +541,930 @@ namespace Comet.Game.States
             return await user.UserPackage.AddItem(item);
         }
 
+        private static async Task<bool> ExecuteActionItemDel(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            if (action.Data != 0)
+                return await user.UserPackage.MultiSpendItem(action.Data, action.Data, 1);
+
+            if (!string.IsNullOrEmpty(param))
+            {
+                item = user.UserPackage[param];
+                if (item == null)
+                    return false;
+                return await user.UserPackage.SpendItem(item);
+            }
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionItemCheck(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            if (action.Data != 0)
+                return user.UserPackage.MultiCheckItem(action.Data, action.Data, 1);
+
+            if (!string.IsNullOrEmpty(param))
+            {
+                return user.UserPackage[param] != null;
+            }
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionItemHole(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] splitParam = SplitParam(param, 2);
+            if (param.Length < 2)
+            {
+                await Log.WriteLog(LogLevel.Error, $"ExecuteActionItemHole invalid [{param}] param split length for action {action.Identity}");
+                return false;
+            }
+
+            string opt = splitParam[0];
+            if (!int.TryParse(splitParam[1], out var value))
+            {
+                await Log.WriteLog(LogLevel.Error, $"ExecuteActionItemHole invalid value number [{param}] for action {action.Identity}");
+                return false;
+            }
+
+            Item target = user.UserPackage[Item.ItemPosition.RightHand];
+            if (target == null)
+            {
+                await user.SendAsync(Language.StrItemErrRepairItem);
+                return false;
+            }
+
+            if (opt.Equals("chkhole", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (value == 1)
+                    return target.SocketOne > Item.SocketGem.NoSocket;
+                if (value == 2)
+                    return target.SocketTwo > Item.SocketGem.NoSocket;
+                return false;
+            }
+
+            if (opt.Equals("makehole", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (value == 1 && item.SocketOne == Item.SocketGem.NoSocket)
+                {
+                    item.SocketOne = Item.SocketGem.EmptySocket;
+                }
+                else if (value == 2 && item.SocketTwo == Item.SocketGem.NoSocket)
+                {
+                    item.SocketTwo = Item.SocketGem.EmptySocket;
+                }
+                else
+                {
+                    return false;
+                }
+
+                await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                await item.SaveAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionItemMultidel(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] splitParams = SplitParam(param);
+            int first = 0;
+            int last = 0;
+            byte amount = 0;
+
+            if (action.Data == Item.TYPE_METEOR)
+            {
+                if (!byte.TryParse(splitParams[0], out amount))
+                    amount = 1;
+                if (splitParams.Length <= 1 || !int.TryParse(splitParams[1], out first))
+                    first = 0; // bound check
+                // todo set meteor bind check
+                return await user.UserPackage.SpendMeteors(amount);
+            }
+
+            if (action.Data == Item.TYPE_DRAGONBALL)
+            {
+                if (!byte.TryParse(splitParams[0], out amount))
+                    amount = 1;
+                if (splitParams.Length <= 1 || !int.TryParse(splitParams[1], out first))
+                    first = 0;
+                return await user.UserPackage.SpendDragonBalls(amount, first != 0);
+            }
+
+            if (action.Data != 0)
+                return false; // only Mets and DBs are supported
+
+            if (splitParams.Length < 3)
+                return false; // invalid format
+
+            first = int.Parse(splitParams[0]);
+            last = int.Parse(splitParams[1]);
+            amount = byte.Parse(splitParams[2]);
+
+            if (splitParams.Length < 4)
+                return await user.UserPackage.MultiSpendItem((uint) first, (uint) last, amount, true);
+            return await user.UserPackage.MultiSpendItem((uint)first, (uint)last, amount, int.Parse(splitParams[3]) != 0);
+        }
+
+        private static async Task<bool> ExecuteActionItemMultichk(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] splitParams = SplitParam(param);
+            int first = 0;
+            int last = 0;
+            byte amount = 0;
+
+            if (action.Data == Item.TYPE_METEOR)
+            {
+                if (!byte.TryParse(splitParams[0], out amount))
+                    amount = 1;
+                if (splitParams.Length <= 1 || !int.TryParse(splitParams[1], out first))
+                    first = 0; // bound check
+                // todo set meteor bind check
+                return user.UserPackage.MeteorAmount() >= amount;
+            }
+
+            if (action.Data == Item.TYPE_DRAGONBALL)
+            {
+                if (!byte.TryParse(splitParams[0], out amount))
+                    amount = 1;
+                if (splitParams.Length <= 1 || !int.TryParse(splitParams[1], out first))
+                    first = 0;
+                return user.UserPackage.DragonBallAmount(first != 0) >= amount;
+            }
+
+            if (action.Data != 0)
+                return false; // only Mets and DBs are supported
+
+            if (splitParams.Length < 3)
+                return false; // invalid format
+
+            first = int.Parse(splitParams[0]);
+            last = int.Parse(splitParams[1]);
+            amount = byte.Parse(splitParams[2]);
+
+            if (splitParams.Length < 4)
+                return user.UserPackage.MultiCheckItem((uint)first, (uint)last, amount, true);
+            return user.UserPackage.MultiCheckItem((uint)first, (uint)last, amount, int.Parse(splitParams[3]) != 0);
+        }
+
+        private static async Task<bool> ExecuteActionItemLeavespace(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return user?.UserPackage != null && user.UserPackage.IsPackSpare((int) action.Data);
+        }
+
+        private static async Task<bool> ExecuteActionItemUpequipment(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 2)
+                return false;
+
+            string szCmd = pszParam[0];
+            byte nPos = byte.Parse(pszParam[1]);
+
+            Item pItem = user.UserPackage[(Item.ItemPosition)nPos];
+            if (pItem == null)
+                return false;
+
+            switch (szCmd)
+            {
+                case "up_lev":
+                {
+                    return await pItem.UpEquipmentLevel();
+                }
+
+                case "recover_dur":
+                {
+                    var szPrice = (uint)pItem.GetRecoverDurCost();
+                    return await user.SpendMoney((int)szPrice) && await pItem.RecoverDurability();
+                }
+
+                case "up_levultra":
+                {
+                    return await pItem.UpUltraEquipmentLevel();
+                }
+
+                case "up_quality":
+                {
+                    return await pItem.UpItemQuality();
+                }
+
+                default:
+                    await Log.WriteLog(LogLevel.Warning, $"ERROR: [509] [0] [{param}] not properly handled.");
+                    return false;
+            }
+        }
+
+        private static async Task<bool> ExecuteActionItemEquiptest(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            /* param: position type opt value (4 quality == 9) */
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 4)
+                return false;
+
+            byte nPosition = byte.Parse(pszParam[0]);
+            string szCmd = pszParam[1];
+            string szOpt = pszParam[2];
+            int nData = int.Parse(pszParam[3]);
+
+            Item pItem = user.UserPackage[(Item.ItemPosition)nPosition];
+            if (pItem == null)
+                return false;
+
+            int nTestData = 0;
+            switch (szCmd)
+            {
+                case "level":
+                    nTestData = pItem.GetLevel();
+                    break;
+                case "quality":
+                    nTestData = pItem.GetQuality();
+                    break;
+                case "durability":
+                    if (nData == -1)
+                        nData = pItem.MaximumDurability / 100;
+                    nTestData = pItem.MaximumDurability / 100;
+                    break;
+                case "max_dur":
+                {
+                    if (nData == -1)
+                        nData = pItem.Itemtype.AmountLimit / 100;
+                    // TODO Kylin Gem Support
+                    nTestData = pItem.MaximumDurability / 100;
+                    break;
+                }
+
+                default:
+                    await Log.WriteLog(LogLevel.Warning, $"ACTION: EQUIPTEST error {szCmd}");
+                    return false;
+            }
+
+            if (szOpt == "==")
+                return nTestData == nData;
+            if (szOpt == "<=")
+                return nTestData <= nData;
+            if (szOpt == ">=")
+                return nTestData >= nData;
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionItemEquipexist(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] Params = SplitParam(param);
+            if (param.Length >= 1 && user.UserPackage[(Item.ItemPosition)action.Data] != null)
+                return user.UserPackage[(Item.ItemPosition)action.Data].GetItemSubType() == ushort.Parse(Params[0]);
+            return user.UserPackage[(Item.ItemPosition)action.Data] != null;
+        }
+
+        private static async Task<bool> ExecuteActionItemEquipcolor(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 2)
+                return false;
+            if (!Enum.IsDefined(typeof(Item.ItemColor), byte.Parse(pszParam[1])))
+                return false;
+
+            Item pItem = user.UserPackage[(Item.ItemPosition)byte.Parse(pszParam[0])];
+            if (pItem == null)
+                return false;
+
+            Item.ItemPosition pos = item.GetPosition();
+            if (pos != Item.ItemPosition.Armor
+                && pos != Item.ItemPosition.Headwear
+                && (pos != Item.ItemPosition.LeftHand || pItem.GetItemSort() != Item.ItemSort.ItemsortWeaponShield))
+                return false;
+
+            pItem.Color = (Item.ItemColor)byte.Parse(pszParam[1]);
+            await pItem.SaveAsync();
+            await user.SendAsync(new MsgItemInfo(pItem, MsgItemInfo.ItemMode.Update));
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionItemCheckrand(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 6)
+                return false;
+
+            byte initValue = byte.Parse(pszParam[3]), endValue = byte.Parse(pszParam[5]);
+
+            List<Item.ItemPosition> lPos = new List<Item.ItemPosition>(15);
+
+            byte pIdx = byte.Parse(pszParam[1]);
+
+            if (initValue == 0 && pIdx == 14)
+                initValue = 1;
+
+            for (Item.ItemPosition i = Item.ItemPosition.EquipmentBegin; i <= Item.ItemPosition.EquipmentEnd; i++)
+            {
+                if (user.UserPackage[i] != null)
+                {
+                    if (pIdx == 14 && user.UserPackage[i].Position == Item.ItemPosition.Steed)
+                        continue;
+
+                    switch (pIdx)
+                    {
+                        case 14:
+                            if (user.UserPackage[i].ReduceDamage >= initValue
+                                && user.UserPackage[i].ReduceDamage <= endValue)
+                                continue;
+                            break;
+                    }
+
+                    lPos.Add(i);
+                }
+            }
+
+            byte pos = 0;
+
+            if (lPos.Count > 0)
+                pos = (byte)lPos[await Kernel.NextAsync(lPos.Count) % lPos.Count];
+
+            if (pos == 0)
+                return false;
+
+            Item pItem = user.UserPackage[(Item.ItemPosition)pos];
+            if (pItem == null)
+                return false;
+
+            byte pPos = byte.Parse(pszParam[0]);
+            string opt = pszParam[2];
+
+            switch (pIdx)
+            {
+                case 14: // bless
+                    user.VarData[7] = pos;
+                    return true;
+                default:
+                    await Log.WriteLog(LogLevel.Warning, $"ACTION: 516: {pIdx} not handled id: {action.Identity}");
+                    break;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionItemModify(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            // structure param:
+            // pos  type    action  value   update
+            // 1    7       ==      1       1
+            // pos = Item Position
+            // type = 7 Reduce Damage
+            // action = Operator == or set
+            // value = value lol
+            // update = if the client will update live
+
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 5)
+            {
+                await Log.WriteLog(LogLevel.Error, $"ACTION: incorrect param, pos type action value update, for action (id:{action.Identity})");
+                return false;
+            }
+
+            int pos = int.Parse(pszParam[0]);
+            int type = int.Parse(pszParam[1]);
+            string opt = pszParam[2];
+            long value = int.Parse(pszParam[3]);
+            bool update = int.Parse(pszParam[4]) > 0;
+
+            Item pItem = user.UserPackage[(Item.ItemPosition)pos];
+            if (pItem == null)
+            {
+                await user.SendAsync(Language.StrUnableToUseItem);
+                return false;
+            }
+
+            switch (type)
+            {
+                case 1: // itemtype
+                    {
+                        if (opt == "set")
+                        {
+                            DbItemtype itemt = Kernel.ItemManager.GetItemtype((uint) value);
+                            if (itemt == null)
+                            {
+                                // new item doesnt exist
+                                await Log.WriteLog(LogLevel.Error, $"ACTION: itemtype not found (type:{value}, action:{action.Identity})");
+                                return false;
+                            }
+
+                            if (pItem.Type / 1000 != itemt.Type / 1000)
+                            {
+                                await Log.WriteLog(LogLevel.Error, $"ACTION: cant change to different type (type:{pItem.Type}, new:{value}, action:{action.Identity})");
+                                return false;
+                            }
+
+                            if (!pItem.ChangeType(itemt.Type))
+                                return false;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.Type == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.Type < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 2: // owner id
+                case 3: // player id
+                    return false;
+                case 4: // dura
+                    {
+                        if (opt == "set")
+                        {
+                            if (value > ushort.MaxValue)
+                                value = ushort.MaxValue;
+                            else if (value < 0)
+                                value = 0;
+
+                            pItem.Durability = (ushort)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.Durability == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.Durability < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 5: // max dura
+                    {
+                        if (opt == "set")
+                        {
+                            if (value > ushort.MaxValue)
+                                value = ushort.MaxValue;
+                            else if (value < 0)
+                                value = 0;
+
+                            if (value < pItem.Durability)
+                                pItem.Durability = (ushort)value;
+
+                            pItem.MaximumDurability = (ushort)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.MaximumDurability == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.MaximumDurability < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 6:
+                case 7: // position
+                    {
+                        return false;
+                    }
+
+                case 8: // gem1
+                    {
+                        if (opt == "set")
+                        {
+                            pItem.SocketOne = (Item.SocketGem)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.SocketOne == (Item.SocketGem)value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.SocketOne < (Item.SocketGem)value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 9: // gem2
+                    {
+                        if (opt == "set")
+                        {
+                            pItem.SocketTwo = (Item.SocketGem)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.SocketTwo == (Item.SocketGem)value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.SocketTwo < (Item.SocketGem)value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 10: // magic1
+                    {
+                        if (opt == "set")
+                        {
+                            if (value < 200 || value > 203)
+                                return false;
+                            pItem.Effect = (Item.ItemEffect)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.Effect == (Item.ItemEffect)value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 11: // magic2
+                    return false;
+                case 12: // magic3
+                    {
+                        if (opt == "set")
+                        {
+                            if (value < 0)
+                                value = 0;
+                            else if (value > 12)
+                                value = 12;
+
+                            pItem.ChangeAddition((byte)value);
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.Plus == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.Plus < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                //case 13: // data
+                //    {
+                //        if (opt == "set")
+                //        {
+                //            if (value < 0)
+                //                value = 0;
+                //            else if (value > 20000)
+                //                value = 20000;
+
+                //            pItem.SocketProgress = (ushort)value;
+                //        }
+                //        else if (opt == "==")
+                //        {
+                //            return pItem.SocketProgress == value;
+                //        }
+                //        else if (opt == "<")
+                //        {
+                //            return pItem.SocketProgress < value;
+                //        }
+                //        else
+                //        {
+                //            return false;
+                //        }
+
+                //        break;
+                //    }
+
+                case 14: // reduce damage
+                    {
+                        if (opt == "set")
+                        {
+                            if (value < 0)
+                                value = 0;
+                            else if (value > 7)
+                                value = 7;
+
+                            pItem.ReduceDamage = (byte)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.ReduceDamage == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.ReduceDamage < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 15: // add life
+                    {
+                        if (opt == "set")
+                        {
+                            if (value < 0)
+                                value = 0;
+                            else if (value > 255)
+                                value = 255;
+
+                            pItem.Enchantment = (byte)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.Enchantment == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.Enchantment < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                case 16: // anti monster
+                case 17: // chk sum
+                case 18: // plunder
+                case 19: // special flag
+                    return false;
+                case 20: // color
+                    {
+                        if (opt == "set")
+                        {
+                            if (!Enum.IsDefined(typeof(Item.ItemColor), value))
+                                return false;
+
+                            pItem.Color = (Item.ItemColor)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.Color == (Item.ItemColor)value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.Color < (Item.ItemColor)value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        break;
+                    }
+
+                //case 21: // add lev exp
+                //    {
+                //        if (opt == "set")
+                //        {
+                //            if (value < 0)
+                //                value = 0;
+                //            if (value > ushort.MaxValue)
+                //                value = ushort.MaxValue;
+
+                //            pItem.AdditionProgress = (ushort)value;
+                //        }
+                //        else if (opt == "==")
+                //        {
+                //            return pItem.AdditionProgress == value;
+                //        }
+                //        else if (opt == "<")
+                //        {
+                //            return pItem.AdditionProgress < value;
+                //        }
+                //        else
+                //        {
+                //            return false;
+                //        }
+
+                //        break;
+                //    }
+                default:
+                    return false;
+            }
+
+            if (update)
+                await user.SendAsync(new MsgItemInfo(pItem, MsgItemInfo.ItemMode.Update));
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionItemJarCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+
+            if (!user.UserPackage.IsPackSpare(1))
+                return false;
+
+            var itemtype = Kernel.ItemManager.GetItemtype(action.Data);
+            if (itemtype == null)
+                return false;
+
+            string[] pszParam = SplitParam(param);
+
+            var newItem = new DbItem
+            {
+                AddLife = 0,
+                AddlevelExp = 0,
+                AntiMonster = 0,
+                ArtifactExpire = 0,
+                ArtifactType = 0,
+                ChkSum = 0,
+                Color = 3,
+                Data = 0,
+                Gem1 = 0,
+                Gem2 = 0,
+                Ident = 0,
+                Magic1 = 0,
+                Magic2 = 0,
+                ReduceDmg = 0,
+                Plunder = 0,
+                Specialflag = 0,
+                Inscribed = 0,
+                StackAmount = 1,
+                RefineryExpire = 0,
+                RefineryLevel = 0,
+                RefineryType = 0,
+                Type = itemtype.Type,
+                Position = 0,
+                PlayerId = user.Identity,
+                Monopoly = 0,
+                Magic3 = itemtype.Magic3,
+                Amount = 0,
+                AmountLimit = 0
+            };
+            for (int i = 0; i < pszParam.Length; i++)
+            {
+                uint value = uint.Parse(pszParam[i]);
+                if (value <= 0) continue;
+
+                switch (i)
+                {
+                    case 0:
+                        newItem.Amount = (ushort)value;
+                        break;
+                    case 1:
+                        newItem.AmountLimit = (ushort)(1 << (int) value);
+                        break;
+                    case 2:
+                        // Socket Progress
+                        newItem.Data = value;
+                        break;
+                    case 3:
+                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte)value))
+                            newItem.Gem1 = (byte)value;
+                        break;
+                    case 4:
+                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte)value))
+                            newItem.Gem2 = (byte)value;
+                        break;
+                    case 5:
+                        if (Enum.IsDefined(typeof(Item.ItemEffect), (ushort)value))
+                            newItem.Magic1 = (byte)value;
+                        break;
+                    case 6:
+                        // magic2.. w/e
+                        break;
+                    case 7:
+                        if (value > 0 && value < 256)
+                            newItem.Magic3 = (byte)value;
+                        break;
+                    case 8:
+                        if (value > 0
+                            && value < 8)
+                            newItem.ReduceDmg = (byte)value;
+                        break;
+                    case 9:
+                        if (value > 0
+                            && value < 256)
+                            newItem.AddLife = (byte)value;
+                        break;
+                    case 10:
+                        newItem.Plunder = value;
+                        break;
+                    case 11:
+                        if (value == 0)
+                            value = 3;
+                        if (Enum.IsDefined(typeof(Item.ItemColor), value))
+                            newItem.Color = (byte)value;
+                        break;
+                    case 12:
+                        if (value > 0 && value < 256)
+                            newItem.Monopoly = (byte)value;
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                        // R -> For Steeds only
+                        // G -> For Steeds only
+                        // B -> For Steeds only
+                        // G == 8 R == 16
+                        newItem.Data = value | (uint.Parse(pszParam[14]) << 8) | (uint.Parse(pszParam[13]) << 16);
+                        break;
+                }
+            }
+
+            Item pItem = new Item(user);
+            if (!await pItem.CreateAsync(newItem))
+                return false;
+
+            await user.UserPackage.AddItem(pItem);
+
+            MsgInteract pMsg = new MsgInteract
+            {
+                SenderIdentity = user.Identity,
+                Data = (int) user.Statistic.GetValue(6, 12),
+                Action = MsgInteractType.IncreaseJar,
+                TargetIdentity = pItem.Identity
+            };
+            await user.SendAsync(pMsg);
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionItemJarVerify(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.UserPackage == null)
+                return false;
+            
+            if (!user.UserPackage.IsPackSpare(1))
+                return false;
+
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 2) return false;
+
+            uint amount = uint.Parse(pszParam[1]);
+            uint monster = uint.Parse(pszParam[0]);
+
+            if (user.Statistic.GetValue(6, 5) != monster)
+                return false;
+
+            Item jar = user.UserPackage.GetItemByType(action.Data);
+            return jar != null && jar.MaximumDurability == monster && jar.Durability < amount;
+        }
+
         #endregion
 
         #region Syndicate
@@ -586,7 +1544,7 @@ namespace Comet.Game.States
                         return user.Strength < forceValue;
                     if (opt.Equals("<="))
                         return user.Strength <= forceValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Strength == forceValue;
                     if (opt.Equals("+="))
                     {
@@ -615,7 +1573,7 @@ namespace Comet.Game.States
                         return user.Agility < speedValue;
                     if (opt.Equals("<="))
                         return user.Agility <= speedValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Agility == speedValue;
                     if (opt.Equals("+="))
                     {
@@ -644,7 +1602,7 @@ namespace Comet.Game.States
                         return user.Vitality < healthValue;
                     if (opt.Equals("<="))
                         return user.Vitality <= healthValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Vitality == healthValue;
                     if (opt.Equals("+="))
                     {
@@ -673,7 +1631,7 @@ namespace Comet.Game.States
                         return user.Spirit < soulValue;
                     if (opt.Equals("<="))
                         return user.Spirit <= soulValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Spirit == soulValue;
                     if (opt.Equals("+="))
                     {
@@ -702,7 +1660,7 @@ namespace Comet.Game.States
                         return user.AttributePoints < attrValue;
                     if (opt.Equals("<="))
                         return user.AttributePoints <= attrValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.AttributePoints == attrValue;
                     if (opt.Equals("+="))
                     {
@@ -730,7 +1688,7 @@ namespace Comet.Game.States
                         return user.Level < levelValue;
                     if (opt.Equals("<="))
                         return user.Level <= levelValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Level == levelValue;
                     if (opt.Equals("+="))
                     {
@@ -758,7 +1716,7 @@ namespace Comet.Game.States
                         return user.Metempsychosis < metempsychosisValue;
                     if (opt.Equals("<="))
                         return user.Metempsychosis <= metempsychosisValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Metempsychosis == metempsychosisValue;
                     if (opt.Equals("+="))
                     {
@@ -787,7 +1745,7 @@ namespace Comet.Game.States
                         return user.Silvers < moneyValue;
                     if (opt.Equals("<="))
                         return user.Silvers <= moneyValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.Silvers == moneyValue;
                     if (opt.Equals("+="))
                     {
@@ -816,7 +1774,7 @@ namespace Comet.Game.States
                         return user.ConquerPoints < emoneyValue;
                     if (opt.Equals("<="))
                         return user.ConquerPoints <= emoneyValue;
-                    if (opt.Equals("="))
+                    if (opt.Equals("=") || opt.Equals("=="))
                         return user.ConquerPoints == emoneyValue;
                     if (opt.Equals("+="))
                     {
@@ -833,6 +1791,7 @@ namespace Comet.Game.States
 
                 #region Rankshow (>, >=, <, <=, =)
 
+                case "rank":
                 case "rankshow":
                 case "rank_show":
                     int rankShowValue = int.Parse(value);
@@ -846,6 +1805,304 @@ namespace Comet.Game.States
                         return user.SyndicateRank <= (SyndicateMember.SyndicateRank)rankShowValue;
                     if (opt.Equals("==") || opt.Equals("="))
                         return user.SyndicateRank == (SyndicateMember.SyndicateRank)rankShowValue;
+                    break;
+
+                #endregion
+
+                #region Experience (>, >=, <, <=, =, +=, set)
+
+                case "exp":
+                case "experience":
+                    ulong expValue = ulong.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Experience > expValue;
+                    if (opt.Equals(">="))
+                        return user.Experience >= expValue;
+                    if (opt.Equals("<"))
+                        return user.Experience < expValue;
+                    if (opt.Equals("<="))
+                        return user.Experience <= expValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Experience == expValue;
+                    if (opt.Equals("+="))
+                    {
+                        return await user.AddAttributesAsync(ClientUpdateType.Experience, (long) expValue);
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetAttributesAsync(ClientUpdateType.Experience, (long) expValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Stamina (>, >=, <, <=, =, +=, set)
+
+                case "ep":
+                case "energy":
+                case "stamina":
+                    int energyValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Energy > energyValue;
+                    if (opt.Equals(">="))
+                        return user.Energy >= energyValue;
+                    if (opt.Equals("<"))
+                        return user.Energy < energyValue;
+                    if (opt.Equals("<="))
+                        return user.Energy <= energyValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Energy == energyValue;
+                    if (opt.Equals("+="))
+                    {
+                        return await user.AddAttributesAsync(ClientUpdateType.Stamina, energyValue);
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetAttributesAsync(ClientUpdateType.Stamina, energyValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Life (>, >=, <, <=, =, +=, set)
+
+                case "life":
+                case "hp":
+                    int lifeValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Life > lifeValue;
+                    if (opt.Equals(">="))
+                        return user.Life >= lifeValue;
+                    if (opt.Equals("<"))
+                        return user.Life < lifeValue;
+                    if (opt.Equals("<="))
+                        return user.Life <= lifeValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Life == lifeValue;
+                    if (opt.Equals("+="))
+                    {
+                        return await user.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeValue);
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, lifeValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Mana (>, >=, <, <=, =, +=, set)
+
+                case "mana":
+                case "mp":
+                    int manaValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Mana > manaValue;
+                    if (opt.Equals(">="))
+                        return user.Mana >= manaValue;
+                    if (opt.Equals("<"))
+                        return user.Mana < manaValue;
+                    if (opt.Equals("<="))
+                        return user.Mana <= manaValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Mana == manaValue;
+                    if (opt.Equals("+="))
+                    {
+                        return await user.AddAttributesAsync(ClientUpdateType.Mana, manaValue);
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetAttributesAsync(ClientUpdateType.Mana, manaValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Pk (>, >=, <, <=, =, +=, set)
+
+                case "pk":
+                case "pkp":
+                    int pkValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.PkPoints > pkValue;
+                    if (opt.Equals(">="))
+                        return user.PkPoints >= pkValue;
+                    if (opt.Equals("<"))
+                        return user.PkPoints < pkValue;
+                    if (opt.Equals("<="))
+                        return user.PkPoints <= pkValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.PkPoints == pkValue;
+                    if (opt.Equals("+="))
+                    {
+                        return await user.AddAttributesAsync(ClientUpdateType.PkPoints, pkValue);
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetAttributesAsync(ClientUpdateType.PkPoints, pkValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Profession (>, >=, <, <=, =, +=, set)
+
+                case "profession":
+                case "pro":
+                    int proValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Profession > proValue
+                            ;
+                    if (opt.Equals(">="))
+                        return user.Profession >= proValue
+                            ;
+                    if (opt.Equals("<"))
+                        return user.Profession < proValue
+                            ;
+                    if (opt.Equals("<="))
+                        return user.Profession <= proValue
+                            ;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Profession == proValue
+                            ;
+                    if (opt.Equals("+="))
+                    {
+                        return await user.AddAttributesAsync(ClientUpdateType.Class, proValue);
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetAttributesAsync(ClientUpdateType.Class, proValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Transform (>, >=, <, <=, =, ==)
+
+                case "transform":
+                    int transformValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.TransformationMesh > transformValue;
+                    if (opt.Equals(">="))
+                        return user.TransformationMesh >= transformValue;
+                    if (opt.Equals("<"))
+                        return user.TransformationMesh < transformValue;
+                    if (opt.Equals("<="))
+                        return user.TransformationMesh <= transformValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.TransformationMesh == transformValue;
+                    break;
+
+                #endregion
+
+                #region Profession (>, >=, <, <=, =, +=, set)
+
+                case "virtue":
+                case "vp":
+                    int virtueValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.VirtuePoints > virtueValue;
+                    if (opt.Equals(">="))
+                        return user.VirtuePoints >= virtueValue;
+                    if (opt.Equals("<"))
+                        return user.VirtuePoints < virtueValue;
+                    if (opt.Equals("<="))
+                        return user.VirtuePoints <= virtueValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.VirtuePoints == virtueValue;
+                    if (opt.Equals("+="))
+                    {
+                        if (virtueValue > 0)
+                            user.VirtuePoints += (uint) virtueValue;
+                        else
+                            user.VirtuePoints -= (uint)(virtueValue * -1);
+                        return await user.SaveAsync();
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        user.VirtuePoints = (uint) virtueValue;
+                        return await user.SaveAsync();
+                    }
+                    break;
+
+                #endregion
+
+                #region Vip (>, >=, <, <=, =, ==)
+
+                case "vip":
+                    int vipValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Client.VipLevel > vipValue;
+                    if (opt.Equals(">="))
+                        return user.Client.VipLevel >= vipValue;
+                    if (opt.Equals("<"))
+                        return user.Client.VipLevel < vipValue;
+                    if (opt.Equals("<="))
+                        return user.Client.VipLevel <= vipValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Client.VipLevel == vipValue;
+                    break;
+
+                #endregion
+
+                #region Xp (>, >=, <, <=, =, +=, set)
+
+                case "xp":
+                    int xpValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.XpPoints > xpValue;
+                    if (opt.Equals(">="))
+                        return user.XpPoints >= xpValue;
+                    if (opt.Equals("<"))
+                        return user.XpPoints < xpValue;
+                    if (opt.Equals("<="))
+                        return user.XpPoints <= xpValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.XpPoints == xpValue;
+                    if (opt.Equals("+="))
+                    {
+                        await user.AddXp((byte) xpValue);
+                        return true;
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        await user.SetXp((byte) xpValue);
+                        return true;
+                    }
+                    break;
+
+                #endregion
+
+                #region Iterator (>, >=, <, <=, =, +=, set)
+
+                case "iterator":
+                    int iteratorValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.Iterator > iteratorValue;
+                    if (opt.Equals(">="))
+                        return user.Iterator >= iteratorValue;
+                    if (opt.Equals("<"))
+                        return user.Iterator < iteratorValue;
+                    if (opt.Equals("<="))
+                        return user.Iterator <= iteratorValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.Iterator == iteratorValue;
+                    if (opt.Equals("+="))
+                    {
+                        user.Iterator += iteratorValue;
+                        return true;
+                    }
+                    if (opt.Equals("set"))
+                    {
+                        user.Iterator = iteratorValue;
+                        return true;
+                    }
                     break;
 
                 #endregion
@@ -907,6 +2164,9 @@ namespace Comet.Game.States
                 return false;
             }
 
+            if (paramStrings.Length >= 4 && byte.TryParse(paramStrings[3], out var save) && save != 0)
+                await user.SavePositionAsync(idMap, x, y);
+
             return await user.FlyMap(idMap, x, y);
         }
 
@@ -961,10 +2221,10 @@ namespace Comet.Game.States
             int value = int.Parse(splitParams[1]);
             if (splitParams[0].Equals("style", StringComparison.InvariantCultureIgnoreCase))
             {
-                await user.SetAttributesAsync(ClientUpdateType.HairStyle, (ushort)(value + (user.Hairstyle - user.Hairstyle % 100)));
+                await user.SetAttributesAsync(ClientUpdateType.HairStyle, (ushort)(value + (user.Hairstyle - (user.Hairstyle % 100))));
                 return true;
             }
-            if (splitParams[0].Equals("hair", StringComparison.InvariantCultureIgnoreCase))
+            if (splitParams[0].Equals("color", StringComparison.InvariantCultureIgnoreCase))
             {
                 await user.SetAttributesAsync(ClientUpdateType.HairStyle, (ushort) (user.Hairstyle % 100 + value * 100));
                 return true;
@@ -978,6 +2238,17 @@ namespace Comet.Game.States
                 return false;
 
             await user.FlyMap(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserChglinkmap(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.Map == null)
+                return false;
+
+            if (user.IsPm())
+                await user.SendAsync($"ExecuteActionUserChglinkmap");
+
             return true;
         }
 
@@ -997,6 +2268,13 @@ namespace Comet.Game.States
             uint transformation = uint.Parse(splitParam[2]);
             int time = int.Parse(splitParam[3]);
             return await user.Transform(transformation, time, true);
+        }
+
+        private static async Task<bool> ExecuteActionUserIspure(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+            return user.ProfessionSort == user.PreviousProfession/10 && user.FirstProfession /10 == user.ProfessionSort;
         }
 
         private static async Task<bool> ExecuteActionUserTalk(DbAction action, string param, Character user, Role role, Item item, string input)
@@ -1530,12 +2808,12 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            if (user.SecondaryPassword == 0 || user.IsUnlocked())
+            if (user.SecondaryPassword == 0)
                 return true;
 
             if (string.IsNullOrEmpty(input))
                 return false;
-
+            
             if (input.Length < 4 || input.Length > ulong.MaxValue.ToString().Length)
                 return false;
 
@@ -1547,7 +2825,18 @@ namespace Comet.Game.States
 
         private static async Task<bool> ExecuteActionUserSetWhPassword(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            if (user == null || string.IsNullOrEmpty(input) || input.Length < 4 || !ulong.TryParse(input, out var password))
+            if (user == null)
+                return false;
+
+            bool parsed = ulong.TryParse(input, out var password);
+            if (string.IsNullOrEmpty(input) || (parsed && password == 0))
+            {
+                user.SecondaryPassword = 0;
+                await user.SaveAsync();
+                return true;
+            }
+
+            if (input.Length < 4 || !parsed)
                 return false;
 
             if (password < 1000)
@@ -1858,7 +3147,7 @@ namespace Comet.Game.States
 
             string target = pszParam[0].ToLower();
             string opt = pszParam[1].ToLower();
-            int status = StatusSet.InvertFlag(ulong.Parse(pszParam[2]));
+            int status = int.Parse(pszParam[2]) + 3;
             int multiply = int.Parse(pszParam[3]);
             uint seconds = uint.Parse(pszParam[4]);
             int times = int.Parse(pszParam[5]);
@@ -2047,6 +3336,302 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Event
+
+        private static async Task<bool> ExecuteActionEventSetstatus(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 3) return false;
+
+            uint idMap = uint.Parse(pszParam[0]);
+            ulong nStatus = ulong.Parse(pszParam[1]);
+            int nFlag = int.Parse(pszParam[2]);
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+                return false;
+
+            if (nFlag == 0)
+                map.Flag &= ~nStatus;
+            else
+                map.Flag |= nStatus;
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventDelnpcGenid(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            Generator generator = Kernel.GeneratorThread.GetGenerator(action.Data);
+            if (generator == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Invalid generator {action.Data} for action {action.Identity}");
+                return false;
+            }
+
+            foreach (var monster in generator.GetRoles())
+            {
+                await monster.LeaveMap();
+            }
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventCompare(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 3)
+                return false;
+
+            long nData1 = long.Parse(pszParam[0]), nData2 = long.Parse(pszParam[2]);
+            string szOpt = pszParam[1];
+
+            switch (szOpt)
+            {
+                case "==":
+                    return nData1 == nData2;
+                case "<":
+                    return nData1 < nData2;
+                case ">":
+                    return nData1 > nData2;
+                case "<=":
+                    return nData1 <= nData2;
+                case ">=":
+                    return nData1 >= nData2;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionEventCompareUnsigned(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 3)
+                return false;
+
+            ulong nData1 = ulong.Parse(pszParam[0]), nData2 = ulong.Parse(pszParam[2]);
+            string szOpt = pszParam[1];
+
+            switch (szOpt)
+            {
+                case "==":
+                    return nData1 == nData2;
+                case "<":
+                    return nData1 < nData2;
+                case ">":
+                    return nData1 > nData2;
+                case "<=":
+                    return nData1 <= nData2;
+                case ">=":
+                    return nData1 >= nData2;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionEventChangeweather(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventCreatepet(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(action.Param);
+
+            if (pszParam.Length < 7) return false;
+
+            uint dwOwnerType = uint.Parse(pszParam[0]);
+            uint idOwner = uint.Parse(pszParam[1]);
+            uint idMap = uint.Parse(pszParam[2]);
+            ushort usPosX = ushort.Parse(pszParam[3]);
+            ushort usPosY = ushort.Parse(pszParam[4]);
+            uint idGen = uint.Parse(pszParam[5]);
+            uint idType = uint.Parse(pszParam[6]);
+            uint dwData = 0;
+            string szName = "";
+
+            if (pszParam.Length >= 8)
+                dwData = uint.Parse(pszParam[7]);
+            if (pszParam.Length >= 9)
+                szName = pszParam[8];
+
+            DbMonstertype monstertype = Kernel.RoleManager.GetMonstertype(idType);
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+
+            if (monstertype == null || map == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] invalid monstertype or map: {param}");
+                return false;
+            }
+
+            Generator generator = Kernel.GeneratorThread.GetGenerator(idGen);
+            if (generator == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] unexistent generator: {param}");
+                return false;
+            }
+
+            Monster monster = new Monster(monstertype, (uint)IdentityGenerator.Monster.GetNextIdentity, generator);
+            if (!monster.Initialize(idMap, usPosX, usPosY))
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] could not initialize monster: {param}");
+                return false;
+            }
+
+            generator.Add(monster);
+            await monster.EnterMap();
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventCreatenewNpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 9)
+                return false;
+
+            string szName = pszParam[0];
+            ushort nType = ushort.Parse(pszParam[1]);
+            ushort nSort = ushort.Parse(pszParam[2]);
+            ushort nLookface = ushort.Parse(pszParam[3]);
+            uint nOwnerType = uint.Parse(pszParam[4]);
+            uint nOwner = uint.Parse(pszParam[5]);
+            uint idMap = uint.Parse(pszParam[6]);
+            ushort nPosX = ushort.Parse(pszParam[7]);
+            ushort nPosY = ushort.Parse(pszParam[8]);
+            uint nLife = 0;
+            uint idBase = 0;
+            uint idLink = 0;
+            uint setTask0 = 0;
+            uint setTask1 = 0;
+            uint setTask2 = 0;
+            uint setTask3 = 0;
+            uint setTask4 = 0;
+            uint setTask5 = 0;
+            uint setTask6 = 0;
+            uint setTask7 = 0;
+            int setData0 = 0;
+            int setData1 = 0;
+            int setData2 = 0;
+            int setData3 = 0;
+            string szData = "";
+            if (pszParam.Length > 9)
+            {
+                nLife = uint.Parse(pszParam[9]);
+                if (pszParam.Length > 10)
+                    idBase = uint.Parse(pszParam[10]);
+                if (pszParam.Length > 11)
+                    idLink = uint.Parse(pszParam[11]);
+                if (pszParam.Length > 12)
+                    setTask0 = uint.Parse(pszParam[12]);
+                if (pszParam.Length > 13)
+                    setTask1 = uint.Parse(pszParam[13]);
+                if (pszParam.Length > 14)
+                    setTask2 = uint.Parse(pszParam[14]);
+                if (pszParam.Length > 15)
+                    setTask3 = uint.Parse(pszParam[15]);
+                if (pszParam.Length > 16)
+                    setTask4 = uint.Parse(pszParam[16]);
+                if (pszParam.Length > 17)
+                    setTask5 = uint.Parse(pszParam[17]);
+                if (pszParam.Length > 18)
+                    setTask6 = uint.Parse(pszParam[18]);
+                if (pszParam.Length > 19)
+                    setTask7 = uint.Parse(pszParam[19]);
+                if (pszParam.Length > 20)
+                    setData0 = int.Parse(pszParam[20]);
+                if (pszParam.Length > 21)
+                    setData1 = int.Parse(pszParam[21]);
+                if (pszParam.Length > 22)
+                    setData2 = int.Parse(pszParam[22]);
+                if (pszParam.Length > 23)
+                    setData3 = int.Parse(pszParam[23]);
+                if (pszParam.Length > 24)
+                    szData = pszParam[24];
+            }
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc invalid {idMap} map identity for action {action.Identity}");
+                return false;
+            }
+
+            var npc = new DbDynanpc
+            {
+                Name = szName,
+                Base = idBase,
+                Cellx = nPosX,
+                Celly = nPosY,
+                Data0 = setData0,
+                Data1 = setData1,
+                Data2 = setData2,
+                Data3 = setData3,
+                Datastr = szData,
+                Defence = 0,
+                Life = nLife,
+                Maxlife = nLife,
+                Linkid = idLink,
+                Task0 = setTask0,
+                Task1 = setTask1,
+                Task2 = setTask2,
+                Task3 = setTask3,
+                Task4 = setTask4,
+                Task5 = setTask5,
+                Task6 = setTask6,
+                Task7 = setTask7,
+                Ownerid = nOwner,
+                OwnerType = nOwnerType,
+                Lookface = nLookface,
+                Type = nType,
+                Mapid = idMap,
+                Sort = nSort
+            };
+
+            if (!await BaseRepository.SaveAsync(npc))
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc could not save dynamic npc");
+                return false;
+            }
+
+            DynamicNpc dynaNpc = new DynamicNpc(npc);
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventCountmonster(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventDeletemonster(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventBbs(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventErase(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventTeleport(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventMassaction(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        #endregion
+
         private static string FormatParam(DbAction action, Character user, Role role, Item item, string input)
         {
             string result = action.Param;
@@ -2062,7 +3647,10 @@ namespace Comet.Game.States
                 .Replace("%user_map_y", user?.MapY.ToString() ?? "0")
                 .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
                 .Replace("%user_nobility_rank", ((int)(user?.NobilityRank ?? 0)).ToString())
-                .Replace("%user_nobility_position", user?.NobilityPosition.ToString() ?? "0");
+                .Replace("%user_nobility_position", user?.NobilityPosition.ToString() ?? "0")
+                .Replace("%user_home_id", user?.HomeIdentity.ToString() ?? "0")
+                .Replace("%syn_id", user?.SyndicateIdentity.ToString() ?? "0")
+                .Replace("%syn_name", user?.SyndicateName ?? Language.StrNone);
 
             if (result.Contains("%levelup_exp"))
             {
@@ -2072,6 +3660,38 @@ namespace Comet.Game.States
 
             if (user != null)
             {
+                while (result.Contains("%stc("))
+                {
+                    int start = result.IndexOf("%stc(", StringComparison.InvariantCultureIgnoreCase);
+                    string strEvent = "", strStage = "";
+                    bool comma = false;
+                    for (int i = start + 5; i < result.Length; i++)
+                    {
+                        if (!comma)
+                        {
+                            if (result[i] == ',')
+                            {
+                                comma = true;
+                                continue;
+                            }
+                            strEvent += result[i];
+                        }
+                        else
+                        {
+                            if (result[i] == ')')
+                                break;
+
+                            strStage += result[i];
+                        }
+                    }
+
+                    uint.TryParse(strEvent, out var stcEvent);
+                    uint.TryParse(strStage, out var stcStage);
+
+                    DbStatistic stc = user.Statistic.GetStc(stcEvent, stcStage);
+                    result = result.Replace($"%stc({stcEvent},{stcStage})", stc?.Data.ToString() ?? "0");
+                }
+
                 for (int i = 0; i < Role.MAX_VAR_AMOUNT; i++)
                 {
                     result = result.Replace($"%iter_var_data{i}", user?.VarData[i].ToString());
@@ -2322,15 +3942,20 @@ namespace Comet.Game.States
         ActionUserWhPassword = 1052,
         ActionUserSetWhPassword = 1053,
         ActionUserOpeninterface = 1054,
+        ActionUserTaskManager = 1056,
+        ActionUserTaskOpe = 1057,
+        ActionUserTaskLocaltime = 1058,
+        ActionUserTaskFind = 1059,
         ActionUserVarCompare = 1060,
         ActionUserVarDefine = 1061,
         ActionUserVarCalc = 1064,
         ActionUserStcCompare = 1073,
         ActionUserStcOpe = 1074,
-        ActionUserTaskManager = 1080,
-        ActionUserTaskOpe = 1081,
+        ActionUserStcTimeOperation = 1080,
+        ActionUserStcTimeCheck = 1081,
         ActionUserAttachStatus = 1082,
         ActionUserGodTime = 1083,
+        ActionUserLogEvent = 1085,
         ActionUserExpballExp = 1086,
         ActionUserStatusCreate = 1096,
         ActionUserStatusCheck = 1098,

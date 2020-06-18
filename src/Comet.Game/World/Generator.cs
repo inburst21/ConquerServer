@@ -24,7 +24,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Database.Models;
@@ -179,9 +179,19 @@ namespace Comet.Game.World
             }
         }
 
+        public bool Add(Monster monster)
+        {
+            return m_dicMonsters.TryAdd(monster.Identity, monster);
+        }
+
         public void Remove(uint role)
         {
             m_dicMonsters.TryRemove(role, out _);
+        }
+
+        public Monster[] GetRoles()
+        {
+            return m_dicMonsters.Values.ToArray();
         }
 
         public Point GetCenter()

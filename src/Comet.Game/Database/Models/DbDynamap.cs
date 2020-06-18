@@ -28,7 +28,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Comet.Game.Database.Models
 {
-    [Table("cq_map")]
+    [Table("cq_dynamap")]
     public class DbDynamap
     {
         // Column Properties
@@ -45,7 +45,7 @@ namespace Comet.Game.Database.Models
         [Column("bgmusic_show")] public virtual uint BackgroundMusicShow { get; set; }
         [Column("portal0_x")] public virtual uint PortalX { get; set; }
         [Column("portal0_y")] public virtual uint PortalY { get; set; }
-        [Column("reborn_map")] public virtual uint RebornMap { get; set; }
+        [Column("reborn_mapid")] public virtual uint RebornMap { get; set; }
         [Column("reborn_portal")] public virtual uint RebornPortal { get; set; }
         [Column("res_lev")] public virtual byte ResourceLevel { get; set; }
         [Column("owner_type")] public virtual byte OwnerType { get; set; }

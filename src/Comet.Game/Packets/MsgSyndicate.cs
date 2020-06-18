@@ -23,8 +23,10 @@
 
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.States.Syndicates;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Microsoft.EntityFrameworkCore.Query;
 
 #endregion
 
@@ -84,6 +86,26 @@ namespace Comet.Game.Packets
 
             switch (Mode)
             {
+                case SyndicateRequest.Query: // 6
+                    Syndicate queryTarget = Kernel.SyndicateManager.GetSyndicate((int) Identity);
+                    if (queryTarget == null)
+                        return;
+
+                    await queryTarget.SendAsync(user);
+                    break;
+
+                case SyndicateRequest.DonateSilvers:
+                    if (user.Syndicate == null)
+                        return;
+
+                    
+                    break;
+
+                case SyndicateRequest.Refresh: // 12
+                    if (user.Syndicate != null)
+                        await user.SendSyndicateAsync();
+                    break;
+
                 default:
                     await Log.WriteLog(LogLevel.Warning, $"Type: {Type}, Subtype: {Mode} not handled");
                     break;

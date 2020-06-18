@@ -55,8 +55,8 @@ namespace Comet.Game.Database.Models
         [Column("data3")] public virtual int Data3 { get; set; }
         [Column("datastr")] public virtual string Datastr { get; set; }
         [Column("linkid")] public virtual uint Linkid { get; set; }
-        [Column("life")] public virtual ushort Life { get; set; }
-        [Column("maxlife")] public virtual ushort Maxlife { get; set; }
+        [Column("life")] public virtual uint Life { get; set; }
+        [Column("maxlife")] public virtual uint Maxlife { get; set; }
         [Column("base")] public virtual uint Base { get; set; }
         [Column("sort")] public virtual ushort Sort { get; set; }
         [Column("itemid")] public virtual uint Itemid { get; set; }

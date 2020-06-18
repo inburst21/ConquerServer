@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
 using Comet.Shared;
@@ -66,6 +67,11 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
             return true;
+        }
+
+        public Generator GetGenerator(uint idGen)
+        {
+            return m_generators.FirstOrDefault(x => x.Identity == idGen);
         }
     }
 }

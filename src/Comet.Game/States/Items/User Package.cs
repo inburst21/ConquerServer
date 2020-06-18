@@ -172,6 +172,9 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
+            if (item.Itemtype.IdAction > 0)
+                return await GameAction.ExecuteActionAsync(item.Itemtype.IdAction, m_user, null, item, "");
+
             return false;
         }
 
@@ -493,15 +496,14 @@ namespace Comet.Game.States.Items
             return amount;
         }
 
-        public bool SpendMeteors(int amount)
+        public async Task<bool> SpendMeteors(int amount)
         {
             if (amount > MeteorAmount())
                 return false;
 
             List<Item> items = new List<Item>();
             int meteor = MultiGetItem(Item.TYPE_METEOR, Item.TYPE_METEORTEAR, 0, ref items);
-            int meteorScroll =
-                MultiGetItem(Item.TYPE_METEOR_SCROLL, Item.TYPE_METEOR_SCROLL, 0, ref items);
+            int meteorScroll = MultiGetItem(Item.TYPE_METEOR_SCROLL, Item.TYPE_METEOR_SCROLL, 0, ref items);
 
             int taken = 0;
             if (meteor >= amount)
@@ -510,7 +512,7 @@ namespace Comet.Game.States.Items
                 {
                     if (item.Type == Item.TYPE_METEOR || item.Type == Item.TYPE_METEORTEAR)
                     {
-                        _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                        await RemoveFromInventoryAsync(item, RemovalType.Delete);
                         items.Remove(item);
                         taken++;
                     }
@@ -529,7 +531,7 @@ namespace Comet.Game.States.Items
                 {
                     if (item.Type == Item.TYPE_METEOR || item.Type == Item.TYPE_METEORTEAR)
                     {
-                        _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                        await RemoveFromInventoryAsync(item, RemovalType.Delete);
                         items.Remove(item);
                         taken++;
                         take--;
@@ -547,7 +549,7 @@ namespace Comet.Game.States.Items
 
             foreach (var item in items.Where(x => x.Type == Item.TYPE_METEOR_SCROLL).Reverse())
             {
-                _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                await RemoveFromInventoryAsync(item, RemovalType.Delete);
                 items.Remove(item);
                 taken += 10;
 
@@ -555,7 +557,7 @@ namespace Comet.Game.States.Items
                 {
                     while (returnMeteor > 0)
                     {
-                        _ = AwardItemAsync(Item.TYPE_METEOR);
+                        await AwardItemAsync(Item.TYPE_METEOR);
                         returnMeteor--;
                     }
 
@@ -566,7 +568,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public bool SpendDragonBalls(int amount, bool allowBound = false)
+        public async Task<bool> SpendDragonBalls(int amount, bool allowBound = false)
         {
             if (amount > DragonBallAmount())
                 return false;
@@ -586,7 +588,7 @@ namespace Comet.Game.States.Items
 
                     if (item.Type == Item.TYPE_DRAGONBALL)
                     {
-                        _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                        await RemoveFromInventoryAsync(item, RemovalType.Delete);
                         items.Remove(item);
                         taken++;
                     }
@@ -608,7 +610,7 @@ namespace Comet.Game.States.Items
 
                     if (item.Type == Item.TYPE_DRAGONBALL)
                     {
-                        _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                        await RemoveFromInventoryAsync(item, RemovalType.Delete);
                         items.Remove(item);
                         taken++;
                         take--;
@@ -633,7 +635,7 @@ namespace Comet.Game.States.Items
                 if (!allowBound && item.IsBound)
                     continue;
 
-                _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                await RemoveFromInventoryAsync(item, RemovalType.Delete);
                 items.Remove(item);
                 taken += 10;
 
@@ -641,7 +643,7 @@ namespace Comet.Game.States.Items
                 {
                     while (returnDb > 0)
                     {
-                        _ = AwardItemAsync(Item.TYPE_DRAGONBALL);
+                        await AwardItemAsync(Item.TYPE_DRAGONBALL);
                         returnDb--;
                     }
 
@@ -652,7 +654,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public bool MultiSpendItem(uint idFirst, uint idLast, int nNum, bool dontAllowBound = false)
+        public async Task<bool> MultiSpendItem(uint idFirst, uint idLast, int nNum, bool dontAllowBound = false)
         {
             int temp = nNum;
             List<Item> items = new List<Item>();
@@ -665,12 +667,11 @@ namespace Comet.Game.States.Items
                     continue;
 
                 nNum--;
-                _ = RemoveFromInventoryAsync(item, RemovalType.Delete);
+                await RemoveFromInventoryAsync(item, RemovalType.Delete);
             }
 
             if (nNum > 0)
-                _ = Log.WriteLog(LogLevel.Error,
-                    $"Something went wrong when MultiSpendItem({idFirst}, {idLast}, {temp}) {nNum} left???");
+                await Log.WriteLog(LogLevel.Error, $"Something went wrong when MultiSpendItem({idFirst}, {idLast}, {temp}) {nNum} left???");
             return nNum == 0;
         }
 

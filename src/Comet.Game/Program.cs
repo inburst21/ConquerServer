@@ -71,7 +71,7 @@ namespace Comet.Game
             await Log.WriteLog(LogLevel.Message, "Initializing server...");
             MsgConnect.StrictAuthentication = config.Authentication.StrictAuthPass;
             ServerDbContext.Configuration = config.Database;
-            if (!ServerDbContext.Ping())
+            if (!await ServerDbContext.PingAsync())
             {
                 await Log.WriteLog(LogLevel.Error, "Invalid database configuration");
                 return;

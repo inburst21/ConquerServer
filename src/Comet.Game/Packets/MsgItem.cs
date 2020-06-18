@@ -123,12 +123,12 @@ namespace Comet.Game.Packets
                 case ItemActionType.InventoryEquip:
                 case ItemActionType.EquipmentWear:
                     if (!await user.UserPackage.UseItemAsync(Identity, (Item.ItemPosition) Command))
-                        await user.SendAsync(Language.StrUnableToUseItem, MsgTalk.TalkChannel.System, Color.Red);
+                        await user.SendAsync(Language.StrUnableToUseItem, MsgTalk.TalkChannel.TopLeft, Color.Red);
                     break;
 
                 case ItemActionType.EquipmentRemove:
                     if (!await user.UserPackage.UnequipAsync((Item.ItemPosition)Command))
-                        await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.System, Color.Red);
+                        await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
                     break;
 
                 case ItemActionType.ClientPing:

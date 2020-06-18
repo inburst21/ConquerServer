@@ -22,9 +22,11 @@
 #region References
 
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
+using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.World.Maps;
 
@@ -216,11 +218,12 @@ namespace Comet.Game.States.NPCs
         {
             bool result = false;
 
-            if (IsTaskNpc())
+            uint task = await TestTasks(user);
+            if (task != 0)
+                result = await GameAction.ExecuteActionAsync(task, user, this, null, "");
+            else if (user.IsPm())
             {
-                uint task = await TestTasks(user);
-                if (task != 0)
-                    result = await GameAction.ExecuteActionAsync(task, user, this, null, "");
+                await user.SendAsync($"Unhandled NPC[{Identity}:{Name}]->{Task0},{Task1},{Task2},{Task3},{Task4},{Task5},{Task6},{Task6},{Task7}", MsgTalk.TalkChannel.Talk, Color.Red);
             }
 
             return result;

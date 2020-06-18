@@ -41,7 +41,7 @@ namespace Comet.Game.States.NPCs
             Name = npc.Name;
         }
 
-        #region 
+        #region Type
 
         public override ushort Type => m_dbNpc.Type;
 
