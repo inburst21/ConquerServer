@@ -158,8 +158,8 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserTaskManager(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserStcTimeOperation: result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserStcTimeCheck(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserStcTimeOperation: result = await ExecuteActionUserStcTimeOpe(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserAttachStatus: result = await ExecuteActionUserAttachStatus(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserGodTime: result = await ExecuteActionUserGodTime(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserLogEvent: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
@@ -2807,7 +2807,7 @@ namespace Comet.Game.States
             if (string.IsNullOrEmpty(input))
                 return false;
             
-            if (input.Length < 4 || input.Length > ulong.MaxValue.ToString().Length)
+            if (input.Length < 1 || input.Length > ulong.MaxValue.ToString().Length)
                 return false;
 
             if (!ulong.TryParse(input, out var password))
@@ -2829,10 +2829,7 @@ namespace Comet.Game.States
                 return true;
             }
 
-            if (input.Length < 4 || !parsed)
-                return false;
-
-            if (password < 1000)
+            if (input.Length < 1 || !parsed)
                 return false;
 
             user.SecondaryPassword = password;
@@ -2975,7 +2972,7 @@ namespace Comet.Game.States
 
             DbStatistic dbStc = user.Statistic.GetStc(idEvent, idType);
             if (dbStc == null)
-                return false;
+                return value == 0;
 
             switch (opt)
             {
@@ -3036,7 +3033,7 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserTaskManager(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStcTimeCheck(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -3103,7 +3100,7 @@ namespace Comet.Game.States
             }
         }
 
-        private static async Task<bool> ExecuteActionUserTaskOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStcTimeOpe(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)

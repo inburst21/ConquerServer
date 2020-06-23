@@ -98,22 +98,29 @@ namespace Comet.Game.Packets
             writer.Write((byte) Action);
             writer.Write((byte) Mode);
             writer.Write((ushort) 0);
-            writer.Write(Items.Count);
-            foreach (var item in Items)
+            if (Items.Count > 0)
             {
-                writer.Write(item.Identity); // 0
-                writer.Write(item.Type); // 4
-                writer.Write(item.Ident); // 8
-                writer.Write((byte) item.SocketOne); // 9
-                writer.Write((byte) item.SocketTwo); // 10
-                writer.Write((byte) item.Magic1); // 11
-                writer.Write(item.Magic2); // 12
-                writer.Write(item.Magic3); // 13
-                writer.Write(item.Blessing); // 14
-                writer.Write(item.Unknown15); // 15
-                writer.Write(item.Enchantment); // 16
-                writer.Write(item.Unknown17); // 17
-                writer.Write(item.Unknown18); // 18
+                writer.Write(Items.Count);
+                foreach (var item in Items)
+                {
+                    writer.Write(item.Identity); // 0
+                    writer.Write(item.Type); // 4
+                    writer.Write(item.Ident); // 8
+                    writer.Write((byte) item.SocketOne); // 9
+                    writer.Write((byte) item.SocketTwo); // 10
+                    writer.Write((byte) item.Magic1); // 11
+                    writer.Write(item.Magic2); // 12
+                    writer.Write(item.Magic3); // 13
+                    writer.Write(item.Blessing); // 14
+                    writer.Write(item.Unknown15); // 15
+                    writer.Write(item.Enchantment); // 16
+                    writer.Write(item.Unknown17); // 17
+                    writer.Write(item.Unknown18); // 18
+                }
+            }
+            else
+            {
+                writer.Write(Param);
             }
             return writer.ToArray();
         }
@@ -207,6 +214,7 @@ namespace Comet.Game.Packets
                     await user.UserPackage.AddToStorageAsync(Identity, storeItem, Mode, true);
                     break;
                 case WarehouseMode.CheckOut:
+                    await user.UserPackage.GetFromStorageAsync(Identity, Param, Mode, true);
                     break;
             }
         }

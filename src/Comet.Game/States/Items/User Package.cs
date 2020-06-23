@@ -90,18 +90,6 @@ namespace Comet.Game.States.Items
                     if (!m_dicEquipment.TryAdd(item.Position, item))
                         m_dicInventory.TryAdd(item.Identity, item);
                 }
-                else if (item.Position == Item.ItemPosition.Chest
-                         || item.Position == Item.ItemPosition.Storage)
-                {
-                    if (m_dicWarehouses.TryGetValue(item.OwnerIdentity, out var list))
-                    {
-                        list.Add(item);
-                    }
-                    else
-                    {
-                        m_dicWarehouses.TryAdd(item.OwnerIdentity, new List<Item> {item});
-                    }
-                }
                 else if (item.Position == Item.ItemPosition.Inventory)
                 {
                     if (!m_dicInventory.TryAdd(item.Identity, item))
@@ -122,6 +110,10 @@ namespace Comet.Game.States.Items
                     }
 
                     await AddToStorageAsync(npc.Identity, item, MsgPackage.StorageType.Storage, false);
+                }
+                else if (item.Position == Item.ItemPosition.Chest)
+                {
+                    await AddToStorageAsync(item.OwnerIdentity, item, MsgPackage.StorageType.Chest, false);
                 }
                 else
                 {
@@ -421,6 +413,7 @@ namespace Comet.Game.States.Items
             item.PlayerIdentity = m_user.Identity;
             item.Position = Item.ItemPosition.Inventory;
             m_dicInventory.TryAdd(item.Identity, item);
+            await item.SaveAsync();
             await m_user.SendAsync(new MsgItemInfo(item));
             return true;
         }
@@ -872,7 +865,7 @@ namespace Comet.Game.States.Items
 
         public async Task<bool> AddToStorageAsync(uint idStorage, Item item, MsgPackage.StorageType mode, bool sync)
         {
-            if (item.Position != Item.ItemPosition.Inventory)
+            if (item.Position != Item.ItemPosition.Inventory && sync)
                 return false;
 
             BaseNpc npc = null;
@@ -915,7 +908,7 @@ namespace Comet.Game.States.Items
             if (items == null || StorageSize(idStorage, mode) >= maxStorage)
                 return false;
 
-            if (!await RemoveFromInventoryAsync(item, RemovalType.RemoveAndDisappear))
+            if (sync && !await RemoveFromInventoryAsync(item, RemovalType.RemoveAndDisappear))
                 return false;
 
             item.OwnerIdentity = idStorage;
@@ -949,8 +942,29 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public async Task<bool> GetFromStorageAsync(uint idStorage, Item item, MsgPackage.StorageType mode, bool sync)
+        public async Task<bool> GetFromStorageAsync(uint idStorage, uint idItem, MsgPackage.StorageType mode, bool sync)
         {
+            List<Item> storage = null;
+            if (mode == MsgPackage.StorageType.Storage)
+            {
+                if (!m_dicWarehouses.TryGetValue(idStorage, out storage))
+                    return false;
+            }
+            else if (mode == MsgPackage.StorageType.Chest)
+            {
+                if (!m_dicSashes.TryGetValue(idStorage, out storage))
+                    return false;
+            }
+
+            if (storage == null || storage.All(x => x.Identity != idItem))
+                return false;
+
+            if (!m_user.UserPackage.IsPackSpare(1))
+                return false;
+
+            Item item = storage.Find(x => x.Identity == idItem);
+            if (item == null || storage.RemoveAll(x => x.Identity == idItem) == 0)
+                return false;
 
             if (sync)
             {
@@ -959,15 +973,18 @@ namespace Comet.Game.States.Items
                     Identity = item.OwnerIdentity,
                     Action = MsgPackage.WarehouseMode.CheckOut,
                     Mode = mode,
-                    Items = new List<MsgPackage.WarehouseItem>
-                    {
-                        new MsgPackage.WarehouseItem
-                        {
-                            Identity = item.Identity
-                        }
-                    }
+                    Param = item.Identity
+                    //Items = new List<MsgPackage.WarehouseItem>
+                    //{
+                    //    new MsgPackage.WarehouseItem
+                    //    {
+                    //        Identity = item.Identity
+                    //    }
+                    //}
                 });
             }
+
+            await m_user.UserPackage.AddItemAsync(item);
             return true;
         }
 

@@ -233,8 +233,8 @@ namespace Comet.Game.States
             int damage = (int) (attack * 0.75);
             damage = (int) (damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
 
-            if (target.MagicData.QueryMagic != null)
-                damage = Calculations.AdjustData(damage,  target.MagicData.QueryMagic.Power);
+            if (attacker.MagicData.QueryMagic != null)
+                damage = Calculations.AdjustData(damage, attacker.MagicData.QueryMagic.Power);
 
             int defense = target.MagicDefense;
             damage -= defense;

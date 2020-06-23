@@ -114,6 +114,18 @@ namespace Comet.Game.Packets
                 return;
             }
 
+            DbPointAllot allot = Kernel.RoleManager.GetPointAllot((ushort) (Class/10), 1);
+            if (allot == null)
+            {
+                allot = new DbPointAllot
+                {
+                    Strength = 4,
+                    Agility = 6,
+                    Vitality = 12,
+                    Spirit = 0
+                };
+            }
+
             // Create the character
             var character = new DbCharacter();
             character.AccountIdentity = client.Creation.AccountID;
@@ -126,10 +138,10 @@ namespace Comet.Game.Packets
             character.MapID = 1010;
             character.X = 61;
             character.Y = 109;
-            character.Strength = 4;
-            character.Agility = 6;
-            character.Vitality = 12;
-            character.Spirit = 0;
+            character.Strength = allot.Strength;
+            character.Agility = allot.Agility;
+            character.Vitality = allot.Vitality;
+            character.Spirit = allot.Spirit;
             character.HealthPoints =
                 (ushort) (character.Strength * 3
                           + character.Agility * 3
@@ -137,7 +149,7 @@ namespace Comet.Game.Packets
                           + character.Vitality * 24);
             character.ManaPoints = (ushort) (character.Spirit * 5);
             character.Registered = DateTime.Now;
-            character.ExperienceMultiplier = 2;
+            character.ExperienceMultiplier = 5;
             character.ExperienceExpires = DateTime.Now.AddHours(12);
             character.HeavenBlessing = DateTime.Now.AddDays(30);
 
@@ -178,7 +190,7 @@ namespace Comet.Game.Packets
                     await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.LeftHand);
                     break;
                 case 100:
-                    await CreateItemAsync((uint)await Kernel.NextAsync(152003, 152005), user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync((uint)await Kernel.NextAsync(152013, 152015), user.Identity, Item.ItemPosition.Ring);
                     await CreateItemAsync(421301, user.Identity, Item.ItemPosition.RightHand);
                     break;
             }
