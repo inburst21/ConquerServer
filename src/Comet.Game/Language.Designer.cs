@@ -259,6 +259,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item cannot be stored..
+        /// </summary>
+        public static string StrItemCannotBeStored {
+            get {
+                return ResourceManager.GetString("StrItemCannotBeStored", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} cannot be discarded..
         /// </summary>
         public static string StrItemCannotDiscard {
@@ -327,6 +336,15 @@ namespace Comet.Game {
         public static string StrItemErrRepairItem {
             get {
                 return ResourceManager.GetString("StrItemErrRepairItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Target item not found..
+        /// </summary>
+        public static string StrItemNotFound {
+            get {
+                return ResourceManager.GetString("StrItemNotFound", resourceCulture);
             }
         }
         
@@ -462,6 +480,15 @@ namespace Comet.Game {
         public static string StrOpen {
             get {
                 return ResourceManager.GetString("StrOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This storage is full..
+        /// </summary>
+        public static string StrPackageFull {
+            get {
+                return ResourceManager.GetString("StrPackageFull", resourceCulture);
             }
         }
         

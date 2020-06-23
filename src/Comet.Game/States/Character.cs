@@ -494,11 +494,14 @@ namespace Comet.Game.States
             if (nExp == 0)
                 return;
 
+            double multiplier = 1;
             if (HasMultipleExp)
-                nExp = (long) (nExp * Math.Max(1, ExperienceMultiplier));
+                multiplier += ExperienceMultiplier - 1;
 
             if (Level >= 70 && ProfessionSort == 13 && ProfessionLevel >= 3)
-                nExp *= 2;
+                multiplier += 1;
+
+            nExp = (long)(nExp * Math.Max(1, multiplier));
 
             if (nExp < 0)
             {
@@ -521,6 +524,9 @@ namespace Comet.Game.States
 
             if (Level >= 120)
                 nExp /= 2;
+
+            if (Metempsychosis >= 2)
+                nExp /= 3;
 
             if (IsPm())
                 await SendAsync($"got battle exp: {nExp}");
@@ -780,6 +786,12 @@ namespace Comet.Game.States
         {
             get => m_dbObject?.ConquerPoints ?? 0;
             set => m_dbObject.ConquerPoints = value;
+        }
+
+        public uint StorageMoney
+        {
+            get => m_dbObject?.StorageMoney ?? 0;
+            set => m_dbObject.StorageMoney = value;
         }
 
         public async Task<bool> ChangeMoney(int amount, bool notify = false)
@@ -1223,7 +1235,7 @@ namespace Comet.Game.States
             {
                 Item item = await mapItem.GetInfo(this);
 
-                await UserPackage.AddItem(item);
+                await UserPackage.AddItemAsync(item);
                 await SendAsync(string.Format(Language.StrPickupItem, item.Name));
 
                 await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
@@ -1900,7 +1912,7 @@ namespace Comet.Game.States
 
                 await ProcessPk(targetUser);
             }
-            else
+            else if (target is Monster monster)
             {
                 await AddXp(1);
 
@@ -1983,7 +1995,7 @@ namespace Comet.Game.States
                 if (!Map.IsDeadIsland())
                 {
                     int nChance = Math.Min(90, 20 + PkPoints / 2);
-                    await UserPackage.RandDropItem(3, nChance);
+                    await UserPackage.RandDropItemAsync(3, nChance);
                 }
                 return;
             }
@@ -2006,7 +2018,7 @@ namespace Comet.Game.States
                 int nItems = UserPackage.InventoryCount;
                 int nDropItem = nItems * nChance / 100;
 
-                await UserPackage.RandDropItem(nDropItem);
+                await UserPackage.RandDropItemAsync(nDropItem);
 
                 if (attacker.Identity != Identity && attacker is Character targetUser)
                 {
@@ -2029,16 +2041,16 @@ namespace Comet.Game.States
 
                     if (PkPoints >= 300)
                     {
-                        await UserPackage.RandDropEquipment(targetUser);
-                        await UserPackage.RandDropEquipment(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(targetUser);
                     }
                     else if (PkPoints >= 100)
                     {
-                        await UserPackage.RandDropEquipment(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(targetUser);
                     }
                     else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(30))
                     {
-                        await UserPackage.RandDropEquipment(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(targetUser);
                     }
 
                     if (PkPoints >= 100)

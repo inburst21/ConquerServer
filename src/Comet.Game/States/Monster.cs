@@ -112,6 +112,8 @@ namespace Comet.Game.States
 
         #region Appearence
 
+        public uint Type => m_dbMonster.Id;
+
         public override uint Mesh
         {
             get => m_dbMonster.Lookface;
@@ -212,7 +214,7 @@ namespace Comet.Game.States
             
             await BroadcastRoomMsgAsync(new MsgInteract
             {
-                SenderIdentity = attacker.Identity,
+                SenderIdentity = attacker?.Identity ?? 0,
                 TargetIdentity = Identity,
                 PosX = MapX,
                 PosY = MapY,
@@ -222,14 +224,32 @@ namespace Comet.Game.States
 
             m_disappear.Startup(5);
 
+            if (m_dbMonster.Action > 0)
+                await GameAction.ExecuteActionAsync(m_dbMonster.Action, user, this, null, "");
+
             uint idDropOwner = user?.Identity ?? 0;
 
             if (IsGuard())
                 return;
 
-            int chanceAdjust = 25;
+            Item jar = user?.UserPackage.GetItemByType(Item.TYPE_JAR);
+            if (jar != null)
+            {
+                if (jar.MaximumDurability == m_dbMonster.StcType)
+                {
+                    jar.Data += 1;
+                    await jar.SaveAsync();
+
+                    if (jar.Data % 50 == 0)
+                    {
+                        await jar.SendJarAsync();
+                    }
+                }
+            }
+
+            int chanceAdjust = 35;
             if (user != null && BattleSystem.GetNameType(user.Level, Level) == BattleSystem.NAME_GREEN)
-                chanceAdjust = 7;
+                chanceAdjust = 9;
 
             if (await Kernel.ChanceCalcAsync(chanceAdjust))
             {
@@ -452,11 +472,11 @@ namespace Comet.Game.States
                     break;
             }
 
-            if (await Kernel.ChanceCalcAsync(0.001f)) dwItemId += 9; // super
-            else if (await Kernel.ChanceCalcAsync(0.005f)) dwItemId += 8; // elite
-            else if (await Kernel.ChanceCalcAsync(0.01f)) dwItemId += 7; // unique
-            else if (await Kernel.ChanceCalcAsync(0.02f)) dwItemId += 6; // refined
-            else if (await Kernel.ChanceCalcAsync(0.01f) && type == 4) dwItemId += 0; // fixed
+            if (await Kernel.ChanceCalcAsync(1, 50000)) dwItemId += 9; // super
+            else if (await Kernel.ChanceCalcAsync(1, 15000)) dwItemId += 8; // elite
+            else if (await Kernel.ChanceCalcAsync(1, 3000)) dwItemId += 7; // unique
+            else if (await Kernel.ChanceCalcAsync(1, 1200)) dwItemId += 6; // refined
+            else if (await Kernel.ChanceCalcAsync(1, 1200) && type == 4) dwItemId += 0; // fixed
             else dwItemId += (uint)await Kernel.NextAsync(3, 5); // normal
 
             return dwItemId;

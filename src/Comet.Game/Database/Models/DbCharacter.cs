@@ -47,6 +47,7 @@ namespace Comet.Game.Database.Models
         [Column("hair")] public virtual ushort Hairstyle { get; set; }
         [Column("money")] public virtual uint Silver { get; set; }
         [Column("emoney")] public virtual uint ConquerPoints { get; set; }
+        [Column("money_saved")] public virtual uint StorageMoney { get; set; }
         [Column("profession")] public virtual byte Profession { get; set; }
         [Column("old_prof")] public virtual byte PreviousProfession { get; set; }
         [Column("first_prof")] public virtual byte FirstProfession { get; set; }

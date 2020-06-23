@@ -119,6 +119,16 @@ namespace Comet.Game
             public static RandomnessService Randomness = new RandomnessService();
         }
 
+        public static Task<bool> ChanceCalcAsync(int chance, int outOf)
+        {
+            return ChanceCalcAsync((chance / (double) outOf) * 100);
+        }
+
+        /// <summary>
+        /// Calculates the chance of success based in a rate.
+        /// </summary>
+        /// <param name="chance">Rate in percent.</param>
+        /// <returns>True if the rate is successful.</returns>
         public static async Task<bool> ChanceCalcAsync(double chance)
         {
             const int DIVISOR_I = 10000;

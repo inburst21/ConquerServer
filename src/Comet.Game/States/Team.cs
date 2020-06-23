@@ -125,6 +125,7 @@ namespace Comet.Game.States
             if (!m_dicPlayers.TryAdd(target.Identity, target))
                 return false;
 
+            target.Team = this;
             await SendShowAsync(target);
 
             await target.SendAsync(string.Format(Language.StrPickupSilvers, MoneyEnable ? Language.StrOpen : Language.StrClose));

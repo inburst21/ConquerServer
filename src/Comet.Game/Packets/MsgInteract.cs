@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -48,6 +49,7 @@ namespace Comet.Game.Packets
         public ushort PosY { get; set; }
         public MsgInteractType Action { get; set; }
         public int Data { get; set; }
+        public int Command { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -60,13 +62,14 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
-            Timestamp = reader.ReadInt32();
-            SenderIdentity = reader.ReadUInt32();
-            TargetIdentity = reader.ReadUInt32();
-            PosX = reader.ReadUInt16();
-            PosY = reader.ReadUInt16();
-            Action = (MsgInteractType)reader.ReadUInt32();
-            Data = reader.ReadInt32();
+            Timestamp = reader.ReadInt32(); // 4
+            SenderIdentity = reader.ReadUInt32(); // 8
+            TargetIdentity = reader.ReadUInt32(); // 12
+            PosX = reader.ReadUInt16(); // 16
+            PosY = reader.ReadUInt16(); // 18
+            Action = (MsgInteractType)reader.ReadUInt32(); // 20
+            Data = reader.ReadInt32(); // 24
+            Command = reader.ReadInt32(); // 28
         }
 
         /// <summary>
@@ -86,6 +89,7 @@ namespace Comet.Game.Packets
             writer.Write(PosY);
             writer.Write((uint)Action);
             writer.Write(Data);
+            writer.Write(Command);
             return writer.ToArray();
         }
 
@@ -144,7 +148,16 @@ namespace Comet.Game.Packets
                         await client.Character.ProcessMagicAttack(magicType, TargetIdentity, PosX, PosY);
 
                     break;
-                
+
+                case MsgInteractType.Chop:
+                    Item targetItem = client.Character.UserPackage.GetItemByType(Item.TYPE_JAR);
+                    if (targetItem == null)
+                        return;
+
+                    Command = (ushort) targetItem.Data;
+                    await client.SendAsync(this);
+                    break;
+
                 case MsgInteractType.Court:
                     break;
                 case MsgInteractType.Marry:

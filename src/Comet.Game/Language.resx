@@ -183,6 +183,9 @@
   <data name="StrInviteSent" xml:space="preserve">
     <value>Team invitation has been sent.</value>
   </data>
+  <data name="StrItemCannotBeStored" xml:space="preserve">
+    <value>This item cannot be stored.</value>
+  </data>
   <data name="StrItemCannotDiscard" xml:space="preserve">
     <value>{0} cannot be discarded.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="StrItemErrRepairItem" xml:space="preserve">
     <value>Please repair your item before upgrading.</value>
+  </data>
+  <data name="StrItemNotFound" xml:space="preserve">
+    <value>Target item not found.</value>
   </data>
   <data name="StrKickout" xml:space="preserve">
     <value>You have been kicked from the game. Reason: {0}.</value>
@@ -251,6 +257,9 @@
   </data>
   <data name="StrOpen" xml:space="preserve">
     <value>Open</value>
+  </data>
+  <data name="StrPackageFull" xml:space="preserve">
+    <value>This storage is full.</value>
   </data>
   <data name="StrPeeragePromptBaron" xml:space="preserve">
     <value>{0} has become a Baron.</value>

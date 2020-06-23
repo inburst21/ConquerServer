@@ -222,8 +222,8 @@ namespace Comet.Game.States.Magics
                     Action = MsgInteractType.MagicAttack,
                     TargetIdentity = idTarget,
                     SenderIdentity = m_pOwner.Identity,
-                    PosX = x,
-                    PosY = y
+                    PosX = m_pOwner.MapX,
+                    PosY = m_pOwner.MapY
                 }, true);
             }
 

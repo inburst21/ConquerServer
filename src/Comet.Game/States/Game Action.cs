@@ -538,7 +538,7 @@ namespace Comet.Game.States
             if (!await item.CreateAsync(newItem))
                 return false;
 
-            return await user.UserPackage.AddItem(item);
+            return await user.UserPackage.AddItemAsync(item);
         }
 
         private static async Task<bool> ExecuteActionItemDel(DbAction action, string param, Character user, Role role, Item item, string input)
@@ -547,14 +547,14 @@ namespace Comet.Game.States
                 return false;
 
             if (action.Data != 0)
-                return await user.UserPackage.MultiSpendItem(action.Data, action.Data, 1);
+                return await user.UserPackage.MultiSpendItemAsync(action.Data, action.Data, 1);
 
             if (!string.IsNullOrEmpty(param))
             {
                 item = user.UserPackage[param];
                 if (item == null)
                     return false;
-                return await user.UserPackage.SpendItem(item);
+                return await user.UserPackage.SpendItemAsync(item);
             }
             return false;
         }
@@ -649,7 +649,7 @@ namespace Comet.Game.States
                 if (splitParams.Length <= 1 || !int.TryParse(splitParams[1], out first))
                     first = 0; // bound check
                 // todo set meteor bind check
-                return await user.UserPackage.SpendMeteors(amount);
+                return await user.UserPackage.SpendMeteorsAsync(amount);
             }
 
             if (action.Data == Item.TYPE_DRAGONBALL)
@@ -658,7 +658,7 @@ namespace Comet.Game.States
                     amount = 1;
                 if (splitParams.Length <= 1 || !int.TryParse(splitParams[1], out first))
                     first = 0;
-                return await user.UserPackage.SpendDragonBalls(amount, first != 0);
+                return await user.UserPackage.SpendDragonBallsAsync(amount, first != 0);
             }
 
             if (action.Data != 0)
@@ -672,8 +672,8 @@ namespace Comet.Game.States
             amount = byte.Parse(splitParams[2]);
 
             if (splitParams.Length < 4)
-                return await user.UserPackage.MultiSpendItem((uint) first, (uint) last, amount, true);
-            return await user.UserPackage.MultiSpendItem((uint)first, (uint)last, amount, int.Parse(splitParams[3]) != 0);
+                return await user.UserPackage.MultiSpendItemAsync((uint) first, (uint) last, amount, true);
+            return await user.UserPackage.MultiSpendItemAsync((uint)first, (uint)last, amount, int.Parse(splitParams[3]) != 0);
         }
 
         private static async Task<bool> ExecuteActionItemMultichk(DbAction action, string param, Character user, Role role, Item item, string input)
@@ -1317,6 +1317,9 @@ namespace Comet.Game.States
             if (!user.UserPackage.IsPackSpare(1))
                 return false;
 
+            if (user.UserPackage.GetItemByType(Item.TYPE_JAR) != null)
+                await user.UserPackage.SpendItemAsync(user.UserPackage.GetItemByType(Item.TYPE_JAR));
+
             var itemtype = Kernel.ItemManager.GetItemtype(action.Data);
             if (itemtype == null)
                 return false;
@@ -1365,7 +1368,7 @@ namespace Comet.Game.States
                         newItem.Amount = (ushort)value;
                         break;
                     case 1:
-                        newItem.AmountLimit = (ushort)(1 << (int) value);
+                        newItem.AmountLimit = (ushort) value;//(ushort) (1 << ((ushort) value));
                         break;
                     case 2:
                         // Socket Progress
@@ -1429,17 +1432,7 @@ namespace Comet.Game.States
             if (!await pItem.CreateAsync(newItem))
                 return false;
 
-            await user.UserPackage.AddItem(pItem);
-
-            MsgInteract pMsg = new MsgInteract
-            {
-                SenderIdentity = user.Identity,
-                Data = (int) user.Statistic.GetValue(6, 12),
-                Action = MsgInteractType.IncreaseJar,
-                TargetIdentity = pItem.Identity
-            };
-            await user.SendAsync(pMsg);
-
+            await user.UserPackage.AddItemAsync(pItem);
             return true;
         }
 
@@ -1458,11 +1451,11 @@ namespace Comet.Game.States
             uint amount = uint.Parse(pszParam[1]);
             uint monster = uint.Parse(pszParam[0]);
 
-            if (user.Statistic.GetValue(6, 5) != monster)
+            if (user.Statistic.GetValue(6, 0) != monster)
                 return false;
 
             Item jar = user.UserPackage.GetItemByType(action.Data);
-            return jar != null && jar.MaximumDurability == monster && jar.Durability < amount;
+            return jar != null && jar.MaximumDurability == monster && amount <= jar.Data;
         }
 
         #endregion
@@ -1826,7 +1819,7 @@ namespace Comet.Game.States
                         return user.Experience == expValue;
                     if (opt.Equals("+="))
                     {
-                        return await user.AddAttributesAsync(ClientUpdateType.Experience, (long) expValue);
+                        return await user.AwardExperience((long) expValue);
                     }
                     if (opt.Equals("set"))
                     {
@@ -3596,7 +3589,10 @@ namespace Comet.Game.States
             }
 
             DynamicNpc dynaNpc = new DynamicNpc(npc);
+            if (!await dynaNpc.InitializeAsync())
+                return false;
 
+            await dynaNpc.EnterMap();
             return true;
         }
 

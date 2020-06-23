@@ -64,7 +64,8 @@ namespace Comet.Game.States.Items
                 Magic1 = type.Magic1,
                 Magic2 = type.Magic2,
                 Magic3 = type.Magic3,
-                Color = 3
+                Color = 3,
+                Monopoly = type.Monopoly
             };
 
             m_dbItemtype = type;
@@ -294,6 +295,15 @@ namespace Comet.Game.States.Items
                     m_dbItem.Monopoly = (byte) monopoly;
                 }
             }
+        }
+
+        /// <summary>
+        /// If jar, the amount of monsters killed
+        /// </summary>
+        public uint Data
+        {
+            get => m_dbItem.Data;
+            set => m_dbItem.Data = value;
         }
 
         #endregion
@@ -1049,7 +1059,7 @@ namespace Comet.Game.States.Items
 
             int gemCost = (int)(100 / nChance + 1) * 12 / 10;
 
-            if (!await m_user.UserPackage.SpendDragonBalls(gemCost, IsBound))
+            if (!await m_user.UserPackage.SpendDragonBallsAsync(gemCost, IsBound))
             {
                 await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughDragonBalls, gemCost));
                 return false;
@@ -1091,7 +1101,7 @@ namespace Comet.Game.States.Items
             }
 
             int gemCost = (int)(100 / nChance + 1) * 12 / 10;
-            if (!await m_user.UserPackage.SpendMeteors(gemCost))
+            if (!await m_user.UserPackage.SpendMeteorsAsync(gemCost))
             {
                 await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
                 return false;
@@ -1124,7 +1134,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            if (!await m_user.UserPackage.SpendDragonBalls(1, IsBound))
+            if (!await m_user.UserPackage.SpendDragonBallsAsync(1, IsBound))
             {
                 await m_user.SendAsync(Language.StrItemErrNoDragonBall);
                 return false;
@@ -1247,6 +1257,11 @@ namespace Comet.Game.States.Items
         {
             // todo check if item is locked
             return (m_dbItemtype.Monopoly & ITEM_DROP_HINT_MASK) == 0;
+        }
+
+        public bool CanBeStored()
+        {
+            return (m_dbItem.Monopoly & ITEM_STORAGE_MASK) == 0;
         }
 
         public bool IsHoldEnable()
@@ -1519,6 +1534,26 @@ namespace Comet.Game.States.Items
 
         #endregion
 
+        #region Socket
+
+        public async Task SendJarAsync()
+        {
+            if (m_user == null)
+                return;
+
+            MsgInteract msg = new MsgInteract
+            {
+                Action = MsgInteractType.Chop,
+                SenderIdentity = PlayerIdentity,
+                TargetIdentity = Identity,
+                PosX = MaximumDurability,
+                Command = (int) Data
+            };
+            await m_user.SendAsync(msg);
+        }
+
+        #endregion
+
         #region Enums
 
         public enum ItemSort
@@ -1631,7 +1666,7 @@ namespace Comet.Game.States.Items
             AltSteed = 32,
 
             UserLimit = 199,
-
+            
             /// <summary>
             ///     Warehouse.
             /// </summary>
@@ -1743,6 +1778,8 @@ namespace Comet.Game.States.Items
 
         public const int LOTTERY_TICKET = 710212;
         public const uint SMALL_LOTTERY_TICKET = 711504;
+
+        public const uint TYPE_JAR = 750000;
 
         #endregion
     }

@@ -131,6 +131,9 @@ namespace Comet.Game.Packets
                         await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
                     break;
 
+                case ItemActionType.BankQuery:
+                    break;
+
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
                     break;

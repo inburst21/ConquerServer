@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
+using Comet.Game.States.NPCs;
 using Comet.Game.World;
 using Comet.Shared;
 
@@ -46,6 +47,7 @@ namespace Comet.Game.States.Items
         private readonly ConcurrentDictionary<Item.ItemPosition, Item> m_dicEquipment;
         private readonly ConcurrentDictionary<uint, Item> m_dicInventory;
         private readonly ConcurrentDictionary<uint, List<Item>> m_dicWarehouses;
+        private readonly ConcurrentDictionary<uint, List<Item>> m_dicSashes;
 
         public UserPackage(Character user)
         {
@@ -54,6 +56,7 @@ namespace Comet.Game.States.Items
             m_dicEquipment = new ConcurrentDictionary<Item.ItemPosition, Item>();
             m_dicInventory = new ConcurrentDictionary<uint, Item>();
             m_dicWarehouses = new ConcurrentDictionary<uint, List<Item>>();
+            m_dicSashes = new ConcurrentDictionary<uint, List<Item>>();
         }
 
         public Item this[Item.ItemPosition position] => m_dicEquipment.TryGetValue(position, out var item) ? item : null;
@@ -72,7 +75,7 @@ namespace Comet.Game.States.Items
         public async Task<bool> CreateAsync()
         {
             var items = await ItemRepository.GetAsync(m_user.Identity);
-            foreach (var dbItem in items)
+            foreach (var dbItem in items.OrderBy(x => x.OwnerId).ThenBy(x => x.Position).ThenBy(x => x.Id))
             {
                 Item item = new Item(m_user);
                 if (!await item.CreateAsync(dbItem))
@@ -109,6 +112,17 @@ namespace Comet.Game.States.Items
                 {
                     await item.DeleteAsync();
                 }
+                else if (item.Position == Item.ItemPosition.Storage)
+                {
+                    BaseNpc npc = Kernel.RoleManager.GetRole(item.OwnerIdentity) as BaseNpc;
+                    if (npc == null)
+                    {
+                        await Log.WriteLog(LogLevel.Error, $"Unexistent warehouse {item.OwnerIdentity} for item {item.Identity}");
+                        continue;
+                    }
+
+                    await AddToStorageAsync(npc.Identity, item, MsgPackage.StorageType.Storage, false);
+                }
                 else
                 {
                     await Log.WriteLog(LogLevel.Warning,
@@ -129,7 +143,7 @@ namespace Comet.Game.States.Items
             if (!await item.CreateAsync(itemtype, pos))
                 return false;
 
-            return m_dicInventory.TryAdd(item.Identity, item) && await AddItem(item);
+            return m_dicInventory.TryAdd(item.Identity, item) && await AddItemAsync(item);
         }
 
         public async Task<bool> UseItemAsync(uint idItem, Item.ItemPosition position)
@@ -148,7 +162,7 @@ namespace Comet.Game.States.Items
 
                 m_user.IncrementExpBall();
                 await m_user.AwardExperience(m_user.CalculateExpBall());
-                await SpendItem(item);
+                await SpendItemAsync(item);
                 return true;
             }
 
@@ -161,7 +175,7 @@ namespace Comet.Game.States.Items
                     item.Mana > 0 && m_user.MaxMana == m_user.Mana)
                     return false;
 
-                if (!await SpendItem(item))
+                if (!await SpendItemAsync(item))
                     return false;
 
                 if (item.Life > 0)
@@ -273,7 +287,7 @@ namespace Comet.Game.States.Items
 
             if (!m_dicEquipment.TryAdd(position, item))
             {
-                await AddItem(item);
+                await AddItemAsync(item);
                 return false;
             }
 
@@ -328,7 +342,7 @@ namespace Comet.Game.States.Items
                 await item.DeleteAsync();
             else
             {
-                await AddItem(item);
+                await AddItemAsync(item);
                 await item.SaveAsync();
             }
 
@@ -399,7 +413,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public async Task<bool> AddItem(Item item)
+        public async Task<bool> AddItemAsync(Item item)
         {
             if (IsPackFull())
                 return false;
@@ -438,12 +452,12 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public async Task<bool> SpendItem(uint type, int nNum = 1, bool bSynchro = true)
+        public async Task<bool> SpendItemAsync(uint type, int nNum = 1, bool bSynchro = true)
         {
-            return await SpendItem(GetItemByType(type), nNum, bSynchro);
+            return await SpendItemAsync(GetItemByType(type), nNum, bSynchro);
         }
 
-        public async Task<bool> SpendItem(Item item, int nNum = 1, bool bSynchro = true)
+        public async Task<bool> SpendItemAsync(Item item, int nNum = 1, bool bSynchro = true)
         {
             if (item == null)
                 return false;
@@ -496,7 +510,7 @@ namespace Comet.Game.States.Items
             return amount;
         }
 
-        public async Task<bool> SpendMeteors(int amount)
+        public async Task<bool> SpendMeteorsAsync(int amount)
         {
             if (amount > MeteorAmount())
                 return false;
@@ -568,7 +582,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public async Task<bool> SpendDragonBalls(int amount, bool allowBound = false)
+        public async Task<bool> SpendDragonBallsAsync(int amount, bool allowBound = false)
         {
             if (amount > DragonBallAmount())
                 return false;
@@ -654,7 +668,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public async Task<bool> MultiSpendItem(uint idFirst, uint idLast, int nNum, bool dontAllowBound = false)
+        public async Task<bool> MultiSpendItemAsync(uint idFirst, uint idLast, int nNum, bool dontAllowBound = false)
         {
             int temp = nNum;
             List<Item> items = new List<Item>();
@@ -712,7 +726,7 @@ namespace Comet.Game.States.Items
             return nAmount >= nNum;
         }
 
-        public async Task<int> RandDropItem(int nMapType, int nChance)
+        public async Task<int> RandDropItemAsync(int nMapType, int nChance)
         {
             if (m_user == null)
                 return 0;
@@ -767,7 +781,7 @@ namespace Comet.Game.States.Items
             return nDropNum;
         }
 
-        public async Task<int> RandDropItem(int nDropNum)
+        public async Task<int> RandDropItemAsync(int nDropNum)
         {
             if (m_user == null)
                 return 0;
@@ -826,7 +840,7 @@ namespace Comet.Game.States.Items
             return nRealDropNum;
         }
 
-        public async Task<bool> RandDropEquipment(Character attacker)
+        public async Task<bool> RandDropEquipmentAsync(Character attacker)
         {
             if (m_dicEquipment.Count == 0)
                 return false;
@@ -856,6 +870,131 @@ namespace Comet.Game.States.Items
             return m_dicInventory.Count >= MAX_INVENTORY_CAPACITY;
         }
 
+        public async Task<bool> AddToStorageAsync(uint idStorage, Item item, MsgPackage.StorageType mode, bool sync)
+        {
+            if (item.Position != Item.ItemPosition.Inventory)
+                return false;
+
+            BaseNpc npc = null;
+            Item chestItem = null;
+            List<Item> items = null;
+            int maxStorage = 0;
+            if (mode == MsgPackage.StorageType.Storage)
+            {
+                npc = Kernel.RoleManager.GetRole(idStorage) as BaseNpc;
+                if (npc == null)
+                    return false;
+
+                if (npc.Data3 != 0)
+                    maxStorage = npc.Data3;
+                else maxStorage = 40;
+
+                if (!m_dicWarehouses.TryGetValue(idStorage, out items))
+                    m_dicWarehouses.TryAdd(idStorage, items = new List<Item>());
+            }
+            else if (mode == MsgPackage.StorageType.Chest)
+            {
+                chestItem = this[idStorage];
+                if (chestItem == null || chestItem.GetItemSort() != (Item.ItemSort) 11)
+                    return false;
+
+                maxStorage = (int) (chestItem.Type % 1000);
+                if (!m_dicSashes.TryGetValue(idStorage, out items))
+                    m_dicSashes.TryAdd(idStorage, items = new List<Item>());
+            }
+            else
+            {
+                if (m_user.IsPm())
+                    await m_user.SendAsync($"AddToStorageAsync::Invalid storage type: {mode}");
+                return false;
+            }
+
+            if (!item.CanBeStored())
+                return false;
+
+            if (items == null || StorageSize(idStorage, mode) >= maxStorage)
+                return false;
+
+            if (!await RemoveFromInventoryAsync(item, RemovalType.RemoveAndDisappear))
+                return false;
+
+            item.OwnerIdentity = idStorage;
+            item.Position = (Item.ItemPosition)(200 + (byte)mode / 10);
+            items.Add(item);
+            await item.SaveAsync();
+
+            if (sync)
+            {
+                await m_user.SendAsync(new MsgPackage
+                {
+                    Identity = item.OwnerIdentity,
+                    Action = MsgPackage.WarehouseMode.CheckIn,
+                    Mode = mode,
+                    Items = new List<MsgPackage.WarehouseItem>
+                    {
+                        new MsgPackage.WarehouseItem
+                        {
+                            Identity = item.Identity,
+                            Type = item.Type,
+                            SocketOne = item.SocketOne,
+                            SocketTwo = item.SocketTwo,
+                            Blessing = (byte) item.Blessing,
+                            Enchantment = item.Enchantment,
+                            Magic1 = item.Effect,
+                            Magic3 = item.Plus
+                        }
+                    }
+                });
+            }
+            return true;
+        }
+
+        public async Task<bool> GetFromStorageAsync(uint idStorage, Item item, MsgPackage.StorageType mode, bool sync)
+        {
+
+            if (sync)
+            {
+                await m_user.SendAsync(new MsgPackage
+                {
+                    Identity = item.OwnerIdentity,
+                    Action = MsgPackage.WarehouseMode.CheckOut,
+                    Mode = mode,
+                    Items = new List<MsgPackage.WarehouseItem>
+                    {
+                        new MsgPackage.WarehouseItem
+                        {
+                            Identity = item.Identity
+                        }
+                    }
+                });
+            }
+            return true;
+        }
+
+        public List<Item> GetStorageItems(uint idStorage, MsgPackage.StorageType type)
+        {
+            switch (type)
+            {
+                case MsgPackage.StorageType.Storage:
+                    return m_dicWarehouses.TryGetValue(idStorage, out var storage) ? storage : new List<Item>();
+                case MsgPackage.StorageType.Chest:
+                    return m_dicSashes.TryGetValue(idStorage, out var chest) ? chest : new List<Item>();
+            }
+            return new List<Item>();
+        }
+
+        public int StorageSize(uint idStorage, MsgPackage.StorageType type)
+        {
+            switch (type)
+            {
+                case MsgPackage.StorageType.Storage:
+                    return m_dicWarehouses.TryGetValue(idStorage, out var storage) ? storage.Count : 0;
+                case MsgPackage.StorageType.Chest:
+                    return m_dicSashes.TryGetValue(idStorage, out var chest) ? chest.Count : 0;
+            }
+            return 0;
+        }
+
         /// <summary>
         ///     Sent only on login!!!
         /// </summary>
@@ -869,6 +1008,8 @@ namespace Comet.Game.States.Items
             foreach (var item in m_dicInventory.Values)
             {
                 await m_user.SendAsync(new MsgItemInfo(item));
+                if (item.Type == Item.TYPE_JAR)
+                    await item.SendJarAsync();
             }
         }
 

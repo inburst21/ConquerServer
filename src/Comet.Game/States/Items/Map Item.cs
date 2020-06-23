@@ -229,7 +229,7 @@ namespace Comet.Game.States.Items
 
                 if (sort == Item.ItemSort.ItemsortWeaponSingleHand
                     && sort == Item.ItemSort.ItemsortWeaponDoubleHand
-                    && await Kernel.ChanceCalcAsync(0.01d)) // socketed item
+                    && await Kernel.ChanceCalcAsync(1, 1000)) // socketed item
                 {
                     message += "(SocketNum: 1)";
                     m_info.SocketNum = 1;
@@ -241,18 +241,18 @@ namespace Comet.Game.States.Items
                     }
                 }
 
-                if (await Kernel.ChanceCalcAsync(0.01d))
+                if (await Kernel.ChanceCalcAsync(1, 10000))
                 {
                     message += "(Addition: 1)";
                     m_info.Addition = 1;
                 }
 
-                if (await Kernel.ChanceCalcAsync(0.07d))
+                if (await Kernel.ChanceCalcAsync(1, 5000))
                 {
                     message += "(ReduceDamage: 3)";
                     m_info.ReduceDamage = 3;
                 }
-                else if (await Kernel.ChanceCalcAsync(0.02d))
+                else if (await Kernel.ChanceCalcAsync(1, 15000))
                 {
                     message += "(ReduceDamage: 5)";
                     m_info.ReduceDamage = 5;

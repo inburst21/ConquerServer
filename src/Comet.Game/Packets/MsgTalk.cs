@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -401,6 +402,18 @@ namespace Comet.Game.Packets
                         }
 
                         await bringTarget.FlyMap(user.MapIdentity, user.MapX, user.MapY);
+                        return true;
+
+                    case "/jar":
+                        DbItem dbJar = Item.CreateEntity(Item.TYPE_JAR);
+                        dbJar.Amount = 1000;
+                        dbJar.AmountLimit = (ushort) (1 << ushort.Parse(param));
+                        Item jar = new Item(user);
+                        if (await jar.CreateAsync(dbJar))
+                        {
+                            await user.SendAsync(new MsgItemInfo(jar));
+                            //await jar.SendJarAsync();
+                        }
                         return true;
                 }
             }
