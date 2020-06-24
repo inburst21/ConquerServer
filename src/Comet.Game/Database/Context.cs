@@ -76,6 +76,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbMagictypeOp> MagictypeOps { get; set; }
         public virtual DbSet<DbRebirth> Rebirths { get; set; }
         public virtual DbSet<DbStatus> Status { get; set; }
+        public virtual DbSet<DbTaskDetail> TaskDetail { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
