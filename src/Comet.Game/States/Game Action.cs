@@ -985,7 +985,7 @@ namespace Comet.Game.States
                                 return false;
                             }
 
-                            if (!pItem.ChangeType(itemt.Type))
+                            if (!await pItem.ChangeTypeAsync(itemt.Type))
                                 return false;
                         }
                         else if (opt == "==")
@@ -2824,7 +2824,7 @@ namespace Comet.Game.States
             bool parsed = ulong.TryParse(input, out var password);
             if (string.IsNullOrEmpty(input) || (parsed && password == 0))
             {
-                user.SecondaryPassword = 0;
+                //user.SecondaryPassword = 0;
                 await user.SaveAsync();
                 return true;
             }
@@ -3120,7 +3120,7 @@ namespace Comet.Game.States
                 case "set":
                 {
                     if (value > 0)
-                        return await user.Statistic.SetTimestampAsync(idEvent, idType, DateTime.Now.AddSeconds(value));
+                        return await user.Statistic.SetTimestampAsync(idEvent, idType, DateTime.Now);
                     return await user.Statistic.SetTimestampAsync(idEvent, idType, null);
                 }
             }

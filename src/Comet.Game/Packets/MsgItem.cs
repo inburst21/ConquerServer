@@ -23,10 +23,17 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.NPCs;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
+using Comet.Shared;
+using Org.BouncyCastle.Crypto.Tls;
 
 #endregion
 
@@ -40,6 +47,16 @@ namespace Comet.Game.Packets
     /// </summary>
     public sealed class MsgItem : MsgBase<Client>
     {
+        public enum Moneytype
+        {
+            Silver,
+            ConquerPoints,
+            /// <summary>
+            /// CPs(B)
+            /// </summary>
+            ConquerPointsMono
+        }
+
         public MsgItem()
         {
             Type = PacketType.MsgItem;
@@ -110,8 +127,113 @@ namespace Comet.Game.Packets
         {
             Character user = client.Character;
 
+            BaseNpc npc = null;
+            Item item = null;
             switch (Action)
             {
+                case ItemActionType.ShopPurchase:
+                    if (user.InteractingNpc != 0)
+                    {
+                        npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                        if (npc == null)
+                            return;
+                        if (npc.MapIdentity != user.MapIdentity
+                            || npc.GetDistance(user) > Screen.VIEW_SIZE)
+                            return;
+                    }
+                    else
+                    {
+                        npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                        if (npc == null)
+                            return;
+                        if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
+                            return;
+                        if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
+                            return;
+                    }
+
+                    DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
+                    if (goods == null)
+                    {
+                        await Log.WriteLog(LogLevel.Cheat, $"Invalid goods itemtype {Command} for Shop {Identity}");
+                        return;
+                    }
+
+                    DbItemtype itemtype = Kernel.ItemManager.GetItemtype(Command);
+                    if (itemtype == null)
+                    {
+                        await Log.WriteLog(LogLevel.Cheat, $"Invalid goods itemtype (not existent) {Command} for Shop {Identity}");
+                        return;
+                    }
+
+                    int amount = (int) Math.Max(1, Argument);
+                    if (!user.UserPackage.IsPackSpare(amount))
+                    {
+                        await user.SendAsync(Language.StrYourBagIsFull);
+                        return;
+                    }
+
+                    const byte MONOPOLY_NONE_B = 0;
+                    const byte MONOPOLY_BOUND_B = (byte) Item.ITEM_MONOPOLY_MASK;
+                    byte monopoly = MONOPOLY_NONE_B;
+                    switch ((Moneytype)goods.Moneytype)
+                    {
+                        case Moneytype.Silver:
+                            //if ((Moneytype) goods.Moneytype != Moneytype.Silver)
+                            //    return;
+
+                            if (!await user.SpendMoney((int) (itemtype.Price * amount), true))
+                                return;
+                            break;
+                        case Moneytype.ConquerPoints:
+                            //if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
+                            //    return;
+
+                            if (!await user.SpendConquerPoints((int) (itemtype.EmoneyPrice * amount), true))
+                                return;
+                            break;
+                        default:
+                            await Log.WriteLog(LogLevel.Cheat, $"Invalid moneytype {(Moneytype) Argument}/{Identity}/{Command} - {user.Identity}({user.Name})");
+                            return;
+                    }
+
+                    for (int i = 0; i < amount; i++)
+                    {
+                        DbItem dbItem = Item.CreateEntity(itemtype.Type, monopoly != 0);
+                        if (dbItem == null)
+                            return;
+
+                        item = new Item(user);
+                        if (!await item.CreateAsync(dbItem))
+                            return;
+
+                        await user.UserPackage.AddItemAsync(item);
+                    }
+
+                    break;
+
+                case ItemActionType.ShopSell:
+                    if (Identity == 2888)
+                        return;
+
+                    npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                    if (npc == null)
+                        return;
+
+                    if (npc.MapIdentity != user.MapIdentity || npc.GetDistance(user) > Screen.VIEW_SIZE)
+                        return;
+
+                    item = user.UserPackage[Command];
+                    if (item == null)
+                        return;
+
+                    int price = item.GetSellPrice();
+                    if (!await user.UserPackage.SpendItemAsync(item))
+                        return;
+
+                    await user.AwardMoney(price);
+                    break;
+
                 case ItemActionType.InventoryRemove:
                     await user.DropItem(Identity, user.MapX, user.MapY);
                     break;
@@ -132,8 +254,191 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.BankQuery:
+                    Command = user.StorageMoney;
+                    await user.SendAsync(this);
                     break;
 
+                case ItemActionType.BankDeposit:
+                    if (user.Silvers < Command)
+                        return;
+
+                    if (Command + user.StorageMoney > Role.MAX_STORAGE_MONEY)
+                    {
+                        await user.SendAsync(string.Format(Language.StrSilversExceedAmount, int.MaxValue));
+                        return;
+                    }
+
+                    if (!await user.SpendMoney((int) Command, true))
+                        return;
+
+                    user.StorageMoney += Command;
+
+                    Action = ItemActionType.BankQuery;
+                    Command = user.StorageMoney;
+                    await user.SendAsync(this);
+                    await user.SaveAsync();
+                    break;
+
+                case ItemActionType.BankWithdraw:
+                    if (Command > user.StorageMoney)
+                        return;
+
+                    if (Command + user.Silvers > int.MaxValue)
+                    {
+                        await user.SendAsync(string.Format(Language.StrSilversExceedAmount, int.MaxValue));
+                        return;
+                    }
+
+                    user.StorageMoney -= Command;
+
+                    await user.AwardMoney((int) Command);
+
+                    Action = ItemActionType.BankQuery;
+                    Command = user.StorageMoney;
+                    await user.SendAsync(this);
+                    await user.SaveAsync();
+                    break;
+
+                case ItemActionType.EquipmentRepair:
+                    item = user.UserPackage[Identity];
+                    if (item != null && item.Position == Item.ItemPosition.Inventory)
+                        await item.RepairItemAsync();
+                    break;
+
+                case ItemActionType.EquipmentRepairAll:
+                    if (user.Client.VipLevel < 2)
+                        return;
+
+                    for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                        pos <= Item.ItemPosition.EquipmentEnd;
+                        pos++)
+                    {
+                        if (user.UserPackage[pos] != null)
+                            await user.UserPackage[pos].RepairItemAsync();
+                    }
+
+                    break;
+
+                case ItemActionType.EquipmentImprove:
+                {
+                    item = user.UserPackage[Identity];
+                    if (item == null || item.Position != Item.ItemPosition.Inventory)
+                        return;
+
+                    if (item.Durability / 100 != item.MaximumDurability / 100)
+                    {
+                        await user.SendAsync(Language.StrItemErrRepairItem);
+                        return;
+                    }
+
+                    if (item.Type % 10 == 0)
+                    {
+                        await user.SendAsync(Language.StrItemErrUpgradeFixed);
+                        return;
+                    }
+
+                    uint idNewType = 0;
+                    double nChance = 0.00;
+
+                    if (!item.GetUpEpQualityInfo(out nChance, out idNewType) || idNewType == 0)
+                    {
+                        await user.SendAsync(Language.StrItemCannotImprove);
+                        return;
+                    }
+
+                    if (item.Type % 10 < 6 && item.Type % 10 > 0)
+                    {
+                        nChance = 100.00;
+                    }
+
+                    if (!await user.UserPackage.SpendDragonBallsAsync(1, item.IsBound))
+                    {
+                        await user.SendAsync(Language.StrItemErrNoDragonBall);
+                        return;
+                    }
+
+                    if (await Kernel.ChanceCalcAsync(nChance))
+                    {
+                        await item.ChangeTypeAsync(idNewType);
+                    }
+                    else
+                    {
+                        item.Durability = (ushort) (item.MaximumDurability / 2);
+                    }
+
+                    if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(1))
+                    {
+                        item.SocketOne = Item.SocketGem.EmptySocket;
+                        await user.SendAsync(Language.StrUpgradeAwardSocket);
+                    }
+
+                    await item.SaveAsync();
+                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                    await Log.GmLog("improve",
+                        $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_DRAGONBALL}");
+                    break;
+                }
+                case ItemActionType.EquipmentLevelUp:
+                {
+                    item = user.UserPackage[Identity];
+                    if (item == null || item.Position != Item.ItemPosition.Inventory)
+                        return;
+
+                    if (item.Durability / 100 != item.MaximumDurability / 100)
+                    {
+                        await user.SendAsync(Language.StrItemErrRepairItem);
+                        return;
+                    }
+
+                    if (item.Type % 10 == 0)
+                    {
+                        await user.SendAsync(Language.StrItemErrUpgradeFixed);
+                        return;
+                    }
+
+                    int idNewType = 0;
+                    double nChance = 0.00;
+
+                    if (!item.GetUpLevelChance(out nChance, out idNewType) || idNewType == 0)
+                    {
+                        await user.SendAsync(Language.StrItemErrMaxLevel);
+                        return;
+                    }
+
+                    DbItemtype dbNewType = Kernel.ItemManager.GetItemtype((uint) idNewType);
+                    if (dbNewType == null)
+                    {
+                        await user.SendAsync(Language.StrItemErrMaxLevel);
+                        return;
+                    }
+
+                    if (!await user.UserPackage.SpendMeteorsAsync(1))
+                    {
+                        await user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, 1));
+                        return;
+                    }
+
+                    if (await Kernel.ChanceCalcAsync(nChance))
+                    {
+                        await item.ChangeTypeAsync((uint) idNewType);
+                    }
+                    else
+                    {
+                        item.Durability = (ushort) (item.MaximumDurability / 2);
+                    }
+
+                    if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(1))
+                    {
+                        item.SocketOne = Item.SocketGem.EmptySocket;
+                        await user.SendAsync(Language.StrUpgradeAwardSocket);
+                        await item.SaveAsync();
+                    }
+
+                    await item.SaveAsync();
+                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                    await Log.GmLog("uplev", $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_METEOR}");
+                        break;
+                }
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
                     break;

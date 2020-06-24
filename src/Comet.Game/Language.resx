@@ -189,6 +189,9 @@
   <data name="StrItemCannotDiscard" xml:space="preserve">
     <value>{0} cannot be discarded.</value>
   </data>
+  <data name="StrItemCannotImprove" xml:space="preserve">
+    <value>This item cannot be improved.</value>
+  </data>
   <data name="StrItemErrMaxLevel" xml:space="preserve">
     <value>The item is already at the maximum level.</value>
   </data>
@@ -209,6 +212,12 @@
   </data>
   <data name="StrItemErrRepairItem" xml:space="preserve">
     <value>Please repair your item before upgrading.</value>
+  </data>
+  <data name="StrItemErrRepairMeteor" xml:space="preserve">
+    <value>You need 5 Meteors to repair your broken equipment.</value>
+  </data>
+  <data name="StrItemErrUpgradeFixed" xml:space="preserve">
+    <value>Fixed equipment cannot be improved.</value>
   </data>
   <data name="StrItemNotFound" xml:space="preserve">
     <value>Target item not found.</value>
@@ -309,6 +318,9 @@
   <data name="StrShieldActiveT" xml:space="preserve">
     <value>Shield for {0} seconds, your defense will be increased by {1} times.</value>
   </data>
+  <data name="StrSilversExceedAmount" xml:space="preserve">
+    <value>You'll exceed the maximum amount of silvers to store. Can't exceed {0:N0}.</value>
+  </data>
   <data name="StrStigmaActiveP" xml:space="preserve">
     <value>Stigma for {0} seconds, your attack will be increased by {1} percent.</value>
   </data>
@@ -398,6 +410,9 @@
   </data>
   <data name="StrUnableToUseItem" xml:space="preserve">
     <value>Unable to use item.</value>
+  </data>
+  <data name="StrUpgradeAwardSocket" xml:space="preserve">
+    <value>Your equipment received a new socket.</value>
   </data>
   <data name="StrWeaponSkillUp" xml:space="preserve">
     <value>Your weapon proeficiency level has been improved.</value>

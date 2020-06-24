@@ -23,6 +23,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
@@ -660,12 +661,12 @@ namespace Comet.Game.States.Items
 
         #region Change Data
 
-        public bool ChangeType(uint newType)
+        public async Task<bool> ChangeTypeAsync(uint newType)
         {
             DbItemtype itemtype = Kernel.ItemManager.GetItemtype(newType);
             if (itemtype == null)
             {
-                _ = Log.WriteLog(LogLevel.Error, $"ChangeType() Invalid itemtype id {newType}");
+                await Log.WriteLog(LogLevel.Error, $"ChangeType() Invalid itemtype id {newType}");
                 return false;
             }
 
@@ -673,6 +674,7 @@ namespace Comet.Game.States.Items
             m_dbItemtype = itemtype;
 
             m_dbItemAddition = Kernel.ItemManager.GetItemAddition(newType, m_dbItem.Magic3);
+            await SaveAsync();
             return true;
         }
 
@@ -695,16 +697,16 @@ namespace Comet.Game.States.Items
 
         #region Update And Upgrade
 
-        public bool GetUpLevelChance(int itemtype, out double chance, out int nextId)
+        public bool GetUpLevelChance(out double chance, out int nextId)
         {
             nextId = 0;
             chance = 0;
-            int sort = itemtype / 10000, subtype = itemtype / 1000;
+            int sort = (int) (Type / 10000), subtype = (int) (Type / 1000);
 
-            if (NextItemLevel(itemtype).Type == itemtype)
+            DbItemtype info = NextItemLevel((int) Type);
+            if (info == null)
                 return false;
 
-            DbItemtype info = NextItemLevel(itemtype);
             nextId = (int)info.Type;
 
             if (info.ReqLevel >= 120)
@@ -1013,7 +1015,7 @@ namespace Comet.Game.States.Items
 
         public uint GetUpgradeGemAmount()
         {
-            if (!GetUpLevelChance((int)Type, out var nChance, out _))
+            if (!GetUpLevelChance(out var nChance, out _))
                 return 0;
             return (uint)(100 / nChance + 1) * 12 / 10;
         }
@@ -1033,7 +1035,7 @@ namespace Comet.Game.States.Items
             DbItemtype newType = Kernel.ItemManager.GetItemtype(newId);
             if (newType == null || newType.Type == Type)
                 return false;
-            return ChangeType(newType.Type);
+            return await ChangeTypeAsync(newType.Type);
         }
 
         public async Task<bool> UpItemQuality()
@@ -1065,7 +1067,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            return ChangeType(newType.Type);
+            return await ChangeTypeAsync(newType.Type);
         }
 
         /// <summary>
@@ -1080,7 +1082,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            if (!GetUpLevelChance((int)Type, out var nChance, out var newId))
+            if (!GetUpLevelChance(out var nChance, out var newId))
             {
                 await m_user.SendAsync(Language.StrItemErrMaxLevel);
                 return false;
@@ -1109,7 +1111,7 @@ namespace Comet.Game.States.Items
 
             Durability = newType.AmountLimit;
             MaximumDurability = newType.AmountLimit;
-            return ChangeType(newType.Type);
+            return await ChangeTypeAsync(newType.Type);
         }
 
         public async Task<bool> UpUltraEquipmentLevel()
@@ -1140,7 +1142,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            return ChangeType(newType.Type);
+            return await ChangeTypeAsync(newType.Type);
         }
 
         public int GetRecoverDurCost()
@@ -1185,7 +1187,66 @@ namespace Comet.Game.States.Items
 
         #endregion
 
+        #region Durability
+
+        public async Task RepairItemAsync()
+        {
+            if (m_user == null)
+                return;
+
+            if (!IsEquipment() && !IsWeapon())
+                return;
+
+            if (IsBroken())
+            {
+                if (!await m_user.UserPackage.SpendMeteorsAsync(5))
+                {
+                    await m_user.SendAsync(Language.StrItemErrRepairMeteor);
+                    return;
+                }
+
+                Durability = MaximumDurability;
+                await SaveAsync();
+                await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
+                await Log.GmLog("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with 5 meteors.", Type, Identity, PlayerIdentity));
+                return;
+            }
+
+            var nRecoverDurability = (ushort)(Math.Max(0u, MaximumDurability) - Durability);
+            if (nRecoverDurability == 0)
+                return;
+
+            int nRepairCost = GetRecoverDurCost();
+
+            if (!await m_user.SpendMoney(Math.Max(1, nRepairCost), true))
+                return;
+
+            Durability = MaximumDurability;
+            await SaveAsync();
+            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
+            await Log.GmLog("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity, nRepairCost));
+        }
+        
+        #endregion
+
         #region Query info
+
+        public bool IsBroken()
+        {
+            return Durability == 0;
+        }
+
+        public int GetSellPrice()
+        {
+            if (IsBroken() || IsArrowSort() || IsBound)
+                return 0;
+
+            int price = (int)(m_dbItemtype?.Price ?? 0);
+            int amount = Math.Min(MaximumDurability, Durability);
+            price = price + Calculations.MulDiv(price, GetQuality() * 5, 100);
+            price = Calculations.MulDiv(price / 3, amount, m_dbItem.AmountLimit);
+            return price;
+        }
 
         public bool IsGem()
         {
@@ -1782,5 +1843,7 @@ namespace Comet.Game.States.Items
         public const uint TYPE_JAR = 750000;
 
         #endregion
+
+        
     }
 }

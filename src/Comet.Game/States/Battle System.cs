@@ -219,6 +219,12 @@ namespace Comet.Game.States
                 damage = attacker.AdjustWeaponDamage(damage);
             }
 
+            if (targetUser != null && attacker.BattlePower < target.BattlePower)
+            {
+                double delta = Math.Min(25, target.BattlePower - attacker.BattlePower) * 2 / 100f;
+                damage = (int) (damage * (1 - delta));
+            }
+
             if (target is Monster mob)
                 damage = (int)Math.Min(mob.MaxLife * 700, damage);
 
@@ -261,6 +267,12 @@ namespace Comet.Game.States
             else
             {
                 damage = target.AdjustMagicDamage(damage);
+            }
+
+            if (targetUser != null && attacker.BattlePower < target.BattlePower)
+            {
+                double delta = Math.Min(25, target.BattlePower - attacker.BattlePower) * 2 / 100f;
+                damage = (int)(damage * (1 - delta));
             }
 
             if (target is Monster mob)

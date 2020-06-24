@@ -193,6 +193,11 @@ namespace Comet.Game.World.Managers
             return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
         }
 
+        public T GetRole<T>(uint idRole) where T : Role
+        {
+            return m_roleSet.TryGetValue(idRole, out var role) ? role as T : null;
+        }
+
         /// <summary>
         ///     Attention, DO NOT USE to remove <see cref="Character" />.
         /// </summary>

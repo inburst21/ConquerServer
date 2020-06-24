@@ -277,6 +277,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item cannot be improved..
+        /// </summary>
+        public static string StrItemCannotImprove {
+            get {
+                return ResourceManager.GetString("StrItemCannotImprove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The item is already at the maximum level..
         /// </summary>
         public static string StrItemErrMaxLevel {
@@ -336,6 +345,24 @@ namespace Comet.Game {
         public static string StrItemErrRepairItem {
             get {
                 return ResourceManager.GetString("StrItemErrRepairItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You need 5 Meteors to repair your broken equipment..
+        /// </summary>
+        public static string StrItemErrRepairMeteor {
+            get {
+                return ResourceManager.GetString("StrItemErrRepairMeteor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Fixed equipment cannot be improved..
+        /// </summary>
+        public static string StrItemErrUpgradeFixed {
+            get {
+                return ResourceManager.GetString("StrItemErrUpgradeFixed", resourceCulture);
             }
         }
         
@@ -637,6 +664,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You&apos;ll exceed the maximum amount of silvers to store. Can&apos;t exceed {0:N0}..
+        /// </summary>
+        public static string StrSilversExceedAmount {
+            get {
+                return ResourceManager.GetString("StrSilversExceedAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Stigma for {0} seconds, your attack will be increased by {1} percent..
         /// </summary>
         public static string StrStigmaActiveP {
@@ -903,6 +939,15 @@ namespace Comet.Game {
         public static string StrUnableToUseItem {
             get {
                 return ResourceManager.GetString("StrUnableToUseItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your equipment received a new socket..
+        /// </summary>
+        public static string StrUpgradeAwardSocket {
+            get {
+                return ResourceManager.GetString("StrUpgradeAwardSocket", resourceCulture);
             }
         }
         
