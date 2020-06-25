@@ -175,6 +175,12 @@ namespace Comet.Game.Packets
                             return;
                         }
 
+                        if (!await user.UserPackage.SpendItemAsync(minor))
+                        {
+                            await user.SendAsync(Language.StrEmbedNoRequiredItem);
+                            return;
+                        }
+
                         main.SocketTwo = gem;
                         await main.SaveAsync();
                         break;
