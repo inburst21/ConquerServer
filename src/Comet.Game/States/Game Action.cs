@@ -35,6 +35,7 @@ using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Shared;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace Comet.Game.States
@@ -97,7 +98,9 @@ namespace Comet.Game.States
                     case TaskActionType.ActionBrocastmsg: result = await ExecuteActionBrocastmsg(action, param, user, role, item, input); break;
                     case TaskActionType.ActionRand: result = await ExecuteActionMenuRand(action, param, user, role, item, input); break;
                     case TaskActionType.ActionRandaction: result = await ExecuteActionMenuRandAction(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionPostcmd: result = await ExecuteActionPostcmd(action, param, user, role, item, input); break;
                     case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionExecutequery: result = await ExecuteActionExecutequery(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionItemAdd: result = await ExecuteActionItemAdd(action, param, user, role, item, input); break;
                     case TaskActionType.ActionItemDel: result = await ExecuteActionItemDel(action, param, user, role, item, input); break;
@@ -457,10 +460,51 @@ namespace Comet.Game.States
 
             return false;
         }
+
+        private static async Task<bool> ExecuteActionPostcmd(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            await user.SendAsync(new MsgAction
+            {
+                Identity = user.Identity,
+                Command = action.Data,
+                Action = MsgAction.ActionType.ClientCommand,
+                ArgumentX = user.MapX,
+                ArgumentY = user.MapY
+            });
+
+            return true;
+        }
         
         private static async Task<bool> ExecuteActionBrocastmsg(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             await Kernel.RoleManager.BroadcastMsgAsync(param, (MsgTalk.TalkChannel) action.Data, Color.White);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionExecutequery(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            try
+            {
+                if (param.Trim().StartsWith("SELECT", StringComparison.InvariantCultureIgnoreCase) ||
+                    param.Trim().StartsWith("UPDATE", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (!param.Contains("WHERE") || !param.Contains("LIMIT"))
+                    {
+                        await Log.WriteLog("database", LogLevel.Warning, $"ExecuteActionExecutequery {action.Identity} doesn't have WHERE or LIMIT clause [{param}]");
+                        return false;
+                    }
+                }
+
+                new ServerDbContext().Database.ExecuteSqlRaw(param);
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                return false;
+            }
             return true;
         }
 
