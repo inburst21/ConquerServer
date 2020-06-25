@@ -148,6 +148,10 @@ namespace Comet.Game
                         msg = new MsgAllot();
                         break;
 
+                    case PacketType.MsgGemEmbed:
+                        msg = new MsgGemEmbed();
+                        break;
+
                     case PacketType.MsgConnect:
                         msg = new MsgConnect();
                         break;

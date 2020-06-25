@@ -223,6 +223,42 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have the required item..
+        /// </summary>
+        public static string StrEmbedNoRequiredItem {
+            get {
+                return ResourceManager.GetString("StrEmbedNoRequiredItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item doesn&apos;t have the second socket open..
+        /// </summary>
+        public static string StrEmbedNoSecondSocket {
+            get {
+                return ResourceManager.GetString("StrEmbedNoSecondSocket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This socket already have a gem in it..
+        /// </summary>
+        public static string StrEmbedSocketAlreadyFilled {
+            get {
+                return ResourceManager.GetString("StrEmbedSocketAlreadyFilled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target item doesn&apos;t have a socket..
+        /// </summary>
+        public static string StrEmbedTargetNoSocket {
+            get {
+                return ResourceManager.GetString("StrEmbedTargetNoSocket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your friend list is full..
         /// </summary>
         public static string StrFriendListFull {
@@ -444,6 +480,15 @@ namespace Comet.Game {
         public static string StrNoBonus {
             get {
                 return ResourceManager.GetString("StrNoBonus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item is not a gem..
+        /// </summary>
+        public static string StrNoGemEmbed {
+            get {
+                return ResourceManager.GetString("StrNoGemEmbed", resourceCulture);
             }
         }
         
