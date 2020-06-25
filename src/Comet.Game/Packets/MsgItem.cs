@@ -132,25 +132,13 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ItemActionType.ShopPurchase:
-                    if (user.InteractingNpc != 0)
-                    {
-                        npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
-                        if (npc == null)
-                            return;
-                        if (npc.MapIdentity != user.MapIdentity
-                            || npc.GetDistance(user) > Screen.VIEW_SIZE)
-                            return;
-                    }
-                    else
-                    {
-                        npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
-                        if (npc == null)
-                            return;
-                        if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
-                            return;
-                        if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
-                            return;
-                    }
+                    npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                    if (npc == null)
+                        return;
+                    if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
+                        return;
+                    if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
+                        return;
 
                     DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
                     if (goods == null)

@@ -152,6 +152,10 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserWhPassword: result = await ExecuteActionUserWhPassword(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserSetWhPassword: result = await ExecuteActionUserSetWhPassword(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserOpeninterface: result = await ExecuteActionUserOpeninterface(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskManager: result = await ExecuteActionUserTaskManager(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskOpe: result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskLocaltime: result = await ExecuteActionUserTaskLocaltime(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTaskFind: result = await ExecuteActionUserTaskFind(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarCompare: result = await ExecuteActionUserVarCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarDefine: result = await ExecuteActionUserVarDefine(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
@@ -610,21 +614,21 @@ namespace Comet.Game.States
 
             if (opt.Equals("makehole", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (value == 1 && item.SocketOne == Item.SocketGem.NoSocket)
+                if (value == 1 && target.SocketOne == Item.SocketGem.NoSocket)
                 {
-                    item.SocketOne = Item.SocketGem.EmptySocket;
+                    target.SocketOne = Item.SocketGem.EmptySocket;
                 }
-                else if (value == 2 && item.SocketTwo == Item.SocketGem.NoSocket)
+                else if (value == 2 && target.SocketTwo == Item.SocketGem.NoSocket)
                 {
-                    item.SocketTwo = Item.SocketGem.EmptySocket;
+                    target.SocketTwo = Item.SocketGem.EmptySocket;
                 }
                 else
                 {
                     return false;
                 }
 
-                await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-                await item.SaveAsync();
+                await user.SendAsync(new MsgItemInfo(target, MsgItemInfo.ItemMode.Update));
+                await target.SaveAsync();
                 return true;
             }
 
@@ -754,6 +758,7 @@ namespace Comet.Game.States
                 }
 
                 case "up_levultra":
+                case "up_levultra2":
                 {
                     return await pItem.UpUltraEquipmentLevel();
                 }
@@ -2851,6 +2856,183 @@ namespace Comet.Game.States
             return true;
         }
 
+        private static async Task<bool> ExecuteActionUserTaskManager(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.TaskDetail == null)
+                return false;
+
+            if (action.Data == 0)
+                return false;
+
+            switch (param.ToLowerInvariant())
+            {
+                case "new":
+                    if (user.TaskDetail.QueryTaskData(action.Data) != null)
+                        return false;
+                    return await user.TaskDetail.CreateNewAsync(action.Data);
+                case "isexit":
+                    return user.TaskDetail.QueryTaskData(action.Data) != null;
+                case "delete": 
+                    return await user.TaskDetail.DeleteTaskAsync(action.Data);
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserTaskOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.TaskDetail == null)
+                return false;
+
+            if (action.Data == 0)
+                return false;
+
+            string[] splitParam = SplitParam(param, 3);
+            if (splitParam.Length != 3)
+                return false;
+
+            string ope = splitParam[0].ToLowerInvariant(),
+                opt = splitParam[1].ToLowerInvariant();
+            int data = int.Parse(splitParam[2]);
+
+            if (ope.Equals("complete"))
+            {
+                if (opt.Equals("=="))
+                {
+                    return user.TaskDetail.QueryTaskData(action.Data)?.CompleteFlag == data;
+                }
+                if (opt.Equals("set"))
+                {
+                    return await user.TaskDetail.SetCompleteAsync(action.Data, data);
+                }
+                return false;
+            }
+            if (ope.StartsWith("data"))
+            {
+                switch (opt)
+                {
+                    case ">":
+                        return user.TaskDetail.GetData(action.Data, ope) > data;
+                    case "<":
+                        return user.TaskDetail.GetData(action.Data, ope) < data;
+                    case ">=":
+                        return user.TaskDetail.GetData(action.Data, ope) >= data;
+                    case "<=":
+                        return user.TaskDetail.GetData(action.Data, ope) <= data;
+                    case "==":
+                        return user.TaskDetail.GetData(action.Data, ope) == data;
+                    case "+=":
+                        return await user.TaskDetail.AddDataAsync(action.Data, ope, data);
+                    case "set":
+                        return await user.TaskDetail.SetDataAsync(action.Data, ope, data);
+                }
+                return false;
+            }
+            if (ope.Equals("notify"))
+            {
+                DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
+                if (detail == null)
+                    return false;
+
+                detail.NotifyFlag = (byte) data;
+                return await user.TaskDetail.SaveAsync(detail);
+            }
+            if (ope.Equals("overtime"))
+            {
+                DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
+                if (detail == null)
+                    return false;
+
+                detail.TaskOvertime = (uint) data;
+                return await user.TaskDetail.SaveAsync(detail);
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionUserTaskLocaltime(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.TaskDetail == null)
+                return false;
+
+            if (action.Data == 0)
+                return false;
+
+            string[] splitParam = SplitParam(param, 3);
+            if (splitParam.Length != 3)
+                return false;
+
+            string ope = splitParam[0].ToLowerInvariant(),
+                opt = splitParam[1].ToLowerInvariant();
+            int data = int.Parse(splitParam[2]);
+
+            if (opt.StartsWith("interval", StringComparison.InvariantCultureIgnoreCase))
+            {
+                DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
+                if (detail == null)
+                    return true;
+
+                int mode = int.Parse(GetParenthesys(ope));
+                switch (mode)
+                {
+                    case 0: // seconds
+                    {
+                        DateTime timeStamp = DateTime.Now;
+                        int nDiff = (int)((timeStamp - UnixTimestamp.ToDateTime(detail.TaskOvertime)).TotalSeconds + data);
+                        switch (opt)
+                        {
+                            case "==": return nDiff == data;
+                            case "<": return nDiff < data;
+                            case ">": return nDiff > data;
+                            case "<=": return nDiff <= data;
+                            case ">=": return nDiff >= data;
+                            case "<>":
+                            case "!=": return nDiff != data;
+                        }
+
+                        return false;
+                    }
+
+                    case 1: // days
+                        int interval = int.Parse(DateTime.Now.ToString("yyyyMMdd")) -
+                                       int.Parse(UnixTimestamp.ToDateTime(detail.TaskOvertime).ToString("yyyyMMdd"));
+                        switch (opt)
+                        {
+                            case "==": return interval == data;
+                            case "<": return interval < data;
+                            case ">": return interval > data;
+                            case "<=": return interval <= data;
+                            case ">=": return interval >= data;
+                            case "!=":
+                            case "<>": return interval != data;
+                        }
+
+                        return false;
+                    default:
+                        await Log.WriteLog(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
+                        return false;
+                }
+            }
+
+            if (opt.Equals("time"))
+            {
+                DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
+                if (detail == null)
+                    return false;
+
+                detail.TaskOvertime = (uint) data;
+                return await user.TaskDetail.SaveAsync(detail);
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionUserTaskFind(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserTaskFind unhandled");
+            return false;
+        }
+
         private static async Task<bool> ExecuteActionUserVarCompare(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
@@ -3056,7 +3238,7 @@ namespace Comet.Game.States
 
             DbStatistic dbStc = user.Statistic.GetStc(idEvent, idType);
             if (dbStc?.Timestamp == null)
-                return true;
+                return false;
 
             switch (mode)
             {

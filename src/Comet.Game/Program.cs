@@ -106,7 +106,39 @@ namespace Comet.Game
             // Output all clear and wait for user input
             await Log.WriteLog(LogLevel.Message, "Listening for new connections");
             Console.WriteLine();
-            Thread.Sleep(Timeout.Infinite);
+
+            bool result = await CommandCenterAsync();
+            if (!result)
+                await Log.WriteLog(LogLevel.Error, "Account server has exited without success.");
+
+            await Kernel.CloseAsync();
+        }
+
+        private static async Task<bool> CommandCenterAsync()
+        {
+            while (true)
+            {
+                string text = Console.ReadLine();
+
+                if (string.IsNullOrEmpty(text))
+                    continue;
+
+                if (text == "exit")
+                {
+                    await Log.WriteLog(LogLevel.Warning, "Server will shutdown...");
+                    return true;
+                }
+
+                string[] full = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (full.Length <= 0)
+                    continue;
+
+                switch (full[0].ToLower())
+                {
+                   
+                }
+            }
         }
     }
 }

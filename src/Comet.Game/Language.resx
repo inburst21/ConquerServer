@@ -141,6 +141,12 @@
   <data name="StrClose" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="StrComposeOverpowerFemale" xml:space="preserve">
+    <value>Congratulations! {0} has upgraded her {1} to +{2}!</value>
+  </data>
+  <data name="StrComposeOverpowerMale" xml:space="preserve">
+    <value>Congratulations! {0} has upgraded his {1} to +{2}!</value>
+  </data>
   <data name="StrDamagedRepair" xml:space="preserve">
     <value>{0} has been severely damaged. Please repair it soon, otherwise it will break.</value>
   </data>

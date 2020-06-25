@@ -69,6 +69,20 @@ namespace Comet.Game.World.Threading
             return true;
         }
 
+        public async Task<bool> AddGeneratorAsync(Generator generator)
+        {
+            try
+            {
+                m_generators.Add(generator);
+            }
+            catch (Exception e)
+            {
+                await Log.WriteLog(LogLevel.Exception, e.ToString());
+                return false;
+            }
+            return true;
+        }
+
         public Generator GetGenerator(uint idGen)
         {
             return m_generators.FirstOrDefault(x => x.Identity == idGen);

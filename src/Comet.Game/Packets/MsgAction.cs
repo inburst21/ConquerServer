@@ -154,6 +154,8 @@ namespace Comet.Game.Packets
                     await user.UserPackage.CreateAsync();
                     await user.UserPackage.SendAsync();
                     await user.Statistic.InitializeAsync();
+                    await user.TaskDetail.InitializeAsync();
+
                     await client.SendAsync(this);
                     break;
 

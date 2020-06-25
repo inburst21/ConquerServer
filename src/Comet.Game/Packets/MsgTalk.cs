@@ -25,11 +25,14 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
+using Comet.Game.World;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -404,17 +407,52 @@ namespace Comet.Game.Packets
                         await bringTarget.FlyMap(user.MapIdentity, user.MapX, user.MapY);
                         return true;
 
-                    case "/jar":
-                        DbItem dbJar = Item.CreateEntity(Item.TYPE_JAR);
-                        dbJar.Amount = 1000;
-                        dbJar.AmountLimit = (ushort) (1 << ushort.Parse(param));
-                        Item jar = new Item(user);
-                        if (await jar.CreateAsync(dbJar))
+                    case "/creategen":
+                        await user.SendAsync("Attention, use this command only on localhost tests or the generator thread may crash.");
+                        // mobid mapid mapx mapy boundcx boundcy maxnpc rest maxpergen
+                        string[] szComs = param.Split(' ');
+                        if (szComs.Length < 9)
                         {
-                            await user.SendAsync(new MsgItemInfo(jar));
-                            //await jar.SendJarAsync();
+                            await user.SendAsync("/creategen mobid mapid mapx mapy boundcx boundcy maxnpc rest maxpergen");
+                            return true;
                         }
-                        return true;
+
+                        ushort idMob = ushort.Parse(szComs[0]);
+                        uint idMap = uint.Parse(szComs[1]);
+                        ushort mapX = ushort.Parse(szComs[2]);
+                        ushort mapY = ushort.Parse(szComs[3]);
+                        ushort boundcx = ushort.Parse(szComs[4]);
+                        ushort boundcy = ushort.Parse(szComs[5]);
+                        ushort maxNpc = ushort.Parse(szComs[6]);
+                        ushort restSecs = ushort.Parse(szComs[7]);
+                        ushort maxPerGen = ushort.Parse(szComs[8]);
+
+                        DbGenerator newGen = new DbGenerator
+                        {
+                            Mapid = idMap,
+                            Npctype = idMob,
+                            BoundX = mapX,
+                            BoundY = mapY,
+                            BoundCx = boundcx,
+                            BoundCy = boundcy,
+                            MaxNpc = maxNpc,
+                            RestSecs = restSecs,
+                            MaxPerGen = maxPerGen,
+                            BornX = 0,
+                            BornY = 0,
+                            TimerBegin = 0,
+                            TimerEnd = 0
+                        };
+
+                        if (! await BaseRepository.SaveAsync(newGen))
+                        {
+                            await user.SendAsync("Could not save generator.");
+                            return true;
+                        }
+
+                        Generator pGen = new Generator(newGen);
+                        await pGen.GenerateAsync();
+                        return await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
                 }
             }
 

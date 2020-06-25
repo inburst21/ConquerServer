@@ -252,7 +252,7 @@ namespace Comet.Game.States.Items
 
         public byte Plus
         {
-            get => m_dbItem.Magic3;
+            get => (byte) (GetItemSubType() == 730 ? Type%100 : m_dbItem.Magic3);
             set => m_dbItem.Magic3 = value;
         }
 
@@ -674,21 +674,25 @@ namespace Comet.Game.States.Items
             m_dbItemtype = itemtype;
 
             m_dbItemAddition = Kernel.ItemManager.GetItemAddition(newType, m_dbItem.Magic3);
+            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
             await SaveAsync();
             return true;
         }
 
-        public bool ChangeAddition(byte level)
+        public bool ChangeAddition(int level = -1)
         {
+            if (level < 0)
+                level = (byte) (Plus + 1);
+
             DbItemAddition add = null;
             if (level > 0)
             {
-                add = Kernel.ItemManager.GetItemAddition(Type, level);
+                add = Kernel.ItemManager.GetItemAddition(Type, (byte) level);
                 if (add == null)
                     return false;
             }
 
-            Plus = level;
+            Plus = (byte) level;
             m_dbItemAddition = add;
             return true;
         }
@@ -1133,12 +1137,6 @@ namespace Comet.Game.States.Items
             if (newType.ReqLevel > m_user.Level)
             {
                 await m_user.SendAsync(Language.StrItemErrNotEnoughLevel);
-                return false;
-            }
-
-            if (!await m_user.UserPackage.SpendDragonBallsAsync(1, IsBound))
-            {
-                await m_user.SendAsync(Language.StrItemErrNoDragonBall);
                 return false;
             }
 

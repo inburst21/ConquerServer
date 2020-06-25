@@ -486,7 +486,7 @@ namespace Comet.Game.World.Maps
             for (int i = 0; i < 8; i++)
             {
                 int newX = sender.X + WalkXCoords[i];
-                int newY = sender.Y + WalkXCoords[i];
+                int newY = sender.Y + WalkYCoords[i];
                 if (IsLayItemEnable(newX, newY))
                 {
                     sender.X = newX;

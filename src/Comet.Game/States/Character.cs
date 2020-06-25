@@ -98,6 +98,7 @@ namespace Comet.Game.States
             WeaponSkill = new WeaponSkill(this);
             UserPackage = new UserPackage(this);
             Statistic = new UserStatistic(this);
+            TaskDetail = new TaskDetail(this);
 
             m_energyTm.Update();
             m_autoHeal.Update();
@@ -2428,6 +2429,12 @@ namespace Comet.Game.States
         public long Iterator = -1;
         public long[] VarData = new long[MAX_VAR_AMOUNT];
         public string[] VarString = new string[MAX_VAR_AMOUNT];
+
+        #endregion
+
+        #region Task Detail
+
+        public TaskDetail TaskDetail { get; }
 
         #endregion
 

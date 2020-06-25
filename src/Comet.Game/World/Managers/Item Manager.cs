@@ -67,11 +67,11 @@ namespace Comet.Game.World.Managers
             Item.ItemSort sort = Item.GetItemSort(type);
             if (sort == Item.ItemSort.ItemsortWeaponSingleHand)
             {
-                key = type / 100000 * 100000 + type % 1000 + 44000;
+                key = type / 100000 * 100000 + type % 1000 + 44000 - type % 10;
             }
             else if (sort == Item.ItemSort.ItemsortWeaponDoubleHand && !Item.IsBow(type))
             {
-                key = type / 100000 * 100000 + type % 1000 + 55000;
+                key = type / 100000 * 100000 + type % 1000 + 55000 - type % 10;
             }
             else if (Item.GetItemSubType(type) >= 130 && Item.GetItemSubType(type) < 140)
             {

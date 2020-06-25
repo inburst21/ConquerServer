@@ -218,7 +218,15 @@ namespace Comet.Game.States.Items
             {
                 string message = string.Empty;
 
-                if (Item.GetQuality(Itemtype) == 8)
+                if (Item.GetQuality(Itemtype) == 6)
+                {
+                    message += $"Refined[{Itemtype}]";
+                }
+                else if (Item.GetQuality(Itemtype) == 7)
+                {
+                    message += $"Unique[{Itemtype}]";
+                }
+                else if (Item.GetQuality(Itemtype) == 8)
                 {
                     message += $"Elite[{Itemtype}]";
                 }
@@ -229,7 +237,7 @@ namespace Comet.Game.States.Items
 
                 if (sort == Item.ItemSort.ItemsortWeaponSingleHand
                     && sort == Item.ItemSort.ItemsortWeaponDoubleHand
-                    && await Kernel.ChanceCalcAsync(1, 1000)) // socketed item
+                    && await Kernel.ChanceCalcAsync(1, 200)) // socketed item
                 {
                     message += "(SocketNum: 1)";
                     m_info.SocketNum = 1;
@@ -241,26 +249,28 @@ namespace Comet.Game.States.Items
                     }
                 }
 
-                if (await Kernel.ChanceCalcAsync(1, 10000))
+                if (await Kernel.ChanceCalcAsync(1, 300))
                 {
-                    message += "(Addition: 1)";
+                    message += "(Addition: +1)";
                     m_info.Addition = 1;
                 }
 
-                if (await Kernel.ChanceCalcAsync(1, 5000))
+                if (await Kernel.ChanceCalcAsync(1, 500))
                 {
-                    message += "(ReduceDamage: 3)";
+                    message += "(ReduceDamage: -3%)";
                     m_info.ReduceDamage = 3;
                 }
-                else if (await Kernel.ChanceCalcAsync(1, 15000))
+                else if (await Kernel.ChanceCalcAsync(1, 750))
                 {
-                    message += "(ReduceDamage: 5)";
+                    message += "(ReduceDamage: -5%)";
                     m_info.ReduceDamage = 5;
                 }
 
 #if DEBUG
                 if (!string.IsNullOrEmpty(message))
-                    await Log.WriteLog(LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}] {message}");
+                {
+                    await Log.WriteLog("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}] {message}");
+                }
 #endif
             }
         }

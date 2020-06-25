@@ -1025,8 +1025,6 @@ namespace Comet.Game.States.Items
             foreach (var item in m_dicInventory.Values)
             {
                 await m_user.SendAsync(new MsgItemInfo(item));
-                if (item.Type == Item.TYPE_JAR)
-                    await item.SendJarAsync();
             }
         }
 

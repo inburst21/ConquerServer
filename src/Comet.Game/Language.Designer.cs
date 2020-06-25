@@ -133,6 +133,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} has upgraded her {1} to +{2}!.
+        /// </summary>
+        public static string StrComposeOverpowerFemale {
+            get {
+                return ResourceManager.GetString("StrComposeOverpowerFemale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} has upgraded his {1} to +{2}!.
+        /// </summary>
+        public static string StrComposeOverpowerMale {
+            get {
+                return ResourceManager.GetString("StrComposeOverpowerMale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has been severely damaged. Please repair it soon, otherwise it will break..
         /// </summary>
         public static string StrDamagedRepair {

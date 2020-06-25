@@ -172,6 +172,10 @@ namespace Comet.Game
                         msg = new MsgTaskDialog();
                         break;
 
+                    case PacketType.MsgDataArray:
+                        msg = new MsgDataArray();
+                        break;
+
                     case PacketType.MsgPeerage:
                         msg = new MsgPeerage();
                         break;

@@ -32,7 +32,6 @@ namespace Comet.Game.Database.Models
         [Column("task_id")] public virtual uint TaskIdentity { get; set; }
         [Column("complete_flag")] public virtual ushort CompleteFlag { get; set; }
         [Column("notify_flag")] public virtual byte NotifyFlag { get; set; }
-        [Column("data0")] public virtual int Data0 { get; set; }
         [Column("data1")] public virtual int Data1 { get; set; }
         [Column("data2")] public virtual int Data2 { get; set; }
         [Column("data3")] public virtual int Data3 { get; set; }

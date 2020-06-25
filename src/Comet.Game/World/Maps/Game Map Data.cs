@@ -21,11 +21,9 @@
 
 #region References
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Comet.Game.States.BaseEntities;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
 
@@ -69,6 +67,17 @@ namespace Comet.Game.World.Maps
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+        public Tile this[int x, int y]
+        {
+            get
+            {
+                if (x < 0 || x >= Width || y < 0 || y >= Height)
+                    return default;
+
+                return m_cell[x, y];
+            }
+        }
+
         public int GetPassage(int x, int y)
         {
             for (int cx = 0; cx < 9; cx++)
@@ -84,18 +93,8 @@ namespace Comet.Game.World.Maps
                             return m_passageData[i].Index;
                 }
             }
+
             return -1;
-        }
-
-        public Tile this[int x, int y]
-        {
-            get
-            {
-                if (x < 0 || x >= Width || y < 0 || y >= Height)
-                    return default;
-
-                return m_cell[x, y];
-            }
         }
 
         public void Load(string path)

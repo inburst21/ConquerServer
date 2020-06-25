@@ -27,6 +27,7 @@ using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Runtime.InteropServices.ComTypes;
+using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Routines;
@@ -69,6 +70,7 @@ namespace Comet.Game
         public static UserProcessor UserThread = new UserProcessor();
         public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
         public static AiProcessor AiThread = new AiProcessor();
+        public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
 
         static Kernel()
         {
@@ -110,6 +112,25 @@ namespace Comet.Game
             await UserThread.StartAsync();
             await GeneratorThread.StartAsync();
             await AiThread.StartAsync();
+            await AutomaticActions.OnStartAsync();
+            return true;
+        }
+
+        public static async Task<bool> CloseAsync()
+        {
+            await RoleManager.KickoutAllAsync("Server is now closing");
+
+            SystemThread.CloseRequest = true;
+            UserThread.CloseRequest = true;
+            GeneratorThread.CloseRequest = true;
+            AiThread.CloseRequest = true;
+            AutomaticActions.CloseRequest = true;
+
+            for (int i = 0; i < 5; i++)
+            {
+                await Log.WriteLog(LogLevel.Message, $"Server will shutdown in {5-i} seconds...");
+                Thread.Sleep(1000);
+            }
             return true;
         }
 

@@ -55,6 +55,8 @@ namespace Comet.Game.World.Managers
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
 
+        private bool m_isShutdown = false;
+
         public RoleManager()
         {
 
@@ -92,6 +94,13 @@ namespace Comet.Game.World.Managers
 
         public async Task<bool> LoginUserAsync(Client user)
         {
+            if (m_isShutdown)
+            {
+                await user.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerDown));
+                user.Disconnect();
+                return false;
+            }
+
             if (m_userSet.TryGetValue(user.Character.Identity, out var concurrent))
             {
                 await Log.WriteLog(LogLevel.Message,
@@ -115,7 +124,7 @@ namespace Comet.Game.World.Managers
                 !user.Character.IsGm())
             {
                 await user.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerFull));
-                await KickoutAsync(user.Character.Identity, "server is full");
+                user.Disconnect();
                 return false;
             }
 
@@ -164,7 +173,21 @@ namespace Comet.Game.World.Managers
                 await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
 
-                _ = Log.WriteLog(LogLevel.Message, $"User {user.Name} has been kicked: {reason}");
+                await Log.WriteLog(LogLevel.Message, $"User {user.Name} has been kicked: {reason}");
+            }
+        }
+
+        public async Task KickoutAllAsync(string reason = "", bool isShutdown = false)
+        {
+            if (isShutdown)
+                m_isShutdown = true;
+
+            foreach (var user in m_userSet.Values)
+            {
+                await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
+                user.Client.Disconnect();
+
+                await Log.WriteLog(LogLevel.Message, $"User {user.Name} has been kicked (kickoutall): {reason}");
             }
         }
 

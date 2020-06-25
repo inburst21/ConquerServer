@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Comet.Account.Database;
 using Comet.Account.Database.Models;
@@ -91,7 +90,7 @@ namespace Comet.Account
             Console.WriteLine();
             bool result = await CommandCenterAsync();
             if (!result)
-                await Log.WriteLog(LogLevel.Error, $"Account server has exited without success.");
+                await Log.WriteLog(LogLevel.Error, "Account server has exited without success.");
         }
 
         private static async Task<bool> CommandCenterAsync()
@@ -109,7 +108,7 @@ namespace Comet.Account
                     return true;
                 }
 
-                string[] full = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] full = text.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
                 if (full.Length <= 0)
                     continue;
@@ -142,13 +141,13 @@ namespace Comet.Account
 
                         DbAccount account = new DbAccount
                         {
-                            AuthorityID = (ushort)type,
+                            AuthorityID = (ushort) type,
                             Username = username,
                             Password = password,
                             IPAddress = "127.0.0.1",
                             Salt = salt,
                             StatusID = 2,
-                            VipLevel = (byte)vip
+                            VipLevel = (byte) vip
                         };
 
                         await using (var db = new ServerDbContext())

@@ -52,6 +52,8 @@ namespace Comet.Shared
 
         public bool StopOnException { get; set; }
 
+        public bool CloseRequest = false;
+
         public async Task StartAsync()
         {
             await OnStartAsync();
@@ -70,8 +72,11 @@ namespace Comet.Shared
             sw.Start();
             try
             {
-                if (await OnElapseAsync())
+                if (await OnElapseAsync() && !CloseRequest)
+                {
+                    m_timer.Interval = m_interval;
                     m_timer.Start();
+                }
             }
             catch (Exception ex)
             {

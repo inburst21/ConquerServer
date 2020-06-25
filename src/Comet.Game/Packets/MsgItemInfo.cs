@@ -55,7 +55,16 @@ namespace Comet.Game.Packets
             SocketOne = item.SocketOne;
             SocketTwo = item.SocketTwo;
             Effect = item.Effect;
-            Plus = item.Plus;
+
+            if (item.GetItemSubType() == 730)
+            {
+                Plus = (byte) (item.Type % 100);
+            }
+            else
+            {
+                Plus = item.Plus;
+            }
+
             Bless = (byte) item.Blessing;
             Enchantment = item.Enchantment;
         }
