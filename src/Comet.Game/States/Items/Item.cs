@@ -1578,10 +1578,12 @@ namespace Comet.Game.States.Items
         {
             try
             {
-                await using var db = new ServerDbContext();
-                db.Remove(m_dbItem);
-                await db.SaveChangesAsync();
-                return true;
+                //await using var db = new ServerDbContext();
+                //db.Remove(m_dbItem);
+                //await db.SaveChangesAsync();
+                m_dbItem.PlayerId = 0;
+                m_dbItem.OwnerId = 0;
+                return await SaveAsync();
             }
             catch (Exception ex)
             {
