@@ -50,7 +50,12 @@ namespace Comet.Game.States.Syndicates
         public ushort Identity => m_syndicate.Identity;
         public string Name => m_syndicate.Name;
         public int MemberCount => m_dicMembers.Count;
-        public uint Money => (uint) m_syndicate.Money;
+
+        public uint Money
+        {
+            get => (uint)m_syndicate.Money;
+            set => m_syndicate.Money = value;
+        } 
 
         public string Announce => m_syndicate.Announce;
         public DateTime AnnounceDate => m_syndicate.AnnounceDate;

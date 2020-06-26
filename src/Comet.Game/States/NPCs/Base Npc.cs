@@ -281,6 +281,11 @@ namespace Comet.Game.States.NPCs
             return IsSynFlag() && Type == ROLE_CTFBASE_NPC;
         }
 
+        public bool IsAwardScore()
+        {
+            return IsSynFlag() || IsCtfFlag();
+        }
+
         #endregion
 
         #region Management

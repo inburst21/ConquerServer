@@ -71,6 +71,7 @@ namespace Comet.Game
         public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
         public static AiProcessor AiThread = new AiProcessor();
         public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
+        public static EventsProcessing EventThread = new EventsProcessing();
 
         static Kernel()
         {
@@ -112,7 +113,8 @@ namespace Comet.Game
             await UserThread.StartAsync();
             await GeneratorThread.StartAsync();
             await AiThread.StartAsync();
-            await AutomaticActions.OnStartAsync();
+            await AutomaticActions.StartAsync();
+            await EventThread.StartAsync();
             return true;
         }
 
@@ -125,6 +127,7 @@ namespace Comet.Game
             GeneratorThread.CloseRequest = true;
             AiThread.CloseRequest = true;
             AutomaticActions.CloseRequest = true;
+            EventThread.CloseRequest = true;
 
             for (int i = 0; i < 5; i++)
             {

@@ -313,6 +313,11 @@ namespace Comet.Game.States.Items
 
         #region Map
 
+        public void SetAliveTimeout(int durationSecs)
+        {
+            m_tAlive.Startup(durationSecs);
+        }
+
         public bool CanDisappear()
         {
             return m_tAlive.IsTimeOut();

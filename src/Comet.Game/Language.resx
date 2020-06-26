@@ -435,6 +435,18 @@
   <data name="StrUpgradeAwardSocket" xml:space="preserve">
     <value>Your equipment received a new socket.</value>
   </data>
+  <data name="StrWarEnd" xml:space="preserve">
+    <value>War has ended!</value>
+  </data>
+  <data name="StrWarRankingNo" xml:space="preserve">
+    <value>Nº{0}: {1} - {2:N0}</value>
+  </data>
+  <data name="StrWarRankingStart" xml:space="preserve">
+    <value>War Ranking:</value>
+  </data>
+  <data name="StrWarStart" xml:space="preserve">
+    <value>War has begun!</value>
+  </data>
   <data name="StrWeaponSkillUp" xml:space="preserve">
     <value>Your weapon proeficiency level has been improved.</value>
   </data>

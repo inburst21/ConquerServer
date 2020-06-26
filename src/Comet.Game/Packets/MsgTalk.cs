@@ -66,7 +66,7 @@ namespace Comet.Game.Packets
         /// </summary>
         public MsgTalk()
         {
-            
+            Type = PacketType.MsgTalk;
         }
 
         /// <summary>

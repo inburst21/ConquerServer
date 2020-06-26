@@ -309,5 +309,15 @@ namespace Comet.Game.World.Managers
         {
             return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext && x.Operation == op);
         }
+
+        public List<T> QueryRoleByMap<T>(uint idMap) where T : Role
+        {
+            return m_roleSet.Values.Where(x => x.MapIdentity == idMap && x is T).Cast<T>().ToList();
+        }
+
+        public List<T> QueryRoleByType<T>() where T : Role
+        {
+            return m_roleSet.Values.Where(x => x is T).Cast<T>().ToList();
+        }
     }
 }

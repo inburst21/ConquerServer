@@ -189,6 +189,16 @@ namespace Comet.Game.World
             m_dicMonsters.TryRemove(role, out _);
         }
 
+        public async Task ClearGeneratorAsync()
+        {
+            foreach (var monster in m_dicMonsters.Values)
+            {
+                await monster.LeaveMap();
+            }
+
+            m_dicMonsters.Clear();
+        }
+
         public Monster[] GetRoles()
         {
             return m_dicMonsters.Values.ToArray();

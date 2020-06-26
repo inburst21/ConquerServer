@@ -1015,6 +1015,42 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a War has ended!.
+        /// </summary>
+        public static string StrWarEnd {
+            get {
+                return ResourceManager.GetString("StrWarEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Nº{0}: {1} - {2:N0}.
+        /// </summary>
+        public static string StrWarRankingNo {
+            get {
+                return ResourceManager.GetString("StrWarRankingNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a War Ranking:.
+        /// </summary>
+        public static string StrWarRankingStart {
+            get {
+                return ResourceManager.GetString("StrWarRankingStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a War has begun!.
+        /// </summary>
+        public static string StrWarStart {
+            get {
+                return ResourceManager.GetString("StrWarStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your weapon proeficiency level has been improved..
         /// </summary>
         public static string StrWeaponSkillUp {

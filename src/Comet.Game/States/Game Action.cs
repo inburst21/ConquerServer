@@ -102,6 +102,24 @@ namespace Comet.Game.States
                     case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
                     case TaskActionType.ActionExecutequery: result = await ExecuteActionExecutequery(action, param, user, role, item, input); break;
 
+                    //case TaskActionType.ActionNpcAttr: result = await ExecuteActionNpcAttr(action, param, user, role, item, input); break;
+                    //case TaskActionType.ActionNpcErase: result = await ExecuteActionNpcErase(action, param, user, role, item, input); break;
+                    //case TaskActionType.ActionNpcResetsynowner: result = await ExecuteActionNpcResetsynowner(action, param, user, role, item, input); break;
+                    //case TaskActionType.ActionNpcFindNextTable: result = await ExecuteActionNpcFindNextTable(action, param, user, role, item, input); break;
+
+                    case TaskActionType.ActionMapMovenpc: result = await ExecuteActionMapMovenpc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapMapuser: result = await ExecuteActionMapMapuser(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapBrocastmsg: result = await ExecuteActionMapBrocastmsg(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapDropitem: result = await ExecuteActionMapDropitem(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapSetstatus: result = await ExecuteActionMapSetstatus(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapAttrib: result = await ExecuteActionMapAttrib(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapRegionMonster: result = await ExecuteActionMapRegionMonster(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapRandDropItem: result = await ExecuteActionMapRandDropItem(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapChangeweather: result = await ExecuteActionMapChangeweather(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapChangelight: result = await ExecuteActionMapChangelight(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapMapeffect: result = await ExecuteActionMapMapeffect(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapFireworks: result = await ExecuteActionMapFireworks(action, param, user, role, item, input); break;
+
                     case TaskActionType.ActionItemAdd: result = await ExecuteActionItemAdd(action, param, user, role, item, input); break;
                     case TaskActionType.ActionItemDel: result = await ExecuteActionItemDel(action, param, user, role, item, input); break;
                     case TaskActionType.ActionItemCheck: result = await ExecuteActionItemCheck(action, param, user, role, item, input); break;
@@ -504,6 +522,462 @@ namespace Comet.Game.States
             {
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
                 return false;
+            }
+            return true;
+        }
+
+        #endregion
+
+        #region Npc
+
+
+
+        #endregion
+
+        #region Map
+
+        private static async Task<bool> ExecuteActionMapMovenpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 3)
+                return false;
+
+            uint idMap = uint.Parse(splitParam[0]);
+            ushort nPosX = ushort.Parse(splitParam[1]), nPosY = ushort.Parse(splitParam[2]);
+
+            if (idMap <= 0 || nPosX <= 0 || nPosY <= 0)
+                return false;
+
+            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(action.Data);
+            if (npc == null)
+                return false;
+
+            return await npc.ChangePosAsync(idMap, nPosX, nPosY);
+        }
+
+        private static async Task<bool> ExecuteActionMapMapuser(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 3) return false;
+
+            int amount = 0;
+
+            if (splitParam[0].Equals("map_user", StringComparison.InvariantCultureIgnoreCase))
+            {
+                amount += Kernel.MapManager.GetMap(action.Data)?.PlayerCount ?? 0;
+            }
+            else if (splitParam[0].Equals("alive_user", StringComparison.InvariantCultureIgnoreCase))
+            {
+                amount += Kernel.RoleManager.QueryRoleByMap<Character>(action.Data).Count(x => x.IsAlive);
+            }
+            else
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionMapMapuser invalid cmd {splitParam[0]} for action {action.Identity}, {param}");
+                return false;
+            }
+
+            switch (splitParam[1])
+            {
+                case "==":
+                    return amount == int.Parse(splitParam[2]);
+                case "<=":
+                    return amount <= int.Parse(splitParam[2]);
+                case ">=":
+                    return amount >= int.Parse(splitParam[2]);
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionMapBrocastmsg(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            GameMap map = Kernel.MapManager.GetMap(action.Data);
+            if (map == null)
+                return false;
+
+            await map.BroadcastMsgAsync(param);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapDropitem(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 4)
+                return false;
+
+            uint idMap = uint.Parse(splitParam[0]);
+            uint idItemtype = uint.Parse(splitParam[3]);
+            ushort x = ushort.Parse(splitParam[1]);
+            ushort y = ushort.Parse(splitParam[2]);
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+                return false;
+
+            MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+            if (mapItem.Create(map, new Point(x, y), idItemtype, 0, 0, 0, 0))
+            {
+                await mapItem.EnterMap();
+            }
+            else
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapSetstatus(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 3)
+                return false;
+
+            var idMap = uint.Parse(splitParam[0]);
+            var dwStatus = byte.Parse(splitParam[1]);
+            bool flag = splitParam[2] != "0";
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+                return false;
+
+            await map.SetStatusAsync(dwStatus, flag);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapAttrib(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 3) return false;
+
+            string szField = splitParam[0];
+            string szOpt = splitParam[1];
+            int x = 0;
+            int data = int.Parse(splitParam[2]);
+            uint idMap = 0;
+
+            if (splitParam.Length >= 4)
+                idMap = uint.Parse(splitParam[3]);
+
+            GameMap map;
+            if (idMap == 0)
+            {
+                if (user == null)
+                    return false;
+                map = Kernel.MapManager.GetMap(user.MapIdentity);
+            }
+            else
+            {
+                map = Kernel.MapManager.GetMap(idMap);
+            }
+
+            if (map == null)
+                return false;
+
+            if (szField.Equals("status", StringComparison.InvariantCultureIgnoreCase))
+            {
+                switch (szOpt.ToLowerInvariant())
+                {
+                    case "test":
+                        return map.IsWarTime();
+                    case "set":
+                        await map.SetStatusAsync((ulong) data, true);
+                        return true;
+                    case "reset":
+                        await map.SetStatusAsync((ulong)data, false);
+                        return true;
+                }
+            }
+            else if (szField.Equals("type", StringComparison.InvariantCultureIgnoreCase))
+            {
+                switch (szOpt.ToLowerInvariant())
+                {
+                    case "test":
+                        return (map.Type & data) != 0;
+                }
+            }
+            else if (szField.Equals("mapdoc", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (szOpt.Equals("="))
+                {
+                    map.MapDoc = (uint) data;
+                    await map.SaveAsync();
+                    return true;
+                }
+
+                x = (int) map.MapDoc;
+            }
+            else if (szField.Equals("portal0_x", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (szOpt.Equals("="))
+                {
+                    map.PortalX = (ushort) data;
+                    await map.SaveAsync();
+                    return true;
+                }
+
+                x = (int)map.PortalX;
+            }
+            else if (szField.Equals("portal0_y", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (szOpt.Equals("="))
+                {
+                    map.PortalY = (ushort) data;
+                    await map.SaveAsync();
+                    return true;
+                }
+
+                x = (int)map.PortalY;
+            }
+            else if (szField.Equals("res_lev", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (szOpt.Equals("="))
+                {
+                    map.ResLev = (byte) data;
+                    await map.SaveAsync();
+                    return true;
+                }
+
+                x = map.ResLev;
+            }
+            else
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionMapAttrib invalid field {szField} for action {action.Identity}, {param}");
+                return false;
+            }
+
+            switch (szOpt)
+            {
+                case "==": return x == data;
+                case ">=": return x >= data;
+                case "<=": return x <= data;
+                case "<": return x < data;
+                case ">": return x > data;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionMapRegionMonster(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 8)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ERROR: Invalid param amount on actionid: [{action.Identity}]");
+                return false;
+            }
+
+            string szOpt = splitParam[6];
+            uint idMap = uint.Parse(splitParam[0]);
+            uint idType = uint.Parse(splitParam[5]);
+            ushort nRegionX = ushort.Parse(splitParam[1]),
+                nRegionY = ushort.Parse(splitParam[2]),
+                nRegionCX = ushort.Parse(splitParam[3]),
+                nRegionCY = ushort.Parse(splitParam[4]);
+            int nData = int.Parse(splitParam[7]);
+
+            GameMap map;
+            if (idMap == 0)
+            {
+                if (user == null)
+                    return false;
+
+                map = user.Map;
+            }
+            else
+            {
+                map = Kernel.MapManager.GetMap(idMap);
+            }
+
+            if (map == null)
+                return false;
+
+            int count = Kernel.RoleManager.QueryRoleByMap<Monster>(idMap).Count(x =>
+                ((idType != 0 && x.Type == idType) || idType == 0) && x.MapX >= nRegionX && x.MapX < nRegionX - nRegionCX
+                && x.MapY >= nRegionY && x.MapY < nRegionY - nRegionCY);
+
+            switch (szOpt)
+            {
+                case "==": return count == nData;
+                case "<=": return count <= nData;
+                case ">=": return count >= nData;
+                case "<": return count < nData;
+                case ">": return count > nData;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionMapRandDropItem(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            // Example: 728006 3030 186 187 304 307 250 3600
+            //          ItemID MAP  X   Y   CX  CY  AMOUNT DURATION
+            string[] splitParam = SplitParam(param, 8);
+            if (splitParam.Length != 8)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionMapRandDropItem: ItemID MAP  X   Y   CX  CY  AMOUNT DURATION :: {param} ({action.Identity})");
+                return false;
+            }
+
+            var idItemtype = uint.Parse(splitParam[0]); // the item to be dropped
+            var idMap = uint.Parse(splitParam[1]); // the map
+            var initX = ushort.Parse(splitParam[2]); // start coordinates
+            var initY = ushort.Parse(splitParam[3]); // start coordinates 
+            var endX = ushort.Parse(splitParam[4]); // end coordinates
+            var endY = ushort.Parse(splitParam[5]); // end coordinates
+            var amount = int.Parse(splitParam[6]); // amount of items to be dropped
+            var duration = int.Parse(splitParam[7]); // duration of the item in the floor
+
+            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItemtype);
+            if (itemtype == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Invalid itemtype {idItemtype}, {param}, {action.Identity}");
+                return false;
+            }
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"Invalid map {idMap}, {param}, {action.Identity}");
+                return false;
+            }
+
+            for (int i = 0; i < amount; i++)
+            {
+                MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+                int positionRetry = 0;
+                bool posSuccess = true;
+
+                int deltaX = endX - initX;
+                int deltaY = endY - initY;
+
+                int targetX = initX + await Kernel.NextAsync(deltaX);
+                int targetY = initY + await Kernel.NextAsync(deltaY);
+
+                Point pos = new Point(targetX, targetY);
+                while (!map.FindDropItemCell(9, ref pos))
+                {
+                    if (positionRetry++ >= 5)
+                    {
+                        posSuccess = false;
+                        break;
+                    }
+
+                    targetX = initX + await Kernel.NextAsync(deltaX);
+                    targetY = initY + await Kernel.NextAsync(deltaY);
+
+                    pos = new Point(targetX, targetY);
+                }
+
+                if (!posSuccess)
+                    continue;
+
+                if (!mapItem.Create(map, pos, idItemtype, 0, 0, 0, 0))
+                    continue;
+
+                mapItem.SetAliveTimeout(duration);
+                await mapItem.EnterMap();
+            }
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapChangeweather(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 5) return false;
+
+            int nType = int.Parse(pszParam[0]), nIntensity = int.Parse(pszParam[1]), nDir = int.Parse(pszParam[2]);
+            uint dwColor = uint.Parse(pszParam[3]), dwKeepSecs = uint.Parse(pszParam[4]);
+
+            GameMap map;
+            if (action.Data == 0)
+            {
+                if (user == null)
+                    return false;
+                map = user.Map;
+            }
+            else
+            {
+                map = Kernel.MapManager.GetMap(action.Data);
+            }
+
+            if (map == null)
+                return false;
+
+            await map.Weather.SetNewWeather((Weather.WeatherType) nType, nIntensity, nDir, (int) dwColor, (int) dwKeepSecs, 0);
+            await map.Weather.SendWeather();
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapChangelight(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 2) return false;
+
+            uint idMap = uint.Parse(splitParam[0]), dwRgb = uint.Parse(splitParam[1]);
+
+            GameMap map;
+            if (action.Data == 0)
+            {
+                if (user == null)
+                    return false;
+                map = user.Map;
+            }
+            else
+            {
+                map = Kernel.MapManager.GetMap(idMap);
+            }
+
+            if (map == null)
+                return false;
+
+            map.Light = dwRgb;
+            await map.BroadcastMsgAsync(new MsgAction
+            {
+                Identity = 1,
+                Command = dwRgb,
+                Argument = 0,
+                Action = MsgAction.ActionType.MapArgb
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapMapeffect(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+
+            if (splitParam.Length < 4) return false;
+
+            uint idMap = uint.Parse(splitParam[0]);
+            ushort posX = ushort.Parse(splitParam[1]), posY = ushort.Parse(splitParam[2]);
+            string szEffect = splitParam[3];
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+                return false;
+
+            await map.BroadcastRoomMsgAsync(posX, posY, new MsgName
+            {
+                Identity = 0,
+                Action = StringAction.MapEffect,
+                PositionX = posX,
+                PositionY = posY,
+                Strings = new List<string>
+                {
+                    szEffect
+                }
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMapFireworks(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user != null)
+            {
+                await user.BroadcastRoomMsgAsync(new MsgName
+                {
+                    Identity = user.Identity,
+                    Action = StringAction.Fireworks
+                }, true);
             }
             return true;
         }
@@ -3820,31 +4294,164 @@ namespace Comet.Game.States
 
         private static async Task<bool> ExecuteActionEventCountmonster(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 5)
+                return false;
+
+            uint idMap = uint.Parse(pszParam[0]);
+            string szField = pszParam[1];
+            string szData = pszParam[2];
+            string szOpt = pszParam[3];
+            int nNum = int.Parse(pszParam[4]);
+            int nCount = 0;
+
+            switch (szField.ToLowerInvariant())
+            {
+                case "name":
+                    nCount += Kernel.GeneratorThread.GetGenerators(idMap, szData).Sum(x => x.Generated);
+                    break;
+                case "gen_id":
+                    Generator gen = Kernel.GeneratorThread.GetGenerator(uint.Parse(szData));
+                    if (gen == null)
+                        return false;
+                    nCount += gen.Generated;
+                    break;
+            }
+
+            switch (szOpt)
+            {
+                case "==":
+                    return nCount == nNum;
+                case "<":
+                    return nCount < nNum;
+                case ">":
+                    return nCount > nNum;
+            }
+
+            return false;
         }
 
         private static async Task<bool> ExecuteActionEventDeletemonster(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 2)
+                return false;
+
+            uint idMap = uint.Parse(pszParam[0]);
+            uint idType = uint.Parse(pszParam[1]);
+            int nData = 0;
+            string szName = "";
+
+            if (pszParam.Length >= 3)
+                nData = int.Parse(pszParam[2]);
+            if (pszParam.Length >= 4)
+                szName = pszParam[3];
+
+            bool ret = false;
+
+            if (!string.IsNullOrEmpty(szName))
+            {
+                foreach (var gen in Kernel.GeneratorThread.GetGenerators(idMap, szName))
+                {
+                    await gen.ClearGeneratorAsync();
+                    ret = true;
+                }
+            }
+
+            if (idType != 0)
+            {
+                foreach (var gen in Kernel.GeneratorThread.GetByMonsterType(idType))
+                {
+                    if (gen.MapIdentity == idMap)
+                    {
+                        await gen.ClearGeneratorAsync();
+                        ret = true;
+                    }
+                }
+            }
+
+            return ret;
         }
 
         private static async Task<bool> ExecuteActionEventBbs(DbAction action, string param, Character user, Role role, Item item, string input)
         {
+            await Kernel.RoleManager.BroadcastMsgAsync(param, MsgTalk.TalkChannel.System);
             return true;
         }
 
         private static async Task<bool> ExecuteActionEventErase(DbAction action, string param, Character user, Role role, Item item, string input)
         {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 2)
+                return false;
+
+            uint npcType = uint.Parse(pszParam[1]);
+            foreach (var dynaNpc in Kernel.RoleManager.QueryRoleByMap<DynamicNpc>(uint.Parse(pszParam[0])))
+            {
+                if (dynaNpc.Type == npcType)
+                    await dynaNpc.DelNpcAsync();
+            }
             return true;
         }
 
         private static async Task<bool> ExecuteActionEventTeleport(DbAction action, string param, Character user, Role role, Item item, string input)
         {
+            string[] pszParam = SplitParam(param);
+
+            if (pszParam.Length < 4)
+                return false;
+
+            if (!uint.TryParse(pszParam[0], out var idSource) || !uint.TryParse(pszParam[1], out var idTarget) ||
+                !ushort.TryParse(pszParam[2], out var usMapX) || !ushort.TryParse(pszParam[3], out var usMapY))
+                return false;
+
+            GameMap sourceMap = Kernel.MapManager.GetMap(idSource);
+            GameMap targetMap = Kernel.MapManager.GetMap(idTarget);
+
+            if (sourceMap == null || targetMap == null)
+                return false;
+
+            if (sourceMap.IsTeleportDisable())
+                return false;
+
+            if (!sourceMap[usMapX, usMapY].IsAccessible())
+                return false;
+
+            foreach (var player in Kernel.RoleManager.QueryRoleByType<Character>()
+                .Where(x => x.MapIdentity == sourceMap.Identity))
+            {
+                await player.FlyMap(idTarget, usMapX, usMapY);
+            }
             return true;
         }
 
         private static async Task<bool> ExecuteActionEventMassaction(DbAction action, string param, Character user, Role role, Item item, string input)
         {
+            string[] pszParam = SplitParam(param);
+            if (pszParam.Length < 3)
+                return false;
+
+            if (!uint.TryParse(pszParam[0], out var idMap) || !uint.TryParse(pszParam[1], out var idAction)
+                                                           || !int.TryParse(pszParam[2], out var nAmount))
+                return false;
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+                return false;
+
+            if (nAmount <= 0)
+                nAmount = int.MaxValue;
+
+            foreach (var player in Kernel.RoleManager.QueryRoleByMap<Character>(idMap))
+            {
+                if (nAmount-- <= 0)
+                    break;
+
+                await GameAction.ExecuteActionAsync(idAction, player, role, item, input);
+            }
+
             return true;
         }
 
@@ -3868,7 +4475,9 @@ namespace Comet.Game.States
                 .Replace("%user_nobility_position", user?.NobilityPosition.ToString() ?? "0")
                 .Replace("%user_home_id", user?.HomeIdentity.ToString() ?? "0")
                 .Replace("%syn_id", user?.SyndicateIdentity.ToString() ?? "0")
-                .Replace("%syn_name", user?.SyndicateName ?? Language.StrNone);
+                .Replace("%syn_name", user?.SyndicateName ?? Language.StrNone)
+                .Replace("%account_id", user?.Client.AccountIdentity.ToString() ?? "0")
+                .Replace("%user_virtue", user?.VirtuePoints.ToString() ?? "0");
 
             if (result.Contains("%levelup_exp"))
             {
@@ -4039,6 +4648,7 @@ namespace Comet.Game.States
         ActionMapSetstatus = 305,
         ActionMapAttrib = 306,
         ActionMapRegionMonster = 307,
+        ActionMapRandDropItem = 308,
         ActionMapChangeweather = 310,
         ActionMapChangelight = 311,
         ActionMapMapeffect = 312,

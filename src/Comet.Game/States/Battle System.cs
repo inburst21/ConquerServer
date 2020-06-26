@@ -26,6 +26,7 @@ using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.NPCs;
 
 namespace Comet.Game.States
 {
@@ -102,11 +103,17 @@ namespace Comet.Game.States
             if (user != null)
                 await user.CheckCrime(target);
 
-            if (user != null && target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller())
+            DynamicNpc npc = target as DynamicNpc;
+            if (npc?.IsAwardScore() == true)
+            {
+                user?.AddSynWarScore(npc, lifeLost);
+            }
+
+            if (user != null && target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true)
             {
                 nExp = user.AdjustExperience(target, nExp, false);
                 int nAdditionExp = 0;
-                if (!target.IsAlive)
+                if (!target.IsAlive && npc?.IsGoal() != true)
                 {
                     nAdditionExp = (int)(target.MaxLife * 0.05f);
                     nExp += nAdditionExp;

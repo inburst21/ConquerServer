@@ -29,6 +29,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Comet.Core.Mathematics;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
@@ -72,6 +73,8 @@ namespace Comet.Game.World.Maps
 
         private List<Passway> m_passway = new List<Passway>();
 
+        public Weather Weather;
+
         public GameMap(DbMap map)
         {
             m_dbMap = map;
@@ -85,16 +88,69 @@ namespace Comet.Game.World.Maps
         public uint Identity => m_dbMap?.Identity ?? m_dbDynamap?.Identity ?? 0;
         public string Name => m_dbMap?.Name ?? m_dbDynamap?.Name ?? "Invalid";
         public uint OwnerIdentity => m_dbMap?.OwnerIdentity ?? m_dbDynamap?.OwnerIdentity ?? 0;
-        public uint MapDoc => m_dbMap?.MapDoc ?? m_dbDynamap?.MapDoc ?? 0;
+        public uint MapDoc
+        {
+            get => m_dbMap?.MapDoc ?? m_dbDynamap?.MapDoc ?? 0;
+            set
+            {
+                if (m_dbMap != null)
+                    m_dbMap.MapDoc = value;
+                else if (m_dbDynamap != null)
+                    m_dbDynamap.MapDoc = value;
+            }
+        }
         public uint Type => m_dbMap?.Type ?? m_dbDynamap?.Type ?? 0;
 
-        public ushort PortalX => (ushort) (m_dbMap?.PortalX ?? m_dbDynamap?.PortalX ?? 0);
-        public ushort PortalY => (ushort) (m_dbMap?.PortalY ?? m_dbDynamap?.PortalY ?? 0);
+        public ushort PortalX
+        {
+            get => (ushort) (m_dbMap?.PortalX ?? m_dbDynamap?.PortalX ?? 0);
+            set
+            {
+                if (m_dbMap != null)
+                    m_dbMap.PortalX = value;
+                else if (m_dbDynamap != null)
+                    m_dbDynamap.PortalX = value;
+            }
+        }
+
+        public ushort PortalY
+        {
+            get => (ushort) (m_dbMap?.PortalY ?? m_dbDynamap?.PortalY ?? 0);
+            set
+            {
+                if (m_dbMap != null)
+                    m_dbMap.PortalY = value;
+                else if (m_dbDynamap != null)
+                    m_dbDynamap.PortalY = value;
+            }
+        }
+
+        public byte ResLev
+        {
+            get => m_dbMap?.ResourceLevel ?? m_dbDynamap?.ResourceLevel ?? 0;
+            set
+            {
+                if (m_dbMap != null)
+                    m_dbMap.ResourceLevel = value;
+                else if (m_dbDynamap != null)
+                    m_dbDynamap.ResourceLevel = value;
+            }
+        }
 
         public int Width => m_mapData?.Width ?? 0;
         public int Height => m_mapData?.Height ?? 0;
 
-        public uint Light => m_dbMap?.Color ?? 0;
+        public uint Light
+        {
+            get => m_dbMap?.Color ?? m_dbDynamap?.Color ?? 0;
+            set
+            {
+                if (m_dbMap != null)
+                    m_dbMap.Color = value;
+                else if (m_dbDynamap != null)
+                    m_dbDynamap.Color = value;
+            }
+        }
 
         public int BlocksX => Width / GameBlock.BLOCK_SIZE;
         public int BlocksY => Height / GameBlock.BLOCK_SIZE;
@@ -112,6 +168,8 @@ namespace Comet.Game.World.Maps
                 Log.WriteLog(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found").Wait();
                 return false;
             }
+
+            Weather = new Weather(this);
 
             m_blocks = new GameBlock[BlocksX, BlocksY];
             for (int y = 0; y < BlocksY; y++)
@@ -210,17 +268,20 @@ namespace Comet.Game.World.Maps
 
         public async Task SendMapInfoAsync(Character user)
         {
-            // todo handle weather
             MsgAction action = new MsgAction
             {
                 Action = MsgAction.ActionType.MapArgb,
                 Identity = 1,
                 Command = Light,
-                ArgumentX = 0,
-                ArgumentY = 0
+                Argument = 0
             };
             await user.SendAsync(action);
             await user.SendAsync(new MsgMapInfo(Identity, MapDoc, Type));
+
+            if (Weather.GetType() != Weather.WeatherType.WeatherNone)
+                await Weather.SendWeather(user);
+            else
+                await Weather.SendNoWeather(user);
         }
 
         public async Task BroadcastMsgAsync(IPacket msg, uint exclude = 0)
@@ -231,6 +292,14 @@ namespace Comet.Game.World.Maps
                     continue;
 
                 await user.SendAsync(msg);
+            }
+        }
+
+        public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null)
+        {
+            foreach (var user in m_users.Values)
+            {
+                await user.SendAsync(message, channel, color);
             }
         }
 
@@ -595,6 +664,30 @@ namespace Comet.Game.World.Maps
 
         #endregion
 
+        #region Status
+
+        public async Task SetStatusAsync(ulong flag, bool add)
+        {
+            ulong oldFlag = Flag;
+            if (add)
+                Flag |= flag;
+            else
+                Flag &= ~flag;
+
+            if (Flag != oldFlag)
+                await BroadcastMsgAsync(new MsgMapInfo(Identity, MapDoc, Flag));
+        }
+
+        public void ResetBattle()
+        {
+            foreach (var player in m_users.Values)
+            {
+                player.BattleSystem.ResetBattle();
+            }
+        }
+
+        #endregion
+
         #region Ai Timer
 
         public async Task OnTimerAsync()
@@ -602,6 +695,8 @@ namespace Comet.Game.World.Maps
             if (m_users.Count == 0)
                 return;
 
+            await Weather.OnTimerAsync();
+            
             for (int x = 0; x < BlocksX; x++)
             {
                 for (int y = 0; y < BlocksY; y++)
@@ -636,6 +731,30 @@ namespace Comet.Game.World.Maps
         public static int GetBlockY(int y)
         {
             return y / GameBlock.BLOCK_SIZE;
+        }
+
+        #endregion
+
+        #region Database
+
+        public async Task<bool> SaveAsync()
+        {
+            if (m_dbMap == null && m_dbDynamap == null)
+                return false;
+
+            if (m_dbMap != null)
+                return await BaseRepository.SaveAsync(m_dbMap);
+            return await BaseRepository.SaveAsync(m_dbDynamap);
+        }
+
+        public async Task<bool> DeleteAsync()
+        {
+            if (m_dbMap == null && m_dbDynamap == null)
+                return false;
+
+            if (m_dbMap != null)
+                return await BaseRepository.DeleteAsync(m_dbMap);
+            return await BaseRepository.DeleteAsync(m_dbDynamap);
         }
 
         #endregion

@@ -30,6 +30,7 @@ using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.NPCs;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 
@@ -382,12 +383,18 @@ namespace Comet.Game.States.Magics
 
             await CheckCrime(targetRole);
 
+            Character user = m_pOwner as Character;
             int totalExp = 0;
             if (power > 0)
             {
                 int lifeLost = (int) Math.Min(targetRole.MaxLife, power);
                 await targetRole.BeAttack(byMagic, m_pOwner, power, true);
                 totalExp = lifeLost;
+
+                if (user != null && targetRole is DynamicNpc dynaNpc && dynaNpc.IsAwardScore())
+                {
+                    dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
+                }
             }
 
             if (totalExp > 0)
@@ -401,7 +408,7 @@ namespace Comet.Game.States.Magics
                 await m_pOwner.BattleSystem.OtherMemberAwardExp(targetRole, nBonusExp);
                 await m_pOwner.Kill(targetRole, GetDieMode());
             }
-            else if (m_pOwner is Character user)
+            else if (user != null)
                 await user.SendWeaponMagic2(targetRole);
 
             return true;
@@ -513,6 +520,11 @@ namespace Comet.Game.States.Magics
                     }
                 }
 
+                if (user != null && target is DynamicNpc dynaNpc && dynaNpc.IsAwardScore())
+                {
+                    dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
+                }
+
                 if (!target.IsAlive)
                     await m_pOwner.Kill(target, GetDieMode());
                 else if (!bMagic2Dealt && await Kernel.ChanceCalcAsync(5d) && user != null)
@@ -565,6 +577,11 @@ namespace Comet.Game.States.Magics
                             await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
                         exp += user.AdjustExperience(monster, nBonusExp, false);
                     }
+                }
+
+                if (user != null && target is DynamicNpc dynaNpc && dynaNpc.IsAwardScore())
+                {
+                    dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
 
                 if (!target.IsAlive)
@@ -838,6 +855,11 @@ namespace Comet.Game.States.Magics
                     }
                 }
 
+                if (user != null && target is DynamicNpc dynaNpc && dynaNpc.IsAwardScore())
+                {
+                    dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
+                }
+
                 if (!target.IsAlive)
                     await m_pOwner.Kill(target, GetDieMode());
 
@@ -916,6 +938,11 @@ namespace Comet.Game.States.Magics
 
                         exp += user.AdjustExperience(monster, nBonusExp, false);
                     }
+                }
+
+                if (user != null && target is DynamicNpc dynaNpc && dynaNpc.IsAwardScore())
+                {
+                    dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
             }
             

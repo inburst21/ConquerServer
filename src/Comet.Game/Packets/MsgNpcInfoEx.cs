@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using Comet.Game.States;
+using Comet.Game.States.NPCs;
 using Comet.Network.Packets;
 
 #endregion
@@ -34,6 +35,21 @@ namespace Comet.Game.Packets
         public MsgNpcInfoEx()
         {
             Type = PacketType.MsgNpcInfoEx;
+        }
+
+        public MsgNpcInfoEx(DynamicNpc npc)
+        {
+            Type = PacketType.MsgNpcInfoEx;
+
+            Identity = npc.Identity;
+            MaxLife = npc.MaxLife;
+            Life = npc.Life;
+            PosX = npc.MapX;
+            PosY = npc.MapY;
+            Lookface = (ushort) npc.Mesh;
+            NpcType = npc.Type;
+            Sort = npc.Sort;
+            Name = npc.Name;
         }
 
         public uint Identity { get; set; }

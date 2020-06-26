@@ -37,6 +37,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
+using Comet.Game.States.NPCs;
 using Comet.Game.States.Relationship;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
@@ -1756,6 +1757,28 @@ namespace Comet.Game.States
             return true;
         }
 
+        public async Task AddSynWarScore(DynamicNpc npc, int score)
+        {
+            if (npc == null || score == 0)
+                return;
+
+            if (Syndicate == null || npc.OwnerIdentity == SyndicateIdentity)
+                return;
+
+            Syndicate target = Kernel.SyndicateManager.GetSyndicate((int) npc.OwnerIdentity);
+            if (target != null && target.Money > 0)
+            {
+                int addProffer = (int) Math.Min(target.Money, Calculations.MulDiv(score, 1, 100));
+                target.Money = (uint) Math.Max(0, target.Money - addProffer);
+                await target.SaveAsync();
+                await AwardMoney(addProffer);
+                Syndicate.Money += (uint) addProffer;
+                await Syndicate.SaveAsync();
+            }
+
+            npc.AddSynWarScore(Syndicate, score);
+        }
+
         public async Task<int> GetInterAtkRate()
         {
             int nRate = USER_ATTACK_SPEED;
@@ -1872,6 +1895,10 @@ namespace Comet.Game.States
                     case PkModeType.FreePk:
                         return false;
                 }
+            }
+            else if (target is DynamicNpc dynaNpc)
+            {
+                return false;
             }
             
             return true;

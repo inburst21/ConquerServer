@@ -19,16 +19,26 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Syndicates;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace Comet.Game.States.NPCs
 {
     public sealed class DynamicNpc : BaseNpc
     {
         private DbDynanpc m_dbNpc;
+        private ConcurrentDictionary<uint, Score> m_dicScores = new ConcurrentDictionary<uint, Score>();
+        private TimeOut m_Death = new TimeOut(5);
 
         public DynamicNpc(DbDynanpc npc) 
             : base(npc.Id)
@@ -40,11 +50,32 @@ namespace Comet.Game.States.NPCs
             m_posY = npc.Celly;
 
             Name = npc.Name;
+
+            if (IsSynFlag() && OwnerIdentity > 0)
+            {
+                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int)OwnerIdentity);
+                if (syn != null)
+                    Name = syn.Name;
+            }
         }
 
         #region Type
 
         public override ushort Type => m_dbNpc.Type;
+
+        public override ushort Sort => m_dbNpc.Sort;
+
+        public override uint OwnerType
+        {
+            get => m_dbNpc.OwnerType;
+            set => m_dbNpc.OwnerType = value;
+        }
+
+        public override uint OwnerIdentity
+        {
+            get => m_dbNpc.Ownerid;
+            set => m_dbNpc.Ownerid = value;
+        }
 
         #endregion
 
@@ -72,6 +103,11 @@ namespace Comet.Game.States.NPCs
             return await base.SetAttributesAsync(type, value) && await SaveAsync();
         }
 
+        public bool IsGoal()
+        {
+            return Type == WEAPONGOAL_NPC || Type == MAGICGOAL_NPC;
+        }
+
         #endregion
 
         #region Task and Data
@@ -92,6 +128,189 @@ namespace Comet.Game.States.NPCs
 
         #endregion
 
+        #region Battle
+
+        public bool IsActive() { return !m_Death.IsActive(); }
+
+        public override bool IsAttackable(Role attacker)
+        {
+            if (!IsSynFlag() && !IsCtfFlag() && Sort != MAGICGOAL_NPC && Sort != WEAPONGOAL_NPC &&
+                Sort != ROLE_CITY_GATE_NPC)
+                return false;
+
+            Character attackerUser = attacker as Character;
+            if (Data1 != 0 && Data2 != 0)
+            {
+                string strNow = "";
+                DateTime now = DateTime.Now;
+                strNow += ((int) now.DayOfWeek == 0 ? 7 : (int) now.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+                strNow += now.Hour.ToString("00");
+                strNow += now.Minute.ToString("00");
+                strNow += now.Second.ToString("00");
+
+                int now0 = int.Parse(strNow);
+                if ((now0 < Data1 || now0 >= Data2) && IsSynFlag())
+                    return false;
+            }
+
+            if (OwnerType == 2 && attackerUser != null)
+            {
+                if (attackerUser.SyndicateIdentity != 0 && attackerUser.SyndicateIdentity == OwnerIdentity)
+                    return false;
+            }
+
+            if (MaxLife <= 0)
+                return false;
+
+            return IsActive();
+        }
+
+        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        {
+            await AddAttributesAsync(ClientUpdateType.Hitpoints, nPower);
+
+            Character user = attacker as Character;
+            if (IsSynFlag() && user != null)
+            {
+                Syndicate owner = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+                int money = nPower / 20;
+                if (money > 0 
+                    && user.Syndicate != null 
+                    && owner != null 
+                    && user.SyndicateIdentity != owner.Identity 
+                    && owner.Money > 0)
+                {
+                    owner.Money = (uint) Math.Max(0, owner.Money - money);
+                    await owner.SaveAsync();
+                    await user.AwardMoney(money/2);
+                }
+            }
+
+            if (!IsAlive)
+                await BeKill(attacker);
+
+            return true;
+        }
+
+        public override async Task BeKill(Role attacker)
+        {
+            if (m_dbNpc.Linkid != 0)
+                await GameAction.ExecuteActionAsync(m_dbNpc.Linkid, attacker as Character, this, null, "");
+        }
+
+        public async Task DelNpcAsync()
+        {
+            await SetAttributesAsync(ClientUpdateType.Hitpoints, 0);
+            m_Death.Update();
+
+            if (IsSynFlag() || IsCtfFlag())
+            {
+                await Map.SetStatusAsync(1, false);
+
+            }
+            else if (!IsGoal())
+            {
+                await DeleteAsync();
+            }
+
+            await LeaveMap();
+        }
+
+        public async Task<bool> SetOwnerAsync(uint idOwner)
+        {
+            if (idOwner == 0)
+            {
+                OwnerIdentity = 0;
+                Name = "";
+
+                await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
+                await SaveAsync();
+                return true;
+            }
+
+            OwnerIdentity = idOwner;
+            if (IsSynFlag())
+            {
+                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+                if (syn == null)
+                {
+                    OwnerIdentity = 0;
+                    Name = "";
+                }
+                else
+                {
+                    Name = syn.Name;
+                }
+            }
+
+            await SaveAsync();
+            await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
+            return true;
+        }
+
+        public async Task CheckFightTimeAsync()
+        {
+            if (!IsSynFlag())
+                return;
+
+            if (Data1 == 0 || Data2 == 0)
+                return;
+
+            string strNow = "";
+            DateTime now = DateTime.Now;
+            strNow += ((int)now.DayOfWeek == 0 ? 7 : (int)now.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+            strNow += now.Hour.ToString("00");
+            strNow += now.Minute.ToString("00");
+            strNow += now.Second.ToString("00");
+
+            int now0 = int.Parse(strNow);
+            if (now0 < Data1 || now0 >= Data2)
+            {
+                if (Map.IsWarTime())
+                    await OnFightEndAsync();
+                return;
+            }
+
+            if (!Map.IsWarTime())
+            {
+                await Map.SetStatusAsync(1, true);
+                await Map.BroadcastMsgAsync(Language.StrWarStart, MsgTalk.TalkChannel.System);
+            }
+        }
+
+        public async Task OnFightEndAsync()
+        {
+            await Map.SetStatusAsync(1, false);
+            await Map.BroadcastMsgAsync(Language.StrWarEnd, MsgTalk.TalkChannel.System);
+            Map.ResetBattle();
+        }
+
+        public async Task BroadcastRankingAsync()
+        {
+            if (!IsSynFlag() || !IsAttackable(null) || m_dicScores.Count == 0)
+                return;
+
+            await Map.BroadcastMsgAsync(Language.StrWarRankingStart, MsgTalk.TalkChannel.GuildWarRight1);
+            int i = 0;
+            foreach (var score in m_dicScores.Values.OrderByDescending(x => x.Points))
+            {
+                if (i++ >= 5)
+                    break;
+
+                await Map.BroadcastMsgAsync(string.Format(Language.StrWarRankingNo, i, score.Name, score.Points), MsgTalk.TalkChannel.GuildWarRight2);
+            }
+        }
+
+        public void AddSynWarScore(Syndicate syn, long score)
+        {
+            if (!m_dicScores.ContainsKey(syn.Identity))
+                m_dicScores.TryAdd(syn.Identity, new Score(syn.Identity, syn.Name));
+
+            m_dicScores[syn.Identity].Points += score;
+        }
+
+        #endregion
+
         #region Database
 
         public async Task<bool> SaveAsync()
@@ -99,7 +318,7 @@ namespace Comet.Game.States.NPCs
             return await BaseRepository.SaveAsync(m_dbNpc);
         }
 
-        public async Task<bool> DeleteAsync()
+        public async Task<bool> DeleteAsync(bool forceDb = false)
         {
             return await BaseRepository.DeleteAsync(m_dbNpc);
         }
@@ -125,5 +344,18 @@ namespace Comet.Game.States.NPCs
         }
 
         #endregion
+
+        public class Score
+        {
+            public Score(uint id, string name)
+            {
+                Identity = id;
+                Name = name;
+            }
+
+            public uint Identity { get; }
+            public string Name { get; }
+            public long Points { get; set; }
+        }
     }
 }

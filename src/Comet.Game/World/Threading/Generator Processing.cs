@@ -87,5 +87,15 @@ namespace Comet.Game.World.Threading
         {
             return m_generators.FirstOrDefault(x => x.Identity == idGen);
         }
+
+        public List<Generator> GetGenerators(uint idMap, string monsterName)
+        {
+            return m_generators.Where(x => x.MapIdentity == idMap && x.MonsterName.Equals(monsterName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        }
+
+        public List<Generator> GetByMonsterType(uint idType)
+        {
+            return m_generators.Where(x => x.RoleType == idType).ToList();
+        }
     }
 }
