@@ -295,24 +295,32 @@ namespace Comet.Game.States
 
             int dropNum = 0;
             int rate = await Kernel.NextAsync(0, 1000);
-            int chance = BattleSystem.AdjustDrop(2000, attacker.Level, Level);
+            int chance = BattleSystem.AdjustDrop(400, attacker.Level, Level);
             if (rate < Math.Min(1000, chance))
             {
                 dropNum = 1 + await Kernel.NextAsync(5, 9); // drop 6-10 items
             }
             else
             {
-                chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
+                chance += BattleSystem.AdjustDrop(500, attacker.Level, Level);
                 if (rate < Math.Min(1000, chance))
                 {
                     dropNum = 1 + await Kernel.NextAsync(3, 6); // drop 4-7 items
                 }
                 else
                 {
-                    chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
+                    chance += BattleSystem.AdjustDrop(750, attacker.Level, Level);
                     if (rate < Math.Min(1000, chance))
                     {
-                        dropNum = 1; // drop 1 item
+                        dropNum = 1 + await Kernel.NextAsync(1, 4); // drop 4-7 items
+                    }
+                    else
+                    {
+                        chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
+                        if (rate < Math.Min(1000, chance))
+                        {
+                            dropNum = 1; // drop 1 item
+                        }
                     }
                 }
             }
