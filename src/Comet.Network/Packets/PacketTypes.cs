@@ -68,6 +68,7 @@ namespace Comet.Network.Packets
         MsgNpcInfoEx,
         MsgMapInfo,
         MsgMessageBoard,
+        MsgSynMemberInfo = 1112,
         MsgDice = 1113,
         MsgSyncAction,
         MsgNpcInfo = 2030,

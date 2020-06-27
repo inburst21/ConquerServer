@@ -19,6 +19,8 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#region References
+
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -30,17 +32,18 @@ using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+
+#endregion
 
 namespace Comet.Game.States.NPCs
 {
     public sealed class DynamicNpc : BaseNpc
     {
-        private DbDynanpc m_dbNpc;
-        private ConcurrentDictionary<uint, Score> m_dicScores = new ConcurrentDictionary<uint, Score>();
-        private TimeOut m_Death = new TimeOut(5);
+        private readonly DbDynanpc m_dbNpc;
+        private readonly ConcurrentDictionary<uint, Score> m_dicScores = new ConcurrentDictionary<uint, Score>();
+        private readonly TimeOut m_Death = new TimeOut(5);
 
-        public DynamicNpc(DbDynanpc npc) 
+        public DynamicNpc(DbDynanpc npc)
             : base(npc.Id)
         {
             m_dbNpc = npc;
@@ -53,13 +56,39 @@ namespace Comet.Game.States.NPCs
 
             if (IsSynFlag() && OwnerIdentity > 0)
             {
-                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int)OwnerIdentity);
+                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 if (syn != null)
                     Name = syn.Name;
             }
         }
 
+        #region Socket
+
+        public override async Task SendSpawnToAsync(Character player)
+        {
+            await player.SendAsync(new MsgNpcInfoEx
+            {
+                Identity = Identity,
+                Lookface = m_dbNpc.Lookface,
+                Sort = m_dbNpc.Sort,
+                PosX = MapX,
+                PosY = MapY,
+                Name = IsSynFlag() ? Name : "",
+                NpcType = m_dbNpc.Type,
+                Life = Life,
+                MaxLife = MaxLife
+            });
+        }
+
+        #endregion
+
         #region Type
+
+        public override uint Mesh
+        {
+            get => m_dbNpc.Lookface;
+            set => m_dbNpc.Lookface = (ushort) value;
+        }
 
         public override ushort Type => m_dbNpc.Type;
 
@@ -100,6 +129,13 @@ namespace Comet.Game.States.NPCs
 
         public override async Task<bool> SetAttributesAsync(ClientUpdateType type, long value)
         {
+            switch (type)
+            {
+                case ClientUpdateType.Mesh:
+                    Mesh = (uint) value;
+                    await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this) {Name = IsSynFlag() ? Name : ""}, false);
+                    return await SaveAsync();
+            }
             return await base.SetAttributesAsync(type, value) && await SaveAsync();
         }
 
@@ -121,16 +157,44 @@ namespace Comet.Game.States.NPCs
         public override uint Task6 => m_dbNpc.Task6;
         public override uint Task7 => m_dbNpc.Task7;
 
-        public override int Data0 { get => m_dbNpc.Data0; set => m_dbNpc.Data0 = value; }
-        public override int Data1 { get => m_dbNpc.Data1; set => m_dbNpc.Data1 = value; }
-        public override int Data2 { get => m_dbNpc.Data2; set => m_dbNpc.Data2 = value; }
-        public override int Data3 { get => m_dbNpc.Data3; set => m_dbNpc.Data3 = value; }
+        public override int Data0
+        {
+            get => m_dbNpc.Data0;
+            set => m_dbNpc.Data0 = value;
+        }
+
+        public override int Data1
+        {
+            get => m_dbNpc.Data1;
+            set => m_dbNpc.Data1 = value;
+        }
+
+        public override int Data2
+        {
+            get => m_dbNpc.Data2;
+            set => m_dbNpc.Data2 = value;
+        }
+
+        public override int Data3
+        {
+            get => m_dbNpc.Data3;
+            set => m_dbNpc.Data3 = value;
+        }
+
+        public override string DataStr
+        {
+            get => m_dbNpc.Datastr;
+            set => m_dbNpc.Datastr = value;
+        }
 
         #endregion
 
         #region Battle
 
-        public bool IsActive() { return !m_Death.IsActive(); }
+        public bool IsActive()
+        {
+            return !m_Death.IsActive();
+        }
 
         public override bool IsAttackable(Role attacker)
         {
@@ -165,24 +229,25 @@ namespace Comet.Game.States.NPCs
             return IsActive();
         }
 
-        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower,
+            bool bReflectEnable)
         {
-            await AddAttributesAsync(ClientUpdateType.Hitpoints, nPower);
+            await AddAttributesAsync(ClientUpdateType.Hitpoints, nPower * -1);
 
             Character user = attacker as Character;
             if (IsSynFlag() && user != null)
             {
                 Syndicate owner = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 int money = nPower / 20;
-                if (money > 0 
-                    && user.Syndicate != null 
-                    && owner != null 
-                    && user.SyndicateIdentity != owner.Identity 
+                if (money > 0
+                    && user.Syndicate != null
+                    && owner != null
+                    && user.SyndicateIdentity != owner.Identity
                     && owner.Money > 0)
                 {
                     owner.Money = (uint) Math.Max(0, owner.Money - money);
                     await owner.SaveAsync();
-                    await user.AwardMoney(money/2);
+                    await user.AwardMoney(money / 2);
                 }
             }
 
@@ -198,7 +263,7 @@ namespace Comet.Game.States.NPCs
                 await GameAction.ExecuteActionAsync(m_dbNpc.Linkid, attacker as Character, this, null, "");
         }
 
-        public async Task DelNpcAsync()
+        public override async Task DelNpcAsync()
         {
             await SetAttributesAsync(ClientUpdateType.Hitpoints, 0);
             m_Death.Update();
@@ -206,7 +271,6 @@ namespace Comet.Game.States.NPCs
             if (IsSynFlag() || IsCtfFlag())
             {
                 await Map.SetStatusAsync(1, false);
-
             }
             else if (!IsGoal())
             {
@@ -244,7 +308,7 @@ namespace Comet.Game.States.NPCs
             }
 
             await SaveAsync();
-            await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
+            await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this) { Lookface = m_dbNpc.Lookface }, false);
             return true;
         }
 
@@ -258,7 +322,7 @@ namespace Comet.Game.States.NPCs
 
             string strNow = "";
             DateTime now = DateTime.Now;
-            strNow += ((int)now.DayOfWeek == 0 ? 7 : (int)now.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+            strNow += ((int) now.DayOfWeek == 0 ? 7 : (int) now.DayOfWeek).ToString(CultureInfo.InvariantCulture);
             strNow += now.Hour.ToString("00");
             strNow += now.Minute.ToString("00");
             strNow += now.Second.ToString("00");
@@ -297,7 +361,8 @@ namespace Comet.Game.States.NPCs
                 if (i++ >= 5)
                     break;
 
-                await Map.BroadcastMsgAsync(string.Format(Language.StrWarRankingNo, i, score.Name, score.Points), MsgTalk.TalkChannel.GuildWarRight2);
+                await Map.BroadcastMsgAsync(string.Format(Language.StrWarRankingNo, i, score.Name, score.Points),
+                    MsgTalk.TalkChannel.GuildWarRight2);
             }
         }
 
@@ -309,38 +374,28 @@ namespace Comet.Game.States.NPCs
             m_dicScores[syn.Identity].Points += score;
         }
 
+        public Score GetTopScore()
+        {
+            return m_dicScores.Values.OrderByDescending(x => x.Points).ThenBy(x => x.Identity).FirstOrDefault();
+        }
+
+        public void ClearScores()
+        {
+            m_dicScores.Clear();
+        }
+
         #endregion
 
         #region Database
 
-        public async Task<bool> SaveAsync()
+        public override async Task<bool> SaveAsync()
         {
             return await BaseRepository.SaveAsync(m_dbNpc);
         }
 
-        public async Task<bool> DeleteAsync(bool forceDb = false)
+        public override async Task<bool> DeleteAsync()
         {
             return await BaseRepository.DeleteAsync(m_dbNpc);
-        }
-
-        #endregion
-
-        #region Socket
-
-        public override async Task SendSpawnToAsync(Character player)
-        {
-            await player.SendAsync(new MsgNpcInfoEx
-            {
-                Identity = Identity,
-                Lookface = m_dbNpc.Lookface,
-                Sort = m_dbNpc.Sort,
-                PosX = MapX,
-                PosY = MapY,
-                Name = Name,
-                NpcType = m_dbNpc.Type,
-                Life = Life,
-                MaxLife = MaxLife
-            });
         }
 
         #endregion

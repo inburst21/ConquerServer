@@ -259,6 +259,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your wife is online..
+        /// </summary>
+        public static string StrFemaleMateLogin {
+            get {
+                return ResourceManager.GetString("StrFemaleMateLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your friend list is full..
         /// </summary>
         public static string StrFriendListFull {
@@ -457,7 +466,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1] are friends from now on..
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1} are friends from now on..
         /// </summary>
         public static string StrMakeFriend {
             get {
@@ -471,6 +480,15 @@ namespace Comet.Game {
         public static string StrMakeFriendSent {
             get {
                 return ResourceManager.GetString("StrMakeFriendSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your husband is online..
+        /// </summary>
+        public static string StrMaleMateLogin {
+            get {
+                return ResourceManager.GetString("StrMaleMateLogin", resourceCulture);
             }
         }
         
@@ -754,6 +772,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {1} has abdicated the leadership to {2}..
+        /// </summary>
+        public static string StrSynAbdicate {
+            get {
+                return ResourceManager.GetString("StrSynAbdicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You are already in a guild..
         /// </summary>
         public static string StrSynAlreadyJoined {
@@ -763,11 +790,74 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has created the guild {1} successfully..
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} has set up {1} successfully..
         /// </summary>
         public static string StrSynCreate {
             get {
                 return ResourceManager.GetString("StrSynCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild {0} has been terminated..
+        /// </summary>
+        public static string StrSynDestroy {
+            get {
+                return ResourceManager.GetString("StrSynDestroy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has donated {2:N0} silvers to the guild..
+        /// </summary>
+        public static string StrSynDonateMoney {
+            get {
+                return ResourceManager.GetString("StrSynDonateMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You need to donate {0:N0} to the guild before leaving..
+        /// </summary>
+        public static string StrSynExitNotEnoughMoney {
+            get {
+                return ResourceManager.GetString("StrSynExitNotEnoughMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has invited {2} to the guild..
+        /// </summary>
+        public static string StrSynInviteGuild {
+            get {
+                return ResourceManager.GetString("StrSynInviteGuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has accepted {2} in the guild..
+        /// </summary>
+        public static string StrSynJoinGuild {
+            get {
+                return ResourceManager.GetString("StrSynJoinGuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has left the guild..
+        /// </summary>
+        public static string StrSynMemberExit {
+            get {
+                return ResourceManager.GetString("StrSynMemberExit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has removed {2} from the guild..
+        /// </summary>
+        public static string StrSynMemberKickout {
+            get {
+                return ResourceManager.GetString("StrSynMemberKickout", resourceCulture);
             }
         }
         
@@ -777,6 +867,51 @@ namespace Comet.Game {
         public static string StrSynNameInUse {
             get {
                 return ResourceManager.GetString("StrSynNameInUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot disband this guild..
+        /// </summary>
+        public static string StrSynNoDisband {
+            get {
+                return ResourceManager.GetString("StrSynNoDisband", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The guild needs at least {0:N0} funds to execute actions..
+        /// </summary>
+        public static string StrSynNoMoney {
+            get {
+                return ResourceManager.GetString("StrSynNoMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are not the Guild Leader..
+        /// </summary>
+        public static string StrSynNotLeader {
+            get {
+                return ResourceManager.GetString("StrSynNotLeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} {1} has promoted {2} to {3}!.
+        /// </summary>
+        public static string StrSynPromoted {
+            get {
+                return ResourceManager.GetString("StrSynPromoted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have been kicked out of the guild by {0}!.
+        /// </summary>
+        public static string StrSynYouBeenKicked {
+            get {
+                return ResourceManager.GetString("StrSynYouBeenKicked", resourceCulture);
             }
         }
         
@@ -1024,7 +1159,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a Nº{0}: {1} - {2:N0}.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a No. {0}: {1}({2:N0}).
         /// </summary>
         public static string StrWarRankingNo {
             get {
@@ -1047,6 +1182,15 @@ namespace Comet.Game {
         public static string StrWarStart {
             get {
                 return ResourceManager.GetString("StrWarStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} dominated the Guild Area!.
+        /// </summary>
+        public static string StrWarWon {
+            get {
+                return ResourceManager.GetString("StrWarWon", resourceCulture);
             }
         }
         

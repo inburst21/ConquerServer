@@ -27,15 +27,13 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
-using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
-using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
+using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -231,21 +229,53 @@ namespace Comet.Game.Packets
             switch (Channel)
             {
                 case TalkChannel.Talk:
+                    if (!sender.IsAlive)
+                        return;
+
                     await sender.BroadcastRoomMsgAsync(this, false);
                     break;
+
                 case TalkChannel.Whisper:
                     if (target == null)
                     {
                         await sender.SendAsync(Language.StrTargetNotOnline, TalkChannel.Talk, Color.White);
                         return;
                     }
+
+                    await target.SendAsync(this);
                     break;
+
                 case TalkChannel.Team:
                     if (sender.Team != null)
                         await sender.Team.SendAsync(this, sender.Identity);
                     break;
+
                 case TalkChannel.Friend:
                     await sender.SendToFriendsAsync(this);
+                    break;
+
+                case TalkChannel.Guild:
+                    if (sender.SyndicateIdentity == 0)
+                        return;
+
+                    await sender.Syndicate.SendAsync(this, sender.Identity);
+                    break;
+
+                case TalkChannel.Ghost:
+                    if (sender.IsAlive)
+                        return;
+
+                    await sender.BroadcastRoomMsgAsync(this, false);
+                    break;
+
+                case TalkChannel.Announce:
+                    if (sender.SyndicateIdentity == 0 ||
+                        sender.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                        return;
+
+                    sender.Syndicate.Announce = Message.Substring(0, Math.Min(127, Message.Length));
+                    sender.Syndicate.AnnounceDate = DateTime.Now;
+                    await sender.Syndicate.SaveAsync();
                     break;
             }
         }

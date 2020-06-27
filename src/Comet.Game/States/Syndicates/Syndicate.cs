@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database;
@@ -29,11 +30,17 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Network.Packets;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.States.Syndicates
 {
     public sealed class Syndicate
     {
+        private const int MEMBER_MIN_LEVEL = 15;
+        private const int MAX_MEMBER_SIZE = 800;
+        private const int DISBAND_MONEY = 100000;
+        private const int SYNDICATE_ACTION_COST = 50000;
+        private const int EXIT_MONEY = 20000;
         private const string DEFAULT_ANNOUNCEMENT_S = "This is a new guild.";
 
         private DbSyndicate m_syndicate;
@@ -55,10 +62,26 @@ namespace Comet.Game.States.Syndicates
         {
             get => (uint)m_syndicate.Money;
             set => m_syndicate.Money = value;
-        } 
+        }
 
-        public string Announce => m_syndicate.Announce;
-        public DateTime AnnounceDate => m_syndicate.AnnounceDate;
+
+        public uint ConquerPoints
+        {
+            get => m_syndicate.ConquerPoints;
+            set => m_syndicate.ConquerPoints = value;
+        }
+
+        public string Announce
+        {
+            get => m_syndicate.Announce;
+            set => m_syndicate.Announce = value;
+        }
+
+        public DateTime AnnounceDate
+        {
+            get => m_syndicate.AnnounceDate;
+            set => m_syndicate.AnnounceDate = value;
+        }
 
         public bool Deleted => m_syndicate.DelFlag != null;
 
@@ -140,6 +163,9 @@ namespace Comet.Game.States.Syndicates
                 return false;
             }
 
+            m_leader.Donation = investment / 2;
+            await m_leader.SaveAsync();
+
             m_dicMembers.TryAdd(m_leader.UserIdentity, m_leader);
             return true;
         }
@@ -180,6 +206,307 @@ namespace Comet.Game.States.Syndicates
 
                 m_dicEnemies.TryAdd(syndicate.Identity, syndicate);
             }
+        }
+
+        #endregion
+
+        #region Disband
+
+        public async Task<bool> DisbandAsync(Character user)
+        {
+            if (user.Identity != Leader.UserIdentity)
+                return false;
+
+            if (MemberCount > 1)
+                return false;
+
+            if (Money < DISBAND_MONEY)
+            {
+                return false;
+            }
+
+            user.Syndicate = null;
+
+            if (m_dicMembers.TryRemove(user.Identity, out var member))
+            {
+                await BaseRepository.DeleteAsync(member);
+            }
+
+            // additional clean up
+            await new ServerDbContext().Database.ExecuteSqlRawAsync($"DELETE FROM `cq_synattr` WHERE `syn_id`={Identity}");
+
+            await user.SendAsync(new MsgSyndicate
+            {
+                Identity = Identity,
+                Mode = MsgSyndicate.SyndicateRequest.Disband
+            });
+
+            await user.Screen.SynchroScreenAsync();
+            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynDestroy, Name));
+            return await SoftDeleteAsync();
+        }
+
+        #endregion
+
+        #region Member Management
+
+        public async Task<bool> AppendMemberAsync(Character target, Character caller, JoinMode mode)
+        {
+            if ((mode == JoinMode.Invite || mode == JoinMode.Request) && caller == null)
+            {
+                return false;
+            }
+
+            if (target.SyndicateIdentity != 0)
+                return false;
+
+            if (target.Level < MEMBER_MIN_LEVEL)
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await caller.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            var newMember = new SyndicateMember();
+            if (!await newMember.CreateAsync(target, this, SyndicateMember.SyndicateRank.Member))
+                return false;
+
+            if (!m_dicMembers.TryAdd(newMember.UserIdentity, newMember))
+            {
+                await newMember.DeleteAsync();
+                return false;
+            }
+
+            target.Syndicate = this;
+
+            await target.SendSyndicateAsync();
+            await SendAsync(target);
+            await SendRelationAsync(target);
+            await target.Screen.SynchroScreenAsync();
+
+            m_syndicate.Amount = (uint) MemberCount;
+            await SaveAsync();
+
+            switch (mode)
+            {
+                case JoinMode.Invite:
+                    await SendAsync(string.Format(Language.StrSynInviteGuild, caller.SyndicateRank, caller.Name, target.Name));
+                    break;
+                case JoinMode.Request:
+                    await SendAsync(string.Format(Language.StrSynJoinGuild, caller.SyndicateRank, caller.Name, target.Name));
+                    break;
+                case JoinMode.Recruitment:
+                    break;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> QuitSyndicateAsync(Character target)
+        {
+            if (target.SyndicateRank == SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            if (!m_dicMembers.TryGetValue(target.Identity, out var member))
+                return false;
+
+            if (member.Donation < EXIT_MONEY)
+            {
+                await target.SendAsync(string.Format(Language.StrSynExitNotEnoughMoney, EXIT_MONEY));
+                return false;
+            }
+
+            m_dicMembers.TryRemove(target.Identity, out _);
+
+            target.Syndicate = null;
+
+            await target.SendAsync(new MsgSyndicate
+            {
+                Identity = Identity,
+                Mode = MsgSyndicate.SyndicateRequest.Disband
+            });
+
+            m_syndicate.Amount = (uint) MemberCount;
+            await SaveAsync();
+
+            await target.Screen.SynchroScreenAsync();
+
+            await SendAsync(string.Format(Language.StrSynMemberExit, target.Name));
+            return true;
+        }
+
+        public async Task<bool> KickoutMemberAsync(Character sender, string name)
+        {
+            if (sender.SyndicateRank < SyndicateMember.SyndicateRank.DeputyLeader)
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await sender.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            var member = QueryMember(name);
+            if (member == null)
+                return false;
+
+            if (member.Rank == SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            if (!m_dicMembers.TryRemove(member.UserIdentity, out _))
+                return false;
+
+            Character target = member.User;
+            if (target != null)
+            {
+                target.Syndicate = null;
+                await target.SendAsync(new MsgSyndicate
+                {
+                    Identity = Identity,
+                    Mode = MsgSyndicate.SyndicateRequest.Disband
+                });
+                await target.Screen.SynchroScreenAsync();
+                await target.SendAsync(string.Format(Language.StrSynYouBeenKicked, sender.Name));
+            }
+
+            m_syndicate.Amount = (uint)MemberCount;
+            await SaveAsync();
+            await SendAsync(string.Format(Language.StrSynMemberKickout, sender.SyndicateRank, sender.Name, member.UserName));
+            return true;
+        }
+
+        #endregion
+
+        #region Promote and Demote
+
+        public Task<bool> PromoteAsync(Character sender, string target, SyndicateMember.SyndicateRank position)
+        {
+            Character user = Kernel.RoleManager.GetUser(target);
+            if (user == null || user.SyndicateIdentity != sender.SyndicateIdentity)
+                return Task.FromResult(false);
+            return PromoteAsync(sender, user, position);
+        }
+
+        public Task<bool> PromoteAsync(Character sender, uint target, SyndicateMember.SyndicateRank position)
+        {
+            Character user = Kernel.RoleManager.GetUser(target);
+            if (user == null || user.SyndicateIdentity != sender.SyndicateIdentity)
+                return Task.FromResult(false);
+            return PromoteAsync(sender, user, position);
+        }
+
+        public async Task<bool> PromoteAsync(Character sender, Character target, SyndicateMember.SyndicateRank position)
+        {
+            if (target.SyndicateRank == SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            if (target.SyndicateIdentity != Identity)
+                return false;
+
+            if (sender.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await sender.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            switch (position)
+            {
+                case SyndicateMember.SyndicateRank.DeputyLeader:
+                    if (DeputyLeaderCount >= 5)
+                        return false;
+                    break;
+            }
+
+            if (position == SyndicateMember.SyndicateRank.GuildLeader) // abdicate
+            {
+                sender.SyndicateMember.Rank = SyndicateMember.SyndicateRank.Member;
+                await sender.SendSyndicateAsync();
+                await sender.Screen.SynchroScreenAsync();
+                await sender.SyndicateMember.SaveAsync();
+
+                await SendAsync(string.Format(Language.StrSynAbdicate, sender.Name, target.Name));
+            }
+            else
+            {
+                await SendAsync(string.Format(Language.StrSynPromoted, sender.SyndicateRank, sender.Name, target.Name,
+                    position));
+            }
+
+            target.SyndicateMember.Rank = position;
+            await target.SendSyndicateAsync();
+            await target.Screen.SynchroScreenAsync();
+            await target.SyndicateMember.SaveAsync();
+
+            return true;
+        }
+
+        public Task<bool> DemoteAsync(Character sender, string name)
+        {
+            var member = QueryMember(name);
+            if (member == null)
+                return Task.FromResult(false);
+            return DemoteAsync(sender, member);
+        }
+
+        public Task<bool> DemoteAsync(Character sender, uint target)
+        {
+            var member = QueryMember(target);
+            if (member == null)
+                return Task.FromResult(false);
+            return DemoteAsync(sender, member);
+        }
+
+        public async Task<bool> DemoteAsync(Character sender, SyndicateMember member)
+        {
+            if (sender.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            if (member.Rank == SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await sender.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            member.Rank = SyndicateMember.SyndicateRank.Member;
+            if (member.User != null)
+            {
+                await member.User.SendSyndicateAsync();
+                await member.User.Screen.SynchroScreenAsync();
+            }
+            await member.SaveAsync();
+            return true;
+        }
+
+        #endregion
+
+        #region Alliance
+
+        public async Task<bool> CreateAllianceAsync(Syndicate target)
+        {
+            return true;
+        }
+
+        public async Task<bool> DisbandAllianceAsync(uint idAlly)
+        {
+            return true;
+        }
+
+        public void AddAlly(Syndicate target)
+        {
+
+        }
+
+        public void RemoveAlly(uint idAlly)
+        {
+
         }
 
         #endregion
@@ -293,7 +620,12 @@ namespace Comet.Game.States.Syndicates
             });
         }
 
-        public async Task SendAsync(IPacket msg, uint exclude = 0)
+        public async Task SendAsync(string message, uint idIgnore = 0u, Color? color = null)
+        {
+            await SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.Guild, color ?? Color.White, message), idIgnore);
+        }
+
+        public async Task SendAsync(IPacket msg, uint exclude = 0u)
         {
             foreach (var player in m_dicMembers.Values)
             {
@@ -325,5 +657,12 @@ namespace Comet.Game.States.Syndicates
         }
 
         #endregion
+
+        public enum JoinMode
+        {
+            Invite,
+            Request,
+            Recruitment
+        }
     }
 }

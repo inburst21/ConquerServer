@@ -2829,7 +2829,6 @@ namespace Comet.Game.States
 
         public Syndicate Syndicate { get; set; }
         public SyndicateMember SyndicateMember => Syndicate?.QueryMember(Identity);
-
         public ushort SyndicateIdentity => Syndicate?.Identity ?? 0;
         public string SyndicateName => Syndicate?.Name ?? Language.StrNone;
         public SyndicateMember.SyndicateRank SyndicateRank => SyndicateMember?.Rank ?? SyndicateMember.SyndicateRank.None;
@@ -2877,6 +2876,23 @@ namespace Comet.Game.States
             await Screen.SynchroScreenAsync();
             await Syndicate.BroadcastNameAsync();
             return true;
+        }
+
+        public async Task<bool> DisbandSyndicateAsync()
+        {
+            if (SyndicateIdentity == 0)
+                return false;
+
+            if (Syndicate.Leader.UserIdentity != Identity)
+                return false;
+
+            if (Syndicate.MemberCount > 1)
+            {
+                await SendAsync(Language.StrSynNoDisband);
+                return false;
+            }
+            
+            return await Syndicate.DisbandAsync(this);
         }
 
         public async Task SendSyndicateAsync()
@@ -3217,9 +3233,9 @@ namespace Comet.Game.States
                 await SynchroAttributesAsync(ClientUpdateType.HeavensBlessing, (uint)(HeavenBlessingExpires - now).TotalSeconds);
 
                 if (Map != null && !Map.IsTrainingMap())
-                    await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0, false);
+                    await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0);
                 else
-                    await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1, false);
+                    await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1);
 
                 await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
             }
@@ -3252,7 +3268,7 @@ namespace Comet.Game.States
 
         public byte Energy { get; private set; } = DEFAULT_USER_ENERGY;
 
-        public byte MaxEnergy => 100;
+        public byte MaxEnergy => (byte) (IsBlessed ? 180 : 100);
 
         public byte XpPoints = 0;
 
@@ -3708,6 +3724,14 @@ namespace Comet.Game.States
             
             if (Syndicate != null)
                 await Syndicate.SendAsync(player);
+        }
+
+        public async Task SendWindowToAsync(Character player)
+        {
+            await player.SendAsync(new MsgPlayer(this)
+            {
+                WindowSpawn = 1
+            });
         }
 
         #endregion

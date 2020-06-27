@@ -103,7 +103,9 @@ namespace Comet.Game.Packets
             writer.Write(Lookface);
             writer.Write(NpcType);
             writer.Write(Sort);
-            writer.Write(new List<string> { Name });
+            if (!string.IsNullOrEmpty(Name))
+                writer.Write(new List<string> { Name });
+            else writer.Write(0);
             return writer.ToArray();
         }
     }

@@ -128,6 +128,6 @@ namespace Comet.Game.Packets
         XpCircle = 28,
         LuckyTimeTimer = 29,
         ConquerPoints = 30,
-        OnlineTraining = 31
+        OnlineTraining = 32
     }
 }

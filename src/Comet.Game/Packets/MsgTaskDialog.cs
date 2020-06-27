@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Syndicates;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -134,6 +135,20 @@ namespace Comet.Game.Packets
                     user.ClearTaskId();
                     await GameAction.ExecuteActionAsync(await user.TestTask(task) ? task.IdNext : task.IdNextfail, user,
                         targetRole, user.UserPackage[user.InteractingItem], Text);
+                    break;
+
+                case TaskInteraction.TextInput:
+                    if (TaskIdentity == 31100)
+                    {
+                        if (user.SyndicateIdentity == 0 ||
+                            user.SyndicateRank < SyndicateMember.SyndicateRank.DeputyLeader)
+                            return;
+
+                        await user.Syndicate.KickoutMemberAsync(user, Text);
+                        await user.Syndicate.SendMembersAsync(0, user);
+                        return;
+                    }
+
                     break;
 
                 default:

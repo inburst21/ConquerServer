@@ -176,6 +176,17 @@ namespace Comet.Game.Packets
                     }
                     await user.SendAllEnemiesAsync();
 
+                    if (user.MateIdentity != 0)
+                    {
+                        Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+                        if (mate != null)
+                        {
+                            await mate.SendAsync(user.Gender == 1
+                                ? Language.StrMaleMateLogin
+                                : Language.StrFemaleMateLogin);
+                        }
+                    }
+
                     await client.SendAsync(this);
                     break;
 
@@ -283,7 +294,7 @@ namespace Comet.Game.Packets
                     if (targetUser == null)
                         return;
 
-                    for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                    for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; 
                         pos <= Item.ItemPosition.EquipmentEnd;
                         pos++)
                     {
@@ -294,16 +305,6 @@ namespace Comet.Game.Packets
                     }
 
                     await targetUser.SendAsync(string.Format(Language.StrObservingEquipment, user.Name));
-
-                    await client.SendAsync(new MsgName
-                    {
-                        Identity = targetUser.Identity,
-                        Action = StringAction.QueryMate,
-                        Strings = new List<string>
-                        {
-                            targetUser.MateName
-                        }
-                    });
                     break;
 
                 case ActionType.SpellAbortTransform: // 118
@@ -379,6 +380,14 @@ namespace Comet.Game.Packets
                     await user.SetGhost();
                     break;
 
+                case ActionType.FriendObservation:
+                    targetUser = Kernel.RoleManager.GetUser(Command);
+                    if (targetUser == null)
+                        return;
+
+                    await targetUser.SendWindowToAsync(user);
+                    break;
+
                 default:
                     await client.SendAsync(this);
                     if (client.Character.IsPm())
@@ -444,6 +453,7 @@ namespace Comet.Game.Packets
             RelationshipsFriend = 140,
             CharacterAvatar = 142,
             SetGhost = 145,
+            FriendObservation = 310,
         }
     }
 }

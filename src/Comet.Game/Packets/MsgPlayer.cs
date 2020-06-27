@@ -155,8 +155,8 @@ namespace Comet.Game.Packets
         public byte Pose { get; set; }
         public ushort Metempsychosis { get; set; }
         public ushort Level { get; set; }
-
-        public uint Padding1 { get; set; }
+        public ushort WindowSpawn { get; set; }
+        public ushort Padding1 { get; set; }
 
         public uint NobilityRank { get; set; }
         public uint NobilityIdentity { get; set; }
@@ -221,7 +221,8 @@ namespace Comet.Game.Packets
             writer.Write(Pose); // 59
             writer.Write(Metempsychosis); // 60
             writer.Write(Level); // 62
-            writer.Write(Padding1); // 64 
+            writer.Write(WindowSpawn); // 64 
+            writer.Write(Padding1); // 66 
             writer.Write(NobilityRank); // 68
             writer.Write(NobilityIdentity); // 72
             writer.Write(NobilityPosition); // 76

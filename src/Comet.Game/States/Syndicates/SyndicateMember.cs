@@ -35,7 +35,12 @@ namespace Comet.Game.States.Syndicates
         public uint UserIdentity => m_attr.UserIdentity;
         public string UserName { get; private set; }
         public uint SyndicateIdentity => m_attr.SynId;
-        public int Donation => (int) m_attr.Proffer;
+        public int Donation
+        {
+            get => (int) m_attr.Proffer;
+            set => m_attr.Proffer = value;
+        }
+
         public string SyndicateName { get; private set; }
 
         public byte Level { get; private set; }
@@ -108,6 +113,16 @@ namespace Comet.Game.States.Syndicates
             DeputyLeader = 90,
             Member = 50,
             None = 0
+        }
+
+        public async Task<bool> SaveAsync()
+        {
+            return await BaseRepository.SaveAsync(m_attr);
+        }
+
+        public async Task<bool> DeleteAsync()
+        {
+            return await BaseRepository.DeleteAsync(m_attr);
         }
     }
 }

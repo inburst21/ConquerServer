@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -102,10 +103,10 @@ namespace Comet.Game.States
                     case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
                     case TaskActionType.ActionExecutequery: result = await ExecuteActionExecutequery(action, param, user, role, item, input); break;
 
-                    //case TaskActionType.ActionNpcAttr: result = await ExecuteActionNpcAttr(action, param, user, role, item, input); break;
-                    //case TaskActionType.ActionNpcErase: result = await ExecuteActionNpcErase(action, param, user, role, item, input); break;
-                    //case TaskActionType.ActionNpcResetsynowner: result = await ExecuteActionNpcResetsynowner(action, param, user, role, item, input); break;
-                    //case TaskActionType.ActionNpcFindNextTable: result = await ExecuteActionNpcFindNextTable(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionNpcAttr: result = await ExecuteActionNpcAttr(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionNpcErase: result = await ExecuteActionNpcErase(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionNpcResetsynowner: result = await ExecuteActionNpcResetsynowner(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionNpcFindNextTable: result = await ExecuteActionNpcFindNextTable(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionMapMovenpc: result = await ExecuteActionMapMovenpc(action, param, user, role, item, input); break;
                     case TaskActionType.ActionMapMapuser: result = await ExecuteActionMapMapuser(action, param, user, role, item, input); break;
@@ -137,6 +138,15 @@ namespace Comet.Game.States
                     case TaskActionType.ActionItemJarVerify: result = await ExecuteActionItemJarVerify(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionSynCreate: result = await ExecuteActionSynCreate(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynDestroy: result = await ExecuteActionSynDestroy(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynSetAssistant: result = await ExecuteActionSynSetAssistant(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynClearRank: result = await ExecuteActionSynClearRank(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynChangeLeader: result = await ExecuteActionSynChangeLeader(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynAntagonize: result = await ExecuteActionSynAntagonize(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynClearAntagonize: result = await ExecuteActionSynClearAntagonize(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynAlly: result = await ExecuteActionSynAlly(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynClearAlly: result = await ExecuteActionSynClearAlly(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynAttr: result = await ExecuteActionSynAttr(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionUserAttr: result = await ExecuteUserAttr(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserFull: result = await ExecuteUserFull(action, param, user, role, item, input); break;
@@ -530,7 +540,228 @@ namespace Comet.Game.States
 
         #region Npc
 
+        private static async Task<bool> ExecuteActionNpcAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParams = SplitParam(param, 3);
+            if (splitParams.Length < 3)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionNpcAttr invalid param num {param}, {action.Identity}");
+                return false;
+            }
 
+            string ope = splitParams[0].ToLower();
+            string opt = splitParams[1].ToLower();
+            bool isInt = int.TryParse(splitParams[2], out int data);
+            string strData = splitParams[2];
+
+            uint idNpc = role?.Identity ?? user?.InteractingNpc ?? 0;
+            if (idNpc == 0 && (user == null || user.InteractingNpc == 0 && splitParams.Length < 4 && !uint.TryParse(splitParams[3], out idNpc)))
+                return false;
+
+            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
+            if (npc == null)
+            {
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionNpcAttr invalid NPC id {idNpc} for action {action.Identity}");
+                return false;
+            }
+
+            int cmp = 0;
+            string strCmp = "";
+            if (ope.Equals("life", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (opt == "=")
+                {
+                    return await npc.SetAttributesAsync(ClientUpdateType.Hitpoints, data);
+                }
+
+                if (opt == "+=")
+                {
+                    return await npc.AddAttributesAsync(ClientUpdateType.Hitpoints, data);
+                }
+
+                cmp = (int) npc.Life;
+            }
+            else if (ope.Equals("lookface", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (opt == "=")
+                {
+                    return await npc.SetAttributesAsync(ClientUpdateType.Mesh, data);
+                }
+
+                cmp = (int) npc.Mesh;
+            }
+            else if (ope.Equals("ownerid", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (ope == "=")
+                {
+                    if (!(npc is DynamicNpc dyna))
+                        return false;
+                    return await dyna.SetOwnerAsync((uint) data);
+                }
+
+                cmp = (int) npc.OwnerIdentity;
+            }
+            else if (ope.Equals("ownertype", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cmp = (int) npc.OwnerType;
+            }
+            else if (ope.Equals("maxlife", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (ope == "=")
+                {
+                    return await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, data);
+                }
+
+                cmp = (int) npc.MaxLife;
+            }
+            else if (ope.StartsWith("data", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (ope == "=")
+                {
+                    npc.SetData(ope, data);
+                    return await npc.SaveAsync();
+                }
+
+                if (ope == "+=")
+                {
+                    npc.SetData(ope, npc.GetData(ope) + data);
+                    return await npc.SaveAsync();
+                }
+
+                cmp = npc.GetData(ope);
+            }
+            else if (ope.Equals("datastr", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (opt == "=")
+                {
+                    npc.DataStr = strData;
+                    return await npc.SaveAsync();
+                }
+
+                if (opt == "+=")
+                {
+                    npc.DataStr += strData;
+                    return await npc.SaveAsync();
+                }
+
+                strCmp = npc.DataStr;
+            }
+
+            switch (opt)
+            {
+                case "==": return isInt && cmp == data || strCmp == strData;
+                case ">=": return isInt && cmp >= data;
+                case "<=": return isInt && cmp <= data;
+                case ">": return isInt && cmp > data;
+                case "<": return isInt && cmp < data;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionNpcErase(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
+            if (npc == null)
+                return false;
+
+            if (action.Data == 0)
+            {
+                await npc.DelNpcAsync();
+                user.InteractingNpc = 0;
+                return true;
+            }
+
+            foreach (var del in Kernel.RoleManager.QueryRoleByType<DynamicNpc>().Where(x => x.Type == action.Data))
+            {
+                await del.DelNpcAsync();
+            }
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionNpcResetsynowner(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (!(role is DynamicNpc npc))
+                return false;
+
+            if (npc.IsSynNpc() && !npc.Map.IsSynMap()
+                || npc.IsCtfFlag() && !npc.Map.IsSynMap())
+                return false;
+
+            var score = npc.GetTopScore();
+            if (score != null)
+            {
+                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) score.Identity);
+                if (npc.IsSynFlag() && syn != null)
+                {
+                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrWarWon, syn.Name), MsgTalk.TalkChannel.Center);
+                    npc.Map.OwnerIdentity = syn.Identity;
+                }
+                else if (npc.IsCtfFlag())
+                {
+                    if (user?.IsPm() == true)
+                        await user.SendAsync($"CTF Flag is not handled");
+                    return false;
+                }
+
+                if (syn != null)
+                {
+                    await npc.SetOwnerAsync(syn.Identity);
+                }
+                npc.ClearScores();
+                
+                await npc.Map.SaveAsync();
+                await npc.SaveAsync();
+            }
+
+            foreach (var player in Kernel.RoleManager.QueryRoleByMap<Character>(npc.MapIdentity))
+            {
+                player.SetAttackTarget(null);
+            }
+
+            if (npc.IsSynFlag())
+            {
+                foreach (var resetNpc in Kernel.RoleManager.QueryRoleByMap<BaseNpc>(npc.MapIdentity))
+                {
+                    if (resetNpc.IsSynFlag())
+                        continue;
+
+                    resetNpc.OwnerIdentity = npc.OwnerIdentity;
+                    resetNpc.SetData("data0", (int) npc.OwnerIdentity);
+                    resetNpc.SetData("data1", 0);
+                    resetNpc.SetData("data2", 0);
+                    resetNpc.SetData("data3", 0);
+                    await resetNpc.SaveAsync();
+                }
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionNpcFindNextTable(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 4)
+                return false;
+
+            uint idNpc = uint.Parse(splitParam[0]);
+            uint idMap = uint.Parse(splitParam[1]);
+            ushort usMapX = ushort.Parse(splitParam[2]);
+            ushort usMapY = ushort.Parse(splitParam[3]);
+
+            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
+            if (npc == null)
+                return false;
+
+            npc.SetData("data0", (int) idMap);
+            npc.SetData("data1", usMapX);
+            npc.SetData("data2", usMapY);
+            await npc.SaveAsync();
+            return true;
+        }
 
         #endregion
 
@@ -2021,6 +2252,67 @@ namespace Comet.Game.States
             return await user.CreateSyndicateAsync(input, price);
         }
 
+
+        private static async Task<bool> ExecuteActionSynDestroy(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.Syndicate == null)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+            {
+                await user.SendAsync(Language.StrSynNotLeader);
+                return false;
+            }
+
+            return await user.DisbandSyndicateAsync();
+        }
+
+        private static async Task<bool> ExecuteActionSynSetAssistant(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.Syndicate == null || user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+            return await user.Syndicate.PromoteAsync(user, input, SyndicateMember.SyndicateRank.DeputyLeader);
+        }
+
+        private static async Task<bool> ExecuteActionSynClearRank(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.Syndicate == null || user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+            return await user.Syndicate.DemoteAsync(user, input);
+        }
+
+        private static async Task<bool> ExecuteActionSynChangeLeader(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user?.Syndicate == null || user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+            return await user.Syndicate.PromoteAsync(user, input, SyndicateMember.SyndicateRank.GuildLeader);
+        }
+
+        private static async Task<bool> ExecuteActionSynAntagonize(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionSynClearAntagonize(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionSynAlly(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionSynClearAlly(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionSynAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            return true;
+        }
+
         #endregion
 
         #region User
@@ -2606,14 +2898,14 @@ namespace Comet.Game.States
                         return user.Iterator < iteratorValue;
                     if (opt.Equals("<="))
                         return user.Iterator <= iteratorValue;
-                    if (opt.Equals("=") || opt.Equals("=="))
+                    if (opt.Equals("=="))
                         return user.Iterator == iteratorValue;
                     if (opt.Equals("+="))
                     {
                         user.Iterator += iteratorValue;
                         return true;
                     }
-                    if (opt.Equals("set"))
+                    if (opt.Equals("set") || opt == "=")
                     {
                         user.Iterator = iteratorValue;
                         return true;
@@ -2679,7 +2971,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (paramStrings.Length >= 4 && byte.TryParse(paramStrings[3], out var save) && save != 0)
+            if (paramStrings.Length >= 4 && byte.TryParse(paramStrings[3], out var save) && save != 0 && !map.IsRecordDisable())
                 await user.SavePositionAsync(idMap, x, y);
 
             return await user.FlyMap(idMap, x, y);
@@ -4384,10 +4676,10 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionEventErase(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
-            if (pszParam.Length < 2)
+            if (pszParam.Length < 3)
                 return false;
 
-            uint npcType = uint.Parse(pszParam[1]);
+            uint npcType = uint.Parse(pszParam[2]);
             foreach (var dynaNpc in Kernel.RoleManager.QueryRoleByMap<DynamicNpc>(uint.Parse(pszParam[0])))
             {
                 if (dynaNpc.Type == npcType)
@@ -4477,7 +4769,8 @@ namespace Comet.Game.States
                 .Replace("%syn_id", user?.SyndicateIdentity.ToString() ?? "0")
                 .Replace("%syn_name", user?.SyndicateName ?? Language.StrNone)
                 .Replace("%account_id", user?.Client.AccountIdentity.ToString() ?? "0")
-                .Replace("%user_virtue", user?.VirtuePoints.ToString() ?? "0");
+                .Replace("%user_virtue", user?.VirtuePoints.ToString() ?? "0")
+                .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0");
 
             if (result.Contains("%levelup_exp"))
             {
@@ -4534,7 +4827,8 @@ namespace Comet.Game.States
                         .Replace("%data1", npc.GetData("data1").ToString())
                         .Replace("%data2", npc.GetData("data2").ToString())
                         .Replace("%data3", npc.GetData("data3").ToString())
-                        .Replace("%npc_ownerid", npc.OwnerIdentity.ToString());
+                        .Replace("%npc_ownerid", npc.OwnerIdentity.ToString())
+                        .Replace("%map_owner_id", role.Map.OwnerIdentity.ToString() ?? "0");
                 }
                 else if (role is Monster monster)
                 {
@@ -4579,7 +4873,8 @@ namespace Comet.Game.States
                 }
             }
 
-            result = result.Replace("%map_name", user?.Map?.Name ?? role?.Map?.Name ?? Language.StrNone);
+            result = result.Replace("%map_name", user?.Map?.Name ?? role?.Map?.Name ?? Language.StrNone)
+                .Replace("%iter_time", UnixTimestamp.Now().ToString());
             return result;
         }
 

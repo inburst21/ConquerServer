@@ -87,7 +87,18 @@ namespace Comet.Game.World.Maps
 
         public uint Identity => m_dbMap?.Identity ?? m_dbDynamap?.Identity ?? 0;
         public string Name => m_dbMap?.Name ?? m_dbDynamap?.Name ?? "Invalid";
-        public uint OwnerIdentity => m_dbMap?.OwnerIdentity ?? m_dbDynamap?.OwnerIdentity ?? 0;
+        public uint OwnerIdentity
+        {
+            get => m_dbMap?.OwnerIdentity ?? m_dbDynamap?.OwnerIdentity ?? 0;
+            set
+            {
+                if (m_dbMap != null)
+                    m_dbMap.OwnerIdentity = value;
+                else if (m_dbDynamap != null)
+                    m_dbDynamap.OwnerIdentity = value;
+            }
+        }
+
         public uint MapDoc
         {
             get => m_dbMap?.MapDoc ?? m_dbDynamap?.MapDoc ?? 0;

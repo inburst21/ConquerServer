@@ -94,7 +94,7 @@ namespace Comet.Game.Packets
                     if (targetUser == null)
                         return;
 
-                    Strings.Add(targetUser.MateName);
+                    Strings[0] = targetUser.MateName;
                     await client.Character.SendAsync(this);
                     break;
 

@@ -20,6 +20,7 @@
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 
@@ -45,6 +46,14 @@ namespace Comet.Game.States.NPCs
 
         public override ushort Type => m_dbNpc.Type;
 
+        public override ushort Sort => m_dbNpc.Sort;
+        
+        public override uint OwnerIdentity
+        {
+            get => m_dbNpc.Ownerid;
+            set => m_dbNpc.Ownerid = value;
+        }
+
         #endregion
 
         #region Map and Position
@@ -68,6 +77,7 @@ namespace Comet.Game.States.NPCs
         public override int Data1 { get => m_dbNpc.Data1; set => m_dbNpc.Data1 = value; }
         public override int Data2 { get => m_dbNpc.Data2; set => m_dbNpc.Data2 = value; }
         public override int Data3 { get => m_dbNpc.Data3; set => m_dbNpc.Data3 = value; }
+        public override string DataStr { get => m_dbNpc.Datastr; set => m_dbNpc.Datastr = value; }
 
         #endregion
 
@@ -85,6 +95,20 @@ namespace Comet.Game.States.NPCs
                 Name = Name,
                 NpcType = m_dbNpc.Type
             });
+        }
+
+        #endregion
+
+        #region Database
+
+        public override async Task<bool> SaveAsync()
+        {
+            return await BaseRepository.SaveAsync(m_dbNpc);
+        }
+
+        public override async Task<bool> DeleteAsync()
+        {
+            return await BaseRepository.DeleteAsync(m_dbNpc);
         }
 
         #endregion

@@ -86,6 +86,50 @@ namespace Comet.Game.Packets
 
             switch (Mode)
             {
+                case SyndicateRequest.JoinRequest:
+                    if (Identity == 0 || user.Syndicate != null)
+                        return;
+
+                    Character leader = Kernel.RoleManager.GetUser(Identity);
+                    if (leader == null)
+                        return;
+
+                    if (leader.SyndicateIdentity == 0 ||
+                        leader.SyndicateRank < SyndicateMember.SyndicateRank.DeputyLeader)
+                        return;
+
+                    leader.SetRequest(RequestType.Syndicate, user.Identity);
+                    Identity = user.Identity;
+                    await leader.SendAsync(this);
+
+                    break;
+
+                case SyndicateRequest.InviteRequest:
+                    if (Identity == 0 || user.Syndicate == null)
+                        return;
+
+                    Character target = Kernel.RoleManager.GetUser(Identity);
+                    if (target == null)
+                        return;
+
+                    if (user.SyndicateIdentity == 0
+                        || user.SyndicateRank < SyndicateMember.SyndicateRank.DeputyLeader)
+                        return;
+
+                    if (user.QueryRequest(RequestType.Syndicate) == Identity)
+                    {
+                        user.PopRequest(RequestType.Syndicate);
+                        await user.Syndicate.AppendMemberAsync(target, user, Syndicate.JoinMode.Request);
+                    }
+                    break;
+
+                case SyndicateRequest.Quit: // 3
+                    if (user.SyndicateIdentity == 0)
+                        return;
+
+                    await user.Syndicate.QuitSyndicateAsync(user);
+                    break;
+
                 case SyndicateRequest.Query: // 6
                     Syndicate queryTarget = Kernel.SyndicateManager.GetSyndicate((int) Identity);
                     if (queryTarget == null)
@@ -98,7 +142,19 @@ namespace Comet.Game.Packets
                     if (user.Syndicate == null)
                         return;
 
-                    
+                    if (!await user.SpendMoney((int) Identity))
+                    {
+                        await user.SendAsync(Language.StrNotEnoughMoney);
+                        return;
+                    }
+
+                    user.Syndicate.Money += Identity;
+                    await user.Syndicate.SaveAsync();
+                    user.SyndicateMember.Donation += (int) Identity;
+                    await user.Syndicate.SaveAsync();
+                    await user.SendSyndicateAsync();
+
+                    await user.Syndicate.SendAsync(string.Format(Language.StrSynDonateMoney, user.SyndicateRank, user.Name, Identity));
                     break;
 
                 case SyndicateRequest.Refresh: // 12

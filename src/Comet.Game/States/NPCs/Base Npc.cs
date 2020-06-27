@@ -23,11 +23,13 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Syndicates;
 using Comet.Game.World.Maps;
 
 #endregion
@@ -123,7 +125,7 @@ namespace Comet.Game.States.NPCs
         }
 
         #endregion
-
+        
         #region Map
 
         public override async Task EnterMap()
@@ -159,15 +161,30 @@ namespace Comet.Game.States.NPCs
             return 0;
         }
 
-        public void SetData(string szAttr, int value)
+        public bool SetData(string szAttr, int value)
         {
             switch (szAttr.ToLower())
             {
-                case "data0": Data0 = value; break;
-                case "data1": Data1 = value; break;
-                case "data2": Data2 = value; break;
-                case "data3": Data3 = value; break;
+                case "data0": Data0 = value; return true;
+                case "data1": Data1 = value; return true;
+                case "data2": Data2 = value; return true;
+                case "data3": Data3 = value; return true;
             }
+
+            return false;
+        }
+
+        public bool AddData(string szAttr, int value)
+        {
+            switch (szAttr.ToLower())
+            {
+                case "data0": Data0 += value; return true;
+                case "data1": Data1 += value; return true;
+                case "data2": Data2 += value; return true;
+                case "data3": Data3 += value; return true;
+            }
+
+            return false;
         }
 
         public uint GetTask(string task)
@@ -201,6 +218,8 @@ namespace Comet.Game.States.NPCs
         public virtual int Data1 { get; set; }
         public virtual int Data2 { get; set; }
         public virtual int Data3 { get; set; }
+
+        public virtual string DataStr { get; set; }
 
         #endregion
 
@@ -290,10 +309,25 @@ namespace Comet.Game.States.NPCs
 
         #region Management
 
-        public virtual bool DelNpc()
+        public virtual Task DelNpcAsync()
         {
-            return false;
+            return Task.CompletedTask;
         }
+
+        #endregion
+
+        #region Database
+
+        public virtual Task<bool> SaveAsync()
+        {
+            return Task.FromResult(true);
+        }
+
+        public virtual Task<bool> DeleteAsync()
+        {
+            return Task.FromResult(true);
+        }
+
 
         #endregion
     }

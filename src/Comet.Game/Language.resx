@@ -183,6 +183,9 @@
   <data name="StrEmbedTargetNoSocket" xml:space="preserve">
     <value>The target item doesn't have a socket.</value>
   </data>
+  <data name="StrFemaleMateLogin" xml:space="preserve">
+    <value>Your wife is online.</value>
+  </data>
   <data name="StrFriendListFull" xml:space="preserve">
     <value>Your friend list is full.</value>
   </data>
@@ -250,10 +253,13 @@
     <value>You are killing too much! You may lose your equipment if killed.</value>
   </data>
   <data name="StrMakeFriend" xml:space="preserve">
-    <value>{0} and {1] are friends from now on.</value>
+    <value>{0} and {1} are friends from now on.</value>
   </data>
   <data name="StrMakeFriendSent" xml:space="preserve">
     <value>A request to be friends has been sent.</value>
+  </data>
+  <data name="StrMaleMateLogin" xml:space="preserve">
+    <value>Your husband is online.</value>
   </data>
   <data name="StrNoBonus" xml:space="preserve">
     <value>Sorry, you have no prize available or it hasn't been claimed at the event page.</value>
@@ -348,14 +354,53 @@
   <data name="StrStigmaActiveT" xml:space="preserve">
     <value>Stigma for {0} seconds, your attack will be increased by {1} times.</value>
   </data>
+  <data name="StrSynAbdicate" xml:space="preserve">
+    <value>Guild Leader {1} has abdicated the leadership to {2}.</value>
+  </data>
   <data name="StrSynAlreadyJoined" xml:space="preserve">
     <value>You are already in a guild.</value>
   </data>
   <data name="StrSynCreate" xml:space="preserve">
-    <value>{0} has created the guild {1} successfully.</value>
+    <value>Congratulations! {0} has set up {1} successfully.</value>
+  </data>
+  <data name="StrSynDestroy" xml:space="preserve">
+    <value>Guild {0} has been terminated.</value>
+  </data>
+  <data name="StrSynDonateMoney" xml:space="preserve">
+    <value>{0} {1} has donated {2:N0} silvers to the guild.</value>
+  </data>
+  <data name="StrSynExitNotEnoughMoney" xml:space="preserve">
+    <value>You need to donate {0:N0} to the guild before leaving.</value>
+  </data>
+  <data name="StrSynInviteGuild" xml:space="preserve">
+    <value>{0} {1} has invited {2} to the guild.</value>
+  </data>
+  <data name="StrSynJoinGuild" xml:space="preserve">
+    <value>{0} {1} has accepted {2} in the guild.</value>
+  </data>
+  <data name="StrSynMemberExit" xml:space="preserve">
+    <value>{0} has left the guild.</value>
+  </data>
+  <data name="StrSynMemberKickout" xml:space="preserve">
+    <value>{0} {1} has removed {2} from the guild.</value>
   </data>
   <data name="StrSynNameInUse" xml:space="preserve">
     <value>The guild name is already in use.</value>
+  </data>
+  <data name="StrSynNoDisband" xml:space="preserve">
+    <value>You cannot disband this guild.</value>
+  </data>
+  <data name="StrSynNoMoney" xml:space="preserve">
+    <value>The guild needs at least {0:N0} funds to execute actions.</value>
+  </data>
+  <data name="StrSynNotLeader" xml:space="preserve">
+    <value>You are not the Guild Leader.</value>
+  </data>
+  <data name="StrSynPromoted" xml:space="preserve">
+    <value>Congratulations! {0} {1} has promoted {2} to {3}!</value>
+  </data>
+  <data name="StrSynYouBeenKicked" xml:space="preserve">
+    <value>You have been kicked out of the guild by {0}!</value>
   </data>
   <data name="StrTargetFriendListFull" xml:space="preserve">
     <value>Your target friend list is full.</value>
@@ -439,13 +484,16 @@
     <value>War has ended!</value>
   </data>
   <data name="StrWarRankingNo" xml:space="preserve">
-    <value>Nº{0}: {1} - {2:N0}</value>
+    <value>No. {0}: {1}({2:N0})</value>
   </data>
   <data name="StrWarRankingStart" xml:space="preserve">
     <value>War Ranking:</value>
   </data>
   <data name="StrWarStart" xml:space="preserve">
     <value>War has begun!</value>
+  </data>
+  <data name="StrWarWon" xml:space="preserve">
+    <value>{0} dominated the Guild Area!</value>
   </data>
   <data name="StrWeaponSkillUp" xml:space="preserve">
     <value>Your weapon proeficiency level has been improved.</value>
