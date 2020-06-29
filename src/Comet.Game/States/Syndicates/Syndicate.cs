@@ -42,6 +42,8 @@ namespace Comet.Game.States.Syndicates
         private const int SYNDICATE_ACTION_COST = 50000;
         private const int EXIT_MONEY = 20000;
         private const string DEFAULT_ANNOUNCEMENT_S = "This is a new guild.";
+        private const int MAX_ALLY = 5;
+        private const int MAX_ENEMY = 5;
 
         private DbSyndicate m_syndicate;
         private SyndicateMember m_leader;
@@ -333,6 +335,19 @@ namespace Comet.Game.States.Syndicates
 
             await target.Screen.SynchroScreenAsync();
 
+            await BaseRepository.SaveAsync(new DbSyndicateMemberHistory
+            {
+                UserIdentity = member.UserIdentity,
+                JoinDate = member.JoinDate,
+                LeaveDate = DateTime.Now,
+                SyndicateIdentity = Identity,
+                Rank = (ushort)member.Rank,
+                Silver = member.Donation,
+                ConquerPoints = 0,
+                Guide = 0,
+                PkPoints = 0
+            });
+
             await SendAsync(string.Format(Language.StrSynMemberExit, target.Name));
             return true;
         }
@@ -370,6 +385,19 @@ namespace Comet.Game.States.Syndicates
                 await target.Screen.SynchroScreenAsync();
                 await target.SendAsync(string.Format(Language.StrSynYouBeenKicked, sender.Name));
             }
+
+            await BaseRepository.SaveAsync(new DbSyndicateMemberHistory
+            {
+                UserIdentity = member.UserIdentity,
+                JoinDate = member.JoinDate,
+                LeaveDate = DateTime.Now,
+                SyndicateIdentity = Identity,
+                Rank = (ushort) member.Rank,
+                Silver = member.Donation,
+                ConquerPoints = 0,
+                Guide = 0,
+                PkPoints = 0
+            });
 
             m_syndicate.Amount = (uint)MemberCount;
             await SaveAsync();
@@ -489,24 +517,227 @@ namespace Comet.Game.States.Syndicates
 
         #region Alliance
 
-        public async Task<bool> CreateAllianceAsync(Syndicate target)
+        public int AlliesCount => m_dicAllies.Count;
+        
+
+        public async Task<bool> CreateAllianceAsync(Character user, Syndicate target)
         {
+            if (user.SyndicateIdentity != Identity)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+            {
+                await user.SendAsync(Language.StrSynYouNoLeader);
+                return false;
+            }
+
+            if (IsAlly(target.Identity) || IsEnemy(target.Identity))
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await user.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            if (AlliesCount >= MAX_ALLY)
+            {
+                return false;
+            }
+
+            await BaseRepository.SaveAsync(new DbSyndicateAllies
+            {
+                AllyIdentity = Identity,
+                AllyName = Name,
+                SyndicateIdentity = target.Identity,
+                SyndicateName = target.Name,
+                EstabilishDate = DateTime.Now
+            });
+
+            await BaseRepository.SaveAsync(new DbSyndicateAllies
+            {
+                SyndicateIdentity = Identity,
+                SyndicateName = Name,
+                AllyIdentity = target.Identity,
+                AllyName = target.Name,
+                EstabilishDate = DateTime.Now
+            });
+
+            await AddAllyAsync(target);
+            await target.AddAllyAsync(this);
+
+            await SendAsync(string.Format(Language.StrSynAllyAdd, user.Name, target.Name));
+            await target.SendAsync(string.Format(Language.StrSynAllyAdd, target.Leader.UserName, Name));
+
             return true;
         }
 
-        public async Task<bool> DisbandAllianceAsync(uint idAlly)
+        public async Task<bool> DisbandAllianceAsync(Character user, Syndicate target)
         {
+            if (user.SyndicateIdentity != Identity)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+            {
+                await user.SendAsync(Language.StrSynYouNoLeader);
+                return false;
+            }
+
+            if (!IsAlly(target.Identity))
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await user.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            await SyndicateAllyRepository.DeleteAsync(Identity, target.Identity);
+
+            await RemoveAllyAsync(target.Identity);
+            await target.RemoveAllyAsync(Identity);
+
+            await SendAsync(string.Format(Language.StrSynAllyRemove, user.Name, target.Name));
+            await target.SendAsync(string.Format(Language.StrSynAllyRemoved, user.Name, target.Name));
             return true;
         }
 
-        public void AddAlly(Syndicate target)
+        public async Task AddAllyAsync(Syndicate target)
         {
-
+            m_dicAllies.TryAdd(target.Identity, target);
+            await SendAsync(new MsgSyndicate
+            {
+                Identity = target.Identity,
+                Mode = MsgSyndicate.SyndicateRequest.Ally
+            });
+            await SendAsync(new MsgName
+            {
+                Identity = target.Identity,
+                Action = StringAction.SetAlly,
+                Strings = new List<string>
+                {
+                    target.Name
+                }
+            });
         }
 
-        public void RemoveAlly(uint idAlly)
+        public async Task RemoveAllyAsync(uint idAlly)
         {
+            m_dicAllies.TryRemove((ushort) idAlly, out _);
+            await SendAsync(new MsgSyndicate
+            {
+                Identity = idAlly,
+                Mode = MsgSyndicate.SyndicateRequest.Unally
+            });
+        }
 
+        public bool IsAlly(uint id)
+        {
+            return m_dicAllies.ContainsKey((ushort) id);
+        }
+
+        #endregion
+
+        #region Enemies
+
+        public int EnemyCount => m_dicEnemies.Count;
+
+        public async Task<bool> AntagonizeAsync(Character user, Syndicate target)
+        {
+            if (user.SyndicateIdentity != Identity)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+            {
+                await user.SendAsync(Language.StrSynYouNoLeader);
+                return false;
+            }
+
+            if (IsAlly(target.Identity) || IsEnemy(target.Identity))
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await user.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            if (EnemyCount >= MAX_ENEMY)
+            {
+                // ? message
+                return false;
+            }
+
+            if (!await BaseRepository.SaveAsync(new DbSyndicateEnemy
+            {
+                SyndicateIdentity = Identity,
+                SyndicateName = Name,
+                EnemyIdentity = target.Identity,
+                EnemyName = target.Name,
+                EstabilishDate = DateTime.Now
+            }))
+                return false;
+
+            m_dicEnemies.TryAdd(target.Identity, target);
+
+            await SendAsync(new MsgSyndicate
+            {
+                Identity = target.Identity,
+                Mode = MsgSyndicate.SyndicateRequest.Enemy
+            });
+            await SendAsync(new MsgName
+            {
+                Identity = target.Identity,
+                Action = StringAction.SetEnemy,
+                Strings = new List<string>
+                {
+                    target.Name
+                }
+            });
+
+            await SendAsync(string.Format(Language.StrSynAddEnemy, user.Name, target.Name));
+            await target.SendAsync(string.Format(Language.StrSynAddedEnemy, user.Name, Name));
+            return true;
+        }
+
+        public async Task<bool> PeaceAsync(Character user, Syndicate target)
+        {
+            if (user.SyndicateIdentity != Identity)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+            {
+                await user.SendAsync(Language.StrSynYouNoLeader);
+                return false;
+            }
+
+            if (!IsEnemy(target.Identity))
+                return false;
+
+            if (Money < SYNDICATE_ACTION_COST)
+            {
+                await user.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));
+                return false;
+            }
+
+            m_dicEnemies.TryRemove(target.Identity, out _);
+            await SyndicateEnemyRepository.DeleteAsync(Identity, target.Identity);
+
+            await SendAsync(new MsgSyndicate
+            {
+                Identity = target.Identity,
+                Mode = MsgSyndicate.SyndicateRequest.Unenemy
+            });
+
+            await SendAsync(string.Format(Language.StrSynRemoveEnemy, user.Name, target.Name));
+            await target.SendAsync(string.Format(Language.StrSynRemovedEnemy, user.Name, Name));
+
+            return true;
+        }
+
+        public bool IsEnemy(uint id)
+        {
+            return m_dicEnemies.ContainsKey((ushort)id);
         }
 
         #endregion

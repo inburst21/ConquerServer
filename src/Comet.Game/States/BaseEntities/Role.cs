@@ -215,7 +215,7 @@ namespace Comet.Game.States.BaseEntities
         public virtual async Task ProcessOnMove()
         {
             BattleSystem.ResetBattle();
-
+            await MagicData.AbortMagic(true);
             await DetachStatus(StatusSet.INTENSIFY);
         }
 

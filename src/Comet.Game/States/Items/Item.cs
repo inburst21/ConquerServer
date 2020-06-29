@@ -189,11 +189,7 @@ namespace Comet.Game.States.Items
         public uint PlayerIdentity
         {
             get => m_dbItem.PlayerId;
-            set
-            {
-                _ = Log.GmLog("owner_item", $"Item {Identity} has changed owner from '{PlayerIdentity}' to '{value}'");
-                m_dbItem.PlayerId = value;
-            }
+            set => m_dbItem.PlayerId = value;
         }
 
         public ushort Durability
@@ -393,6 +389,8 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = m_dbItemtype?.AttackMax ?? 0;
+                if (Position == ItemPosition.LeftHand && !IsShield())
+                    result /= 2;
                 result += m_dbItemAddition?.AttackMax ?? 0;
                 return result;
             }
@@ -660,6 +658,20 @@ namespace Comet.Game.States.Items
         #endregion
 
         #region Change Data
+
+        public async Task ChangeOwnerAsync(uint idNewOwner, ChangeOwnerType type)
+        {
+            await BaseRepository.SaveAsync(new DbItemOwnerHistory
+            {
+                OldOwnerIdentity = PlayerIdentity,
+                NewOwnerIdentity = idNewOwner,
+                Operation = (byte) type,
+                Time = DateTime.Now
+            });
+
+            PlayerIdentity = idNewOwner;
+            await SaveAsync();
+        }
 
         public async Task<bool> ChangeTypeAsync(uint newType)
         {
@@ -1574,14 +1586,14 @@ namespace Comet.Game.States.Items
             }
         }
 
-        public async Task<bool> DeleteAsync()
+        public async Task<bool> DeleteAsync(ChangeOwnerType type = ChangeOwnerType.DeleteItem)
         {
             try
             {
                 //await using var db = new ServerDbContext();
                 //db.Remove(m_dbItem);
                 //await db.SaveChangesAsync();
-                m_dbItem.PlayerId = 0;
+                await ChangeOwnerAsync(0, type);
                 m_dbItem.OwnerId = 0;
                 return await SaveAsync();
             }
@@ -1760,6 +1772,17 @@ namespace Comet.Game.States.Items
             White = 9
         }
 
+        public enum ChangeOwnerType : byte
+        {
+            DropItem,
+            PickupItem,
+            TradeItem,
+            CreateItem,
+            DeleteItem,
+            ItemUsage,
+            DeleteDroppedItem
+        }
+
         #endregion
 
         #region Constants
@@ -1843,7 +1866,5 @@ namespace Comet.Game.States.Items
         public const uint TYPE_JAR = 750000;
 
         #endregion
-
-        
     }
 }

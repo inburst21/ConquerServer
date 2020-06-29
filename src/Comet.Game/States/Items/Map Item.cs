@@ -102,7 +102,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public bool Create(GameMap map, Point pos, Item pInfo, uint idOwner)
+        public async Task<bool> Create(GameMap map, Point pos, Item pInfo, uint idOwner)
         {
             if (map == null || pInfo == null) return false;
 
@@ -124,7 +124,7 @@ namespace Comet.Game.States.Items
             m_itemInfo = pInfo;
             m_info.Type = pInfo.Type;
             m_itemInfo.OwnerIdentity = 0;
-            m_itemInfo.PlayerIdentity = 0;
+            await m_itemInfo.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
             m_itemInfo.Position = Item.ItemPosition.Floor;
             return true;
         }
@@ -295,7 +295,7 @@ namespace Comet.Game.States.Items
             }
 
             m_itemInfo.Position = Item.ItemPosition.Inventory;
-            m_itemInfo.PlayerIdentity = owner.Identity;
+            await m_itemInfo.ChangeOwnerAsync(owner.Identity, Item.ChangeOwnerType.PickupItem);
             await m_itemInfo.SaveAsync();
             return m_itemInfo;
         }
@@ -326,7 +326,7 @@ namespace Comet.Game.States.Items
         public async Task Disappear()
         {
             if (m_itemInfo != null)
-                await m_itemInfo.DeleteAsync();
+                await m_itemInfo.DeleteAsync(Item.ChangeOwnerType.DeleteDroppedItem);
 
             await LeaveMap();
         }
@@ -364,12 +364,18 @@ namespace Comet.Game.States.Items
 
         public override async Task SendSpawnToAsync(Character player)
         {
+            uint type = Itemtype;
+            if (Item.GetItemSort(type) == Item.ItemSort.ItemsortWeaponShield
+                || Item.GetItemSubType(type) >= 111 && Item.GetItemSubType(type) < 120
+                || Item.GetItemSubType(type) >= 130 && Item.GetItemSubType(type) < 140)
+                type += 300;
+
             await player.SendAsync(new MsgMapItem
             {
                 Identity = Identity,
                 MapX = MapX,
                 MapY = MapY,
-                Itemtype = Itemtype,
+                Itemtype = type,
                 Mode = DropType.LayItem
             });
         }

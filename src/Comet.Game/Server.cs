@@ -156,6 +156,10 @@ namespace Comet.Game
                         msg = new MsgConnect();
                         break;
 
+                    case PacketType.MsgTrade:
+                        msg = new MsgTrade();
+                        break;
+
                     case PacketType.MsgMapItem:
                         msg = new MsgMapItem();
                         break;

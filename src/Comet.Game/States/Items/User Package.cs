@@ -755,11 +755,10 @@ namespace Comet.Game.States.Items
                         if (!await RemoveFromInventoryAsync(item.Identity, RemovalType.DropItem))
                             continue;
 
-                        item.PlayerIdentity = 0;
-                        item.OwnerIdentity = m_user.Identity;
+                        await item.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
 
                         var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-                        if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
+                        if (await pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
                         {
                             await pMapItem.EnterMap();
                             await item.SaveAsync();
@@ -815,11 +814,10 @@ namespace Comet.Game.States.Items
                     if (!await RemoveFromInventoryAsync(item.Identity, RemovalType.DropItem))
                         continue;
 
-                    item.PlayerIdentity = 0;
-                    item.OwnerIdentity = m_user.Identity;
+                    await item.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
 
                     var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-                    if (pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
+                    if (await pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
                     {
                         await pMapItem.EnterMap();
                         await item.SaveAsync();

@@ -22,7 +22,6 @@
 #region References
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Shared;
@@ -77,6 +76,9 @@ namespace Comet.Game.Database
         public virtual DbSet<DbRebirth> Rebirths { get; set; }
         public virtual DbSet<DbStatus> Status { get; set; }
         public virtual DbSet<DbTaskDetail> TaskDetail { get; set; }
+        public virtual DbSet<DbTrade> Trade { get; set; }
+        public virtual DbSet<DbTradeItem> TradeItem { get; set; }
+        public virtual DbSet<DbItemOwnerHistory> ItemOwnerHistory { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

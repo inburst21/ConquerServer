@@ -37,5 +37,16 @@ namespace Comet.Game.Database.Repositories
             await using var db = new ServerDbContext();
             return db.SyndicatesAlly.Where(x => x.Identity == id).ToList();
         }
+
+        public static async Task DeleteAsync(uint id0, uint id1)
+        {
+            DbSyndicateAllies ally = (await GetAsync(id0)).FirstOrDefault(x => x.AllyIdentity == id1);
+            if (ally != null)
+                await BaseRepository.DeleteAsync(ally);
+
+            ally = (await GetAsync(id1)).FirstOrDefault(x => x.AllyIdentity == id0);
+            if (ally != null)
+                await BaseRepository.DeleteAsync(ally);
+        }
     }
 }

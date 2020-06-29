@@ -267,13 +267,13 @@ namespace Comet.Game.States
                 }
             }
 
-            if (await Kernel.ChanceCalcAsync(.01d))
+            if (await Kernel.ChanceCalcAsync(1, 5000))
             {
                 await DropItem(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name));
             }
 
-            if (await Kernel.ChanceCalcAsync(.1d))
+            if (await Kernel.ChanceCalcAsync(1, 500))
             {
                 await DropItem(Item.TYPE_METEOR, idDropOwner);
             }
@@ -341,7 +341,7 @@ namespace Comet.Game.States
 
         #region Drop Function
 
-        private async Task DropItem(uint type, uint owner)
+        public async Task DropItem(uint type, uint owner)
         {
             DbItemtype itemType = Kernel.ItemManager.GetItemtype(type);
             if (itemType != null) await DropItem(itemType, owner);
@@ -365,7 +365,7 @@ namespace Comet.Game.States
             }
         }
 
-        private async Task DropMoney(uint amount, uint idOwner)
+        public async Task DropMoney(uint amount, uint idOwner)
         {
             Point targetPos = new Point(MapX, MapY);
             if (Map.FindDropItemCell(4, ref targetPos))

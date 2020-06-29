@@ -148,6 +148,8 @@ namespace Comet.Game.States
                     case TaskActionType.ActionSynClearAlly: result = await ExecuteActionSynClearAlly(action, param, user, role, item, input); break;
                     case TaskActionType.ActionSynAttr: result = await ExecuteActionSynAttr(action, param, user, role, item, input); break;
 
+                    case TaskActionType.ActionMstDropitem: result = await ExecuteActionMstDropitem(action, param, user, role, item, input); break;
+
                     case TaskActionType.ActionUserAttr: result = await ExecuteUserAttr(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserFull: result = await ExecuteUserFull(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserChgmap: result = await ExecuteUserChgMap(action, param, user, role, item, input); break;
@@ -2290,27 +2292,163 @@ namespace Comet.Game.States
 
         private static async Task<bool> ExecuteActionSynAntagonize(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            if (user?.Syndicate == null)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            Syndicate target = Kernel.SyndicateManager.GetSyndicate(input);
+            if (target == null)
+                return false;
+
+            if (target.Identity == user.SyndicateIdentity)
+                return false;
+
+            return await user.Syndicate.AntagonizeAsync(user, target);
         }
 
         private static async Task<bool> ExecuteActionSynClearAntagonize(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            if (user?.Syndicate == null)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            Syndicate target = Kernel.SyndicateManager.GetSyndicate(input);
+            if (target == null)
+                return false;
+
+            if (target.Identity == user.SyndicateIdentity)
+                return false;
+
+            return await user.Syndicate.PeaceAsync(user, target);
         }
 
         private static async Task<bool> ExecuteActionSynAlly(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            if (user?.Syndicate == null)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            Syndicate target = user.Team?.Members.FirstOrDefault(x => x.Identity != user.Identity)?.Syndicate;
+            if (target == null)
+                return false;
+
+            if (target.Identity == user.SyndicateIdentity)
+                return false;
+            
+            return await user.Syndicate.CreateAllianceAsync(user, target);
         }
 
         private static async Task<bool> ExecuteActionSynClearAlly(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            if (user?.Syndicate == null)
+                return false;
+
+            if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                return false;
+
+            Syndicate target = Kernel.SyndicateManager.GetSyndicate(input);
+            if (target == null)
+                return false;
+
+            if (target.Identity == user.SyndicateIdentity)
+                return false;
+
+            return await user.Syndicate.DisbandAllianceAsync(user, target);
         }
 
         private static async Task<bool> ExecuteActionSynAttr(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            return true;
+            string[] splitParam = SplitParam(param, 3);
+            if (splitParam.Length < 3)
+                return false;
+
+            string field = splitParam[0],
+                opt = splitParam[1];
+            long value = long.Parse(splitParam[2]);
+
+            Syndicate target = null;
+            if (splitParam.Length < 4)
+                target = user.Syndicate;
+            else
+                target = Kernel.SyndicateManager.GetSyndicate(int.Parse(splitParam[3]));
+
+            if (target == null)
+                return false;
+
+            int data = 0;
+            if (field.Equals("money", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (opt.Equals("+="))
+                {
+                    if (target.Money + value < 0)
+                        return false;
+
+                    target.Money = (uint) Math.Max(0, target.Money + value);
+                    return await target.SaveAsync();
+                }
+
+                data = (int) target.Money;
+            }
+            else if (field.Equals("membernum", StringComparison.InvariantCultureIgnoreCase))
+            {
+                data = target.MemberCount;
+            }
+            
+            switch (opt)
+            {
+                case "==": return data == value;
+                case ">=": return data >= value;
+                case "<=": return data <= value;
+                case ">": return data > value;
+                case "<": return data < value;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Monster
+
+        private static async Task<bool> ExecuteActionMstDropitem(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (role == null || !(role is Monster monster))
+                return false;
+
+            string[] splitParam = SplitParam(param, 2);
+            if (splitParam.Length < 2)
+                return false;
+
+            string ope = splitParam[0];
+            uint data = uint.Parse(splitParam[1]);
+
+            int percent = 100;
+            if (splitParam.Length >= 3)
+                percent = int.Parse(splitParam[2]);
+
+            if (ope.Equals("dropitem"))
+            {
+                uint idUser = user?.Identity ?? 0u;
+                await monster.DropItem(data, idUser);
+                return true;
+            }
+            if (ope.Equals("dropmoney"))
+            {
+                percent %= 100;
+                uint dwMoneyDrop = (uint)(data * (percent + await Kernel.NextAsync(100 - percent)) / 100);
+                if (dwMoneyDrop <= 0)
+                    return false;
+                uint idUser = user?.Identity ?? 0u;
+                await monster.DropMoney(dwMoneyDrop, idUser);
+                return true;
+            }
+            return false;
         }
 
         #endregion
@@ -4847,7 +4985,7 @@ namespace Comet.Game.States
 
                 if (result.Contains("%iter_upquality_gem"))
                 {
-                    Item pItem = user.UserPackage[(Item.ItemPosition)user.Iterator];
+                    Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
                     if (pItem != null)
                         result = result.Replace("%iter_upquality_gem", pItem.GetUpQualityGemAmount().ToString());
                     else
@@ -4924,14 +5062,6 @@ namespace Comet.Game.States
         ActionNpcModify = 206,
         ActionNpcResetsynowner = 207,
         ActionNpcFindNextTable = 208,
-        ActionNpcAddTable = 209,
-        ActionNpcDelTable = 210,
-        ActionNpcDelInvalid = 211,
-        ActionNpcTableAmount = 212,
-        ActionNpcSysAuction = 213,
-        ActionNpcDressSynclothing = 214,
-        ActionNpcTakeoffSynclothing = 215,
-        ActionNpcAuctioning = 216,
         ActionNpcLimit = 299,
 
         // Map
@@ -4947,7 +5077,6 @@ namespace Comet.Game.States
         ActionMapChangeweather = 310,
         ActionMapChangelight = 311,
         ActionMapMapeffect = 312,
-        ActionMapCreatemap = 313,
         ActionMapFireworks = 314,
         ActionMapLimit = 399,
 

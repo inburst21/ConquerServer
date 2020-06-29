@@ -27,6 +27,9 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Comet.Network.Packets;
 using Comet.Network.Security;
+using Comet.Shared;
+using Microsoft.Extensions.Logging;
+using LogLevel = Comet.Shared.LogLevel;
 
 #endregion
 
@@ -93,8 +96,10 @@ namespace Comet.Network.Sockets
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
-                    return Task.CompletedTask;
+                    if (e is SocketException se && se.ErrorCode == 10048)
+                        Disconnect();
+
+                    return Log.WriteLog(LogLevel.Exception, e.ToString());
                 }
             }
         }

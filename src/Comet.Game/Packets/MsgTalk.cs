@@ -346,7 +346,7 @@ namespace Comet.Game.Packets
                         return true;
                     case "/awardmagic":
                     case "/awardskill":
-                        byte skillLevel = 1;
+                        byte skillLevel = 0;
                         string[] awardSkill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
                         if (!ushort.TryParse(awardSkill[0], out var skillType))
                             return true;
@@ -482,7 +482,14 @@ namespace Comet.Game.Packets
 
                         Generator pGen = new Generator(newGen);
                         await pGen.GenerateAsync();
-                        return await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
+                        await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
+
+                        return true;
+
+                    case "/action":
+                        if (uint.TryParse(param, out var idExecuteAction))
+                            await GameAction.ExecuteActionAsync(idExecuteAction, user, null, null, string.Empty);
+                        return true;
                 }
             }
 

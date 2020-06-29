@@ -1138,7 +1138,7 @@ namespace Comet.Game.States
             await item.SaveAsync();
 
             MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-            if (mapItem.Create(Map, pos, item, Identity))
+            if (await mapItem.Create(Map, pos, item, Identity))
             {
                 await mapItem.EnterMap();
                 await item.SaveAsync();
@@ -1249,6 +1249,12 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Trade
+
+        public Trade Trade { get; set; }
+
+        #endregion
+
         #region Peerage
 
         public NobilityRank NobilityRank => Kernel.PeerageManager.GetRanking(Identity);
@@ -1315,7 +1321,10 @@ namespace Comet.Game.States
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
-                    result += UserPackage[pos]?.MinAttack ?? 0;
+                    if (pos == Item.ItemPosition.LeftHand)
+                        result += (UserPackage[pos]?.MinAttack ?? 0) / 2;
+                    else 
+                        result += UserPackage[pos]?.MinAttack ?? 0;
                 }
 
                 result = (int) (result * (1 + (DragonGemBonus / 100d)));
@@ -1330,6 +1339,9 @@ namespace Comet.Game.States
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
+                    //if (pos == Item.ItemPosition.LeftHand && UserPackage[pos]?.IsShield() != true)
+                    //    result += (UserPackage[pos]?.MaxAttack ?? 0) / 2;
+                    //else
                     result += UserPackage[pos]?.MaxAttack ?? 0;
                 }
 
@@ -1875,6 +1887,8 @@ namespace Comet.Game.States
                         if (IsFriend(user.Identity))
                             return false;
                         if (IsMate(user.Identity))
+                            return false;
+                        if (Syndicate?.IsAlly(user.SyndicateIdentity) == true)
                             return false;
                         if (Team?.IsMember(user.Identity) == true)
                             return false;
@@ -3058,6 +3072,9 @@ namespace Comet.Game.States
         /// </summary>
         public override async Task LeaveMap()
         {
+            BattleSystem.ResetBattle();
+            await MagicData.AbortMagic(true);
+
             await Map.RemoveAsync(Identity);
             await Screen.ClearAsync();
         }
@@ -3075,10 +3092,13 @@ namespace Comet.Game.States
 
         public async Task SavePositionAsync(uint idMap, ushort x, ushort y)
         {
-            m_dbObject.X = x;
-            m_dbObject.Y = y;
-            m_dbObject.MapID = idMap;
-            await SaveAsync();
+            if (!Map.IsRecordDisable())
+            {
+                m_dbObject.X = x;
+                m_dbObject.Y = y;
+                m_dbObject.MapID = idMap;
+                await SaveAsync();
+            }
         }
 
         public async Task<bool> FlyMap(uint idMap, int x, int y)
@@ -3554,6 +3574,13 @@ namespace Comet.Game.States
                     if (!status.IsValid && status.Identity != StatusSet.GHOST && status.Identity != StatusSet.DEAD)
                     {
                         await StatusSet.DelObj(status.Identity);
+
+                        if (status.Identity == StatusSet.SUPERMAN || status.Identity == StatusSet.CYCLONE
+                            && (QueryStatus(StatusSet.SUPERMAN) == null && QueryRole(StatusSet.CYCLONE) == null))
+                        {
+                            // Todo Superman Points
+                            XpPoints = 0;
+                        }
                     }
                 }
             }
@@ -3678,6 +3705,9 @@ namespace Comet.Game.States
             else if (Team != null)
                 await Team.DismissMember(this);
 
+            if (Trade != null)
+                await Trade.SendCloseAsync();
+
             await LeaveMap();
 
             await SaveAsync();
@@ -3786,7 +3816,7 @@ namespace Comet.Game.States
         Friend,
         Syndicate,
         TeamApply,
-        TeamInvite
-
+        TeamInvite,
+        Trade
     }
 }

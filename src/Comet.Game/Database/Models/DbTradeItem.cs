@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - SyndicateEnemyRepository.cs
+// Comet - Comet.Game - DbTradeItem.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -21,27 +21,22 @@
 
 #region References
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Comet.Game.Database.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #endregion
 
-namespace Comet.Game.Database.Repositories
+namespace Comet.Game.Database.Models
 {
-    public static class SyndicateEnemyRepository
+    [Table("cq_trade_item")]
+    public class DbTradeItem
     {
-        public static async Task<List<DbSyndicateEnemy>> GetAsync(uint id)
-        {
-            await using var db = new ServerDbContext();
-            return db.SyndicatesEnemy.Where(x => x.SyndicateIdentity == id).ToList();
-        }
-
-        public static async Task<bool> DeleteAsync(uint id0, uint id1)
-        {
-            DbSyndicateEnemy enemy = (await GetAsync(id0)).FirstOrDefault(x => x.EnemyIdentity == id1);
-            return enemy != null && await BaseRepository.DeleteAsync(enemy);
-        }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
+        [Column("trade_id")] public virtual uint TradeIdentity { get; set; }
+        [Column("user_id")] public virtual uint SenderIdentity { get; set; }
+        [Column("item_id")] public virtual uint ItemIdentity { get; set; }
+        [Column("itemtype")] public virtual uint Itemtype { get; set; }
+        [Column("chksum")] public virtual uint Chksum { get; set; }
+        [Column("json_data")] public virtual string JsonData { get; set; }
     }
 }

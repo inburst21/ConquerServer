@@ -138,6 +138,18 @@ namespace Comet.Game.Packets
 
             switch (Action)
             {
+                case ActionType.CharacterDirection: // 79
+                case ActionType.CharacterEmote: // 81
+                case ActionType.SpellAbortXp: // 93
+                case ActionType.CharacterObservation: // 117
+                case ActionType.FriendObservation: // 310
+                    user.BattleSystem.ResetBattle();
+                    await user.MagicData.AbortMagic(true);
+                    break;
+            }
+
+            switch (Action)
+            {
                 case ActionType.LoginSpawn: // 74
                     Identity = client.Character.Identity;
                     Command = client.Character.MapIdentity;

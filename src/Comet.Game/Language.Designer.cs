@@ -574,6 +574,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item cannot be traded..
+        /// </summary>
+        public static string StrNotToTrade {
+            get {
+                return ResourceManager.GetString("StrNotToTrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} is observing your equipments carefully..
         /// </summary>
         public static string StrObservingEquipment {
@@ -781,6 +790,51 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The Guild Leader {0} of the Guild {1} has added us to the enemies list..
+        /// </summary>
+        public static string StrSynAddedEnemy {
+            get {
+                return ResourceManager.GetString("StrSynAddedEnemy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {0} has added Guild {1} to the enemies list..
+        /// </summary>
+        public static string StrSynAddEnemy {
+            get {
+                return ResourceManager.GetString("StrSynAddEnemy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {0} has added Guild {1} to the allies list..
+        /// </summary>
+        public static string StrSynAllyAdd {
+            get {
+                return ResourceManager.GetString("StrSynAllyAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {0} has removed the Guild {1} from the allies list..
+        /// </summary>
+        public static string StrSynAllyRemove {
+            get {
+                return ResourceManager.GetString("StrSynAllyRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The Guild Leader {0} of {1} has removed our guild from the allies list..
+        /// </summary>
+        public static string StrSynAllyRemoved {
+            get {
+                return ResourceManager.GetString("StrSynAllyRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You are already in a guild..
         /// </summary>
         public static string StrSynAlreadyJoined {
@@ -907,11 +961,38 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The Guild Leader {0} of {1} has removed our guild from the enemy list..
+        /// </summary>
+        public static string StrSynRemovedEnemy {
+            get {
+                return ResourceManager.GetString("StrSynRemovedEnemy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {0} has removed the Guild {1} from the enemy list..
+        /// </summary>
+        public static string StrSynRemoveEnemy {
+            get {
+                return ResourceManager.GetString("StrSynRemoveEnemy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You have been kicked out of the guild by {0}!.
         /// </summary>
         public static string StrSynYouBeenKicked {
             get {
                 return ResourceManager.GetString("StrSynYouBeenKicked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are not the Guild Leader..
+        /// </summary>
+        public static string StrSynYouNoLeader {
+            get {
+                return ResourceManager.GetString("StrSynYouNoLeader", resourceCulture);
             }
         }
         
@@ -1128,6 +1209,87 @@ namespace Comet.Game {
         public static string StrToMakeFriend {
             get {
                 return ResourceManager.GetString("StrToMakeFriend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] You cannot trade more than {0:N0} Conquer Points..
+        /// </summary>
+        public static string StrTradeMuchEmoney {
+            get {
+                return ResourceManager.GetString("StrTradeMuchEmoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] You cannot trade more than {0:N0} silvers..
+        /// </summary>
+        public static string StrTradeMuchMoney {
+            get {
+                return ResourceManager.GetString("StrTradeMuchMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] Your request has been sent..
+        /// </summary>
+        public static string StrTradeRequestSent {
+            get {
+                return ResourceManager.GetString("StrTradeRequestSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot trade more items..
+        /// </summary>
+        public static string StrTradeSashFull {
+            get {
+                return ResourceManager.GetString("StrTradeSashFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] Trade success..
+        /// </summary>
+        public static string StrTradeSuccess {
+            get {
+                return ResourceManager.GetString("StrTradeSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] The target is already trading..
+        /// </summary>
+        public static string StrTradeTargetAlreadyTrade {
+            get {
+                return ResourceManager.GetString("StrTradeTargetAlreadyTrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] The target bag is full..
+        /// </summary>
+        public static string StrTradeTargetBagIsFull {
+            get {
+                return ResourceManager.GetString("StrTradeTargetBagIsFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] You are already trading..
+        /// </summary>
+        public static string StrTradeYouAlreadyTrade {
+            get {
+                return ResourceManager.GetString("StrTradeYouAlreadyTrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] Your bag is full..
+        /// </summary>
+        public static string StrTradeYourBagIsFull {
+            get {
+                return ResourceManager.GetString("StrTradeYourBagIsFull", resourceCulture);
             }
         }
         

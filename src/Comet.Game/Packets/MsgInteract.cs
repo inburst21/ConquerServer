@@ -102,6 +102,8 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            client.Character.BattleSystem.ResetBattle();
+
             Role target = client.Character.Map.QueryAroundRole(client.Character, TargetIdentity);
 
             switch (Action)

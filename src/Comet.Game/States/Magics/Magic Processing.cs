@@ -252,7 +252,7 @@ namespace Comet.Game.States.Magics
                     if (m_pOwner.Map.IsTrainingMap())
                     {
                         SetAutoAttack();
-                        m_tDelay.Startup(Math.Max(2000, m_pMagic.DelayMs));
+                        m_tDelay.Startup(Math.Max(1500, m_pMagic.DelayMs));
                         m_state = MagicState.Delay;
                         return true;
                     }
@@ -616,7 +616,7 @@ namespace Comet.Game.States.Magics
             int power = magic.Power;
             int secs = (int) magic.StepSeconds;
             int times = (int) magic.ActiveTimes;
-            int status = (int) StatusSet.InvertFlag((ulong) magic.Status);
+            int status = (int) magic.Status;
             byte level = (byte) magic.Level;
 
             if (power < 0)

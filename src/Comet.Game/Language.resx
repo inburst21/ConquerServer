@@ -288,6 +288,9 @@
   <data name="StrNotEnoughSpaceN" xml:space="preserve">
     <value>You need to leave at least {0} empty spaces in your inventory.</value>
   </data>
+  <data name="StrNotToTrade" xml:space="preserve">
+    <value>This item cannot be traded.</value>
+  </data>
   <data name="StrObservingEquipment" xml:space="preserve">
     <value>{0} is observing your equipments carefully.</value>
   </data>
@@ -357,6 +360,21 @@
   <data name="StrSynAbdicate" xml:space="preserve">
     <value>Guild Leader {1} has abdicated the leadership to {2}.</value>
   </data>
+  <data name="StrSynAddedEnemy" xml:space="preserve">
+    <value>The Guild Leader {0} of the Guild {1} has added us to the enemies list.</value>
+  </data>
+  <data name="StrSynAddEnemy" xml:space="preserve">
+    <value>Guild Leader {0} has added Guild {1} to the enemies list.</value>
+  </data>
+  <data name="StrSynAllyAdd" xml:space="preserve">
+    <value>Guild Leader {0} has added Guild {1} to the allies list.</value>
+  </data>
+  <data name="StrSynAllyRemove" xml:space="preserve">
+    <value>Guild Leader {0} has removed the Guild {1} from the allies list.</value>
+  </data>
+  <data name="StrSynAllyRemoved" xml:space="preserve">
+    <value>The Guild Leader {0} of {1} has removed our guild from the allies list.</value>
+  </data>
   <data name="StrSynAlreadyJoined" xml:space="preserve">
     <value>You are already in a guild.</value>
   </data>
@@ -399,8 +417,17 @@
   <data name="StrSynPromoted" xml:space="preserve">
     <value>Congratulations! {0} {1} has promoted {2} to {3}!</value>
   </data>
+  <data name="StrSynRemovedEnemy" xml:space="preserve">
+    <value>The Guild Leader {0} of {1} has removed our guild from the enemy list.</value>
+  </data>
+  <data name="StrSynRemoveEnemy" xml:space="preserve">
+    <value>Guild Leader {0} has removed the Guild {1} from the enemy list.</value>
+  </data>
   <data name="StrSynYouBeenKicked" xml:space="preserve">
     <value>You have been kicked out of the guild by {0}!</value>
+  </data>
+  <data name="StrSynYouNoLeader" xml:space="preserve">
+    <value>You are not the Guild Leader.</value>
   </data>
   <data name="StrTargetFriendListFull" xml:space="preserve">
     <value>Your target friend list is full.</value>
@@ -473,6 +500,33 @@
   </data>
   <data name="StrToMakeFriend" xml:space="preserve">
     <value>{0} has sent you a friend request.</value>
+  </data>
+  <data name="StrTradeMuchEmoney" xml:space="preserve">
+    <value>[Trade] You cannot trade more than {0:N0} Conquer Points.</value>
+  </data>
+  <data name="StrTradeMuchMoney" xml:space="preserve">
+    <value>[Trade] You cannot trade more than {0:N0} silvers.</value>
+  </data>
+  <data name="StrTradeRequestSent" xml:space="preserve">
+    <value>[Trade] Your request has been sent.</value>
+  </data>
+  <data name="StrTradeSashFull" xml:space="preserve">
+    <value>You cannot trade more items.</value>
+  </data>
+  <data name="StrTradeSuccess" xml:space="preserve">
+    <value>[Trade] Trade success.</value>
+  </data>
+  <data name="StrTradeTargetAlreadyTrade" xml:space="preserve">
+    <value>[Trade] The target is already trading.</value>
+  </data>
+  <data name="StrTradeTargetBagIsFull" xml:space="preserve">
+    <value>[Trade] The target bag is full.</value>
+  </data>
+  <data name="StrTradeYouAlreadyTrade" xml:space="preserve">
+    <value>[Trade] You are already trading.</value>
+  </data>
+  <data name="StrTradeYourBagIsFull" xml:space="preserve">
+    <value>[Trade] Your bag is full.</value>
   </data>
   <data name="StrUnableToUseItem" xml:space="preserve">
     <value>Unable to use item.</value>

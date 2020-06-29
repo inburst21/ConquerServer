@@ -65,7 +65,7 @@ namespace Comet.Game.World.Managers
         {
             uint key = type;
             Item.ItemSort sort = Item.GetItemSort(type);
-            if (sort == Item.ItemSort.ItemsortWeaponSingleHand)
+            if (sort == Item.ItemSort.ItemsortWeaponSingleHand && Item.GetItemSubType(type) != 421)
             {
                 key = type / 100000 * 100000 + type % 1000 + 44000 - type % 10;
             }
