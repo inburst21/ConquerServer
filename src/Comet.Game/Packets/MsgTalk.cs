@@ -220,6 +220,20 @@ namespace Comet.Game.Packets
                 await Log.GmLog("gm_talk", $"{sender.Name} says to {RecipientName}: {Message}");
             }
 
+            // if (Channel != TalkChannel.Whisper) // for privacy
+            {
+                await BaseRepository.SaveAsync(new DbMessageLog
+                {
+                    SenderIdentity = sender.Identity,
+                    SenderName = sender.Name,
+                    TargetIdentity = target?.Identity ?? 0,
+                    TargetName = target?.Name ?? RecipientName,
+                    Channel = (ushort) Channel,
+                    Message = Message,
+                    Time = DateTime.Now
+                });
+            }
+
             if (await ProcessCommandAsync(Message, sender))
             {
                 await Log.GmLog("gm_cmd", $"{sender.Name}: {Message}");
@@ -276,6 +290,15 @@ namespace Comet.Game.Packets
                     sender.Syndicate.Announce = Message.Substring(0, Math.Min(127, Message.Length));
                     sender.Syndicate.AnnounceDate = DateTime.Now;
                     await sender.Syndicate.SaveAsync();
+                    break;
+
+                case TalkChannel.Bbs:
+                case TalkChannel.GuildBoard:
+                case TalkChannel.FriendBoard:
+                case TalkChannel.OthersBoard:
+                case TalkChannel.TeamBoard:
+                case TalkChannel.TradeBoard:
+                    MessageBoard.AddMessage(sender, Message, Channel);
                     break;
             }
         }

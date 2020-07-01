@@ -172,6 +172,10 @@ namespace Comet.Game
                         msg = new MsgSyndicate();
                         break;
 
+                    case PacketType.MsgMessageBoard:
+                        msg = new MsgMessageBoard();
+                        break;
+
                     case PacketType.MsgSynMemberInfo:
                         msg = new MsgSynMemberInfo();
                         break;
