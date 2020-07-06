@@ -19,4 +19,8 @@
     <FileVersion>1.0701.1908.7</FileVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>../Release</OutputPath>
+  </PropertyGroup>
+
 </Project>
