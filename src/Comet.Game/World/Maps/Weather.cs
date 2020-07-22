@@ -24,6 +24,7 @@
 using System;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.Packets;
 using Comet.Game.States;
 
 #endregion
