@@ -29,6 +29,7 @@ using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Network.RPC;
 using Comet.Shared;
+using Comet.Shared.Models;
 
 #endregion
 
@@ -103,6 +104,15 @@ namespace Comet.Game
             _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
                 .ConfigureAwait(false);
 
+            Kernel.Api = new MyApi(Kernel.Configuration.ServerName, config.ApiAuth.Username, config.ApiAuth.Password);
+            await Kernel.Api.PostAsync(new ServerInformation
+            {
+                ServerName = Kernel.Configuration.ServerName,
+                ServerStatus = ServerInformation.RealmStatus.Online,
+                PlayerAmount = 0,
+                MaxPlayerAmount = Kernel.Configuration.MaxConn
+            }, MyApi.SYNC_INFORMATION_URL);
+
             // Output all clear and wait for user input
             await Log.WriteLog(LogLevel.Message, "Listening for new connections");
             Console.WriteLine();
@@ -110,6 +120,15 @@ namespace Comet.Game
             bool result = await CommandCenterAsync();
             if (!result)
                 await Log.WriteLog(LogLevel.Error, "Account server has exited without success.");
+
+            await Kernel.Api.PostAsync(new ServerInformation
+            {
+                ServerName = Kernel.Configuration.ServerName,
+                ServerStatus = ServerInformation.RealmStatus.Offline,
+                PlayerAmount = 0,
+                MaxPlayerAmount = Kernel.Configuration.MaxConn
+
+            }, MyApi.SYNC_INFORMATION_URL);
 
             await Kernel.CloseAsync();
         }

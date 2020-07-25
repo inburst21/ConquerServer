@@ -55,6 +55,7 @@ namespace Comet.Game.Database
         public GameNetworkConfiguration GameNetwork { get; set; }
         public RpcNetworkConfiguration RpcNetwork { get; set; }
         public AuthenticationConfiguration Authentication { get; set; }
+        public ApiAuthentication ApiAuth { get; set; }
 
         /// <summary>
         ///     Returns true if the server configuration is valid after reading.
@@ -104,6 +105,12 @@ namespace Comet.Game.Database
         public class AuthenticationConfiguration
         {
             public bool StrictAuthPass { get; set; }
+        }
+
+        public class ApiAuthentication
+        {
+            public string Username { get; set; }
+            public string Password { get; set; }
         }
     }
 }

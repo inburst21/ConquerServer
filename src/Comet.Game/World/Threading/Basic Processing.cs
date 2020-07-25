@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Shared;
+using Comet.Shared.Models;
 
 #endregion
 
@@ -35,6 +36,7 @@ namespace Comet.Game.World.Threading
         public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - Players: {3} (max:{4}) - {2}";
 
         private TimeOut m_analytics = new TimeOut(300);
+        private TimeOut m_apiSync = new TimeOut(60);
 
         private DateTime m_ServerStartTime;
 
@@ -47,6 +49,7 @@ namespace Comet.Game.World.Threading
         {
             m_ServerStartTime = DateTime.Now;
             m_analytics.Update();
+            m_apiSync.Update();
 
             return base.OnStartAsync();
         }
@@ -71,6 +74,18 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
+            }
+
+            if (m_apiSync.ToNextTime())
+            {
+                await Kernel.Api.PostAsync(new ServerInformation
+                {
+                    ServerName = Kernel.Configuration.ServerName,
+                    ServerStatus = ServerInformation.RealmStatus.Online,
+                    PlayerAmount = Kernel.RoleManager.OnlinePlayers,
+                    MaxPlayerAmount = Kernel.RoleManager.MaxOnlinePlayers
+
+                }, MyApi.SYNC_INFORMATION_URL);
             }
 
             await Kernel.RoleManager.OnRoleTimerAsync();

@@ -97,7 +97,7 @@ namespace Comet.Account.Packets
 
             string serverIpAddr = server.GameIPAddress;
             if (serverIpAddr == "localhost" || serverIpAddr.StartsWith("127."))
-                serverIpAddr = "25.107.199.67";
+                serverIpAddr = "192.168.0.23";
 
             await client.SendAsync(new MsgConnectEx(serverIpAddr, server.GamePort, token));
             await Log.WriteLog("login", LogLevel.Message, $"[{Username}] has authenticated successfully on [{Realm}].");

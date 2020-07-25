@@ -150,7 +150,8 @@ namespace Comet.Game.Packets
                     DbItemtype itemtype = Kernel.ItemManager.GetItemtype(Command);
                     if (itemtype == null)
                     {
-                        await Log.WriteLog(LogLevel.Cheat, $"Invalid goods itemtype (not existent) {Command} for Shop {Identity}");
+                        await Log.WriteLog(LogLevel.Cheat,
+                            $"Invalid goods itemtype (not existent) {Command} for Shop {Identity}");
                         return;
                     }
 
@@ -164,7 +165,7 @@ namespace Comet.Game.Packets
                     const byte MONOPOLY_NONE_B = 0;
                     const byte MONOPOLY_BOUND_B = (byte) Item.ITEM_MONOPOLY_MASK;
                     byte monopoly = MONOPOLY_NONE_B;
-                    switch ((Moneytype)goods.Moneytype)
+                    switch ((Moneytype) goods.Moneytype)
                     {
                         case Moneytype.Silver:
                             //if ((Moneytype) goods.Moneytype != Moneytype.Silver)
@@ -181,7 +182,8 @@ namespace Comet.Game.Packets
                                 return;
                             break;
                         default:
-                            await Log.WriteLog(LogLevel.Cheat, $"Invalid moneytype {(Moneytype) Argument}/{Identity}/{Command} - {user.Identity}({user.Name})");
+                            await Log.WriteLog(LogLevel.Cheat,
+                                $"Invalid moneytype {(Moneytype) Argument}/{Identity}/{Command} - {user.Identity}({user.Name})");
                             return;
                     }
 
@@ -237,7 +239,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.EquipmentRemove:
-                    if (!await user.UserPackage.UnequipAsync((Item.ItemPosition)Command))
+                    if (!await user.UserPackage.UnequipAsync((Item.ItemPosition) Command))
                         await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
                     break;
 
@@ -424,20 +426,111 @@ namespace Comet.Game.Packets
 
                     await item.SaveAsync();
                     await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-                    await Log.GmLog("uplev", $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_METEOR}");
-                        break;
+                    await Log.GmLog("uplev",
+                        $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_METEOR}");
+                    break;
                 }
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
                     break;
+
+                case ItemActionType.EquipmentEnchant:
+                {
+                    item = user.UserPackage[Identity];
+                    Item gem = user.UserPackage[Command];
+
+                    if (item == null || gem == null)
+                        return;
+
+                    if (item.Enchantment >= byte.MaxValue)
+                        return;
+
+                    if (!gem.IsGem())
+                        return;
+
+                    await user.UserPackage.SpendItemAsync(gem);
+
+                    byte min, max;
+                    switch ((Item.SocketGem) (gem.Type % 1000))
+                    {
+                        case Item.SocketGem.NormalPhoenixGem:
+                        case Item.SocketGem.NormalDragonGem:
+                        case Item.SocketGem.NormalFuryGem:
+                        case Item.SocketGem.NormalKylinGem:
+                        case Item.SocketGem.NormalMoonGem:
+                        case Item.SocketGem.NormalTortoiseGem:
+                        case Item.SocketGem.NormalVioletGem:
+                            min = 1;
+                            max = 59;
+                            break;
+                        case Item.SocketGem.RefinedPhoenixGem:
+                        case Item.SocketGem.RefinedVioletGem:
+                        case Item.SocketGem.RefinedMoonGem:
+                            min = 60;
+                            max = 109;
+                            break;
+                        case Item.SocketGem.RefinedFuryGem:
+                        case Item.SocketGem.RefinedKylinGem:
+                        case Item.SocketGem.RefinedTortoiseGem:
+                            min = 40;
+                            max = 89;
+                            break;
+                        case Item.SocketGem.RefinedDragonGem:
+                            min = 100;
+                            max = 159;
+                            break;
+                        case Item.SocketGem.RefinedRainbowGem:
+                            min = 80;
+                            max = 129;
+                            break;
+                        case Item.SocketGem.SuperPhoenixGem:
+                        case Item.SocketGem.SuperTortoiseGem:
+                        case Item.SocketGem.SuperRainbowGem:
+                            min = 170;
+                            max = 229;
+                            break;
+                        case Item.SocketGem.SuperVioletGem:
+                        case Item.SocketGem.SuperMoonGem:
+                            min = 140;
+                            max = 199;
+                            break;
+                        case Item.SocketGem.SuperDragonGem:
+                            min = 200;
+                            max = 255;
+                            break;
+                        case Item.SocketGem.SuperFuryGem:
+                            min = 90;
+                            max = 149;
+                            break;
+                        case Item.SocketGem.SuperKylinGem:
+                            min = 70;
+                            max = 119;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    byte enchant = (byte)await Kernel.NextAsync(min, max);
+                    if (enchant > item.Enchantment)
+                    {
+                        item.Enchantment = enchant;
+                        await item.SaveAsync();
+                        await Log.GmLog("enchant",
+                            $"User[{user.Identity}] Enchant[Gem: {gem.Type}|{gem.Identity}][Target: {item.Type}|{item.Identity}] with {enchant} points.");
+                    }
+
+                    Command = enchant;
+                    await user.SendAsync(this);
+                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                        break;
+                }
 
                 default:
                     await client.SendAsync(this);
                     if (client.Character.IsGm())
                         await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
                             $"Missing packet {Type}, Action {Action}, Length {Length}"));
-                    Console.WriteLine("Missing packet {0}, action {1}, Length {2}\n{3}",
-                        Type, Action, Length, PacketDump.Hex(Encode()));
+                    Console.WriteLine("Missing packet {0}, action {1}, Length {2}\n{3}", Type, Action, Length, PacketDump.Hex(Encode()));
                     break;
             }
         }
