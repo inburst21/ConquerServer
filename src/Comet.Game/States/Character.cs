@@ -2488,6 +2488,13 @@ namespace Comet.Game.States
         public uint InteractingItem { get; set; }
         public uint InteractingNpc { get; set; }
 
+        private List<QueuedAction> m_queuedActions = new List<QueuedAction>();
+
+        public void AddActionToQueue(QueuedAction action)
+        {
+            m_queuedActions.Add(action);
+        }
+
         public bool CheckItem(DbTask task)
         {
             if (task.Itemname1.Length > 0)
@@ -3692,6 +3699,24 @@ namespace Comet.Game.States
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
+            try
+            {
+                for (int i = m_queuedActions.Count-1; i >= 0; i--)
+                {
+                    var action = m_queuedActions[i];
+                    if (action.CanBeExecuted)
+                    {
+                        await GameAction.ExecuteActionAsync(action.Action, this, null, null, "");
+                        m_queuedActions.Remove(action);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error in action queue for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
             if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
             {
                 await SetGhost();
@@ -3705,7 +3730,6 @@ namespace Comet.Game.States
             {
                 if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_SECS))
                 {
-                    // todo handle blessing
                     if (Action == EntityAction.Sit)
                     {
                         await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_SIT);

@@ -25,6 +25,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
@@ -192,6 +193,8 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserVarCompare: result = await ExecuteActionUserVarCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarDefine: result = await ExecuteActionUserVarDefine(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserExecAction: result = await ExecuteActionUserExecAction(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTestPos: result = true;  break; // gotta investigate
                     case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserStcTimeCheck(action, param, user, role, item, input); break;
@@ -4081,6 +4084,22 @@ namespace Comet.Game.States
             }
         }
 
+        private static async Task<bool> ExecuteActionUserExecAction(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            string[] splitParams = SplitParam(param, 3);
+            if (splitParams.Length < 3)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(splitParams[0], out var secSpan)
+                || !uint.TryParse(splitParams[1], out var idAction))
+                return false;
+
+            user.AddActionToQueue(new QueuedAction(secSpan, idAction));
+            return true;
+        }
+
         private static async Task<bool> ExecuteActionUserStcCompare(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
@@ -5035,6 +5054,26 @@ namespace Comet.Game.States
         }
     }
 
+    public class QueuedAction
+    {
+        private TimeOut m_timeOut = new TimeOut();
+
+        public QueuedAction(int secs, uint action)
+        {
+            m_timeOut.Startup(secs);
+            Action = action;
+        }
+        
+        public uint Action { get; }
+
+        public bool CanBeExecuted => m_timeOut.IsActive() && m_timeOut.IsTimeOut();
+
+        public void Clear()
+        {
+            m_timeOut.Clear();
+        }
+    }
+
     public enum TaskActionType
     {
         // System
@@ -5201,6 +5240,8 @@ namespace Comet.Game.States
         ActionUserVarCompare = 1060,
         ActionUserVarDefine = 1061,
         ActionUserVarCalc = 1064,
+        ActionUserExecAction = 1071,
+        ActionUserTestPos = 1072,
         ActionUserStcCompare = 1073,
         ActionUserStcOpe = 1074,
         ActionUserStcTimeOperation = 1080,
