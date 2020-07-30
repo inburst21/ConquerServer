@@ -1611,7 +1611,7 @@ namespace Comet.Game.States
             if (pItem == null)
                 return false;
 
-            Item.ItemPosition pos = item.GetPosition();
+            Item.ItemPosition pos = pItem.GetPosition();
             if (pos != Item.ItemPosition.Armor
                 && pos != Item.ItemPosition.Headwear
                 && (pos != Item.ItemPosition.LeftHand || pItem.GetItemSort() != Item.ItemSort.ItemsortWeaponShield))

@@ -44,8 +44,10 @@ namespace Comet.Game.Packets
                 Identity = item.Identity;
             }
 
-            if (item.IsArmor() || item.IsHelmet())
+            if (item.IsArmor() || item.IsHelmet() || item.IsShield())
+            {
                 Itemtype = item.Type + (uint) item.Color * 100;
+            }
             else
                 Itemtype = item.Type;
             Amount = item.Durability;

@@ -301,7 +301,7 @@ namespace Comet.Game.States
             if (target.QueryStatus(StatusSet.DODGE) != null)
                 dodge = Calculations.AdjustData(dodge, attacker.QueryStatus(StatusSet.DODGE).Power);
             
-            hitRate = Math.Min(99, Math.Max(40, hitRate - dodge));
+            hitRate = Math.Min(99, Math.Max(40, 40 + hitRate - dodge));
 
 #if DEBUG
             if (attacker is Character atkUser && atkUser.IsPm())

@@ -505,6 +505,11 @@ namespace Comet.Game.States
             if (Level >= 70 && ProfessionSort == 13 && ProfessionLevel >= 3)
                 multiplier += 1;
 
+            /*
+             * TODO: Attention, this is only for ALPHA!!! REMOVE
+             */
+            multiplier += 10;
+
             nExp = (long)(nExp * Math.Max(1, multiplier));
 
             if (nExp < 0)
@@ -625,8 +630,7 @@ namespace Comet.Game.States
                     Vitality = allot.Vitality;
                     Spirit = allot.Spirit;
                 }
-
-                if (pointAmount > 0)
+                else if (pointAmount > 0)
                     await AddAttributesAsync(ClientUpdateType.Atributes, (int)pointAmount);
 
                 await SetAttributesAsync(ClientUpdateType.Level, Level);
@@ -746,7 +750,7 @@ namespace Comet.Game.States
 #endif
 
             int nLevel = (int)skill.Level;
-            if (nLevel >= 1 && nLevel < MAX_WEAPONSKILLLEVEL)
+            if (nLevel < MAX_WEAPONSKILLLEVEL)
             {
                 if (nNewExp > MsgWeaponSkill.RequiredExperience[nLevel] ||
                     nLevel >= skill.OldLevel / 2 && nLevel < skill.OldLevel)
@@ -769,7 +773,12 @@ namespace Comet.Game.States
                 }
                 else
                 {
-                    await SendAsync(new MsgWeaponSkill(skill));
+                    await SendAsync(new MsgFlushExp
+                    {
+                        Action = MsgFlushExp.FlushMode.WeaponSkill,
+                        Identity = (ushort) skill.Type,
+                        Experience = skill.Experience
+                    });
                 }
 
                 await WeaponSkill.SaveAsync(skill);
@@ -3428,6 +3437,13 @@ namespace Comet.Game.States
                         return false;
 
                     value = Spirit = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, Spirit + value));
+                    break;
+
+                case ClientUpdateType.Atributes:
+                    if (value < 0)
+                        return false;
+
+                    value = AttributePoints = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, AttributePoints + value));
                     break;
 
                 case ClientUpdateType.XpCircle:

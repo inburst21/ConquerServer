@@ -283,7 +283,7 @@ namespace Comet.Game.States.Items
 
                 await m_itemInfo.CreateAsync(m_itemtype);
 
-                m_itemInfo.Color = m_info.Color;
+                m_itemInfo.Color = Item.ItemColor.Orange;
 
                 m_itemInfo.ChangeAddition(m_info.Addition);
                 m_itemInfo.ReduceDamage = m_info.ReduceDamage;

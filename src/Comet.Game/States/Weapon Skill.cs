@@ -74,7 +74,7 @@ namespace Comet.Game.States
             if (await SaveAsync(skill))
             {
                 await m_user.SendAsync(new MsgWeaponSkill(skill));
-                return true;
+                return m_skills.TryAdd(type, skill);
             }
 
             return false;
