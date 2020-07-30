@@ -3803,7 +3803,7 @@ namespace Comet.Game.States
             try
             {
                 await using ServerDbContext context = new ServerDbContext();
-                context.LoginRcd.Add(new DbGameLoginRecord
+                await context.LoginRcd.AddAsync(new DbGameLoginRecord
                 {
                     AccountIdentity = Client.AccountIdentity,
                     UserIdentity = Identity,

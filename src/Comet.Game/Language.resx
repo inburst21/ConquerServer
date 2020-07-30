@@ -351,6 +351,30 @@
   <data name="StrPickupSilvers" xml:space="preserve">
     <value>You picked up {0:D0} silvers.</value>
   </data>
+  <data name="StrPigeonAdditionUnexist" xml:space="preserve">
+    <value>Your message has not been found.</value>
+  </data>
+  <data name="StrPigeonSendErrEmptyString" xml:space="preserve">
+    <value>Fail to submit your message since you have entered nothing.</value>
+  </data>
+  <data name="StrPigeonSendErrNoEmoney" xml:space="preserve">
+    <value>Fail to broadcast your messages since you do not have enough CPs.</value>
+  </data>
+  <data name="StrPigeonSendErrStringTooLong" xml:space="preserve">
+    <value>Fail to broadcast your message. Please shorten your message.</value>
+  </data>
+  <data name="StrPigeonSendOver5Pieces" xml:space="preserve">
+    <value>You have five messages waiting for broadcast. Please submit again later.</value>
+  </data>
+  <data name="StrPigeonSendProducePrompt" xml:space="preserve">
+    <value>Congratulations. You have submitted a message for broadcast.</value>
+  </data>
+  <data name="StrPigeonUrgentAlreadySent" xml:space="preserve">
+    <value>Sorry, you can not mark your message urgent since it has been already broadcast.</value>
+  </data>
+  <data name="StrPigeonUrgentErrNoEmoney" xml:space="preserve">
+    <value>Sorry, you do not have enough CPs to submit an urgent message for broadcast.</value>
+  </data>
   <data name="StrShieldActiveP" xml:space="preserve">
     <value>Shield for {0} seconds, your defense will be increased by {1} percent.</value>
   </data>

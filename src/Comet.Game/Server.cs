@@ -192,6 +192,10 @@ namespace Comet.Game
                         msg = new MsgDataArray();
                         break;
 
+                    case PacketType.MsgPigeon:
+                        msg = new MsgPigeon();
+                        break;
+
                     case PacketType.MsgPeerage:
                         msg = new MsgPeerage();
                         break;
@@ -200,8 +204,12 @@ namespace Comet.Game
                         await Log.WriteLog(LogLevel.Warning,
                             "Missing packet {0}, Length {1}\n{2}",
                             type, length, PacketDump.Hex(packet));
-                        await actor.SendAsync(new MsgTalk(actor.Identity, MsgTalk.TalkChannel.Service,
-                            $"Missing packet {type}, Length {length}"));
+                        if (actor.Character?.IsGm() == true)
+                        {
+                            await actor.SendAsync(new MsgTalk(actor.Identity, MsgTalk.TalkChannel.Service,
+                                $"Missing packet {type}, Length {length}"));
+                        }
+
                         return;
                 }
 

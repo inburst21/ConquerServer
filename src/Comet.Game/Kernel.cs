@@ -66,6 +66,7 @@ namespace Comet.Game
         public static EventManager EventManager = new EventManager();
         public static SyndicateManager SyndicateManager = new SyndicateManager();
         public static MineManager MineManager = new MineManager();
+        public static PigeonManager PigeonManager = new PigeonManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -78,7 +79,7 @@ namespace Comet.Game
 
         static Kernel()
         {
-            Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            Version = Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? "Error";
         }
 
         /// <summary>
@@ -112,6 +113,7 @@ namespace Comet.Game
             await SyndicateManager.InitializeAsync();
             await EventManager.InitializeAsync();
             await MineManager.InitializeAsync();
+            await PigeonManager.InitializeAsync();
 
             await SystemThread.StartAsync();
             await UserThread.StartAsync();

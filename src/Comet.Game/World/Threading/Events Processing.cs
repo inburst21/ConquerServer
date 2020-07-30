@@ -42,8 +42,9 @@ namespace Comet.Game.World.Threading
 
         public override async Task<bool> OnElapseAsync()
         {
-            bool ranking = m_rankingBroadcast.ToNextTime();
+            await Kernel.PigeonManager.OnTimerAsync();
 
+            bool ranking = m_rankingBroadcast.ToNextTime();
             foreach (var dynaNpc in Kernel.RoleManager.QueryRoleByType<DynamicNpc>())
             {
                 if (dynaNpc.IsGoal())

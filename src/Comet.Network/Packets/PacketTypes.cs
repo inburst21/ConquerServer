@@ -76,6 +76,8 @@ namespace Comet.Network.Packets
         MsgTaskDialog,
         MsgFriendInfo,
         MsgDataArray = 2036,
+        MsgPigeon = 2050,
+        MsgPigeonQuery = 2051,
         MsgPeerage = 2064,
     }
 }

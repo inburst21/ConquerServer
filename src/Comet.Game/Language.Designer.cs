@@ -763,6 +763,78 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your message has not been found..
+        /// </summary>
+        public static string StrPigeonAdditionUnexist {
+            get {
+                return ResourceManager.GetString("StrPigeonAdditionUnexist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Fail to submit your message since you have entered nothing..
+        /// </summary>
+        public static string StrPigeonSendErrEmptyString {
+            get {
+                return ResourceManager.GetString("StrPigeonSendErrEmptyString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Fail to broadcast your messages since you do not have enough CPs..
+        /// </summary>
+        public static string StrPigeonSendErrNoEmoney {
+            get {
+                return ResourceManager.GetString("StrPigeonSendErrNoEmoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Fail to broadcast your message. Please shorten your message..
+        /// </summary>
+        public static string StrPigeonSendErrStringTooLong {
+            get {
+                return ResourceManager.GetString("StrPigeonSendErrStringTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have five messages waiting for broadcast. Please submit again later..
+        /// </summary>
+        public static string StrPigeonSendOver5Pieces {
+            get {
+                return ResourceManager.GetString("StrPigeonSendOver5Pieces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations. You have submitted a message for broadcast..
+        /// </summary>
+        public static string StrPigeonSendProducePrompt {
+            get {
+                return ResourceManager.GetString("StrPigeonSendProducePrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Sorry, you can not mark your message urgent since it has been already broadcast..
+        /// </summary>
+        public static string StrPigeonUrgentAlreadySent {
+            get {
+                return ResourceManager.GetString("StrPigeonUrgentAlreadySent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Sorry, you do not have enough CPs to submit an urgent message for broadcast..
+        /// </summary>
+        public static string StrPigeonUrgentErrNoEmoney {
+            get {
+                return ResourceManager.GetString("StrPigeonUrgentErrNoEmoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Shield for {0} seconds, your defense will be increased by {1} percent..
         /// </summary>
         public static string StrShieldActiveP {
