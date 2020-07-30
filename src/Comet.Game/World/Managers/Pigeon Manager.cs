@@ -204,10 +204,10 @@ namespace Comet.Game.World.Managers
             await SyncAsync();
         }
 
-        public async Task SendListAsync(Character user, MsgPigeon request)
+        public async Task SendListAsync(Character user, MsgPigeon.PigeonMode request)
         {
             List<DbPigeonQueue> temp;
-            if (request.Mode == MsgPigeon.PigeonMode.Query)
+            if (request == MsgPigeon.PigeonMode.Query)
             {
                 temp = new List<DbPigeonQueue>(m_queue);
             }
