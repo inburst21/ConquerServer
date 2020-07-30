@@ -3463,6 +3463,7 @@ namespace Comet.Game.States
                     await user.AddTaskMask(flag);
                     return true;
                 case "cls":
+                case "clr":
                 case "clear":
                     await user.ClearTaskMask(flag);
                     return true;
