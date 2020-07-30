@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Core.Mathematics;
@@ -67,6 +68,7 @@ namespace Comet.Game.States
         private TimeOut m_transformation = new TimeOut();
         private TimeOut m_tRevive = new TimeOut();
         private TimeOut m_respawn = new TimeOut();
+        private TimeOut m_mine = new TimeOut(2);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -84,7 +86,7 @@ namespace Comet.Game.States
 
             m_socket = socket;
 
-            /**
+            /*
              * Removed the base class because we'll be inheriting role stuff.
              */
             m_dbObject = character;
@@ -3073,10 +3075,22 @@ namespace Comet.Game.States
         public override async Task LeaveMap()
         {
             BattleSystem.ResetBattle();
-            await MagicData.AbortMagic(true);
+            await MagicData.AbortMagic(false);
 
             await Map.RemoveAsync(Identity);
             await Screen.ClearAsync();
+        }
+
+        public override Task ProcessOnMove()
+        {
+            StopMining();
+            return base.ProcessOnMove();
+        }
+
+        public override Task ProcessOnAttack()
+        {
+            StopMining();
+            return base.ProcessOnAttack();
         }
 
         public async Task SavePositionAsync()
@@ -3541,6 +3555,69 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Mining
+
+        private int m_mineCount = 0;
+
+        public void StartMining()
+        {
+            m_mine.Startup(3);
+            m_mineCount = 0;
+        }
+
+        public void StopMining()
+        {
+            m_mine.Clear();
+        }
+
+        public async Task DoMineAsync()
+        {
+            if (!IsAlive)
+            {
+                await SendAsync(Language.StrDead);
+                StopMining();
+                return;
+            }
+
+            if (UserPackage[Item.ItemPosition.RightHand]?.GetItemSubType() != 562)
+            {
+                await SendAsync(Language.StrMineWithPecker);
+                StopMining();
+                return;
+            }
+
+            if (UserPackage.IsPackFull())
+            {
+                await SendAsync(Language.StrYourBagIsFull);
+                return;
+            }
+
+            float nChance = 15f + ((float)(WeaponSkill[562]?.Level ?? 0) / 2);
+            if (await Kernel.ChanceCalcAsync(nChance))
+            {
+                uint idItem = await Kernel.MineManager.GetDropAsync(this);
+                DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItem);
+                if (itemtype == null)
+                    return;
+
+                await UserPackage.AwardItemAsync(idItem);
+                await SendAsync(string.Format(Language.StrMineItemFound, itemtype.Name));
+
+                m_mineCount++;
+            }
+
+            await BroadcastRoomMsgAsync(new MsgAction
+            {
+                Identity = Identity,
+                Command = 0,
+                ArgumentX = MapX,
+                ArgumentY = MapY,
+                Action = MsgAction.ActionType.MapMine
+            }, true);
+        }
+
+        #endregion
+
         #region Timer
 
         public override async Task OnTimerAsync()
@@ -3623,7 +3700,7 @@ namespace Comet.Game.States
 
             if (!IsAlive)
                 return;
-
+            
             try
             {
                 if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_SECS))
@@ -3671,7 +3748,18 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error heal life for usre {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Error, $"Error heal life for user {Identity}:{Name}");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                if (m_mine.IsActive() && m_mine.ToNextTime())
+                    await DoMineAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error mine for user {Identity}:{Name}");
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
         }

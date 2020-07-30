@@ -261,11 +261,20 @@
   <data name="StrMaleMateLogin" xml:space="preserve">
     <value>Your husband is online.</value>
   </data>
+  <data name="StrMineItemFound" xml:space="preserve">
+    <value>You found {0}!</value>
+  </data>
+  <data name="StrMineWithPecker" xml:space="preserve">
+    <value>You must use a pecker to mine.</value>
+  </data>
   <data name="StrNoBonus" xml:space="preserve">
     <value>Sorry, you have no prize available or it hasn't been claimed at the event page.</value>
   </data>
   <data name="StrNoGemEmbed" xml:space="preserve">
     <value>This item is not a gem.</value>
+  </data>
+  <data name="StrNoMine" xml:space="preserve">
+    <value>You cannot mine here.</value>
   </data>
   <data name="StrNone" xml:space="preserve">
     <value>None</value>

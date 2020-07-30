@@ -80,6 +80,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbTradeItem> TradeItem { get; set; }
         public virtual DbSet<DbItemOwnerHistory> ItemOwnerHistory { get; set; }
         public virtual DbSet<DbMessageLog> MessageLog { get; set; }
+        public virtual DbSet<DbMineRate> MineRates { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

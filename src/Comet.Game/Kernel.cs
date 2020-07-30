@@ -65,6 +65,7 @@ namespace Comet.Game
         public static MagicManager MagicManager = new MagicManager();
         public static EventManager EventManager = new EventManager();
         public static SyndicateManager SyndicateManager = new SyndicateManager();
+        public static MineManager MineManager = new MineManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -110,6 +111,7 @@ namespace Comet.Game
             await PeerageManager.InitializeAsync();
             await SyndicateManager.InitializeAsync();
             await EventManager.InitializeAsync();
+            await MineManager.InitializeAsync();
 
             await SystemThread.StartAsync();
             await UserThread.StartAsync();

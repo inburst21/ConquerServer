@@ -493,6 +493,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You found {0}!.
+        /// </summary>
+        public static string StrMineItemFound {
+            get {
+                return ResourceManager.GetString("StrMineItemFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You must use a pecker to mine..
+        /// </summary>
+        public static string StrMineWithPecker {
+            get {
+                return ResourceManager.GetString("StrMineWithPecker", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Sorry, you have no prize available or it hasn&apos;t been claimed at the event page..
         /// </summary>
         public static string StrNoBonus {
@@ -507,6 +525,15 @@ namespace Comet.Game {
         public static string StrNoGemEmbed {
             get {
                 return ResourceManager.GetString("StrNoGemEmbed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot mine here..
+        /// </summary>
+        public static string StrNoMine {
+            get {
+                return ResourceManager.GetString("StrNoMine", resourceCulture);
             }
         }
         

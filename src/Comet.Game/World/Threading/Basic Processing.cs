@@ -35,7 +35,12 @@ namespace Comet.Game.World.Threading
     {
         public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - Players: {3} (max:{4}) - {2}";
 
+#if !DEBUG
         private TimeOut m_analytics = new TimeOut(300);
+#else
+        private TimeOut m_analytics = new TimeOut(3600);
+#endif
+
         private TimeOut m_apiSync = new TimeOut(60);
 
         private DateTime m_ServerStartTime;

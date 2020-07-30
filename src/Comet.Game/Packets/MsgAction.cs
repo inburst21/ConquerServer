@@ -291,6 +291,22 @@ namespace Comet.Game.Packets
                     await client.SendAsync(this);
                     break;
 
+                case ActionType.MapMine:
+                    if (!user.IsAlive)
+                    {
+                        await user.SendAsync(Language.StrDead);
+                        return;
+                    }
+
+                    if (!user.Map.IsMineField())
+                    {
+                        await user.SendAsync(Language.StrNoMine);
+                        return;
+                    }
+
+                    user.StartMining();
+                    break;
+
                 case ActionType.MapQuery: // 102
                     Character targetUser = Kernel.RoleManager.GetUser(Command);
                     if (targetUser != null)
