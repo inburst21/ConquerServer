@@ -3868,16 +3868,9 @@ namespace Comet.Game.States
 
         public override async Task SendAsync(IPacket msg)
         {
-            try
-            {
-                if (m_socket != null)
-                    await m_socket.SendAsync(msg);
-            }
-            catch (SocketException ex)
-            {
-                if (ex.ErrorCode == 10054)
-                    m_socket?.Disconnect();
-            }
+            if (m_socket != null)
+                return m_socket.SendAsync(msg);
+            return Task.CompletedTask;
         }
 
         public override async Task SendSpawnToAsync(Character player)
