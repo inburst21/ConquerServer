@@ -1248,10 +1248,13 @@ namespace Comet.Game.States
             {
                 Item item = await mapItem.GetInfo(this);
 
-                await UserPackage.AddItemAsync(item);
-                await SendAsync(string.Format(Language.StrPickupItem, item.Name));
+                if (item != null)
+                {
+                    await UserPackage.AddItemAsync(item);
+                    await SendAsync(string.Format(Language.StrPickupItem, item.Name));
 
-                await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
+                    await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
+                }
             }
             
             await mapItem.LeaveMap();
@@ -3647,6 +3650,19 @@ namespace Comet.Game.States
         {
             try
             {
+                if (!m_socket.Socket.Connected)
+                {
+                    Kernel.RoleManager.ForceLogoutUser(Identity);
+                    return;
+                }    
+            }
+            catch
+            {
+                await Log.WriteLog(LogLevel.Error, "Error on check connected state");
+            }
+
+            try
+            {
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
                 {
                     if (MapIdentity == 6001)
@@ -3816,33 +3832,61 @@ namespace Comet.Game.States
 
         public async Task OnDisconnectAsync()
         {
+            if (Map?.IsRecordDisable() == false)
+            {
+                m_dbObject.MapID = m_idMap;
+                m_dbObject.X = m_posX;
+                m_dbObject.Y = m_posY;
+            }
+
+            m_dbObject.LogoutTime = DateTime.Now;
+            m_dbObject.OnlineSeconds += (int)(m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+
+            try
+            {               
+                await NotifyOfflineFriendAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, "Error on notifying friends disconnection");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
             try
             {
-                if (Map?.IsRecordDisable() == false)
-                {
-                    m_dbObject.MapID = m_idMap;
-                    m_dbObject.X = m_posX;
-                    m_dbObject.Y = m_posY;
-                }
-
-                m_dbObject.LogoutTime = DateTime.Now;
-                m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
-
-                await NotifyOfflineFriendAsync();
-
                 if (Team != null && Team.IsLeader(Identity))
                     await Team.Dismiss(this);
                 else if (Team != null)
-                    await Team.DismissMember(this);
+                    await Team.DismissMember(this);                
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, "Error on team dismiss");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
 
+            try
+            {
                 if (Trade != null)
                     await Trade.SendCloseAsync();
             }
-            finally
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, "Error on close trade");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
+            try
             {
                 await LeaveMap();
-                await SaveAsync();
             }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, "Error on leave map");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
+
+            await SaveAsync();
 
             try
             {
@@ -3862,6 +3906,7 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
+                await Log.WriteLog(LogLevel.Error, "Error on saving login rcd");
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
         }

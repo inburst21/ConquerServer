@@ -277,6 +277,9 @@ namespace Comet.Game.States.Items
 
         public async Task<Item> GetInfo(Character owner)
         {
+            if (m_itemtype == null)
+                return null;
+
             if (m_itemInfo == null)
             {
                 m_itemInfo = new Item(owner);

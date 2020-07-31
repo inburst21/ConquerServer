@@ -159,11 +159,16 @@ namespace Comet.Game.World.Managers
                 }
 
                 await Log.WriteLog(LogLevel.Message, $"{user.Name} has logged out.");
-                user.Client.Disconnect();
                 return true;
             }
 
             return false;
+        }
+
+        public void ForceLogoutUser(uint idUser)
+        {
+            m_userSet.TryRemove(idUser, out _);
+            m_roleSet.TryRemove(idUser, out _);
         }
 
         public async Task KickoutAsync(uint idUser, string reason = "")
@@ -172,7 +177,6 @@ namespace Comet.Game.World.Managers
             {
                 await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
-
                 await Log.WriteLog(LogLevel.Message, $"User {user.Name} has been kicked: {reason}");
             }
         }
