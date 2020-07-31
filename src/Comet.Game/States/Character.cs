@@ -3816,29 +3816,33 @@ namespace Comet.Game.States
 
         public async Task OnDisconnectAsync()
         {
-            if (Map?.IsRecordDisable() == false)
+            try
             {
-                m_dbObject.MapID = m_idMap;
-                m_dbObject.X = m_posX;
-                m_dbObject.Y = m_posY;
+                if (Map?.IsRecordDisable() == false)
+                {
+                    m_dbObject.MapID = m_idMap;
+                    m_dbObject.X = m_posX;
+                    m_dbObject.Y = m_posY;
+                }
+
+                m_dbObject.LogoutTime = DateTime.Now;
+                m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+
+                await NotifyOfflineFriendAsync();
+
+                if (Team != null && Team.IsLeader(Identity))
+                    await Team.Dismiss(this);
+                else if (Team != null)
+                    await Team.DismissMember(this);
+
+                if (Trade != null)
+                    await Trade.SendCloseAsync();
             }
-
-            m_dbObject.LogoutTime = DateTime.Now;
-            m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
-
-            await NotifyOfflineFriendAsync();
-
-            if (Team != null && Team.IsLeader(Identity))
-                await Team.Dismiss(this);
-            else if (Team != null)
-                await Team.DismissMember(this);
-
-            if (Trade != null)
-                await Trade.SendCloseAsync();
-
-            await LeaveMap();
-
-            await SaveAsync();
+            finally
+            {
+                await LeaveMap();
+                await SaveAsync();
+            }
 
             try
             {

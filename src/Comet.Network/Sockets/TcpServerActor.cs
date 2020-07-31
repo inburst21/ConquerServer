@@ -96,7 +96,7 @@ namespace Comet.Network.Sockets
                 }
                 catch (Exception e)
                 {
-                    if (e is SocketException se && se.ErrorCode == 10048)
+                    if (e is SocketException se && (se.ErrorCode == 10048 || se.ErrorCode == 10054))
                         Disconnect();
 
                     return Log.WriteLog(LogLevel.Exception, e.ToString());

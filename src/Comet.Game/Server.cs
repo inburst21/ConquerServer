@@ -238,7 +238,7 @@ namespace Comet.Game
             
             Processor.DeselectPartition(actor.Partition);
 
-            Kernel.RoleManager.LogoutUser(actor.Identity).ConfigureAwait(false);
+            _ = Kernel.RoleManager.LogoutUser(actor.Identity);
         }
     }
 }
