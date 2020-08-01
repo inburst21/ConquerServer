@@ -129,11 +129,20 @@ namespace Comet.Shared
             {
                 fileHandle.Date = now;
                 fileHandle.Path =
-                    $".\\{LogFolder.SystemLog.ToString()}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log";
+                    $".\\{LogFolder.SystemLog}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log";
             }
 
-            using StreamWriter writer = new StreamWriter(fileHandle.Path, true);
-            await writer.WriteLineAsync(value);
+            try
+            {
+                using FileStream fWriter = new FileStream(fileHandle.Path, FileMode.Append, FileAccess.Write,
+                    FileShare.Write, 4096);
+                using StreamWriter writer = new StreamWriter(fWriter);
+                await writer.WriteLineAsync(value);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         private static LogFile CreateHandle(string file, LogFolder folder)
@@ -147,7 +156,7 @@ namespace Comet.Shared
                 Date = now,
                 Filename = $"{now:YYYYMMdd)} - {file}.log",
                 Handle = new object(),
-                Path = $".\\{folder.ToString()}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log",
+                Path = $".\\{folder}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log",
                 Folder = folder
             };
 
@@ -159,8 +168,8 @@ namespace Comet.Shared
             DateTime now = DateTime.Now;
             foreach (var eVal in Enum.GetValues(typeof(LogFolder)).Cast<LogFolder>())
             {
-                if (!Directory.Exists($".\\{eVal.ToString()}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}"))
-                    Directory.CreateDirectory($".\\{eVal.ToString()}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}");
+                if (!Directory.Exists($".\\{eVal}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}"))
+                    Directory.CreateDirectory($".\\{eVal}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}");
             }
         }
     }

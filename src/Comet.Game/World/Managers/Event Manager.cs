@@ -88,6 +88,40 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
+        public async Task ReloadActionTaskAllAsync()
+        {
+            m_dicTasks.Clear();
+            foreach (var task in await TaskRepository.GetAsync())
+            {
+                m_dicTasks.TryAdd(task.Id, task);
+            }
+            await Log.WriteLog(LogLevel.Debug, $"All Tasks has been reloaded. {m_dicTasks.Count} in the server.");
+
+            m_dicActions.Clear();
+            foreach (var action in await ActionRepository.GetAsync())
+            {
+                if (action.Type == 102)
+                {
+                    string[] response = action.Param.Split(' ');
+                    if (response.Length < 2)
+                    {
+                        await Log.WriteLog(LogLevel.Warning, $"Action [{action.Identity}] Type 102 doesn't set a task [param: {action.Param}]");
+                    }
+                    else if (response[1] != "0")
+                    {
+                        if (!uint.TryParse(response[1], out uint taskId) || !m_dicTasks.ContainsKey(taskId))
+                        {
+                            await Log.WriteLog(LogLevel.Warning, $"Task not found for action {action.Identity}");
+                        }
+                    }
+                }
+
+                m_dicActions.TryAdd(action.Identity, action);
+            }
+
+            await Log.WriteLog(LogLevel.Debug, $"All Actions has been reloaded. {m_dicActions.Count} in the server.");
+        }
+
         public DbAction GetAction(uint idAction)
         {
             return m_dicActions.TryGetValue(idAction, out var result) ? result : null;

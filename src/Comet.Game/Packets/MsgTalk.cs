@@ -513,6 +513,10 @@ namespace Comet.Game.Packets
                         if (uint.TryParse(param, out var idExecuteAction))
                             await GameAction.ExecuteActionAsync(idExecuteAction, user, null, null, string.Empty);
                         return true;
+
+                    case "/reloadactionall":
+                        await Kernel.EventManager.ReloadActionTaskAllAsync();
+                        return true;
                 }
             }
 
