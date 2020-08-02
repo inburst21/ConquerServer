@@ -74,16 +74,6 @@ namespace Comet.Game.States
             }
 
             Character user = m_owner as Character;
-
-            if (user?.IsBowman == true)
-            {
-                if (!await user.SpendEquipItem(50, 1, true))
-                {
-                    ResetBattle();
-                    return false;
-                }
-            }
-
             if (user != null && await user.AutoSkillAttack(target))
             {
                 return true;
