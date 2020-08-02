@@ -3668,9 +3668,9 @@ namespace Comet.Game.States
             {
                 if (!m_socket.Socket.Connected)
                 {
-                    Kernel.RoleManager.ForceLogoutUser(Identity);
+                    await Kernel.RoleManager.LogoutUser(Identity);
                     return;
-                }    
+                }
             }
             catch
             {
