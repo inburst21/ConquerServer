@@ -152,7 +152,7 @@ namespace Comet.Game.Packets
             character.ExperienceMultiplier = 5;
             character.ExperienceExpires = DateTime.Now.AddHours(12);
             character.HeavenBlessing = DateTime.Now.AddDays(30);
-
+            character.AutoAllot = 1;
             // Generate a random look for the character
             character.Mesh += 10000;
             character.Hairstyle = (ushort) (
