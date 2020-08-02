@@ -987,6 +987,20 @@ namespace Comet.Game.States
                 item.Durability -= (ushort)dwAmount;
                 if (bSynchro)
                     await SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+
+                if (item.IsArrowSort() && item.Durability == 0)
+                {
+                    await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
+                    foreach (var arrowType in Item.BowmanArrows)
+                    {
+                        Item newArrow = UserPackage.GetItemByType((uint) arrowType);
+                        if (newArrow != null)
+                        {
+                            await UserPackage.EquipItemAsync(newArrow, Item.ItemPosition.LeftHand);
+                            break;
+                        }
+                    }
+                }
             }
             else
             {
@@ -1454,7 +1468,7 @@ namespace Comet.Game.States
         {
             get
             {
-                int result = Agility/3;
+                int result = Agility;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.Accuracy ?? 0;
@@ -1565,6 +1579,8 @@ namespace Comet.Game.States
         #endregion
 
         #region Battle
+
+        public override bool IsBowman => UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true;
 
         public async Task<bool> AutoSkillAttack(Role target)
         {

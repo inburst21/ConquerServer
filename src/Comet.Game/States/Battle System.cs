@@ -74,6 +74,16 @@ namespace Comet.Game.States
             }
 
             Character user = m_owner as Character;
+
+            if (user?.IsBowman == true)
+            {
+                if (!await user.SpendEquipItem(50, 1, true))
+                {
+                    ResetBattle();
+                    return false;
+                }
+            }
+
             if (user != null && await user.AutoSkillAttack(target))
             {
                 return true;
@@ -294,6 +304,10 @@ namespace Comet.Game.States
                 return false;
 
             int hitRate = attacker.Accuracy;
+
+            if (attacker is Character user && !(target is Character))
+                hitRate += 60;
+
             if (attacker.QueryStatus(StatusSet.STAR_OF_ACCURACY) != null)
                 hitRate = Calculations.AdjustData(hitRate, attacker.QueryStatus(StatusSet.STAR_OF_ACCURACY).Power);
 

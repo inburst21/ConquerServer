@@ -836,7 +836,7 @@ namespace Comet.Game.States.BaseEntities
         public const int PK_DEC_TIME = 180;
         public const int PKVALUE_DEC_ONCE = -1;
         public const int PKVALUE_DEC_ONCE_IN_PRISON = -3;
-        public const int USER_ATTACK_SPEED = 1500;
+        public const int USER_ATTACK_SPEED = 1200;
         public const int POISONDAMAGE_INTERVAL = 2;
         public const int MAX_STORAGE_MONEY = int.MaxValue;
 
