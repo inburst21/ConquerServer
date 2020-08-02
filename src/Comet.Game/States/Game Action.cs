@@ -1249,10 +1249,12 @@ namespace Comet.Game.States
                 switch (i)
                 {
                     case 0: // amount
-                        newItem.Amount = (ushort) Math.Min(value, ushort.MaxValue);
+                        if (value > 0)
+                            newItem.Amount = (ushort) Math.Min(value, ushort.MaxValue);
                         break;
                     case 1: // amount limit
-                        newItem.AmountLimit = (ushort)Math.Min(value, ushort.MaxValue);
+                        if (value > 0)
+                            newItem.AmountLimit = (ushort)Math.Min(value, ushort.MaxValue);
                         break;
                     case 2: // socket progress
                         newItem.Data = (uint) Math.Min(value, ushort.MaxValue);

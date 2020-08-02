@@ -295,6 +295,8 @@ namespace Comet.Game.States.Items
                     m_itemInfo.SocketOne = Item.SocketGem.EmptySocket;
                 if (m_info.SocketNum > 1)
                     m_itemInfo.SocketTwo = Item.SocketGem.EmptySocket;
+
+                m_itemInfo.Durability /= 90;
             }
 
             m_itemInfo.Position = Item.ItemPosition.Inventory;

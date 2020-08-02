@@ -3111,8 +3111,11 @@ namespace Comet.Game.States
         {
             BattleSystem.ResetBattle();
             await MagicData.AbortMagic(false);
+            StopMining();
+            
+            if (Map != null)
+                await Map.RemoveAsync(Identity);
 
-            await Map.RemoveAsync(Identity);
             await Screen.ClearAsync();
         }
 

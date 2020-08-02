@@ -38,7 +38,11 @@ namespace Comet.Shared
     {
         public const string SYNC_INFORMATION_URL = "/api/GameServerStatus";
 
+#if !DEBUG
         private const string BASE_URL = "https://api.worldconquer.online";
+#else
+        private const string BASE_URL = "https://localhost:44335";
+#endif
 
         private DateTime m_ExpireTime;
         private bool m_isAuthenticated;
@@ -95,7 +99,10 @@ namespace Comet.Shared
             if (!m_isAuthenticated || DateTime.Now > m_ExpireTime) m_isAuthenticated = await AuthenticateAsync();
 
             if (!m_isAuthenticated)
-                throw new AuthenticationException("Could not authenticate to the API.");
+            {
+                await Log.WriteLog(LogLevel.Error, "Could not authenticate to the API.");
+                return false;
+            }
 
             using HttpClient client = new HttpClient
             {

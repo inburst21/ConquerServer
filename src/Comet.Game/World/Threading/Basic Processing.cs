@@ -81,6 +81,7 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             }
 
+#if !DEBUG
             if (m_apiSync.ToNextTime())
             {
                 await Kernel.Api.PostAsync(new ServerInformation
@@ -92,6 +93,7 @@ namespace Comet.Game.World.Threading
 
                 }, MyApi.SYNC_INFORMATION_URL);
             }
+#endif
 
             await Kernel.RoleManager.OnRoleTimerAsync();
 

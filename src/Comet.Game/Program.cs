@@ -104,6 +104,7 @@ namespace Comet.Game
             _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
                 .ConfigureAwait(false);
 
+#if !DEBUG
             Kernel.Api = new MyApi(Kernel.Configuration.ServerName, config.ApiAuth.Username, config.ApiAuth.Password);
             await Kernel.Api.PostAsync(new ServerInformation
             {
@@ -112,6 +113,7 @@ namespace Comet.Game
                 PlayerAmount = 0,
                 MaxPlayerAmount = Kernel.Configuration.MaxConn
             }, MyApi.SYNC_INFORMATION_URL);
+#endif
 
             // Output all clear and wait for user input
             await Log.WriteLog(LogLevel.Message, "Listening for new connections");
@@ -119,8 +121,9 @@ namespace Comet.Game
 
             bool result = await CommandCenterAsync();
             if (!result)
-                await Log.WriteLog(LogLevel.Error, "Account server has exited without success.");
+                await Log.WriteLog(LogLevel.Error, "Game server has exited without success.");
 
+#if !DEBUG
             await Kernel.Api.PostAsync(new ServerInformation
             {
                 ServerName = Kernel.Configuration.ServerName,
@@ -129,6 +132,7 @@ namespace Comet.Game
                 MaxPlayerAmount = Kernel.Configuration.MaxConn
 
             }, MyApi.SYNC_INFORMATION_URL);
+#endif
 
             await Kernel.CloseAsync();
         }
