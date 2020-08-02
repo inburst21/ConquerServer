@@ -231,14 +231,20 @@ namespace Comet.Game
         /// <param name="actor">Server actor that represents the remote client</param>
         protected override void Disconnected(Client actor)
         {
-            if (actor == null) return;
+            if (actor == null)
+            {
+                Console.WriteLine("Disconnected with actor null ???");
+                return;
+            }
             
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
-            
-            Processor.DeselectPartition(actor.Partition);
 
-            _ = Kernel.RoleManager.LogoutUser(actor.Identity);
+            Console.WriteLine("Disconnecting user {0}", actor.IPAddress);
+
+            _ = Task.Run(() => Kernel.RoleManager.LogoutUser(actor.Identity));
+
+            Processor.DeselectPartition(actor.Partition);            
         }
     }
 }

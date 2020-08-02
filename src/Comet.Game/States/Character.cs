@@ -3664,18 +3664,18 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
-            try
-            {
-                if (!m_socket.Socket.Connected)
-                {
-                    await Kernel.RoleManager.LogoutUser(Identity);
-                    return;
-                }
-            }
-            catch
-            {
-                await Log.WriteLog(LogLevel.Error, "Error on check connected state");
-            }
+            //try
+            //{
+            //    if (!m_socket.Socket.Connected)
+            //    {
+            //        await Kernel.RoleManager.LogoutUser(Identity);
+            //        return;
+            //    }
+            //}
+            //catch
+            //{
+            //    await Log.WriteLog(LogLevel.Error, "Error on check connected state");
+            //}
 
             try
             {
