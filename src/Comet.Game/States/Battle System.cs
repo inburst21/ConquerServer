@@ -302,6 +302,10 @@ namespace Comet.Game.States
                 hitRate = Calculations.AdjustData(hitRate, attacker.QueryStatus(StatusSet.STAR_OF_ACCURACY).Power);
 
             int dodge = target.Dodge;
+
+            if (!(target is Monster))
+                dodge /= 2;
+
             if (target.QueryStatus(StatusSet.DODGE) != null)
                 dodge = Calculations.AdjustData(dodge, attacker.QueryStatus(StatusSet.DODGE).Power);
             
