@@ -61,7 +61,7 @@ namespace Comet.Game.States
         public uint AccountIdentity { get; set; }
         public byte VipLevel { get; set; }
 
-        public override Task SendAsync(byte[] packet)
+        public override Task<int> SendAsync(byte[] packet)
         {
             Kernel.NetworkMonitor.Send(packet.Length);
             return base.SendAsync(packet);

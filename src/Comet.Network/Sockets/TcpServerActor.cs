@@ -83,7 +83,7 @@ namespace Comet.Network.Sockets
         ///     and sending data.
         /// </summary>
         /// <param name="packet">Bytes to be encrypted and sent to the client</param>
-        public virtual Task SendAsync(byte[] packet)
+        public virtual Task<int> SendAsync(byte[] packet)
         {
             var encrypted = new byte[packet.Length];
             BitConverter.TryWriteBytes(packet, (ushort) packet.Length);
@@ -92,14 +92,12 @@ namespace Comet.Network.Sockets
                 try
                 {
                     Cipher.Encrypt(packet, encrypted);
-                    return Socket?.SendAsync(encrypted, SocketFlags.None) ?? Task.CompletedTask;
+                    return Socket?.SendAsync(encrypted, SocketFlags.None) ?? Task.FromResult(-1);
                 }
                 catch (Exception e)
                 {
-                    if (e is SocketException se && (se.ErrorCode == 10048 || se.ErrorCode == 10054))
-                        Disconnect();
-
-                    return Log.WriteLog(LogLevel.Exception, e.ToString());
+                    Console.WriteLine(e.ToString());
+                    return Task.FromResult(-1);
                 }
             }
         }
@@ -111,7 +109,7 @@ namespace Comet.Network.Sockets
         ///     and sending data.
         /// </summary>
         /// <param name="packet">Packet to be encrypted and sent to the client</param>
-        public virtual Task SendAsync(IPacket packet)
+        public virtual Task<int> SendAsync(IPacket packet)
         {
             return SendAsync(packet.Encode());
         }

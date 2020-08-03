@@ -3667,19 +3667,6 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
-            //try
-            //{
-            //    if (!m_socket.Socket.Connected)
-            //    {
-            //        await Kernel.RoleManager.LogoutUser(Identity);
-            //        return;
-            //    }
-            //}
-            //catch
-            //{
-            //    await Log.WriteLog(LogLevel.Error, "Error on check connected state");
-            //}
-
             try
             {
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
@@ -3930,11 +3917,13 @@ namespace Comet.Game.States
             }
         }
 
-        public override Task SendAsync(IPacket msg)
+        public override async Task SendAsync(IPacket msg)
         {
             if (m_socket != null)
-                return m_socket.SendAsync(msg);
-            return Task.CompletedTask;
+            {
+                if (await m_socket.SendAsync(msg) < 0)
+                    await Kernel.RoleManager.LogoutUser(Identity);
+            }
         }
 
         public override async Task SendSpawnToAsync(Character player)
