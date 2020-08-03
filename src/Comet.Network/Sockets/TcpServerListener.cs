@@ -135,10 +135,18 @@ namespace Comet.Network.Sockets
             while (actor.Socket.Connected && !this.ShutdownToken.IsCancellationRequested)
             {
                 // Receive data from the client socket
-                examined = await actor.Socket.ReceiveAsync(
-                    actor.Buffer.Slice(remaining),
-                    SocketFlags.None,
-                    this.ShutdownToken.Token);
+                try
+                {
+                    examined = await actor.Socket.ReceiveAsync(
+                        actor.Buffer.Slice(remaining),
+                        SocketFlags.None,
+                        this.ShutdownToken.Token);
+                }
+                catch
+                {
+                    break;
+                }
+
                 if (examined == 0) break;
 
                 // Decrypt traffic
