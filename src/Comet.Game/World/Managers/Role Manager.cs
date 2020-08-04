@@ -286,7 +286,7 @@ namespace Comet.Game.World.Managers
 
         private uint AllotIndex(ushort prof, ushort level)
         {
-            return (uint) (prof << (32 + level));
+            return (uint) ((prof << 16) + level);
         }
 
         public DbMonstertype GetMonstertype(uint type)

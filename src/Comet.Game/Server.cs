@@ -239,9 +239,7 @@ namespace Comet.Game
             
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
-
-            Console.WriteLine("Disconnecting user {0}", actor.IPAddress);
-
+            
             _ = Task.Run(() => Kernel.RoleManager.LogoutUser(actor.Identity));
 
             Processor.DeselectPartition(actor.Partition);            

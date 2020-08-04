@@ -625,10 +625,10 @@ namespace Comet.Game.States
                 Level = newLevel;
                 if (AutoAllot && allot != null)
                 {
-                    Strength = allot.Strength;
-                    Agility = allot.Agility;
-                    Vitality = allot.Vitality;
-                    Spirit = allot.Spirit;
+                    await SetAttributesAsync(ClientUpdateType.Strength, allot.Strength);
+                    await SetAttributesAsync(ClientUpdateType.Agility, allot.Agility);
+                    await SetAttributesAsync(ClientUpdateType.Vitality, allot.Vitality);
+                    await SetAttributesAsync(ClientUpdateType.Spirit, allot.Spirit);
                 }
                 else if (pointAmount > 0)
                     await AddAttributesAsync(ClientUpdateType.Atributes, (int)pointAmount);
