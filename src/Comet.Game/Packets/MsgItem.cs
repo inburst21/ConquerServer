@@ -140,12 +140,18 @@ namespace Comet.Game.Packets
                     if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
                         return;
 
+                    //if (Item.IsShield(Command) || Item.IsHelmet(Command) || Item.IsArmor(Command))
+                    //    Command = Command - (Command % 1000 - Command % 100);
+
                     DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
                     if (goods == null)
                     {
                         await Log.WriteLog(LogLevel.Cheat, $"Invalid goods itemtype {Command} for Shop {Identity}");
                         return;
                     }
+
+                    if (Item.IsShield(Command) || Item.IsHelmet(Command) || Item.IsArmor(Command))
+                        Command = Command - (Command % 1000 - Command % 100);
 
                     DbItemtype itemtype = Kernel.ItemManager.GetItemtype(Command);
                     if (itemtype == null)

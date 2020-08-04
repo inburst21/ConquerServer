@@ -167,7 +167,7 @@ namespace Comet.Game.Packets
                         Items.Add(new WarehouseItem
                         {
                             Identity = item.Identity,
-                            Type = item.Type,
+                            Type = item.Type + (item.IsArmor() || item.IsHelmet() || item.IsShield() ? + (uint)(((byte) item.Color) * 100) : 0),
                             SocketOne = item.SocketOne,
                             SocketTwo = item.SocketTwo,
                             Blessing = (byte) item.Blessing,

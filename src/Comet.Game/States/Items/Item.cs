@@ -447,7 +447,11 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = m_dbItemtype?.Dexterity ?? 0;
-                result += m_dbItemAddition?.Dexterity ?? 0;
+                result += (m_dbItemAddition?.Dexterity ?? 0);
+                if (IsWeaponTwoHand())
+                    result *= 2;
+                if (IsBow())
+                    result *= 2;
                 return result;
             }
         }
@@ -1375,7 +1379,12 @@ namespace Comet.Game.States.Items
 
         public bool IsArmor()
         {
-            return Type / 10000 == 13;
+            return IsArmor(Type);
+        }
+
+        public static bool IsArmor(uint type)
+        {
+            return type / 10000 == 13;
         }
 
         public bool IsMedicine()
@@ -1420,7 +1429,12 @@ namespace Comet.Game.States.Items
 
         public bool IsHelmet()
         {
-            return Type >= 110000 && Type < 120000 || Type >= 140000 && Type < 150000;
+            return IsHelmet(Type);
+        }
+
+        public static bool IsHelmet(uint type)
+        {
+            return type >= 110000 && type < 120000 || type >= 140000 && type < 150000;
         }
 
         public bool IsNeck()
@@ -1523,7 +1537,7 @@ namespace Comet.Game.States.Items
 
         public static bool IsArrowSort(uint type)
         {
-            return GetItemtype(type) == 50000;
+            return GetItemtype(type) == 50000 && type != TYPE_JAR;
         }
 
         public static ItemSort GetItemSort(uint type)

@@ -199,7 +199,7 @@ namespace Comet.Game.States.NPCs
         public override bool IsAttackable(Role attacker)
         {
             if (!IsSynFlag() && !IsCtfFlag() && Sort != MAGICGOAL_NPC && Sort != WEAPONGOAL_NPC &&
-                Sort != ROLE_CITY_GATE_NPC)
+                Sort != ROLE_CITY_GATE_NPC && Sort != ROLE_MOUSE_NPC)
                 return false;
 
             Character attackerUser = attacker as Character;

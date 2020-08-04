@@ -109,7 +109,7 @@ namespace Comet.Game.States
                 user?.AddSynWarScore(npc, lifeLost);
             }
 
-            if (user != null && target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true)
+            if (user != null && (target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true))
             {
                 nExp = user.AdjustExperience(target, nExp, false);
                 int nAdditionExp = 0;
@@ -565,6 +565,15 @@ namespace Comet.Game.States
 
             int nNameType = NAME_WHITE;
             int nDeltaLev = nAtkLev - nDefLev;
+
+            if (nDeltaLev >= 3)
+                nNameType = NAME_GREEN;
+            else if (nDeltaLev >= 0)
+                nNameType = NAME_WHITE;
+            else if (nDeltaLev >= -5)
+                nNameType = NAME_RED;
+            else nNameType = NAME_BLACK;
+
             if (nNameType == NAME_GREEN)
             {
                 if (nDeltaLev >= 3 && nDeltaLev <= 5)
