@@ -413,7 +413,7 @@ namespace Comet.Game.States
 
             if (drops.Count > 0)
             {
-                byte drop = possibleDrops[Math.Max(drops.Count - 1, await Kernel.NextAsync(drops.Count) % drops.Count)];
+                byte drop = possibleDrops[await Kernel.NextAsync(0, possibleDrops.Count) % possibleDrops.Count];
                 switch (drop)
                 {
                     case 0:
