@@ -75,6 +75,7 @@ namespace Comet.Game.Packets
         public uint Identity { get; set; }
         public WarehouseMode Action { get; set; }
         public StorageType Mode { get; set; }
+        public ushort Unknown { get; set; }
         public uint Param { get; set; }
         public List<WarehouseItem> Items = new List<WarehouseItem>();
 
@@ -86,7 +87,7 @@ namespace Comet.Game.Packets
             Identity = reader.ReadUInt32();
             Action = (WarehouseMode) reader.ReadByte();
             Mode = (StorageType) reader.ReadByte();
-            reader.ReadUInt16();
+            Unknown = reader.ReadUInt16();
             Param = reader.ReadUInt32();
         }
 

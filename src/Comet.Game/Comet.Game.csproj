@@ -60,6 +60,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>../Release</OutputPath>
+    <DefineConstants>TRACE;NOBILITY</DefineConstants>
   </PropertyGroup>
 
 </Project>

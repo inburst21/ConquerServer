@@ -637,6 +637,33 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You need to be level 70 or above to donate..
+        /// </summary>
+        public static string StrPeerageDonateErrBelowLevel {
+            get {
+                return ResourceManager.GetString("StrPeerageDonateErrBelowLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The lowest amount you can donate is 3,000,000 silvers..
+        /// </summary>
+        public static string StrPeerageDonateErrBelowUnderline {
+            get {
+                return ResourceManager.GetString("StrPeerageDonateErrBelowUnderline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have enough silvers..
+        /// </summary>
+        public static string StrPeerageDonateErrNoEnoughMoney {
+            get {
+                return ResourceManager.GetString("StrPeerageDonateErrNoEnoughMoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has become a Baron..
         /// </summary>
         public static string StrPeeragePromptBaron {

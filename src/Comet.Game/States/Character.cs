@@ -1821,7 +1821,7 @@ namespace Comet.Game.States
 
             if (UserPackage[Item.ItemPosition.RightHand] != null)
                 nRateR = UserPackage[Item.ItemPosition.RightHand].Itemtype.AtkSpeed;
-            if (UserPackage[Item.ItemPosition.LeftHand] != null)
+            if (UserPackage[Item.ItemPosition.LeftHand] != null && !UserPackage[Item.ItemPosition.LeftHand].IsArrowSort())
                 nRateL = UserPackage[Item.ItemPosition.LeftHand].Itemtype.AtkSpeed;
 
             if (nRateR > 0 && nRateL > 0)
@@ -1841,7 +1841,7 @@ namespace Comet.Game.States
             }
 #endif
 
-            return Math.Max(500, 250 + nRate);
+            return Math.Max(400, nRate);
         }
 
         public override int AdjustWeaponDamage(int damage)

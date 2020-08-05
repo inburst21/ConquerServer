@@ -129,11 +129,13 @@ namespace Comet.Game.Packets
                 case NobilityAction.Donate:
                     if (user.Level < 70)
                     {
+                        await user.SendAsync(Language.StrPeerageDonateErrBelowLevel);
                         return;
                     }
 
                     if (Data < 3000000)
                     {
+                        await user.SendAsync(Language.StrPeerageDonateErrBelowUnderline);
                         return;
                     }
 

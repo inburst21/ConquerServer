@@ -293,8 +293,10 @@ namespace Comet.Game.States.Items
                     m_itemInfo.SocketOne = Item.SocketGem.EmptySocket;
                 if (m_info.SocketNum > 1)
                     m_itemInfo.SocketTwo = Item.SocketGem.EmptySocket;
-                if (m_itemtype?.AmountLimit > 0)
-                    m_itemInfo.Durability = (ushort) await Kernel.NextAsync(10, m_itemtype.AmountLimit/3);
+                if (m_itemtype?.AmountLimit > 100)
+                    m_itemInfo.Durability = (ushort) await Kernel.NextAsync(10, m_itemtype.AmountLimit/4);
+                else if (m_itemtype != null)
+                    m_itemInfo.Durability = m_itemtype.AmountLimit;
             }
 
             m_itemInfo.Position = Item.ItemPosition.Inventory;

@@ -309,6 +309,15 @@
   <data name="StrPackageFull" xml:space="preserve">
     <value>This storage is full.</value>
   </data>
+  <data name="StrPeerageDonateErrBelowLevel" xml:space="preserve">
+    <value>You need to be level 70 or above to donate.</value>
+  </data>
+  <data name="StrPeerageDonateErrBelowUnderline" xml:space="preserve">
+    <value>The lowest amount you can donate is 3,000,000 silvers.</value>
+  </data>
+  <data name="StrPeerageDonateErrNoEnoughMoney" xml:space="preserve">
+    <value>You don't have enough silvers.</value>
+  </data>
   <data name="StrPeeragePromptBaron" xml:space="preserve">
     <value>{0} has become a Baron.</value>
   </data>

@@ -268,13 +268,13 @@ namespace Comet.Game.States
                 }
             }
 
-            if (await Kernel.ChanceCalcAsync(1, 5000))
+            if (await Kernel.ChanceCalcAsync(625, 2500000))
             {
                 await DropItem(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name));
             }
 
-            if (await Kernel.ChanceCalcAsync(1, 400))
+            if (await Kernel.ChanceCalcAsync(100, 10000))
             {
                 await DropItem(Item.TYPE_METEOR, idDropOwner);
             }
@@ -295,7 +295,7 @@ namespace Comet.Game.States
             }
 
             int dropNum = 0;
-            int rate = await Kernel.NextAsync(0, 10000);
+            int rate = await Kernel.NextAsync(0, 5000);
             int chance = BattleSystem.AdjustDrop(4000, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
             {
@@ -303,21 +303,21 @@ namespace Comet.Game.States
             }
             else
             {
-                chance += BattleSystem.AdjustDrop(5000, attacker.Level, Level);
+                chance += BattleSystem.AdjustDrop(4500, attacker.Level, Level);
                 if (rate < Math.Min(10000, chance))
                 {
                     dropNum = 1 + await Kernel.NextAsync(3, 6); // drop 4-7 items
                 }
                 else
                 {
-                    chance += BattleSystem.AdjustDrop(7500, attacker.Level, Level);
+                    chance += BattleSystem.AdjustDrop(5000, attacker.Level, Level);
                     if (rate < Math.Min(10000, chance))
                     {
                         dropNum = 1 + await Kernel.NextAsync(1, 4); // drop 4-7 items
                     }
                     else
                     {
-                        chance += BattleSystem.AdjustDrop(10000, attacker.Level, Level);
+                        chance += BattleSystem.AdjustDrop(5000, attacker.Level, Level);
                         if (rate < Math.Min(10000, chance))
                         {
                             dropNum = 1; // drop 1 item
@@ -394,63 +394,91 @@ namespace Comet.Game.States
              * 7 = hp
              * 8 = mp
              */
-            var possibleDrops = Kernel.ItemManager.GetByRange(Level, 15, 15)
-                .Where(x => Item.IsHelmet(x.Type) || Item.IsNeck(x.Type) || Item.IsRing(x.Type) || Item.IsBangle(x.Type) || Item.IsWeapon(x.Type) || Item.IsArmor(x.Type) || Item.IsShoes(x.Type))
-                .ToList();
+            var drops = Kernel.ItemManager.GetByRange(Level, 15, 15).ToList();
+            var possibleDrops = new List<byte>();
             if (m_dbMonster.DropArmet == 99)
-                possibleDrops.RemoveAll(x => Item.IsHelmet(x.Type));
+                possibleDrops.Add(0);
             if (m_dbMonster.DropNecklace == 99)
-                possibleDrops.RemoveAll(x => Item.IsNeck(x.Type));
+                possibleDrops.Add(1);
             if (m_dbMonster.DropArmor == 99)
-                possibleDrops.RemoveAll(x => Item.IsArmor(x.Type));
+                possibleDrops.Add(2);
             if (m_dbMonster.DropRing == 99)
-                possibleDrops.RemoveAll(x => Item.IsRing(x.Type) || Item.IsBangle(x.Type));
+                possibleDrops.Add(3);
             if (m_dbMonster.DropWeapon == 99)
-                possibleDrops.RemoveAll(x => Item.IsWeapon(x.Type));
+                possibleDrops.Add(4);
             if (m_dbMonster.DropShield == 99)
-                possibleDrops.RemoveAll(x => Item.IsShield(x.Type));
+                possibleDrops.Add(5);
             if (m_dbMonster.DropShoes == 99)
-                possibleDrops.RemoveAll(x => Item.IsShoes(x.Type));
+                possibleDrops.Add(6);
+
+            if (drops.Count > 0)
+            {
+                byte drop = possibleDrops[await Kernel.NextAsync(drops.Count) % drops.Count];
+                switch (drop)
+                {
+                    case 0:
+                        drops.RemoveAll(x => !Item.IsHelmet(x.Type));
+                        break;
+                    case 1:
+                        drops.RemoveAll(x => !Item.IsNeck(x.Type));
+                        break;
+                    case 2:
+                        drops.RemoveAll(x => !Item.IsArmor(x.Type));
+                        break;
+                    case 3:
+                        drops.RemoveAll(x => !Item.IsRing(x.Type) && !Item.IsBangle(x.Type));
+                        break;
+                    case 4:
+                        drops.RemoveAll(x => !Item.IsWeapon(x.Type));
+                        break;
+                    case 5:
+                        drops.RemoveAll(x => !Item.IsShield(x.Type));
+                        break;
+                    case 6:
+                        drops.RemoveAll(x => !Item.IsShoes(x.Type));
+                        break;
+                }
+            }
 
             DbItemtype pot = Kernel.ItemManager.GetItemtype(m_dbMonster.DropHp);
             if (pot != null)
-                possibleDrops.Add(pot);
+                drops.Add(pot);
             pot = Kernel.ItemManager.GetItemtype(m_dbMonster.DropMp);
             if (pot != null)
-                possibleDrops.Add(pot);
+                drops.Add(pot);
 
-            if (possibleDrops.Count <= 0)
+            if (drops.Count <= 0)
                 return 0;
 
-            if (await Kernel.ChanceCalcAsync(625, 10000000))
+            if (await Kernel.ChanceCalcAsync(625, 30000000))
             {
-                possibleDrops.RemoveAll(x => Item.GetQuality(x.Type) != 9);
+                drops.RemoveAll(x => Item.GetQuality(x.Type) != 9);
             }
-            else if (await Kernel.ChanceCalcAsync(625, 1000000))
+            else if (await Kernel.ChanceCalcAsync(625, 5000000))
             {
-                possibleDrops.RemoveAll(x => Item.GetQuality(x.Type) != 8);
+                drops.RemoveAll(x => Item.GetQuality(x.Type) != 8);
             }
-            else if (await Kernel.ChanceCalcAsync(100, 20000))
+            else if (await Kernel.ChanceCalcAsync(100, 40000))
             {
-                possibleDrops.RemoveAll(x => Item.GetQuality(x.Type) != 7);
+                drops.RemoveAll(x => Item.GetQuality(x.Type) != 7);
             }
-            else if (await Kernel.ChanceCalcAsync(312, 15000))
+            else if (await Kernel.ChanceCalcAsync(312, 25000))
             {
-                possibleDrops.RemoveAll(x => Item.GetQuality(x.Type) != 6);
+                drops.RemoveAll(x => Item.GetQuality(x.Type) != 6);
             }
             else if (await Kernel.ChanceCalcAsync(2, 5))
             {
-                possibleDrops.RemoveAll(x => !Item.IsMedicine(x.Type));
+                drops.RemoveAll(x => !Item.IsMedicine(x.Type));
             }
             else
             {
-                possibleDrops.RemoveAll(x => Item.GetQuality(x.Type) > 5 || Item.GetQuality(x.Type) < 3);
+                drops.RemoveAll(x => Item.GetQuality(x.Type) > 5 || Item.GetQuality(x.Type) < 3);
             }
 
-            if (possibleDrops.Count == 0)
+            if (drops.Count == 0)
                 return 0;
 
-            return possibleDrops[(await Kernel.NextAsync(possibleDrops.Count))%possibleDrops.Count]?.Type ?? 0;
+            return drops[(await Kernel.NextAsync(drops.Count))%drops.Count]?.Type ?? 0;
         }
 
         #endregion

@@ -5001,33 +5001,33 @@ namespace Comet.Game.States
                     .Replace("%item_name", item.Name)
                     .Replace("%item_type", item.Type.ToString())
                     .Replace("%item_id", item.Identity.ToString());
+            }
 
-                if (result.Contains("%iter_upquality_gem"))
-                {
-                    Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
-                    if (pItem != null)
-                        result = result.Replace("%iter_upquality_gem", pItem.GetUpQualityGemAmount().ToString());
-                    else
-                        result = result.Replace("%iter_upquality_gem", "0");
-                }
+            if (result.Contains("%iter_upquality_gem"))
+            {
+                Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
+                if (pItem != null)
+                    result = result.Replace("%iter_upquality_gem", pItem.GetUpQualityGemAmount().ToString());
+                else
+                    result = result.Replace("%iter_upquality_gem", "0");
+            }
 
-                if (result.Contains("%iter_itembound"))
-                {
-                    Item pItem = user.UserPackage[(Item.ItemPosition)user.Iterator];
-                    if (pItem != null)
-                        result = result.Replace("%iter_itembound", pItem.IsBound ? "1" : "0");
-                    else
-                        result = result.Replace("%iter_itembound", "0");
-                }
+            if (result.Contains("%iter_itembound"))
+            {
+                Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
+                if (pItem != null)
+                    result = result.Replace("%iter_itembound", pItem.IsBound ? "1" : "0");
+                else
+                    result = result.Replace("%iter_itembound", "0");
+            }
 
-                if (result.Contains("%iter_uplevel_gem"))
-                {
-                    Item pItem = user.UserPackage[(Item.ItemPosition)user.Iterator];
-                    if (pItem != null)
-                        result = result.Replace("%iter_uplevel_gem", pItem.GetUpgradeGemAmount().ToString());
-                    else
-                        result = result.Replace("%iter_uplevel_gem", "0");
-                }
+            if (result.Contains("%iter_uplevel_gem"))
+            {
+                Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
+                if (pItem != null)
+                    result = result.Replace("%iter_uplevel_gem", pItem.GetUpgradeGemAmount().ToString());
+                else
+                    result = result.Replace("%iter_uplevel_gem", "0");
             }
 
             result = result.Replace("%map_name", user?.Map?.Name ?? role?.Map?.Name ?? Language.StrNone)
