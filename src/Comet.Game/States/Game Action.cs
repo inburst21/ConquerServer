@@ -2366,7 +2366,7 @@ namespace Comet.Game.States
 
         private static async Task<bool> ExecuteActionSynAttr(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            string[] splitParam = SplitParam(param, 3);
+            string[] splitParam = SplitParam(param, 4);
             if (splitParam.Length < 3)
                 return false;
 
@@ -2381,7 +2381,7 @@ namespace Comet.Game.States
                 target = Kernel.SyndicateManager.GetSyndicate(int.Parse(splitParam[3]));
 
             if (target == null)
-                return false;
+                return true;
 
             int data = 0;
             if (field.Equals("money", StringComparison.InvariantCultureIgnoreCase))
