@@ -396,24 +396,24 @@ namespace Comet.Game.States
              */
             var drops = Kernel.ItemManager.GetByRange(Level, 15, 15).ToList();
             var possibleDrops = new List<byte>();
-            if (m_dbMonster.DropArmet == 99)
+            if (m_dbMonster.DropArmet != 99)
                 possibleDrops.Add(0);
-            if (m_dbMonster.DropNecklace == 99)
+            if (m_dbMonster.DropNecklace != 99)
                 possibleDrops.Add(1);
-            if (m_dbMonster.DropArmor == 99)
+            if (m_dbMonster.DropArmor != 99)
                 possibleDrops.Add(2);
-            if (m_dbMonster.DropRing == 99)
+            if (m_dbMonster.DropRing != 99)
                 possibleDrops.Add(3);
-            if (m_dbMonster.DropWeapon == 99)
+            if (m_dbMonster.DropWeapon != 99)
                 possibleDrops.Add(4);
-            if (m_dbMonster.DropShield == 99)
+            if (m_dbMonster.DropShield != 99)
                 possibleDrops.Add(5);
-            if (m_dbMonster.DropShoes == 99)
+            if (m_dbMonster.DropShoes != 99)
                 possibleDrops.Add(6);
 
             if (drops.Count > 0)
             {
-                byte drop = possibleDrops[await Kernel.NextAsync(drops.Count) % drops.Count];
+                byte drop = possibleDrops[Math.Max(drops.Count - 1, await Kernel.NextAsync(drops.Count) % drops.Count)];
                 switch (drop)
                 {
                     case 0:
