@@ -140,7 +140,6 @@ namespace Comet.Game.Packets
             {
                 case ActionType.CharacterDirection: // 79
                 case ActionType.CharacterEmote: // 81
-                case ActionType.SpellAbortXp: // 93
                 case ActionType.CharacterObservation: // 117
                 case ActionType.FriendObservation: // 310
                     user.BattleSystem.ResetBattle();

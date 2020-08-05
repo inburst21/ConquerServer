@@ -149,9 +149,9 @@ namespace Comet.Game
             public static RandomnessService Randomness = new RandomnessService();
         }
 
-        public static Task<bool> ChanceCalcAsync(int chance, int outOf)
+        public static async Task<bool> ChanceCalcAsync(int chance, int outOf)
         {
-            return ChanceCalcAsync((chance / (double) outOf) * 100);
+            return await NextAsync(outOf) < chance;
         }
 
         /// <summary>

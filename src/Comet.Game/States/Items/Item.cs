@@ -1389,7 +1389,12 @@ namespace Comet.Game.States.Items
 
         public bool IsMedicine()
         {
-            return Type >= 1000000 && Type <= 1049999 || Type == 725065 || Type == 725066;
+            return IsMedicine(Type);
+        }
+
+        public static bool IsMedicine(uint type)
+        {
+            return type >= 1000000 && type <= 1049999 || type == 725065 || type == 725066;
         }
 
         public bool IsEquipEnable()
@@ -1439,22 +1444,42 @@ namespace Comet.Game.States.Items
 
         public bool IsNeck()
         {
-            return Type >= 120000 && Type < 123000;
+            return IsNeck(Type);
+        }
+
+        public static bool IsNeck(uint type)
+        {
+            return type >= 120000 && type < 123000;
         }
 
         public bool IsRing()
         {
-            return Type >= 150000 && Type < 152000;
+            return IsRing(Type);
+        }
+
+        public static bool IsRing(uint type)
+        {
+            return type >= 150000 && type < 152000;
         }
 
         public bool IsBangle()
         {
-            return Type >= 152000 && Type < 153000;
+            return IsBangle(Type);
+        }
+
+        public static bool IsBangle(uint type)
+        {
+            return type >= 152000 && type < 153000;
         }
 
         public bool IsShoes()
         {
-            return Type >= 160000 && Type < 161000;
+            return IsShoes(Type);
+        }
+
+        public static bool IsShoes(uint type)
+        {
+            return type >= 160000 && type < 161000;
         }
 
         public bool IsGourd()
@@ -1469,22 +1494,42 @@ namespace Comet.Game.States.Items
 
         public bool IsWeaponOneHand()
         {
-            return GetItemSort() == ItemSort.ItemsortWeaponSingleHand;
+            return IsWeaponOneHand(Type);
+        } // single hand use
+
+        public static bool IsWeaponOneHand(uint type)
+        {
+            return GetItemSort(type) == ItemSort.ItemsortWeaponSingleHand;
         } // single hand use
 
         public bool IsWeaponTwoHand()
         {
-            return GetItemSort() == ItemSort.ItemsortWeaponDoubleHand;
+            return IsWeaponTwoHand(Type);
+        } // two hand use
+
+        public static bool IsWeaponTwoHand(uint type)
+        {
+            return GetItemSort(type) == ItemSort.ItemsortWeaponDoubleHand;
         } // two hand use
 
         public bool IsWeaponProBased()
         {
-            return GetItemSort() == ItemSort.ItemsortWeaponProfBased;
+            return IsWeaponProBased(Type);
+        } // professional hand use
+
+        public static bool IsWeaponProBased(uint type)
+        {
+            return GetItemSort(type) == ItemSort.ItemsortWeaponProfBased;
         } // professional hand use
 
         public bool IsWeapon()
         {
             return IsWeaponOneHand() || IsWeaponTwoHand() || IsWeaponProBased();
+        }
+
+        public static bool IsWeapon(uint type)
+        {
+            return IsWeaponOneHand(type) || IsWeaponTwoHand(type) || IsWeaponProBased(type);
         }
 
         public bool IsOther()

@@ -237,7 +237,7 @@ namespace Comet.Game.States.Items
 
                 if (sort == Item.ItemSort.ItemsortWeaponSingleHand
                     && sort == Item.ItemSort.ItemsortWeaponDoubleHand
-                    && await Kernel.ChanceCalcAsync(1, 200)) // socketed item
+                    && await Kernel.ChanceCalcAsync(1, 70)) // socketed item
                 {
                     message += "(SocketNum: 1)";
                     m_info.SocketNum = 1;
@@ -266,18 +266,16 @@ namespace Comet.Game.States.Items
                     m_info.ReduceDamage = 5;
                 }
 
-#if DEBUG
                 if (!string.IsNullOrEmpty(message))
                 {
                     await Log.WriteLog("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}] {message}");
                 }
-#endif
             }
         }
 
         public async Task<Item> GetInfo(Character owner)
         {
-            if (m_itemtype == null)
+            if (m_itemtype == null && m_itemInfo == null)
                 return null;
 
             if (m_itemInfo == null)
@@ -295,8 +293,8 @@ namespace Comet.Game.States.Items
                     m_itemInfo.SocketOne = Item.SocketGem.EmptySocket;
                 if (m_info.SocketNum > 1)
                     m_itemInfo.SocketTwo = Item.SocketGem.EmptySocket;
-
-                m_itemInfo.Durability /= 90;
+                if (m_itemtype?.AmountLimit > 0)
+                    m_itemInfo.Durability = (ushort) await Kernel.NextAsync(10, m_itemtype.AmountLimit/3);
             }
 
             m_itemInfo.Position = Item.ItemPosition.Inventory;

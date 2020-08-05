@@ -249,6 +249,14 @@ namespace Comet.Game.Packets
                         await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
                     break;
 
+                case ItemActionType.EquipmentCombine:
+                {
+                    item = user.UserPackage[Identity];
+                    Item target = user.UserPackage[Command];
+                    await user.UserPackage.CombineArrowAsync(item, target);
+                    break;
+                }
+
                 case ItemActionType.BankQuery:
                     Command = user.StorageMoney;
                     await user.SendAsync(this);

@@ -972,34 +972,24 @@ namespace Comet.Game.States
             if (UserPackage[Item.ItemPosition.RightHand]?.GetItemSubType() == dwItem &&
                 UserPackage[Item.ItemPosition.RightHand]?.Durability >= dwAmount)
                 item = UserPackage[Item.ItemPosition.RightHand];
-            else if (UserPackage[Item.ItemPosition.LeftHand]?.GetItemSubType() == dwItem
-                     && UserPackage[Item.ItemPosition.LeftHand]?.Durability >= dwAmount)
+            else if (UserPackage[Item.ItemPosition.LeftHand]?.GetItemSubType() == dwItem)
                 item = UserPackage[Item.ItemPosition.LeftHand];
 
             if (item == null)
                 return false;
 
-            if (!item.IsExpend() && item.Durability < dwAmount)
+            if (!item.IsExpend() && item.Durability < dwAmount && !item.IsArrowSort())
                 return false;
 
             if (item.IsExpend() && item.Durability >= dwAmount)
             {
-                item.Durability -= (ushort)dwAmount;
+                item.Durability = (ushort)Math.Max(0, item.Durability - (int) dwAmount);
                 if (bSynchro)
                     await SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
 
                 if (item.IsArrowSort() && item.Durability == 0)
                 {
-                    await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
-                    foreach (var arrowType in Item.BowmanArrows)
-                    {
-                        Item newArrow = UserPackage.GetItemByType((uint) arrowType);
-                        if (newArrow != null)
-                        {
-                            await UserPackage.EquipItemAsync(newArrow, Item.ItemPosition.LeftHand);
-                            break;
-                        }
-                    }
+                    await UserPackage.UnequipAsync(item.Position, UserPackage.RemovalType.Delete);
                 }
             }
             else
@@ -1009,6 +999,9 @@ namespace Comet.Game.States
                     await Log.GmLog("SpendEquipItem",
                         $"{Name}({Identity}) Spend item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}");
                 }
+
+                await UserPackage.UnequipAsync(item.Position, UserPackage.RemovalType.Delete);
+                return true;
             }
 
             await item.SaveAsync();

@@ -22,6 +22,7 @@
 #region References
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
@@ -49,6 +50,13 @@ namespace Comet.Game.World.Managers
             {
                 m_dicItemAddition.TryAdd(AdditionKey(addition.TypeId, addition.Level), addition);
             }
+        }
+
+        public List<DbItemtype> GetByRange(int mobLevel, int tolerationMin, int tolerationMax, int maxLevel = 120)
+        {
+            return m_dicItemtype.Values.Where(x =>
+                x.ReqLevel >= mobLevel - tolerationMin && x.ReqLevel <= mobLevel + tolerationMax &&
+                x.ReqLevel <= maxLevel).ToList();
         }
 
         public DbItemtype GetItemtype(uint type)

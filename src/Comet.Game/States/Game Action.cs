@@ -2211,9 +2211,6 @@ namespace Comet.Game.States
             uint amount = uint.Parse(pszParam[1]);
             uint monster = uint.Parse(pszParam[0]);
 
-            if (user.Statistic.GetValue(6, 0) != monster)
-                return false;
-
             Item jar = user.UserPackage.GetItemByType(action.Data);
             return jar != null && jar.MaximumDurability == monster && amount <= jar.Data;
         }

@@ -249,7 +249,7 @@ namespace Comet.Game.States.Magics
                 }
                 else
                 {
-                    if (m_pOwner.Map.IsTrainingMap())
+                    if (m_pOwner.Map.IsTrainingMap() && m_pMagic != null)
                     {
                         SetAutoAttack();
                         m_tDelay.Startup(Math.Max(1500, m_pMagic.DelayMs));
@@ -1346,14 +1346,13 @@ namespace Comet.Game.States.Magics
             }
 
             BreakAutoAttack();
+            m_pMagic = null;
 
             if (m_state == MagicState.Delay)
             {
                 //m_tDelay.Clear();
                 return false;
             }
-
-            m_pMagic = null;
 
             if (m_state == MagicState.Intone)
             {

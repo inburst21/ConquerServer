@@ -178,7 +178,8 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            if (item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && !await SpendItemAsync(item))
+            var type = item.GetItemtype()/10000;
+            if (item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && type != 8 && !await SpendItemAsync(item))
             {
                 return false;
             }
@@ -317,7 +318,7 @@ namespace Comet.Game.States.Items
             if (position == Item.ItemPosition.RightHand
                 && this[Item.ItemPosition.LeftHand] != null)
             {
-                if (!IsPackSpare(2))
+                if (!IsPackSpare(2) && mode != RemovalType.Delete)
                     return false;
 
                 if (!await UnequipAsync(Item.ItemPosition.LeftHand))
@@ -325,15 +326,20 @@ namespace Comet.Game.States.Items
             }
             else
             {
-                if (!IsPackSpare(1))
+                if (!IsPackSpare(1) && mode != RemovalType.Delete)
                     return false;
             }
 
             m_dicEquipment.TryRemove(position, out _);
 
             item.Position = Item.ItemPosition.Inventory;
-            await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.EquipmentRemove, (uint) position));
-            await m_user.SendAsync(new MsgItemInfo(item));
+            if (mode != RemovalType.Delete)
+            {
+                await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.EquipmentRemove, (uint)position));
+                await m_user.SendAsync(new MsgItemInfo(item));
+            }
+            else
+                await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.InventoryRemove));
 
             if (mode == RemovalType.Delete)
                 await item.DeleteAsync();
@@ -406,6 +412,37 @@ namespace Comet.Game.States.Items
             if (item.RequiredWeaponSkill > 0 &&
                 m_user.WeaponSkill[(ushort) item.GetItemtype()]?.Level < item.RequiredWeaponSkill)
                 return false;
+
+            return true;
+        }
+
+        public async Task<bool> CombineArrowAsync(uint idItem, uint idOther)
+        {
+            return m_dicInventory.TryGetValue(idItem, out var item)
+                   && m_dicInventory.TryGetValue(idOther, out var other)
+                   && await CombineArrowAsync(item, other);
+        }
+
+        public async Task<bool> CombineArrowAsync(Item item, Item other)
+        {
+            if (item == null || other == null || !item.IsArrowSort() || item.Type != other.Type)
+                return false;
+
+            ushort nNewNum = (ushort)(item.Durability + other.Durability);
+            if (nNewNum > item.MaximumDurability)
+            {
+                item.Durability = (ushort)(nNewNum - other.MaximumDurability);
+                other.Durability = item.MaximumDurability;
+                await m_user.SendAsync(new MsgItemInfo(other, MsgItemInfo.ItemMode.Update));
+                await m_user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+            }
+            else
+            {
+                item.Durability = 0;
+                await RemoveFromInventoryAsync(item.Identity, RemovalType.Delete);
+                other.Durability = nNewNum;
+                await m_user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+            }
 
             return true;
         }

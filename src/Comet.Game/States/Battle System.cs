@@ -111,6 +111,7 @@ namespace Comet.Game.States
 
             if (user != null && (target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true))
             {
+                int nWeaponExp = (int)nExp / 2; //(int) (nExp / 10);
                 nExp = user.AdjustExperience(target, nExp, false);
                 int nAdditionExp = 0;
                 if (!target.IsAlive && npc?.IsGoal() != true)
@@ -128,7 +129,10 @@ namespace Comet.Game.States
                                     && !m_owner.Map.IsTrainingMap())
                     await user.SendAsync(string.Format(Language.StrKillingExperience, nAdditionExp));
 
-                int nWeaponExp = (int)nExp / 2; //(int) (nExp / 10);
+                if (user.UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true ||
+                    user.UserPackage[Item.ItemPosition.RightHand]?.IsWeaponTwoHand() == true)
+                    nWeaponExp *= 2;
+
                 if (user.UserPackage[Item.ItemPosition.RightHand] != null)
                     await user.AddWeaponSkillExpAsync((ushort)user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType(),
                         nWeaponExp);
@@ -203,8 +207,7 @@ namespace Comet.Game.States
             if (attacker.QueryStatus(StatusSet.INTENSIFY) != null)
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.INTENSIFY).Power);
 
-            if (attacker.QueryStatus(StatusSet.SUPERMAN) != null
-                && !target.IsDynaNpc())
+            if (attacker.QueryStatus(StatusSet.SUPERMAN) != null && !target.IsDynaNpc() && !target.IsPlayer())
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.SUPERMAN).Power);
 
             damage = Math.Max(damage, 7);
