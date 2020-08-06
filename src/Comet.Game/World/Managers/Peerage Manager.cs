@@ -30,7 +30,6 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
-using Microsoft.VisualStudio.Threading;
 
 namespace Comet.Game.World.Managers
 {
@@ -161,7 +160,7 @@ namespace Comet.Game.World.Managers
             bool found = false;
             int idx = -1;
 
-            foreach (var peerage in PeerageSet.Values)
+            foreach (var peerage in PeerageSet.Values.OrderByDescending(x => x.Donation).ThenBy(x => x.FirstDonation))
             {
                 idx++;
                 if (peerage.UserIdentity == idUser)

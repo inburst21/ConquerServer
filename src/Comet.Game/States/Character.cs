@@ -981,7 +981,7 @@ namespace Comet.Game.States
             if (!item.IsExpend() && item.Durability < dwAmount && !item.IsArrowSort())
                 return false;
 
-            if (item.IsExpend() && item.Durability >= dwAmount)
+            if (item.IsExpend())
             {
                 item.Durability = (ushort)Math.Max(0, item.Durability - (int) dwAmount);
                 if (bSynchro)
