@@ -194,7 +194,7 @@ namespace Comet.Game.World.Managers
             int max = (page * MAX_PER_PAGE_I) + MAX_PER_PAGE_I;
             MsgPeerage msg = new MsgPeerage(NobilityAction.List, MAX_PER_PAGE_I, (ushort)currentPagesNum);
 
-            foreach (var peerage in PeerageSet.Values)
+            foreach (var peerage in PeerageSet.Values.OrderByDescending(x => x.Donation).ThenBy(x => x.FirstDonation))
             {
                 if (current >= MAX_PAGES * MAX_PER_PAGE_I)
                     break;

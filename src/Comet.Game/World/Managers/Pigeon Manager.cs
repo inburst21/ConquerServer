@@ -247,7 +247,7 @@ namespace Comet.Game.World.Managers
         public async Task SendToUserAsync(Character user)
         {
             if (m_current != null)
-                await Kernel.RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity, MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
+                await user.SendAsync(new MsgTalk(m_current.UserIdentity, MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
         public int OnQueueByUser(uint idUser) => m_queue.Count(x => x.UserIdentity == idUser);

@@ -986,11 +986,6 @@ namespace Comet.Game.States
                 item.Durability = (ushort)Math.Max(0, item.Durability - (int) dwAmount);
                 if (bSynchro)
                     await SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-
-                if (item.IsArrowSort() && item.Durability == 0)
-                {
-                    await UserPackage.UnequipAsync(item.Position, UserPackage.RemovalType.Delete);
-                }
             }
             else
             {
@@ -999,12 +994,19 @@ namespace Comet.Game.States
                     await Log.GmLog("SpendEquipItem",
                         $"{Name}({Identity}) Spend item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}");
                 }
-
-                await UserPackage.UnequipAsync(item.Position, UserPackage.RemovalType.Delete);
-                return true;
             }
 
-            await item.SaveAsync();
+            if (item.IsArrowSort() && item.Durability == 0)
+            {
+                Item.ItemPosition pos = item.Position;
+                await UserPackage.UnequipAsync(item.Position, UserPackage.RemovalType.Delete);
+                Item other = UserPackage.GetItemByType(item.Type);
+                if (other != null)
+                    await UserPackage.EquipItemAsync(other, pos);
+            }
+
+            if (item.Durability > 0)
+                await item.SaveAsync();
             return true;
         }
 
@@ -2035,6 +2037,12 @@ namespace Comet.Game.States
                 return;
 
             BattleSystem.ResetBattle();
+
+            TransformationMesh = 0;
+            Transformation = null;
+            m_transformation.Clear();
+
+            await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
 
             await DetachStatus(StatusSet.BLUE_NAME);
             await DetachAllStatus();
@@ -3302,7 +3310,7 @@ namespace Comet.Game.States
                 else
                     await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1);
 
-                await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
+                await AttachStatus(this, 33, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
             }
         }
 

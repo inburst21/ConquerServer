@@ -176,12 +176,6 @@ namespace Comet.Game.Packets
                             Magic1 = item.Effect,
                             Magic3 = item.Plus
                         });
-
-                        if (Items.Count >= 20)
-                        {
-                            await user.SendAsync(this);
-                            Items.Clear();
-                        }
                     }
 
                     if (Items.Count > 0)

@@ -268,13 +268,13 @@ namespace Comet.Game.States
                 }
             }
 
-            if (await Kernel.ChanceCalcAsync(625, 2500000))
+            if (await Kernel.ChanceCalcAsync(625, 3500000))
             {
                 await DropItem(Item.TYPE_DRAGONBALL, idDropOwner);
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name));
+                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name), MsgTalk.TalkChannel.TopLeft);
             }
 
-            if (await Kernel.ChanceCalcAsync(100, 10000))
+            if (await Kernel.ChanceCalcAsync(100, 30000))
             {
                 await DropItem(Item.TYPE_METEOR, idDropOwner);
             }
@@ -295,22 +295,22 @@ namespace Comet.Game.States
             }
 
             int dropNum = 0;
-            int rate = await Kernel.NextAsync(0, 5000);
-            int chance = BattleSystem.AdjustDrop(4000, attacker.Level, Level);
+            int rate = await Kernel.NextAsync(0, 10000);
+            int chance = BattleSystem.AdjustDrop(1000, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
             {
                 dropNum = 1 + await Kernel.NextAsync(5, 9); // drop 6-10 items
             }
             else
             {
-                chance += BattleSystem.AdjustDrop(4500, attacker.Level, Level);
+                chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
                 if (rate < Math.Min(10000, chance))
                 {
                     dropNum = 1 + await Kernel.NextAsync(3, 6); // drop 4-7 items
                 }
                 else
                 {
-                    chance += BattleSystem.AdjustDrop(5000, attacker.Level, Level);
+                    chance += BattleSystem.AdjustDrop(1500, attacker.Level, Level);
                     if (rate < Math.Min(10000, chance))
                     {
                         dropNum = 1 + await Kernel.NextAsync(1, 4); // drop 4-7 items

@@ -339,7 +339,11 @@ namespace Comet.Game.States.Items
                 await m_user.SendAsync(new MsgItemInfo(item));
             }
             else
+            {
+                await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.EquipmentRemove, (uint) position));
+                await m_user.SendAsync(new MsgItemInfo(item));
                 await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.InventoryRemove));
+            }
 
             if (mode == RemovalType.Delete)
                 await item.DeleteAsync();

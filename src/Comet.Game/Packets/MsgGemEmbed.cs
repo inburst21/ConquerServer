@@ -215,7 +215,7 @@ namespace Comet.Game.Packets
                         if (main.SocketTwo == Item.SocketGem.EmptySocket)
                             return;
 
-                        main.SocketTwo = Item.SocketGem.NoSocket;
+                        main.SocketTwo = Item.SocketGem.EmptySocket;
                         await main.SaveAsync();
                         break;
                     }

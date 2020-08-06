@@ -646,7 +646,15 @@ namespace Comet.Game.World.Maps
                 return false;
             }
 
-            target = new Point(m_dbMap.LinkX, m_dbMap.LinkY);
+            if (m_dbMap.LinkX == 0 || m_dbMap.LinkY == 0)
+            {
+                target = new Point(targetMap.PortalX, targetMap.PortalY);
+            }
+            else
+            {
+                target = new Point(m_dbMap.LinkX, m_dbMap.LinkY);
+            }
+
             return true;
         }
 

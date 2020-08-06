@@ -155,6 +155,9 @@ namespace Comet.Game.Packets
                     ArgumentX = client.Character.MapX;
                     ArgumentY = client.Character.MapY;
 
+                    if (user.Life == 0)
+                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, 1);
+
                     await client.Character.EnterMap();
                     await client.SendAsync(this);
 

@@ -558,6 +558,7 @@ namespace Comet.Game.States.Magics
                 MagicLevel = magic.Level
             };
 
+            long battleExp = 0;
             long exp = 0;
             Character user = m_pOwner as Character;
             foreach (var target in result.Roles)
@@ -569,13 +570,14 @@ namespace Comet.Game.States.Magics
 
                 if (user != null && target is Monster monster)
                 {
-                    exp = user.AdjustExperience(target, lifeLost, false);
+                    exp += lifeLost;
+                    battleExp += user.AdjustExperience(target, lifeLost, false);
                     if (!monster.IsAlive)
                     {
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
                         if (user.Team != null)
                             await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
-                        exp += user.AdjustExperience(monster, nBonusExp, false);
+                        battleExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
                 }
 
@@ -594,7 +596,7 @@ namespace Comet.Game.States.Magics
             await m_pOwner.Map.BroadcastRoomMsgAsync(result.Center.X, result.Center.Y, msg);
 
             await CheckCrime(result.Roles.ToDictionary(x => x.Identity, x => x));
-            await AwardExp(0, exp, exp, magic);
+            await AwardExp(0, battleExp, exp, magic);
             return true;
         }
 
@@ -607,7 +609,7 @@ namespace Comet.Game.States.Magics
             if (target == null)
                 return false;
 
-            /**
+            /*
              * 64 can only be used on dead players
              */
             if (!target.IsAlive && magic.Target != 64 && !(target is Character))
@@ -815,6 +817,7 @@ namespace Comet.Game.States.Magics
                 MagicLevel = magic.Level
             };
             long exp = 0;
+            long battleExp = 0;
             Character user = m_pOwner as Character;
 
             Tile userTile = m_pOwner.Map[m_pOwner.MapX, m_pOwner.MapY];
@@ -845,13 +848,14 @@ namespace Comet.Game.States.Magics
 
                 if (user != null && target is Monster monster)
                 {
-                    exp = user.AdjustExperience(target, lifeLost, false);
+                    exp += lifeLost;
+                    battleExp += user.AdjustExperience(target, lifeLost, false);
                     if (!monster.IsAlive)
                     {
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
                         if (user.Team != null)
                             await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
-                        exp += user.AdjustExperience(monster, nBonusExp, false);
+                        battleExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
                 }
 
@@ -870,7 +874,7 @@ namespace Comet.Game.States.Magics
                 await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
             await CheckCrime(allTargets.ToDictionary(x => x.Identity, x => x));
-            await AwardExp(0, exp, exp, magic);
+            await AwardExp(0, battleExp, exp, magic);
             return true;
         }
 
@@ -918,7 +922,8 @@ namespace Comet.Game.States.Magics
             msg.Append(target.Identity, power, true);
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
-            long exp = 0;
+            long battleExp = 0;
+            int exp = 0;
             Character user = m_pOwner as Character;
             if (power > 0)
             {
@@ -928,7 +933,8 @@ namespace Comet.Game.States.Magics
 
                 if (user != null && target is Monster monster)
                 {
-                    exp += user.AdjustExperience(target, lifeLost, false);
+                    exp += lifeLost;
+                    battleExp += user.AdjustExperience(target, lifeLost, false);
                     if (!monster.IsAlive)
                     {
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
@@ -936,7 +942,7 @@ namespace Comet.Game.States.Magics
                         if (user.Team != null)
                             await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
 
-                        exp += user.AdjustExperience(monster, nBonusExp, false);
+                        battleExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
                 }
 
@@ -946,7 +952,7 @@ namespace Comet.Game.States.Magics
                 }
             }
             
-            await AwardExp(0, exp, exp, magic);
+            await AwardExp(0, battleExp, exp, magic);
 
             if (!target.IsAlive)
                 await target.BeKill(m_pOwner);
@@ -969,7 +975,7 @@ namespace Comet.Game.States.Magics
             };
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
             await user.Transform((uint) magic.Power, (int) magic.StepSeconds, true);
-            await AwardExp(0, 0, 1, magic);
+            await AwardExp(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }
 
@@ -1020,7 +1026,6 @@ namespace Comet.Game.States.Magics
         {
             ushort nTargetX = (ushort)(x + GameMap.WalkXCoords[nDir]);
             ushort nTargetY = (ushort)(y + GameMap.WalkYCoords[nDir]);
-            int nPower = 0;
 
             if (!m_pOwner.Map.IsStandEnable(nTargetX, nTargetY))
             {
@@ -1039,7 +1044,7 @@ namespace Comet.Game.States.Magics
                 PosX = nTargetX,
                 PosY = nTargetY,
                 Action = MsgInteractType.Dash,
-                Data = (nDir * 0x01000000 + nPower)
+                Data = (nDir * 0x01000000)
             };
 
             await m_pOwner.BroadcastRoomMsgAsync(pMsg, true);
@@ -1103,17 +1108,18 @@ namespace Comet.Game.States.Magics
             Character pOwner = m_pOwner as Character;
             if ((pTarget.IsMonster()) && pOwner != null) // todo check if dynamic npc
             {
-                long nExp = pOwner.AdjustExperience(pTarget, nLifeLost, false);
+                int exp = nLifeLost;
+                long battleExp = pOwner.AdjustExperience(pTarget, nLifeLost, false);
 
                 if (!pTarget.IsAlive && !bMagicRecruit)
                 {
                     int nBonusExp = (int)(pTarget.MaxLife * (5 / 100));
-                    nExp += nBonusExp;
+                    battleExp += nBonusExp;
                     if (!pOwner.Map.IsTrainingMap() && nBonusExp > 0)
                         await pOwner.SendAsync(string.Format(Language.StrKillingExperience, nBonusExp));
                 }
 
-                await AwardExp(0, (int)nExp, (int)nExp);
+                await AwardExp(0, (int)battleExp, exp);
             }
             return true;
         }
