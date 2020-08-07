@@ -154,7 +154,17 @@ namespace Comet.Game.Packets
             character.HeavenBlessing = DateTime.Now.AddDays(30);
             character.AutoAllot = 1;
             // Generate a random look for the character
-            character.Mesh += 10000;
+            BodyType body = (BodyType) Mesh;
+            switch (body)
+            {
+                case BodyType.AgileFemale:
+                case BodyType.MuscularFemale:
+                    character.Mesh += 2010000;
+                    break;
+                default:
+                    character.Mesh += 10000;
+                    break;
+            }
             character.Hairstyle = (ushort) (
                 await Kernel.NextAsync(3, 9) * 100 + Hairstyles[
                     await Kernel.NextAsync(0, Hairstyles.Length)]);

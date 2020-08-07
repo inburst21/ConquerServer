@@ -81,6 +81,7 @@ namespace Comet.Game.States.Items
                 if (!await item.CreateAsync(dbItem))
                 {
                     await Log.WriteLog(LogLevel.Error, $"Failed to load item {dbItem.Id} to user {m_user.Identity}");
+                    await item.DeleteAsync(Item.ChangeOwnerType.InvalidItemType);
                     continue;
                 }
 
@@ -179,7 +180,7 @@ namespace Comet.Game.States.Items
             }
 
             var type = item.GetItemtype()/10000;
-            if (item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && type != 8 && !await SpendItemAsync(item))
+            if (item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && type != 8 && item.Itemtype.IdAction > 0 && !await SpendItemAsync(item))
             {
                 return false;
             }
@@ -1018,13 +1019,6 @@ namespace Comet.Game.States.Items
                     Action = MsgPackage.WarehouseMode.CheckOut,
                     Mode = mode,
                     Param = item.Identity
-                    //Items = new List<MsgPackage.WarehouseItem>
-                    //{
-                    //    new MsgPackage.WarehouseItem
-                    //    {
-                    //        Identity = item.Identity
-                    //    }
-                    //}
                 });
             }
 

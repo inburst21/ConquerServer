@@ -38,7 +38,6 @@ namespace Comet.Game.Database.Models
         [Column("req_health")] public virtual ushort ReqHealth { get; set; }
         [Column("req_soul")] public virtual ushort ReqSoul { get; set; }
         [Column("monopoly")] public virtual byte Monopoly { get; set; }
-        [Column("weight")] public virtual ushort Weight { get; set; }
         [Column("price")] public virtual uint Price { get; set; }
         [Column("id_action")] public virtual uint IdAction { get; set; }
         [Column("attack_max")] public virtual ushort AttackMax { get; set; }
@@ -49,16 +48,14 @@ namespace Comet.Game.Database.Models
         [Column("life")] public virtual short Life { get; set; }
         [Column("mana")] public virtual short Mana { get; set; }
         [Column("amount")] public virtual ushort Amount { get; set; }
-
         [Column("amount_limit")] public virtual ushort AmountLimit { get; set; }
-
-        //[Column("weapon_req")] public virtual uint RequireWeaponType { get; set; } // 2014-12-14
         [Column("ident")] public virtual byte Ident { get; set; }
         [Column("gem1")] public virtual byte Gem1 { get; set; }
         [Column("gem2")] public virtual byte Gem2 { get; set; }
         [Column("magic1")] public virtual byte Magic1 { get; set; }
         [Column("magic2")] public virtual byte Magic2 { get; set; }
         [Column("magic3")] public virtual byte Magic3 { get; set; }
+        [Column("data")] public virtual uint Data { get; set; }
         [Column("magic_atk")] public virtual ushort MagicAtk { get; set; }
         [Column("magic_def")] public virtual ushort MagicDef { get; set; }
         [Column("atk_range")] public virtual ushort AtkRange { get; set; }
@@ -67,24 +64,23 @@ namespace Comet.Game.Database.Models
         [Column("repair_mode")] public virtual byte RepairMode { get; set; }
         [Column("type_mask")] public virtual byte TypeMask { get; set; }
         [Column("emoney_price")] public virtual uint EmoneyPrice { get; set; }
-        [Column("emoney2_price")] public virtual uint BoundEmoneyPrice { get; set; } // 2014-12-14
-        [Column("crit_strike")] public virtual uint CritStrike { get; set; }
-        [Column("skill_crit_strike")] public virtual uint SkillCritStrike { get; set; }
-        [Column("immunity")] public virtual uint Immunity { get; set; }
-        [Column("penetration")] public virtual uint Penetration { get; set; }
-        [Column("block")] public virtual uint Block { get; set; }
-        [Column("breakthrough")] public virtual uint Breakthrough { get; set; }
-        [Column("counteraction")] public virtual uint Counteraction { get; set; }
-        [Column("detoxication")] public virtual uint Detoxication { get; set; }
-        [Column("stack_limit")] public virtual ushort StackLimit { get; set; }
-        [Column("resist_metal")] public virtual uint ResistMetal { get; set; }
-        [Column("resist_wood")] public virtual uint ResistWood { get; set; }
-        [Column("resist_water")] public virtual uint ResistWater { get; set; }
-        [Column("resist_fire")] public virtual uint ResistFire { get; set; }
-        [Column("resist_earth")] public virtual uint ResistEarth { get; set; }
-        [Column("phase")] public virtual byte Phase { get; set; }
-
-        [Column("meteor_num")] public virtual uint MeteorAmount { get; set; } // 2014-12-14
+        [Column("emoney_mono_price")] public virtual uint BoundEmoneyPrice { get; set; } // 2014-12-14
+        [Column("save_time")] public virtual uint SaveTime { get; set; } // 2020-08-06
+        [Column("critical_rate")] public virtual uint CriticalStrike { get; set; }
+        [Column("magic_critical_rate")] public virtual uint SkillCritStrike { get; set; }
+        [Column("anti_critical_rate")] public virtual uint Immunity { get; set; }
+        [Column("magic_penetration")] public virtual uint Penetration { get; set; }
+        [Column("shield_block")] public virtual uint Block { get; set; }
+        [Column("crash_attack")] public virtual uint Breakthrough { get; set; }
+        [Column("stable_defence")] public virtual uint Counteraction { get; set; }
+        [Column("accumulate_limit")] public virtual uint Detoxication { get; set; }
+        [Column("attr_metal")] public virtual uint ResistMetal { get; set; }
+        [Column("attr_wood")] public virtual uint ResistWood { get; set; }
+        [Column("attr_water")] public virtual uint ResistWater { get; set; }
+        [Column("attr_fire")] public virtual uint ResistFire { get; set; }
+        [Column("attr_earth")] public virtual uint ResistEarth { get; set; }
+        [Column("godsoullev")] public virtual byte Phase { get; set; }
+        [Column("meteor_count")] public virtual uint MeteorAmount { get; set; } // 2014-12-14
         //[Column("honor_price")] public virtual uint HonorPrice { get; set; } // 2014-12-14
         //[Column("life_time")] public virtual uint LifeTime { get; set; } // 2014-12-25
     }

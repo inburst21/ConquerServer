@@ -369,18 +369,12 @@ namespace Comet.Game.States.Items
 
         public override async Task SendSpawnToAsync(Character player)
         {
-            uint type = Itemtype;
-            if (Item.GetItemSort(type) == Item.ItemSort.ItemsortWeaponShield
-                || Item.GetItemSubType(type) >= 111 && Item.GetItemSubType(type) < 120
-                || Item.GetItemSubType(type) >= 130 && Item.GetItemSubType(type) < 140)
-                type += 300;
-
             await player.SendAsync(new MsgMapItem
             {
                 Identity = Identity,
                 MapX = MapX,
                 MapY = MapY,
-                Itemtype = type,
+                Itemtype = Itemtype,
                 Mode = DropType.LayItem
             });
         }

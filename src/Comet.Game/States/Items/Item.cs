@@ -81,7 +81,10 @@ namespace Comet.Game.States.Items
                 return false;
 
             m_dbItem = item;
-            m_dbItemtype = Kernel.ItemManager.GetItemtype(item.Type);
+            if (IsArmor(item.Type) || IsShield(item.Type) || IsHelmet(item.Type))
+                m_dbItemtype = Kernel.ItemManager.GetItemtype((uint) (item.Type + ((byte)Color * 100)));
+            else
+                m_dbItemtype = Kernel.ItemManager.GetItemtype(item.Type);
 
             if (m_dbItemtype == null)
                 return false;
@@ -335,7 +338,7 @@ namespace Comet.Game.States.Items
                 if (!IsEquipment() || IsGarment() || IsGourd())
                     return 0;
 
-                int ret = (int) Type % 5;
+                int ret = Math.Max(0, (int) Type % 10 - 5);
                 if (m_user != null && m_user.Map.IsSkillMap())
                 {
                     ret += Math.Max(5, (int) Plus);
@@ -1839,7 +1842,8 @@ namespace Comet.Game.States.Items
             CreateItem,
             DeleteItem,
             ItemUsage,
-            DeleteDroppedItem
+            DeleteDroppedItem,
+            InvalidItemType
         }
 
         #endregion

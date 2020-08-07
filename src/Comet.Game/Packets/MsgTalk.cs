@@ -409,29 +409,6 @@ namespace Comet.Game.Packets
                             await user.WeaponSkill.SendAsync(user.WeaponSkill[type]);
                         }
                         return true;
-                    case "/battleattr":
-                        Role target = null;
-                        if (!string.IsNullOrEmpty(param) && uint.TryParse(param, out uint idBpTarget))
-                        {
-                            target = Kernel.RoleManager.GetRole(idBpTarget) ?? user;
-                        }
-                        else
-                        {
-                            target = user;
-                        }
-
-                        if (target.Identity == user.Identity)
-                            await user.SendAsync($"Battle Attributes for yourself: {user.Name} [Potency: {user.BattlePower}]", TalkChannel.Talk, Color.White);
-                        else
-                            await user.SendAsync($"Battle Attributes for target: {target.Name} [Potency: {target.BattlePower}]", TalkChannel.Talk, Color.White);
-
-                        await user.SendAsync($"Life: {target.Life}-{target.MaxLife}, Mana: {target.Mana}-{target.MaxMana}", TalkChannel.Talk, Color.White);
-                        await user.SendAsync($"Attack: {target.MinAttack}-{target.MaxAttack}, Magic Attack: {target.MagicAttack}", TalkChannel.Talk, Color.White);
-                        await user.SendAsync($"Defense: {target.Defense}, Defense2: {target.Defense2}, MagicDefense: {target.MagicDefense}, MagicDefenseBonus: {target.MagicDefenseBonus}%", TalkChannel.Talk, Color.White);
-                        await user.SendAsync($"Accuracy: {target.Accuracy}, Dodge: {target.Dodge}, Attack Speed: {target.AttackSpeed}", TalkChannel.Talk, Color.White);
-                        if (target is Character tgtUsr)
-                            await user.SendAsync($"DG: {tgtUsr.DragonGemBonus}%, PG: {tgtUsr.PhoenixGemBonus}%, Blessing: {tgtUsr.Blessing}%, TG: {tgtUsr.TortoiseGemBonus}%", TalkChannel.Talk, Color.White);
-                        return true;
 
                     case "/status":
                         if (int.TryParse(param, out int flag))
@@ -623,6 +600,30 @@ namespace Comet.Game.Packets
                 case "/dc":
                 case "/discnonect":
                     user.Client.Disconnect();
+                    return true;
+
+                case "/battleattr":
+                    Role target = null;
+                    if (!string.IsNullOrEmpty(param) && uint.TryParse(param, out uint idBpTarget))
+                    {
+                        target = Kernel.RoleManager.GetRole(idBpTarget) ?? user;
+                    }
+                    else
+                    {
+                        target = user;
+                    }
+
+                    if (target.Identity == user.Identity)
+                        await user.SendAsync($"Battle Attributes for yourself: {user.Name} [Potency: {user.BattlePower}]", TalkChannel.Talk, Color.White);
+                    else
+                        await user.SendAsync($"Battle Attributes for target: {target.Name} [Potency: {target.BattlePower}]", TalkChannel.Talk, Color.White);
+
+                    await user.SendAsync($"Life: {target.Life}-{target.MaxLife}, Mana: {target.Mana}-{target.MaxMana}", TalkChannel.Talk, Color.White);
+                    await user.SendAsync($"Attack: {target.MinAttack}-{target.MaxAttack}, Magic Attack: {target.MagicAttack}", TalkChannel.Talk, Color.White);
+                    await user.SendAsync($"Defense: {target.Defense}, Defense2: {target.Defense2}, MagicDefense: {target.MagicDefense}, MagicDefenseBonus: {target.MagicDefenseBonus}%", TalkChannel.Talk, Color.White);
+                    await user.SendAsync($"Accuracy: {target.Accuracy}, Dodge: {target.Dodge}, Attack Speed: {target.AttackSpeed}", TalkChannel.Talk, Color.White);
+                    if (target is Character tgtUsr)
+                        await user.SendAsync($"DG: {tgtUsr.DragonGemBonus}%, PG: {tgtUsr.PhoenixGemBonus}%, Blessing: {tgtUsr.Blessing}%, TG: {tgtUsr.TortoiseGemBonus}%", TalkChannel.Talk, Color.White);
                     return true;
             }
 
