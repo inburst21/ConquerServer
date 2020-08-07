@@ -40,4 +40,8 @@
     <OutputPath>../Release</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>../Debug</OutputPath>
+  </PropertyGroup>
+
 </Project>

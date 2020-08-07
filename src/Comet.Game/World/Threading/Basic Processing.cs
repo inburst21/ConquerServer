@@ -72,26 +72,33 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Server Start Time: {m_ServerStartTime:G}");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Online Time: {(int) interval.TotalDays} days, {interval.Hours} hours, {interval.Minutes} minutes, {interval.Seconds} seconds");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent}");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv}");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds}ms");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorThread.ElapsedMilliseconds}ms");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds}ms");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds}ms");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorThread.ElapsedMilliseconds:N0}ms");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             }
 
-#if !DEBUG
-            if (m_apiSync.ToNextTime())
+#if !DEBUG && USE_API
+            try
             {
-                await Kernel.Api.PostAsync(new ServerInformation
+                if (m_apiSync.ToNextTime())
                 {
-                    ServerName = Kernel.Configuration.ServerName,
-                    ServerStatus = ServerInformation.RealmStatus.Online,
-                    PlayerAmount = Kernel.RoleManager.OnlinePlayers,
-                    MaxPlayerAmount = Kernel.RoleManager.MaxOnlinePlayers
+                    await Kernel.Api.PostAsync(new ServerInformation
+                    {
+                        ServerName = Kernel.Configuration.ServerName,
+                        ServerStatus = ServerInformation.RealmStatus.Online,
+                        PlayerAmount = Kernel.RoleManager.OnlinePlayers,
+                        MaxPlayerAmount = Kernel.RoleManager.MaxOnlinePlayers
 
-                }, MyApi.SYNC_INFORMATION_URL);
+                    }, MyApi.SYNC_INFORMATION_URL);
+                }
+            }
+            catch
+            {
+                await Log.WriteLog(LogLevel.Debug, "Failed to Write to the API.");
             }
 #endif
 
