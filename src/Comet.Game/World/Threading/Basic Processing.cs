@@ -72,8 +72,8 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Server Start Time: {m_ServerStartTime:G}");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Online Time: {(int) interval.TotalDays} days, {interval.Hours} hours, {interval.Minutes} minutes, {interval.Seconds} seconds");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent}");
-                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorThread.ElapsedMilliseconds}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds}ms");
