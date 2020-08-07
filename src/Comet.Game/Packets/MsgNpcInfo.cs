@@ -22,6 +22,7 @@
 #region References
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Network.Packets;
 
@@ -89,6 +90,12 @@ namespace Comet.Game.Packets
             writer.Write(Unknown1);
             writer.Write(new List<string> { Name });
             return writer.ToArray();
+        }
+
+        public override Task ProcessAsync(Client client)
+        {
+            return GameAction.ExecuteActionAsync(client.Character.InteractingItem, client.Character, null, null, 
+                $"{PosX} {PosY} {Lookface} {Identity} {NpcType}");
         }
     }
 }

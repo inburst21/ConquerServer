@@ -84,6 +84,22 @@ namespace Comet.Game.States.Magics
 
             GameMap map = m_pOwner.Map;
             Character user = m_pOwner as Character;
+            Role role = null;
+            if (user != null && user.Map.QueryRegion(RegionTypes.PkProtected, user.MapX, user.MapY))
+            {
+                if (magic.Ground > 0)
+                {
+                    if (magic.Crime > 0)
+                        return (false, x, y);
+                }
+                else
+                {
+                    role = map.QueryAroundRole(user, idTarget);
+                    if (role is Character && magic.Crime > 0)
+                        return (false, x, y);
+                }
+            }
+
             if (map.IsTrainingMap() && user != null)
             {
                 if (user.Mana < magic.UseMana)
@@ -116,8 +132,7 @@ namespace Comet.Game.States.Magics
 
             if (map.IsWingDisable() && magic.Sort == MagicSort.Attachstatus && magic.Status == StatusSet.FLY)
                 return (false, x, y);
-
-            Role role = null;
+            
             if (magic.Ground == 0)
             {
                 role = map.QueryAroundRole(m_pOwner, idTarget);

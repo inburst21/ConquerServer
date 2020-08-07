@@ -184,6 +184,10 @@ namespace Comet.Game
                         msg = new MsgNpc();
                         break;
 
+                    case PacketType.MsgNpcInfo:
+                        msg = new MsgNpcInfo();
+                        break;
+
                     case PacketType.MsgTaskDialog:
                         msg = new MsgTaskDialog();
                         break;

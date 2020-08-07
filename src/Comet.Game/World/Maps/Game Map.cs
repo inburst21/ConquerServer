@@ -49,16 +49,6 @@ namespace Comet.Game.World.Maps
     {
         public const uint DEFAULT_LIGHT_RGB = 0xFFFFFF;
 
-        public const int REGION_NONE = 0,
-            REGION_CITY = 1,
-            REGION_WEATHER = 2,
-            REGION_STATUARY = 3,
-            REGION_DESC = 4,
-            REGION_GOBALDESC = 5,
-            REGION_DANCE = 6, // data0: idLeaderRegion, data1: idMusic, 
-            REGION_PK_PROTECTED = 7,
-            REGION_FLAG_BASE = 8;
-
         public static readonly sbyte[] WalkXCoords = {0, -1, -1, -1, 0, 1, 1, 1, 0};
         public static readonly sbyte[] WalkYCoords = {1, 1, 0, -1, -1, -1, 0, 1, 0};
 
@@ -72,6 +62,7 @@ namespace Comet.Game.World.Maps
         private ConcurrentDictionary<uint, Role> m_roles = new ConcurrentDictionary<uint, Role>();
 
         private List<Passway> m_passway = new List<Passway>();
+        private List<DbRegion> m_regions = new List<DbRegion>();
 
         public Weather Weather;
 
@@ -210,6 +201,8 @@ namespace Comet.Game.World.Maps
                 });
             }
 
+            m_regions = await DbRegion.GetAsync(Identity);
+
             return true;
         }
 
@@ -220,6 +213,14 @@ namespace Comet.Game.World.Maps
             int currentBlockX = GetBlockX(sender.MapX);
             int currentBlockY = GetBlockY(sender.MapY);
             return Query9Blocks(currentBlockX, currentBlockY).FirstOrDefault(x => x.Identity == target);
+        }
+
+        public DynamicNpc QueryStatuary(Role sender, uint lookface, uint task)
+        {
+            return Query9BlocksByPos(sender.MapX, sender.MapY)
+                .Where(x => x is DynamicNpc)
+                .Cast<DynamicNpc>()
+                .FirstOrDefault(x => x.Task0 == task && (x.Mesh - x.Mesh % 10) == (lookface - lookface % 10));
         }
 
         #endregion
@@ -513,7 +514,7 @@ namespace Comet.Game.World.Maps
 
         public bool IsSkillMap()
         {
-            return (Type & (uint) MapTypeFlags.SkillMap) != 0;
+            return (Type & (ulong) MapTypeFlags.SkillMap) != 0;
         }
 
         public bool IsLineSkillMap()
@@ -683,6 +684,15 @@ namespace Comet.Game.World.Maps
 
         #endregion
 
+        #region Regions
+
+        public bool QueryRegion(RegionTypes regionType, ushort x, ushort y)
+        {
+            return m_regions.Where(re => (x > re.BoundX && x < re.BoundX + re.BoundCX) && (y > re.BoundY && y < re.BoundY + re.BoundCY)).Any(region => region.Type == (int)regionType);
+        }
+
+        #endregion
+
         #region Status
 
         public async Task SetStatusAsync(ulong flag, bool add)
@@ -788,7 +798,7 @@ namespace Comet.Game.World.Maps
     }
 
     [Flags]
-    public enum MapTypeFlags
+    public enum MapTypeFlags : ulong
     {
         Normal = 0,
         PkField = 1, //0x1 1
@@ -806,7 +816,22 @@ namespace Comet.Game.World.Maps
         PkGame = 1 << 12, // 0x1000 4098
         NeverWound = 1 << 13, // 0x2000 8196
         DeadIsland = 1 << 14, // 0x4000 16392
-        SkillMap = 1 << 17, // 0x20000 65568
-        LineSkillOnly = 1 << 18
+        SkillMap = 1UL << 62,
+        LineSkillOnly = 1UL << 63
+    }
+
+    public enum RegionTypes
+    {
+        None = 0,
+        City = 1,
+        Weather = 2,
+        Statuary = 3,
+        Desc = 4,
+        Gobaldesc = 5,
+        Dance = 6, // data0: idLeaderRegion, data1: idMusic, 
+        PkProtected = 7,
+        FlagProtection = 24,
+        FlagBase = 25,
+        JiangHuBonusArea = 30,
     }
 }

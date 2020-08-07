@@ -567,9 +567,14 @@ namespace Comet.Game.States
                 amount -= (long) dbExp.Exp;
                 leveled = true;
                 newLevel++;
+
+                if (newLevel <= 70)
+                {
+                    virtue += (ushort)dbExp.UpLevTime;
+                }
+
                 if (!AutoAllot || Level > 120)
                 {
-                    virtue += (ushort) dbExp.UpLevTime;
                     pointAmount += 3;
                     continue;
                 }
@@ -1945,7 +1950,7 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
-            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive;
+            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY);
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
@@ -2490,6 +2495,11 @@ namespace Comet.Game.States
 
             await Log.GmLog("bonus", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
             return true;
+        }
+
+        public async Task<int> BonusCount()
+        {
+            return await BonusRepository.CountAsync(m_dbObject.AccountIdentity);
         }
 
         #endregion

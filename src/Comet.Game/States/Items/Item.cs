@@ -706,7 +706,11 @@ namespace Comet.Game.States.Items
             DbItemAddition add = null;
             if (level > 0)
             {
-                add = Kernel.ItemManager.GetItemAddition(Type, (byte) level);
+                // todo remove when color offset is not in type
+                uint type = Type;
+                if (IsArmor() || IsHelmet() || IsShield())
+                    type -= Type % 1000 / 100;
+                add = Kernel.ItemManager.GetItemAddition(type, (byte) level);
                 if (add == null)
                     return false;
             }

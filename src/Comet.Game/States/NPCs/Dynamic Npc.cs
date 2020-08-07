@@ -92,7 +92,11 @@ namespace Comet.Game.States.NPCs
 
         public override ushort Type => m_dbNpc.Type;
 
+        public void SetType(ushort type) => m_dbNpc.Type = type;
+
         public override ushort Sort => m_dbNpc.Sort;
+
+        public void SetSort(ushort sort) => m_dbNpc.Sort = sort;
 
         public override uint OwnerType
         {
@@ -133,7 +137,11 @@ namespace Comet.Game.States.NPCs
             {
                 case ClientUpdateType.Mesh:
                     Mesh = (uint) value;
-                    await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this) {Name = IsSynFlag() ? Name : ""}, false);
+                    await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
+                    return await SaveAsync();
+                case ClientUpdateType.MaxHitpoints:
+                    m_dbNpc.Maxlife = (uint) value;
+                    await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
                     return await SaveAsync();
             }
             return await base.SetAttributesAsync(type, value) && await SaveAsync();
@@ -147,6 +155,21 @@ namespace Comet.Game.States.NPCs
         #endregion
 
         #region Task and Data
+
+        public void SetTask(int id, uint task)
+        {
+            switch (id)
+            {
+                case 0: m_dbNpc.Task0 = task; break;
+                case 1: m_dbNpc.Task1 = task; break;
+                case 2: m_dbNpc.Task2 = task; break;
+                case 3: m_dbNpc.Task3 = task; break;
+                case 4: m_dbNpc.Task4 = task; break;
+                case 5: m_dbNpc.Task5 = task; break;
+                case 6: m_dbNpc.Task6 = task; break;
+                case 7: m_dbNpc.Task7 = task; break;
+            }
+        }
 
         public override uint Task0 => m_dbNpc.Task0;
         public override uint Task1 => m_dbNpc.Task1;

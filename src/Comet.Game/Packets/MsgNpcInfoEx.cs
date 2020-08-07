@@ -49,7 +49,7 @@ namespace Comet.Game.Packets
             Lookface = (ushort) npc.Mesh;
             NpcType = npc.Type;
             Sort = npc.Sort;
-            Name = npc.Name;
+            Name = npc.IsSynFlag() ? npc.Name : "";
         }
 
         public uint Identity { get; set; }

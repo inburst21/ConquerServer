@@ -24,6 +24,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -34,7 +35,13 @@ namespace Comet.Game.Database.Repositories
         public static async Task<DbBonus> GetAsync(uint account)
         {
             await using var db = new ServerDbContext();
-            return db.Bonus.FirstOrDefault(x => x.AccountIdentity == account && x.Time == null);
+            return await db.Bonus.FirstOrDefaultAsync(x => x.AccountIdentity == account && x.Flag == 0 && x.Time == null);
+        }
+
+        public static async Task<int> CountAsync(uint account)
+        {
+            await using var db = new ServerDbContext();
+            return await db.Bonus.CountAsync(x => x.AccountIdentity == account && x.Flag == 0 && x.Time == null);
         }
     }
 }

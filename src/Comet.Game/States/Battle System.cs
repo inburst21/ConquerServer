@@ -27,6 +27,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Maps;
 
 namespace Comet.Game.States
 {
@@ -349,6 +350,10 @@ namespace Comet.Game.States
 
             if (!target.IsAttackable(m_owner))
                 return false;
+
+            if (m_owner.Map.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY))
+                return false;
+
             return true;
         }
 

@@ -132,6 +132,9 @@
   <data name="StrAwardVirtue" xml:space="preserve">
     <value>{0} has earned {1} virtue points for helping newbies.</value>
   </data>
+  <data name="StrBonus" xml:space="preserve">
+    <value>Congratulations! You have got {0} prizes.  Please find PrizeNPC in the market (185,170) to claim your rewards!</value>
+  </data>
   <data name="StrBreakFriend" xml:space="preserve">
     <value>{0} broke up friendship with {1}.</value>
   </data>
@@ -251,6 +254,12 @@
   </data>
   <data name="StrKillingTooMuch" xml:space="preserve">
     <value>You are killing too much! You may lose your equipment if killed.</value>
+  </data>
+  <data name="StrLayNpcSuperPosition" xml:space="preserve">
+    <value>You cannot lay an NPC there.</value>
+  </data>
+  <data name="StrLayNpcSynTransInvalidMap" xml:space="preserve">
+    <value>You cannot set a transportation NPC in this map.</value>
   </data>
   <data name="StrMakeFriend" xml:space="preserve">
     <value>{0} and {1} are friends from now on.</value>
@@ -575,6 +584,9 @@
   </data>
   <data name="StrUpgradeAwardSocket" xml:space="preserve">
     <value>Your equipment received a new socket.</value>
+  </data>
+  <data name="StrUseItem" xml:space="preserve">
+    <value>You have used an item.</value>
   </data>
   <data name="StrWarEnd" xml:space="preserve">
     <value>War has ended!</value>

@@ -122,6 +122,10 @@ namespace Comet.Game.States
                     case TaskActionType.ActionMapMapeffect: result = await ExecuteActionMapMapeffect(action, param, user, role, item, input); break;
                     case TaskActionType.ActionMapFireworks: result = await ExecuteActionMapFireworks(action, param, user, role, item, input); break;
 
+                    case TaskActionType.ActionItemRequestlaynpc: result = await ExecuteActionItemRequestlaynpc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemLaynpc: result = await ExecuteActionItemLaynpc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemDelthis: result = await ExecuteActionItemDelthis(action, param, user, role, item, input); break;
+
                     case TaskActionType.ActionItemAdd: result = await ExecuteActionItemAdd(action, param, user, role, item, input); break;
                     case TaskActionType.ActionItemDel: result = await ExecuteActionItemDel(action, param, user, role, item, input); break;
                     case TaskActionType.ActionItemCheck: result = await ExecuteActionItemCheck(action, param, user, role, item, input); break;
@@ -1215,6 +1219,256 @@ namespace Comet.Game.States
                     Action = StringAction.Fireworks
                 }, true);
             }
+            return true;
+        }
+
+        #endregion
+
+        #region Lay Item
+
+        private static async Task<bool> ExecuteActionItemRequestlaynpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] splitParams = SplitParam(param, 5);
+
+            uint idNextTask = uint.Parse(splitParams[0]);
+            uint dwType = uint.Parse(splitParams[1]);
+            uint dwSort = uint.Parse(splitParams[2]);
+            uint dwLookface = uint.Parse(splitParams[3]);
+            uint dwRegion = 0;
+
+            if (splitParams.Length > 4)
+                uint.TryParse(splitParams[4], out dwRegion);
+
+            if (idNextTask != 0)
+                user.InteractingItem = idNextTask;
+
+            await user.SendAsync(new MsgNpc
+            {
+                Identity = dwRegion,
+                Data = dwLookface,
+                Event = (ushort) dwType,
+                RequestType = MsgNpc.NpcActionType.LayNpc
+            });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionItemLaynpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return false;
+
+            string[] splitParam = SplitParam(input, 5);
+            if (splitParam.Length < 3)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Invalid input count for action [{action.Identity}]: {input}");
+                return false;
+            }
+
+            if (!ushort.TryParse(splitParam[0], out var mapX)
+                || !ushort.TryParse(splitParam[1], out var mapY)
+                || !uint.TryParse(splitParam[2], out var lookface))
+            {
+                await Log.WriteLog(LogLevel.Error, $"Invalid input params for action [{action.Identity}]1: {input}");
+                return false;
+            }
+
+            uint frame = 0;
+            uint pose = 0;
+            if (splitParam.Length >= 4)
+            {
+                uint.TryParse(splitParam[3], out frame);
+                uint.TryParse(splitParam[4], out pose);
+            }
+
+            if (user.Map.IsSuperPosition(mapX, mapY))
+            {
+                await user.SendAsync(Language.StrLayNpcSuperPosition);
+                return false;
+            }
+
+            splitParam = SplitParam(param, 21);
+
+            if (param.Length < 5) return false;
+
+            uint nRegionType = 0;
+            string szName = splitParam[0];
+            ushort usType = ushort.Parse(splitParam[1]);
+            ushort usSort = ushort.Parse(splitParam[2]);
+            uint dwOwnerType = uint.Parse(splitParam[4]);
+            uint dwLife = 0;
+            uint idBase = 0;
+            uint idLink = 0;
+            uint idTask0 = 0;
+            uint idTask1 = 0;
+            uint idTask2 = 0;
+            uint idTask3 = 0;
+            uint idTask4 = 0;
+            uint idTask5 = 0;
+            uint idTask6 = 0;
+            uint idTask7 = 0;
+            int idData0 = 0;
+            int idData1 = 0;
+            int idData2 = 0;
+            int idData3 = 0;
+
+            if (splitParam.Length >= 6)
+                dwLife = uint.Parse(splitParam[5]);
+            if (splitParam.Length >= 7)
+                nRegionType = uint.Parse(splitParam[6]);
+            if (splitParam.Length >= 8)
+                idBase = uint.Parse(splitParam[7]);
+            if (splitParam.Length >= 9)
+                idLink = uint.Parse(splitParam[8]);
+            if (splitParam.Length >= 10)
+                idTask0 = uint.Parse(splitParam[9]);
+            if (splitParam.Length >= 11)
+                idTask1 = uint.Parse(splitParam[10]);
+            if (splitParam.Length >= 12)
+                idTask2 = uint.Parse(splitParam[11]);
+            if (splitParam.Length >= 13)
+                idTask3 = uint.Parse(splitParam[12]);
+            if (splitParam.Length >= 14)
+                idTask4 = uint.Parse(splitParam[13]);
+            if (splitParam.Length >= 15)
+                idTask5 = uint.Parse(splitParam[14]);
+            if (splitParam.Length >= 16)
+                idTask6 = uint.Parse(splitParam[15]);
+            if (splitParam.Length >= 17)
+                idTask7 = uint.Parse(splitParam[16]);
+            if (splitParam.Length >= 18)
+                idData0 = int.Parse(splitParam[17]);
+            if (splitParam.Length >= 19)
+                idData1 = int.Parse(splitParam[18]);
+            if (splitParam.Length >= 20)
+                idData2 = int.Parse(splitParam[19]);
+            if (splitParam.Length >= 21)
+                idData3 = int.Parse(splitParam[20]);
+
+            if (usType == BaseNpc.SYNTRANS_NPC && !user.Map.IsTeleportDisable())
+            {
+                _ = user.SendAsync(Language.StrLayNpcSynTransInvalidMap);
+                return false;
+            }
+
+            if (usType == BaseNpc.STATUARY_NPC)
+            {
+                szName = user.Name;
+                lookface = user.Mesh % 10;
+                idTask0 = user.Headgear?.Type ?? 0;
+                idTask1 = user.Armor?.Type ?? 0;
+                idTask2 = user.RightHand?.Type ?? 0;
+                idTask3 = user.LeftHand?.Type ?? 0;
+                idTask4 = frame;
+                idTask5 = pose;
+                idTask6 = user.Mesh;
+                idTask7 = ((uint)user.SyndicateRank << 16) + user.Hairstyle;
+            }
+
+            if (nRegionType > 0 && !user.Map.QueryRegion((RegionTypes) nRegionType, mapX, mapY))
+                return false;
+
+            uint idOwner = 0;
+            switch (dwOwnerType)
+            {
+                case 1:
+                    if (user.Identity == 0)
+                        return false;
+
+                    idOwner = user.Identity;
+                    break;
+                case 2:
+                    if (user.SyndicateIdentity == 0)
+                        return false;
+
+                    idOwner = user.SyndicateIdentity;
+                    break;
+            }
+
+            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0);
+            if (npc == null)
+            {
+                npc = new DynamicNpc(new DbDynanpc
+                {
+                    Name = szName,
+                    Ownerid = idOwner,
+                    OwnerType = dwOwnerType,
+                    Type = usType,
+                    Sort = usSort,
+                    Life = dwLife,
+                    Maxlife = dwLife,
+                    Base = idBase,
+                    Linkid = idLink,
+                    Task0 = idTask0,
+                    Task1 = idTask1,
+                    Task2 = idTask2,
+                    Task3 = idTask3,
+                    Task4 = idTask4,
+                    Task5 = idTask5,
+                    Task6 = idTask6,
+                    Task7 = idTask7,
+                    Data0 = idData0,
+                    Data1 = idData1,
+                    Data2 = idData2,
+                    Data3 = idData3,
+                    Datastr = "",
+                    Defence = 0,
+                    Cellx = mapX,
+                    Celly = mapY,
+                    Idxserver = 0,
+                    Itemid = 0,
+                    Lookface = 0,
+                    MagicDef = 0,
+                    Mapid = user.MapIdentity
+                });
+
+                if (!await npc.InitializeAsync())
+                    return false;
+            }
+            else
+            {
+                npc.SetType(usType);
+                npc.OwnerIdentity = idOwner;
+                npc.OwnerType = (byte)dwOwnerType;
+                npc.Name = szName;
+                await npc.SetAttributesAsync(ClientUpdateType.Mesh, lookface);
+                npc.SetSort(usSort);
+                npc.SetTask(0, idTask0);
+                npc.SetTask(1, idTask1);
+                npc.SetTask(2, idTask2);
+                npc.SetTask(3, idTask3);
+                npc.SetTask(4, idTask4);
+                npc.SetTask(5, idTask5);
+                npc.SetTask(6, idTask6);
+                npc.SetTask(7, idTask7);
+                npc.Data0 = idData0;
+                npc.Data1 = idData1;
+                npc.Data2 = idData2;
+                npc.Data3 = idData3;
+                await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, dwLife);
+                npc.MapX = mapX;
+                npc.MapY = mapY;
+            }
+        
+            await npc.ChangePosAsync(user.MapIdentity, mapX, mapY);
+            await npc.SaveAsync();
+
+            role = npc;
+            user.InteractingNpc = npc.Identity;
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionItemDelthis(DbAction action, string param, Character user, Role role, Item item, string input)
+        {
+            user.InteractingItem = 0;
+            if (item != null)
+            {
+                _ = user.UserPackage.SpendItemAsync(item);
+            }
+
+            _ = user.SendAsync(Language.StrUseItem);
             return true;
         }
 

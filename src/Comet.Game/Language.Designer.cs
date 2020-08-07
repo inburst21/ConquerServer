@@ -106,6 +106,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! You have got {0} prizes.  Please find PrizeNPC in the market (185,170) to claim your rewards!.
+        /// </summary>
+        public static string StrBonus {
+            get {
+                return ResourceManager.GetString("StrBonus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} broke up friendship with {1}..
         /// </summary>
         public static string StrBreakFriend {
@@ -462,6 +471,24 @@ namespace Comet.Game {
         public static string StrKillingTooMuch {
             get {
                 return ResourceManager.GetString("StrKillingTooMuch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot lay an NPC there..
+        /// </summary>
+        public static string StrLayNpcSuperPosition {
+            get {
+                return ResourceManager.GetString("StrLayNpcSuperPosition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot set a transportation NPC in this map..
+        /// </summary>
+        public static string StrLayNpcSynTransInvalidMap {
+            get {
+                return ResourceManager.GetString("StrLayNpcSynTransInvalidMap", resourceCulture);
             }
         }
         
@@ -1434,6 +1461,15 @@ namespace Comet.Game {
         public static string StrUpgradeAwardSocket {
             get {
                 return ResourceManager.GetString("StrUpgradeAwardSocket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have used an item..
+        /// </summary>
+        public static string StrUseItem {
+            get {
+                return ResourceManager.GetString("StrUseItem", resourceCulture);
             }
         }
         

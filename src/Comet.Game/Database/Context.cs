@@ -83,6 +83,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbMineRate> MineRates { get; set; }
         public virtual DbSet<DbPigeon> Pigeons { get; set; }
         public virtual DbSet<DbPigeonQueue> PigeonQueues { get; set; }
+        public virtual DbSet<DbRegion> Regions { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

@@ -359,6 +359,10 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginComplete: // 130
+                    int bonusCount = await user.BonusCount();
+                    if (bonusCount > 0)
+                        _ = user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
+
                     await client.Character.SendMultipleExp();
                     await client.Character.SendBless();
                     await client.Character.SendNobilityInfo();
