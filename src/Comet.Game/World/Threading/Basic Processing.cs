@@ -81,7 +81,7 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             }
 
-#if !DEBUG
+#if !DEBUG && USE_API
             try
             {
                 if (m_apiSync.ToNextTime())
