@@ -268,6 +268,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are already using an EXP Potion with better power than this. Wait for the old one to finish..
+        /// </summary>
+        public static string StrExpPotionInUse {
+            get {
+                return ResourceManager.GetString("StrExpPotionInUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your wife is online..
         /// </summary>
         public static string StrFemaleMateLogin {

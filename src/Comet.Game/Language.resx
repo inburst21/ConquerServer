@@ -186,6 +186,9 @@
   <data name="StrEmbedTargetNoSocket" xml:space="preserve">
     <value>The target item doesn't have a socket.</value>
   </data>
+  <data name="StrExpPotionInUse" xml:space="preserve">
+    <value>You are already using an EXP Potion with better power than this. Wait for the old one to finish.</value>
+  </data>
   <data name="StrFemaleMateLogin" xml:space="preserve">
     <value>Your wife is online.</value>
   </data>

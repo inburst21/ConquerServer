@@ -159,6 +159,19 @@ namespace Comet.Game.States.Items
                 return true;
             }
 
+            if (item.Type == Item.TYPE_EXP_POTION)
+            {
+                if (m_user.ExperienceMultiplier > 2 && m_user.RemainingExperienceSeconds > 0)
+                {
+                    await m_user.SendAsync(Language.StrExpPotionInUse);
+                    return true;
+                }
+
+                await m_user.SetExperienceMultiplier(3600);
+                await SpendItemAsync(item);
+                return true;
+            }
+
             if (item.IsEquipEnable())
                 return await EquipItemAsync(item, position);
 

@@ -1908,6 +1908,7 @@ namespace Comet.Game.States.Items
 
         //
         public const uint TYPE_EXP_BALL = 723700;
+        public const uint TYPE_EXP_POTION = 723017;
 
         public static readonly int[] BowmanArrows =
         {
