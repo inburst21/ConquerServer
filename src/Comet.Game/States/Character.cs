@@ -4006,6 +4006,7 @@ namespace Comet.Game.States
         Syndicate,
         TeamApply,
         TeamInvite,
-        Trade
+        Trade,
+        Marriage
     }
 }

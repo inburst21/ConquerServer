@@ -73,5 +73,7 @@ namespace Comet.Game.World
             if (!m_cqidQueue.Contains(id))
                 m_cqidQueue.Enqueue(id);
         }
+
+        public int IdentitiesCount() => m_cqidQueue.Count;
     }
 }

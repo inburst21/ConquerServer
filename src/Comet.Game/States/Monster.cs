@@ -411,7 +411,7 @@ namespace Comet.Game.States
             if (m_dbMonster.DropShoes != 99)
                 possibleDrops.Add(6);
 
-            if (drops.Count > 0)
+            if (possibleDrops.Count > 0)
             {
                 byte drop = possibleDrops[await Kernel.NextAsync(0, possibleDrops.Count) % possibleDrops.Count];
                 switch (drop)
@@ -447,7 +447,7 @@ namespace Comet.Game.States
             if (pot != null)
                 drops.Add(pot);
 
-            if (drops.Count <= 0)
+            if (drops.Count < 1)
                 return 0;
 
             if (await Kernel.ChanceCalcAsync(625, 30000000))
@@ -475,7 +475,7 @@ namespace Comet.Game.States
                 drops.RemoveAll(x => Item.GetQuality(x.Type) > 5 || Item.GetQuality(x.Type) < 3);
             }
 
-            if (drops.Count == 0)
+            if (drops.Count < 1)
                 return 0;
 
             return drops[(await Kernel.NextAsync(drops.Count))%drops.Count]?.Type ?? 0;

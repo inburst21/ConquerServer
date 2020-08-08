@@ -270,6 +270,21 @@
   <data name="StrMaleMateLogin" xml:space="preserve">
     <value>Your husband is online.</value>
   </data>
+  <data name="StrMarriageErrSameGender" xml:space="preserve">
+    <value>You cannot marry a character of the same gender.</value>
+  </data>
+  <data name="StrMarriageNotApply" xml:space="preserve">
+    <value>You haven't applied for marriage.</value>
+  </data>
+  <data name="StrMarriageTargetNotSingle" xml:space="preserve">
+    <value>The target is already married.</value>
+  </data>
+  <data name="StrMarriageYouNoSingle" xml:space="preserve">
+    <value>You're already married.</value>
+  </data>
+  <data name="StrMarry" xml:space="preserve">
+    <value>{0} and {1} are pronounced the husband and wife. They promise to love and care for each other for better or worse.</value>
+  </data>
   <data name="StrMineItemFound" xml:space="preserve">
     <value>You found {0}!</value>
   </data>

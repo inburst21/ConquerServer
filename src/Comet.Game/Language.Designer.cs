@@ -520,6 +520,51 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot marry a character of the same gender..
+        /// </summary>
+        public static string StrMarriageErrSameGender {
+            get {
+                return ResourceManager.GetString("StrMarriageErrSameGender", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You haven&apos;t applied for marriage..
+        /// </summary>
+        public static string StrMarriageNotApply {
+            get {
+                return ResourceManager.GetString("StrMarriageNotApply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target is already married..
+        /// </summary>
+        public static string StrMarriageTargetNotSingle {
+            get {
+                return ResourceManager.GetString("StrMarriageTargetNotSingle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You&apos;re already married..
+        /// </summary>
+        public static string StrMarriageYouNoSingle {
+            get {
+                return ResourceManager.GetString("StrMarriageYouNoSingle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1} are pronounced the husband and wife. They promise to love and care for each other for better or worse..
+        /// </summary>
+        public static string StrMarry {
+            get {
+                return ResourceManager.GetString("StrMarry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You found {0}!.
         /// </summary>
         public static string StrMineItemFound {

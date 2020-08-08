@@ -22,12 +22,17 @@
 #region References
 
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Org.BouncyCastle.Asn1.Crmf;
 
 #endregion
 
@@ -61,13 +66,13 @@ namespace Comet.Game.Packets
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadInt32(); // 4
             SenderIdentity = reader.ReadUInt32(); // 8
             TargetIdentity = reader.ReadUInt32(); // 12
             PosX = reader.ReadUInt16(); // 16
             PosY = reader.ReadUInt16(); // 18
-            Action = (MsgInteractType)reader.ReadUInt32(); // 20
+            Action = (MsgInteractType) reader.ReadUInt32(); // 20
             Data = reader.ReadInt32(); // 24
             Command = reader.ReadInt32(); // 28
         }
@@ -81,13 +86,13 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)Type);
+            writer.Write((ushort) Type);
             writer.Write(Timestamp);
             writer.Write(SenderIdentity);
             writer.Write(TargetIdentity);
             writer.Write(PosX);
             writer.Write(PosY);
-            writer.Write((uint)Action);
+            writer.Write((uint) Action);
             writer.Write(Data);
             writer.Write(Command);
             return writer.ToArray();
@@ -104,6 +109,7 @@ namespace Comet.Game.Packets
         {
             client.Character.BattleSystem.ResetBattle();
 
+            Character user = client.Character;
             Role target = client.Character.Map.QueryAroundRole(client.Character, TargetIdentity);
 
             switch (Action)
@@ -115,6 +121,7 @@ namespace Comet.Game.Packets
                         client.Character.BattleSystem.CreateBattle(TargetIdentity);
                         client.Character.SetAttackTarget(target);
                     }
+
                     break;
 
                 case MsgInteractType.Unknown21:
@@ -126,10 +133,11 @@ namespace Comet.Game.Packets
                     magicType -= 0xeb42;
 
                     dataArray = BitConverter.GetBytes(TargetIdentity);
-                    TargetIdentity = ((uint)dataArray[0] & 0xFF) | (((uint)dataArray[1] & 0xFF) << 8) |
-                                    (((uint)dataArray[2] & 0xFF) << 16) | (((uint)dataArray[3] & 0xFF) << 24);
-                    TargetIdentity = ((((TargetIdentity & 0xffffe000) >> 13) | ((TargetIdentity & 0x1fff) << 19)) ^ 0x5F2D2463 ^ client.Identity) -
-                        0x746F4AE6;
+                    TargetIdentity = ((uint) dataArray[0] & 0xFF) | (((uint) dataArray[1] & 0xFF) << 8) |
+                                     (((uint) dataArray[2] & 0xFF) << 16) | (((uint) dataArray[3] & 0xFF) << 24);
+                    TargetIdentity = ((((TargetIdentity & 0xffffe000) >> 13) | ((TargetIdentity & 0x1fff) << 19)) ^
+                                      0x5F2D2463 ^ client.Identity) -
+                                     0x746F4AE6;
 
                     dataArray = BitConverter.GetBytes(PosX);
                     long xx = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
@@ -161,9 +169,106 @@ namespace Comet.Game.Packets
                     break;
 
                 case MsgInteractType.Court:
+                {
+                    if (target == null || target.Identity == user.Identity)
+                        return;
+
+                    if (!(target is Character targetUser))
+                        return;
+
+                    if (targetUser.MapIdentity != user.MapIdentity || user.GetDistance(targetUser) > Screen.VIEW_SIZE)
+                    {
+                        await user.SendAsync(Language.StrTargetNotInRange);
+                        return;
+                    }
+
+                    if (targetUser.MateIdentity != 0)
+                    {
+                        await user.SendAsync(Language.StrMarriageTargetNotSingle);
+                        return; // target is already married
+                    }
+
+                    if (user.MateIdentity != 0)
+                    {
+                        await user.SendAsync(Language.StrMarriageYouNoSingle);
+                        return; // you're already married
+                    }
+
+                    if (user.Gender == targetUser.Gender)
+                    {
+                        await user.SendAsync(Language.StrMarriageErrSameGender);
+                        return; // not allow same gender
+                    }
+
+                    targetUser.SetRequest(RequestType.Marriage, user.Identity);
+                    await targetUser.SendAsync(this);
                     break;
+                }
+
                 case MsgInteractType.Marry:
+                {
+                    if (target == null || target.Identity == user.Identity)
+                        return;
+
+                    if (!(target is Character targetUser))
+                        return;
+
+                    if (user.QueryRequest(RequestType.Marriage) != targetUser.Identity)
+                    {
+                        await user.SendAsync(Language.StrMarriageNotApply);
+                        return;
+                    }
+
+                    user.PopRequest(RequestType.Marriage);
+
+                    if (targetUser.MapIdentity != user.MapIdentity || user.GetDistance(targetUser) > Screen.VIEW_SIZE)
+                    {
+                        await user.SendAsync(Language.StrTargetNotInRange);
+                        return;
+                    }
+
+                    if (targetUser.MateIdentity != 0)
+                    {
+                        await user.SendAsync(Language.StrMarriageTargetNotSingle);
+                        return; // target is already married
+                    }
+
+                    if (user.MateIdentity != 0)
+                    {
+                        await user.SendAsync(Language.StrMarriageYouNoSingle);
+                        return; // you're already married
+                    }
+
+                    if (user.Gender == targetUser.Gender)
+                    {
+                        await user.SendAsync(Language.StrMarriageErrSameGender);
+                        return; // not allow same gender
+                    }
+
+                    user.MateIdentity = targetUser.Identity;
+                    user.MateName = targetUser.Name;
+                    _ = user.SaveAsync();
+                    targetUser.MateIdentity = user.Identity;
+                    targetUser.MateName = user.Name;
+                    _ = targetUser.SaveAsync();
+
+                    _ = user.SendAsync(new MsgName
+                    {
+                        Identity = targetUser.Identity,
+                        Strings = new List<string> { targetUser.Name },
+                        Action = StringAction.Mate
+                    });
+
+                    _ = targetUser.SendAsync(new MsgName
+                    {
+                        Identity = user.Identity,
+                        Strings = new List<string> {user.Name},
+                        Action = StringAction.Mate
+                    });
+
+                    _ = Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), MsgTalk.TalkChannel.Center, Color.Red);
                     break;
+                }
                 default:
                     await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
                         $"Missing packet {Type}, Action {Action}, Length {Length}"));

@@ -78,6 +78,11 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorThread.ElapsedMilliseconds:N0}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"Identities Remaining: ");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"\tMonster: {IdentityGenerator.Monster.IdentitiesCount()}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"\tFurniture: {IdentityGenerator.Furniture.IdentitiesCount()}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"\tMapItem: {IdentityGenerator.MapItem.IdentitiesCount()}");
+                await Log.WriteLog("GameAnalytics", LogLevel.Message, $"\tTraps: {IdentityGenerator.Traps.IdentitiesCount()}");
                 await Log.WriteLog("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             }
 
