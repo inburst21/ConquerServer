@@ -69,7 +69,7 @@ namespace Comet.Network.Packets
         public void Write(string value, int fixedLength)
         {
             var array = new byte[fixedLength];
-            Encoding.ASCII.GetBytes(value).CopyTo(array, 0);
+            (CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII).GetBytes(value).CopyTo(array, 0);
             base.Write(array);
         }
 
