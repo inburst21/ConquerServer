@@ -124,6 +124,7 @@ namespace Comet.Game.States.Items
 
             m_itemInfo = pInfo;
             m_info.Type = pInfo.Type;
+            m_info.Color = pInfo.Color;
             m_itemInfo.OwnerIdentity = 0;
             await m_itemInfo.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
             m_itemInfo.Position = Item.ItemPosition.Floor;
@@ -376,7 +377,8 @@ namespace Comet.Game.States.Items
                 MapX = MapX,
                 MapY = MapY,
                 Itemtype = Itemtype,
-                Mode = DropType.LayItem
+                Mode = DropType.LayItem,
+                Color = m_info.Color
             });
         }
 
