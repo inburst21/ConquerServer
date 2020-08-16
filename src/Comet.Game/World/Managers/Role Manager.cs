@@ -133,10 +133,6 @@ namespace Comet.Game.World.Managers
 
             await user.Character.SetLoginAsync();
 
-#if DEBUG
-            await user.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}");
-#endif
-
             await Log.WriteLog(LogLevel.Message, $"{user.Character.Name} has logged in.");
 
             if (OnlinePlayers > MaxOnlinePlayers)
@@ -306,6 +302,8 @@ namespace Comet.Game.World.Managers
 
         public DbRebirth GetRebirth(int profNow, int profNext, int currMete)
         {
+            profNow = (profNow / 10 * 1000) + profNow % 10;
+            profNext = (profNext / 10 * 1000) + profNext % 10;
             return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext && x.Metempsychosis == currMete);
         }
 

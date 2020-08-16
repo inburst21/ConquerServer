@@ -65,7 +65,7 @@ namespace Comet.Game.Packets
             PreviousClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
             CharacterName = character.Name;
-            SpouseName = "None";
+            SpouseName = character.MateName;
             HasName = true;
         }
 
@@ -101,28 +101,29 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort) Type);
-            writer.Write(Identity);
-            writer.Write(Mesh);
-            writer.Write(Hairstyle);
-            writer.Write(Silver);
-            writer.Write(Jewels);
-            writer.Write(Experience);
-            writer.Write((ulong) 0);
-            writer.Write((ulong) 0);
-            writer.Write(Strength);
-            writer.Write(Agility);
-            writer.Write(Vitality);
-            writer.Write(Spirit);
-            writer.Write(AttributePoints);
-            writer.Write(HealthPoints);
-            writer.Write(ManaPoints);
-            writer.Write(KillPoints);
-            writer.Write(Level);
-            writer.Write(CurrentClass);
-            writer.Write(PreviousClass);
-            writer.Write(Rebirths);
-            writer.Write(HasName);
+            writer.Write((ushort) Type); // 2
+            writer.Write(Identity); // 4
+            writer.Write(Mesh); // 8
+            writer.Write(Hairstyle); // 12
+            writer.Write(Silver); // 14
+            writer.Write(Jewels); // 18
+            writer.Write(Experience); // 22
+            writer.Write((ulong) 0); // 30
+            writer.Write((ulong) 0); // 38
+            writer.Write((uint) 0); // 46
+            writer.Write(Strength); // 50
+            writer.Write(Agility); // 52
+            writer.Write(Vitality); // 54
+            writer.Write(Spirit); // 56
+            writer.Write(AttributePoints); // 58
+            writer.Write(HealthPoints); // 60 
+            writer.Write(ManaPoints); // 62
+            writer.Write(KillPoints); // 64 
+            writer.Write(Level); // 66
+            writer.Write(CurrentClass); // 67
+            writer.Write(PreviousClass); // 68
+            writer.Write(Rebirths); // 69 
+            writer.Write(HasName); // 70
             writer.Write(new List<string>
             {
                 CharacterName,

@@ -52,6 +52,7 @@ namespace Comet.Account.States
         public Client(Socket socket, Memory<byte> buffer, uint partition)
             : base(socket, buffer, new TQCipher(), partition)
         {
+            Exchanged = true;
         }
     }
 }

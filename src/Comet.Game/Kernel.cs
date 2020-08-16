@@ -27,12 +27,14 @@ using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Routines;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Threading;
+using Comet.Network.Security;
 using Comet.Shared;
 
 #endregion
@@ -121,6 +123,8 @@ namespace Comet.Game
             await AiThread.StartAsync();
             await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
+
+            Blowfish.InitialKey = Encoding.ASCII.GetBytes("DR654dt34trg4UI6");
             return true;
         }
 

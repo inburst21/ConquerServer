@@ -64,6 +64,8 @@ namespace Comet.Game.Packets
 
             Bless = (byte) item.Blessing;
             Enchantment = item.Enchantment;
+            Color = item.Color;
+            IsLocked = item.IsLocked() || item.IsUnlocking();
         }
 
         public uint Identity { get; set; }
@@ -78,7 +80,9 @@ namespace Comet.Game.Packets
         public byte Plus { get; set; }
         public byte Bless { get; set; }
         public byte Enchantment { get; set; }
-
+        public bool IsSuspicious { get; set; }
+        public Item.ItemColor Color { get; set; }
+        public bool IsLocked { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -100,10 +104,17 @@ namespace Comet.Game.Packets
             writer.Write((byte) SocketOne); // 24
             writer.Write((byte) SocketTwo); // 25
             writer.Write((byte) Effect); // 26
+            writer.Write((byte) 0); // 27
+            writer.Write(Plus); // 28
+            writer.Write(Bless); // 29
+            writer.Write(Enchantment); // 30
+            writer.Write(0);
+            writer.Write((byte)0);
+            writer.Write(IsSuspicious);
             writer.Write((byte) 0);
-            writer.Write(Plus); // 27
-            writer.Write(Bless); // 28
-            writer.Write(Enchantment); // 29
+            writer.Write(IsLocked);
+            writer.Write((byte)0);
+            writer.Write((int) Color);
             return writer.ToArray();
         }
 

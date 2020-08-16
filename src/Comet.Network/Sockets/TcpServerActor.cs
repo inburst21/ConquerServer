@@ -49,6 +49,8 @@ namespace Comet.Network.Sockets
         public readonly uint Partition;
         private readonly object SendLock;
 
+        public byte[] Footer = null;
+
         /// <summary>
         ///     Instantiates a new instance of <see cref="TcpServerActor" /> using an accepted
         ///     client socket and preallocated buffer from the server listener.
@@ -70,11 +72,12 @@ namespace Comet.Network.Sockets
             SendLock = new object();
         }
 
+        public bool Exchanged = false;
+
         /// <summary>
         ///     Returns the remote IP address of the connected client.
         /// </summary>
-        public string IPAddress =>
-            (Socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
+        public string IPAddress =>  (Socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
 
         /// <summary>
         ///     Sends a packet to the game client after encrypting bytes. This may be called
@@ -86,7 +89,8 @@ namespace Comet.Network.Sockets
         public virtual Task<int> SendAsync(byte[] packet)
         {
             var encrypted = new byte[packet.Length];
-            BitConverter.TryWriteBytes(packet, (ushort) packet.Length);
+            if (Exchanged)
+                BitConverter.TryWriteBytes(packet, (ushort) (packet.Length - (Footer?.Length ?? 0)));
             lock (SendLock)
             {
                 try

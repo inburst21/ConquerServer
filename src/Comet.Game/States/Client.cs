@@ -19,13 +19,19 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define BLOWFISH
+
 #region References
 
 using System;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
+using Comet.Game.World.Security;
+using Comet.Network.Packets;
 using Comet.Network.Security;
 using Comet.Network.Sockets;
+using Comet.Shared;
 
 #endregion
 
@@ -52,8 +58,11 @@ namespace Comet.Game.States
         /// <param name="buffer">Preallocated buffer from the server listener</param>
         /// <param name="partition">Packet processing partition</param>
         public Client(Socket socket, Memory<byte> buffer, uint partition)
-            : base(socket, buffer, new TQCipher(), partition)
+            : base(socket, buffer, new Blowfish(), partition)
         {
+            Exchange = new NetDragonDHKeyExchange();
+
+            Footer = Encoding.ASCII.GetBytes("TQServer");
         }
 
         // Client unique identifier
@@ -61,10 +70,20 @@ namespace Comet.Game.States
         public uint AccountIdentity { get; set; }
         public byte VipLevel { get; set; }
 
+        public NetDragonDHKeyExchange Exchange { get; }
+
         public override Task<int> SendAsync(byte[] packet)
         {
+#if BLOWFISH
+            byte[] buffer = new byte[packet.Length + 8];
+            System.Buffer.BlockCopy(packet, 0, buffer, 0, packet.Length);
+            System.Buffer.BlockCopy(Footer, 0, buffer, buffer.Length - 8, Footer.Length);
+            Kernel.NetworkMonitor.Send(buffer.Length);
+            return base.SendAsync(buffer);
+#else
             Kernel.NetworkMonitor.Send(packet.Length);
             return base.SendAsync(packet);
+#endif
         }
     }
 }

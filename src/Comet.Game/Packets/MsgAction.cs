@@ -56,6 +56,7 @@ namespace Comet.Game.Packets
         // Packet Properties
         public uint Timestamp { get; set; }
         public uint Identity { get; set; }
+        public uint Data { get; set; }
         public uint Command { get; set; }
 
         public ushort CommandX
@@ -99,6 +100,7 @@ namespace Comet.Game.Packets
             Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadUInt32();
             Identity = reader.ReadUInt32();
+            //Data = reader.ReadUInt32();
             Command = reader.ReadUInt32();
             Argument = reader.ReadUInt32();
             Direction = reader.ReadUInt16();
@@ -117,6 +119,7 @@ namespace Comet.Game.Packets
             writer.Write((ushort) Type);
             writer.Write(Timestamp);
             writer.Write(Identity);
+            //writer.Write(Data);
             writer.Write(Command);
             writer.Write(Argument);
             writer.Write(Direction);

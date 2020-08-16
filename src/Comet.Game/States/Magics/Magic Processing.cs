@@ -480,18 +480,18 @@ namespace Comet.Game.States.Magics
         {
             int nRange = (int)m_pMagic.Distance + 2;
             const int nWidth = DEFAULT_MAGIC_FAN + 30;
-            long nExp = 0;
+            long nExp = 0, battleExp = 0;
 
             List<Role> setTarget = new List<Role>();
             var targets = m_pOwner.Map.Query9BlocksByPos(m_pOwner.MapX, m_pOwner.MapY);
+            Point center = new Point(m_pOwner.MapX, m_pOwner.MapY);
             foreach (var target in targets)
             {
                 if (target.Identity == m_pOwner.Identity)
                     continue;
 
                 Point posThis = new Point(target.MapX, target.MapY);
-                if (!ScreenCalculations.IsInFan(posThis, new Point(m_pOwner.MapX, m_pOwner.MapY), nRange, nWidth,
-                    m_targetPos))
+                if (!ScreenCalculations.IsInFan(center, m_targetPos, posThis, nWidth-30, nRange))
                     continue;
 
                 if (target.IsAttackable(m_pOwner)
@@ -502,8 +502,8 @@ namespace Comet.Game.States.Magics
             MsgMagicEffect msg = new MsgMagicEffect
             {
                 AttackerIdentity = m_pOwner.Identity,
-                MapX = m_pOwner.MapX,
-                MapY = m_pOwner.MapY,
+                MapX = (ushort) m_targetPos.X,
+                MapY = (ushort) m_targetPos.Y,
                 MagicIdentity = magic.Type,
                 MagicLevel = magic.Level
             };
@@ -515,15 +515,21 @@ namespace Comet.Game.States.Magics
             {
                 var result = await m_pOwner.BattleSystem.CalcPower(byMagic, m_pOwner, target);
 
-                if (msg.Count < _MAX_TARGET_NUM)
-                    msg.Append(target.Identity, result.Damage, true);
+                if (msg.Count >= _MAX_TARGET_NUM)
+                {
+                    await m_pOwner.BroadcastRoomMsgAsync(msg, true);
+                    msg.ClearTargets();
+                }
+                
+                msg.Append(target.Identity, result.Damage, true);
 
                 int lifeLost = (int)Math.Min(target.Life, result.Damage);
                 await target.BeAttack(byMagic, m_pOwner, lifeLost, true);
 
                 if (user != null && target is Monster monster)
                 {
-                    nExp += user.AdjustExperience(monster, lifeLost, false);
+                    nExp += lifeLost;
+                    battleExp += user.AdjustExperience(monster, lifeLost, false);
                     if (!monster.IsAlive)
                     {
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
@@ -551,7 +557,7 @@ namespace Comet.Game.States.Magics
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
-            await AwardExp(nExp, nExp, false, magic);
+            await AwardExp(battleExp, nExp, false, magic);
             return true;
         }
 
@@ -1121,7 +1127,7 @@ namespace Comet.Game.States.Magics
         public async Task<bool> AwardExpOfLife(Role pTarget, int nLifeLost, bool bMagicRecruit = false)
         {
             Character pOwner = m_pOwner as Character;
-            if ((pTarget.IsMonster()) && pOwner != null) // todo check if dynamic npc
+            if ((pTarget.IsMonster()) && pOwner != null || pTarget is DynamicNpc dynamicNpc && dynamicNpc.IsGoal()) // todo check if dynamic npc
             {
                 int exp = nLifeLost;
                 long battleExp = pOwner.AdjustExperience(pTarget, nLifeLost, false);

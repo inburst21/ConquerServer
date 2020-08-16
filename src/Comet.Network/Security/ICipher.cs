@@ -40,6 +40,9 @@ namespace Comet.Network.Security
         /// <param name="seeds">Initialized seeds for generating keys</param>
         void GenerateKeys(object[] seeds);
 
+        bool SetDecryptionIV(byte[] iv);
+        bool SetEncryptionIV(byte[] iv);
+
         /// <summary>Decrypts data from the client</summary>
         /// <param name="src">Source span that requires decrypting</param>
         /// <param name="dst">Destination span to contain the decrypted result</param>

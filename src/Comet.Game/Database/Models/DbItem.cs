@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -145,14 +146,9 @@ namespace Comet.Game.Database.Models
         ///     the unlock time.
         /// </summary>
         [Column("plunder")]
-        public virtual uint Plunder { get; set; }
+        public virtual DateTime? Plunder { get; set; }
 
-        /// <summary>
-        ///     The remaining time for an item to disappear.
-        /// </summary>
-        [Column("remaining_time")]
-        public virtual uint RemainingTime { get; set; }
-
+        
         /// <summary>
         ///     Forbbiden or not?
         /// </summary>
@@ -163,7 +159,7 @@ namespace Comet.Game.Database.Models
         ///     The color of the item.
         /// </summary>
         [Column("color")]
-        public virtual byte Color { get; set; }
+        public virtual uint Color { get; set; }
 
         /// <summary>
         ///     The progress of the plus.
@@ -177,70 +173,13 @@ namespace Comet.Game.Database.Models
         [Column("monopoly")]
         public virtual byte Monopoly { get; set; }
 
-        /// <summary>
-        ///     If the item is inscribed or not.
-        /// </summary>
-        [Column("inscribed")]
-        public virtual byte Inscribed { get; set; }
+        [Column("syndicate")]
+        public virtual uint Syndicate { get; set; }
 
-        /// <summary>
-        ///     The kind of Artifact (or DragonSoul).
-        /// </summary>
-        [Column("artifact_type")]
-        public virtual uint ArtifactType { get; set; }
+        [Column("del_time")]
+        public virtual DateTime? DeleteTime { get; set; }
 
-        /// <summary>
-        ///     The unix timestamp of when the artifact has been activated.
-        /// </summary>
-        [Column("artifact_start")]
-        public virtual uint ArtifactStart { get; set; }
-
-        /// <summary>
-        ///     The unix timestamp of when the artifact will expire.
-        /// </summary>
-        [Column("artifact_expire")]
-        public virtual uint ArtifactExpire { get; set; }
-
-        /// <summary>
-        ///     The amount of Stabilization Points of the artifact.
-        /// </summary>
-        [Column("artifact_stabilization")]
-        public virtual uint ArtifactStabilization { get; set; }
-
-        /// <summary>
-        ///     The kind of refinery. (Critical-Strike)
-        /// </summary>
-        [Column("refinery_type")]
-        public virtual uint RefineryType { get; set; }
-
-        /// <summary>
-        ///     The level of the refinery.
-        /// </summary>
-        [Column("refinery_level")]
-        public virtual byte RefineryLevel { get; set; }
-
-        /// <summary>
-        ///     The unix timestamp of when the refinery has been activated.
-        /// </summary>
-        [Column("refinery_start")]
-        public virtual uint RefineryStart { get; set; }
-
-        /// <summary>
-        ///     When the refinery will expire.
-        /// </summary>
-        [Column("refinery_expire")]
-        public virtual uint RefineryExpire { get; set; }
-
-        /// <summary>
-        ///     The amount of Stabilization Points of the refinery.
-        /// </summary>
-        [Column("refinery_stabilization")]
-        public virtual uint RefineryStabilization { get; set; }
-
-        /// <summary>
-        ///     The amount of items stacked.
-        /// </summary>
-        [Column("stack_amount")]
-        public virtual ushort StackAmount { get; set; }
+        [Column("save_time")] 
+        public virtual DateTime? SaveTime { get; set; }
     }
 }

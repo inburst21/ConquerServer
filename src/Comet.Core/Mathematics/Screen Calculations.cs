@@ -80,35 +80,37 @@ namespace Comet.Core.Mathematics
             return number * y;
         }
 
-        public static double GetRadian(double posSourX, double posSourY, double posTargetX, double posTargetY)
+        public static double GetRadian(int sourceX, int sourceY, int targetX, int targetY)
         {
-            const double pi = 3.1415926535f;
-            double fDeltaX = posTargetX - posSourX;
-            double fDeltaY = posTargetY - posSourY;
-            double fDistance = SquareRootFloat(fDeltaX * fDeltaX + fDeltaY * fDeltaY);
-            if (fDeltaX <= fDistance && fDistance > 0)
-                return 0f;
-            double fRadian = Math.Asin(fDeltaX / fDistance);
-            return (double)(fDeltaY > 0 ? pi / 2 - fRadian : pi + fRadian + pi / 2);
+            if (!(sourceX != targetX || sourceY != targetY)) return 0f;
+
+            var deltaX = targetX - sourceX;
+            var deltaY = targetY - sourceY;
+            var distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            if (!(deltaX <= distance && distance > 0)) return 0f;
+            var radian = Math.Asin(deltaX / distance);
+
+            return deltaY > 0 ? (Math.PI / 2 - radian) : (Math.PI + radian + Math.PI / 2);
         }
 
-        public static bool IsInFan(Point pos, Point posSource, int nRange, int nWidth, Point posCenter)
+        public static bool IsInFan(Point center, Point source, Point target, int width, int range)
         {
-            if (nWidth <= 0 || nWidth > 360)
+            if (width <= 0 || width > 360)
                 return false;
 
-            if (posCenter.X == posSource.X && posCenter.Y == posSource.Y)
+            if (center.X == source.X && center.Y == source.Y)
                 return false;
-            if (pos.X == posSource.X && pos.Y == posSource.Y)
+            if (target.X == source.X && target.Y == source.Y)
                 return false;
 
-            if (GetDistance((ushort)posSource.X, (ushort)posSource.Y, (ushort)pos.X, (ushort)pos.Y) > nRange)
+            if (GetDistance((ushort)center.X, (ushort)center.Y, (ushort)target.X, (ushort)target.Y) > range)
                 return false;
 
             const double pi = 3.1415926535d;
-            double fRadianDelta = pi * nWidth / 180d / 2d;
-            double fCenterLine = GetRadian(posSource.X, posSource.Y, posCenter.X, posCenter.Y);
-            double fTargetLine = GetRadian(posSource.X, posSource.Y, pos.X, pos.Y);
+            double fRadianDelta = pi * width / 180d;
+            double fCenterLine = GetRadian(center.X, center.Y, source.X, source.Y);
+            double fTargetLine = GetRadian(center.X, center.Y, target.X, target.Y);
             double fDelta = Math.Abs(fCenterLine - fTargetLine);
             if (fDelta <= fRadianDelta || fDelta >= 2 * pi - fRadianDelta)
                 return true;

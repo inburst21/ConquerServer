@@ -123,6 +123,16 @@ namespace Comet.Network.Security
             EncryptCounter = 0;
         }
 
+        public bool SetDecryptionIV(byte[] iv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetEncryptionIV(byte[] iv)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         ///     Decrypts the specified span by XORing the source span with the cipher's
         ///     keystream. The source and destination may be the same slice, but otherwise

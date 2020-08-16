@@ -65,12 +65,6 @@ namespace Comet.Game.Packets
             LeftHand = user.LeftHand?.Type ?? 0;
             LeftHandColor = (ushort) (user.LeftHand?.Color ?? Item.ItemColor.None);
             Armor = user.Armor?.Type ?? 0;
-
-#if NO_COLOR
-            if (Armor != 0)
-                Armor += (uint) (user.Armor?.Color ?? 0) * 100;
-#endif
-
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
@@ -226,6 +220,10 @@ namespace Comet.Game.Packets
             writer.Write(NobilityRank); // 68
             writer.Write(NobilityIdentity); // 72
             writer.Write(NobilityPosition); // 76
+            writer.Write(0);
+            writer.Write(HelmetColor);
+            writer.Write(ArmorColor);
+            writer.Write(LeftHandColor);
             writer.Write(new List<string> // 80
             {
                 Name,

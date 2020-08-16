@@ -23,6 +23,7 @@
 
 using System;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Comet.Network.Packets;
 
 #endregion
@@ -39,6 +40,8 @@ namespace Comet.Network.Sockets
     public abstract class TcpServerEvents<TActor>
         where TActor : TcpServerActor
     {
+        protected delegate Task<bool> Exchange(TActor actor, byte[] packet);
+
         /// <summary>
         ///     Invoked by the server listener's Accepting method to create a new server actor
         ///     around the accepted client socket. Gives the server an opportunity to initialize
@@ -48,6 +51,8 @@ namespace Comet.Network.Sockets
         /// <param name="buffer">Preallocated buffer from the server listener</param>
         /// <returns>A new instance of a TActor around the client socket</returns>
         protected abstract TActor Accepted(Socket socket, Memory<byte> buffer);
+
+        protected Exchange Exchanging;
 
         /// <summary>
         ///     Invoked by the server listener's Receiving method to process a completed packet

@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Data;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Shared;
@@ -125,6 +126,37 @@ namespace Comet.Game.Database
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
                 return false;
             }
+        }
+
+        public async Task<DataTable> SelectAsync(string query)
+        {
+            var result = new DataTable();
+            var connection = Database.GetDbConnection();
+            var state = connection.State;
+
+            try
+            {
+                if (state != ConnectionState.Open)
+                    await connection.OpenAsync();
+
+                var command = connection.CreateCommand();
+                command.CommandText = query;
+                command.CommandType = CommandType.Text;
+
+                await using var reader = await command.ExecuteReaderAsync();
+                result.Load(reader);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                if (state != ConnectionState.Closed)
+                    await connection.CloseAsync();
+            }
+
+            return result;
         }
     }
 }

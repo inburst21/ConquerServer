@@ -95,6 +95,16 @@ namespace Comet.Network.Security
             }
         }
 
+        public bool SetDecryptionIV(byte[] iv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetEncryptionIV(byte[] iv)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         ///     Decrypts bytes from the client. If the buffer passed is not a multiple of
         ///     the word size divisor in bytes, then pads the buffer with zeroes. The source

@@ -112,13 +112,64 @@ namespace Comet.Network.Sockets
                     var socket = await Socket.AcceptAsync();
                     var actor = Accepted(socket, buffer);
 
-                    // Start receiving data from the client connection
                     var task = ReceiveTasks
                         .StartNew(ReceivingAsync, actor, ShutdownToken.Token)
                         .ConfigureAwait(false);
                 }
             }
         }
+
+        //private async Task ExchangingAsync(object state)
+        //{
+        //    // Initialize multiple receive variables
+        //    var actor = state as TActor;
+        //    int consumed = 0, examined = 0, remaining = 0;
+
+        //    while (actor.Socket.Connected && !this.ShutdownToken.IsCancellationRequested)
+        //    {
+        //        // Receive data from the client socket
+        //        try
+        //        {
+        //            examined = await actor.Socket.ReceiveAsync(
+        //                actor.Buffer.Slice(remaining),
+        //                SocketFlags.None,
+        //                this.ShutdownToken.Token);
+
+        //            if (examined == 0)
+        //            {
+        //                // Disconnect the client
+        //                Disconnecting(actor);
+        //                return;
+        //            }
+        //        }
+        //        catch
+        //        {
+        //            // Disconnect the client
+        //            Disconnecting(actor);
+        //            return;
+        //        }
+
+        //        // Decrypt traffic
+        //        actor.Cipher.Decrypt(
+        //            actor.Buffer.Slice(remaining, examined).Span,
+        //            actor.Buffer.Slice(remaining, examined).Span);
+
+        //        // Handle splitting and processing of data
+        //        if (!await Exchanging(actor, actor.Buffer.Span.Slice(consumed, actor.Buffer.Span.Length).ToArray()))
+        //        {
+        //            // Disconnect the client
+        //            Disconnecting(actor);
+        //            return;
+        //        }
+
+        //        break;
+        //    }
+
+        //    // Start receiving data from the client connection
+        //    var task = ReceiveTasks
+        //        .StartNew(ReceivingAsync, actor, ShutdownToken.Token)
+        //        .ConfigureAwait(false);
+        //}
 
         /// <summary>
         ///     Receiving receives bytes from the accepted client socket when bytes become
@@ -132,7 +183,8 @@ namespace Comet.Network.Sockets
             // Initialize multiple receive variables
             var actor = state as TActor;
             int consumed = 0, examined = 0, remaining = 0;
-            while (actor.Socket.Connected && !this.ShutdownToken.IsCancellationRequested)
+
+            if (Exchanging != null && actor?.Socket.Connected == true && !this.ShutdownToken.IsCancellationRequested)
             {
                 // Receive data from the client socket
                 try
@@ -141,13 +193,51 @@ namespace Comet.Network.Sockets
                         actor.Buffer.Slice(remaining),
                         SocketFlags.None,
                         this.ShutdownToken.Token);
+
+                    if (examined == 0)
+                    {
+                        // Disconnect the client
+                        Disconnecting(actor);
+                        return;
+                    }
+                }
+                catch
+                {
+                    // Disconnect the client
+                    Disconnecting(actor);
+                    return;
+                }
+
+                // Decrypt traffic
+                actor.Cipher.Decrypt(
+                    actor.Buffer.Slice(remaining, examined).Span,
+                    actor.Buffer.Slice(remaining, examined).Span);
+
+                // Handle splitting and processing of data
+                if (!await Exchanging(actor, actor.Buffer.Span.Slice(consumed, actor.Buffer.Span.Length).ToArray()))
+                {
+                    // Disconnect the client
+                    Disconnecting(actor);
+                    return;
+                }
+            }
+
+            while (actor?.Socket.Connected == true && !this.ShutdownToken.IsCancellationRequested)
+            {
+                // Receive data from the client socket
+                try
+                {
+                    examined = await actor.Socket.ReceiveAsync(
+                        actor.Buffer.Slice(remaining),
+                        SocketFlags.None,
+                        this.ShutdownToken.Token);
+
+                    if (examined == 0) break;
                 }
                 catch
                 {
                     break;
                 }
-
-                if (examined == 0) break;
 
                 // Decrypt traffic
                 actor.Cipher.Decrypt(
@@ -181,9 +271,9 @@ namespace Comet.Network.Sockets
             while (consumed + 2 < examined)
             {
                 var length = BitConverter.ToUInt16(buffer.Slice(consumed, 2));
-                if (consumed + length > examined) break;
+                if (consumed + length + (actor.Footer?.Length ?? 0) > examined) break;
                 Received(actor, buffer.Slice(consumed, length));
-                consumed += length;
+                consumed += length + (actor.Footer?.Length ?? 0);
             }
         }
 

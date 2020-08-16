@@ -87,6 +87,7 @@ namespace Comet.Game.States.Items
             m_info.Addition = nPlus;
             m_info.ReduceDamage = nDmg;
             m_info.MaximumDurability = nDura;
+            m_info.Color = Item.ItemColor.Orange;
 
             m_itemtype = idType;
             m_info.Type = m_itemtype.Type;
@@ -220,24 +221,24 @@ namespace Comet.Game.States.Items
 
                 if (Item.GetQuality(Itemtype) == 6)
                 {
-                    message += $"Refined[{Itemtype}]";
+                    message += "Refined";
                 }
                 else if (Item.GetQuality(Itemtype) == 7)
                 {
-                    message += $"Unique[{Itemtype}]";
+                    message += "Unique";
                 }
                 else if (Item.GetQuality(Itemtype) == 8)
                 {
-                    message += $"Elite[{Itemtype}]";
+                    message += "Elite";
                 }
                 else if (Item.GetQuality(Itemtype) == 9)
                 {
-                    message += $"Super[{Itemtype}]";
+                    message += "Super";
                 }
 
                 if (sort == Item.ItemSort.ItemsortWeaponSingleHand
                     && sort == Item.ItemSort.ItemsortWeaponDoubleHand
-                    && await Kernel.ChanceCalcAsync(1, 70)) // socketed item
+                    && await Kernel.ChanceCalcAsync(10, 500)) // socketed item
                 {
                     message += "(SocketNum: 1)";
                     m_info.SocketNum = 1;
@@ -268,7 +269,7 @@ namespace Comet.Game.States.Items
 
                 if (!string.IsNullOrEmpty(message))
                 {
-                    await Log.WriteLog("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}] {message}");
+                    await Log.WriteLog("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}][{Itemtype}]{message}");
                 }
             }
         }
@@ -284,7 +285,7 @@ namespace Comet.Game.States.Items
 
                 await m_itemInfo.CreateAsync(m_itemtype);
 
-                m_itemInfo.Color = Item.ItemColor.Orange;
+                m_itemInfo.Color = m_info.Color;
 
                 m_itemInfo.ChangeAddition(m_info.Addition);
                 m_itemInfo.ReduceDamage = m_info.ReduceDamage;

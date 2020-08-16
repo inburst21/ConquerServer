@@ -23,10 +23,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Packets;
+using Comet.Game.States.Items;
 using Comet.Network.RPC;
 using Comet.Shared;
 using Comet.Shared.Models;
@@ -92,6 +96,8 @@ namespace Comet.Game
             tasks = new List<Task>();
             tasks.Add(Kernel.Services.Randomness.StartAsync(CancellationToken.None));
             Task.WaitAll(tasks.ToArray());
+
+            // await ConvertItemsAsync();
 
             // Start the RPC server listener
             await Log.WriteLog(LogLevel.Message, "Launching server listeners...");
@@ -159,9 +165,74 @@ namespace Comet.Game
 
                 switch (full[0].ToLower())
                 {
-                   
+                    case "/players":
+
+                        break;
                 }
             }
+        }
+
+        private static async Task ConvertItemsAsync()
+        {
+            await using ServerDbContext ctx = new ServerDbContext();
+            await using StreamWriter writer = new StreamWriter("cq_item_convert.sql", false, Encoding.ASCII);
+
+            await writer.WriteLineAsync($"##############################################################################");
+            await writer.WriteLineAsync($"# ");
+            await writer.WriteLineAsync($"# Players items exportation and converting tool");
+            await writer.WriteLineAsync($"# {Environment.CurrentDirectory}");
+            await writer.WriteLineAsync($"# {Environment.UserName} - {DateTime.Now:U}");
+            await writer.WriteLineAsync($"# ");
+            await writer.WriteLineAsync($"##############################################################################");
+
+            int count = 0;
+            DataTable oldItems = await ctx.SelectAsync("SELECT * FROM cq_item_old");
+            foreach (DataRow row in oldItems.Rows)
+            {
+                uint type = uint.Parse(row["type"].ToString());
+                byte newColor = byte.Parse(row["color"].ToString());
+                if (Item.IsShield(type) || Item.IsArmor(type) || Item.IsHelmet(type))
+                {
+                    uint oldType = type;
+                    int color = (int)(type % 1000 / 100);
+                    if (color > 1)
+                        newColor = (byte) Math.Max(3, color);
+                    type = (uint)(type - color * 100);
+                    _ = Log.GmLog($"ItemColorChangeType", $"PlayerId: {row["player_id"]}, OwnerId: {row["owner_id"]}, OldType: {oldType}, NewType: {type}");
+                }
+                
+                Dictionary<string, string> kvp = new Dictionary<string, string>();
+                kvp.Add("`id`", row["id"].ToString());
+                kvp.Add("`type`", type.ToString());
+                kvp.Add("`owner_id`", row["owner_id"].ToString());
+                kvp.Add("`player_id`", row["player_id"].ToString());
+                kvp.Add("`amount`", row["amount"].ToString());
+                kvp.Add("`amount_limit`", row["amount_limit"].ToString());
+                kvp.Add("`ident`", row["ident"].ToString());
+                kvp.Add("`position`", row["position"].ToString());
+                kvp.Add("`gem1`", row["gem1"].ToString());
+                kvp.Add("`gem2`", row["gem2"].ToString());
+                kvp.Add("`magic1`", row["magic1"].ToString());
+                kvp.Add("`magic2`", row["magic2"].ToString());
+                kvp.Add("`magic3`", row["magic3"].ToString());
+                kvp.Add("`data`", row["data"].ToString());
+                kvp.Add("`reduce_dmg`", row["reduce_dmg"].ToString());
+                kvp.Add("`add_life`", row["add_life"].ToString());
+                kvp.Add("`anti_monster`", row["anti_monster"].ToString());
+                kvp.Add("`chk_sum`", row["chk_sum"].ToString());
+                kvp.Add("`SpecialFlag`", row["SpecialFlag"].ToString());
+                kvp.Add("`color`", newColor.ToString());
+                kvp.Add("`Addlevel_exp`", row["Addlevel_exp"].ToString());
+                kvp.Add("`monopoly`", row["monopoly"].ToString());
+
+                string query = $"INSERT INTO `cq_item` ({string.Join(",", kvp.Keys)}) VALUES ({string.Join(",", kvp.Values)});";
+
+                await writer.WriteLineAsync(query);
+                count++;
+            }
+
+            writer.Close();
+            await Log.WriteLog(LogLevel.Debug, $"Converted items: {count}");
         }
     }
 }

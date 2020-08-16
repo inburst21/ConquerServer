@@ -1084,6 +1084,11 @@ namespace Comet.Game.States.Items
             return m_dicInventory.Values.FirstOrDefault(x => x.Type == type);
         }
 
+        public Item FindByIdentity(uint id)
+        {
+            return m_dicEquipment.Values.FirstOrDefault(x => x.Identity == id) ?? m_dicInventory.Values.FirstOrDefault(x => x.Identity == id);
+        }
+
         public enum RemovalType
         {
             /// <summary>

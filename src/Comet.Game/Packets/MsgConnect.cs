@@ -91,7 +91,7 @@ namespace Comet.Game.Packets
             }
 
             // Generate new keys and check for an existing character
-            client.Cipher.GenerateKeys(new object[] {Token});
+            //client.Cipher.GenerateKeys(new object[] {Token});
             var character = await CharactersRepository.FindAsync(auth.AccountID);
             client.AccountIdentity = auth.AccountID;
             client.VipLevel = auth.VipLevel;
@@ -113,6 +113,11 @@ namespace Comet.Game.Packets
                     client.Character.MateName = (await CharactersRepository.FindByIdentityAsync(client.Character.MateIdentity))?.Name ?? Game.Language.StrNone;
                     await client.SendAsync(LoginOk);
                     await client.SendAsync(new MsgUserInfo(client.Character));
+                    await client.SendAsync(new MsgData(DateTime.Now));
+
+#if DEBUG
+                    await client.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}");
+#endif
                 }
             }
         }

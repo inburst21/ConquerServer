@@ -2274,7 +2274,7 @@ namespace Comet.Game.States
 
         public async Task<bool> RebirthAsync(ushort prof, ushort look)
         {
-            DbRebirth data = Kernel.RoleManager.GetRebirth(Profession, prof, Metempsychosis);
+            DbRebirth data = Kernel.RoleManager.GetRebirth(Profession, prof, Metempsychosis + 1);
 
             if (data == null)
             {
@@ -2311,9 +2311,9 @@ namespace Comet.Game.States
                 UserPackage[pos]?.DegradeItem(false);
             }
 
-            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf, prof/10)?.Magics;
-            var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf, prof/10)?.Magics;
-            var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf, prof/10)?.Magics;
+            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf/10, prof/10)?.Magics;
+            var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf / 10, prof/10)?.Magics;
+            var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf / 10, prof/10)?.Magics;
 
             if (removeSkills != null)
             {
@@ -2341,6 +2341,9 @@ namespace Comet.Game.States
 
             if (!UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == false)
                 await UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
+
+            if (UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true && ProfessionSort != 4)
+                await UserPackage.UnequipAsync(Item.ItemPosition.RightHand);
 
             return true;
         }
@@ -2409,7 +2412,7 @@ namespace Comet.Game.States
             await SetAttributesAsync(ClientUpdateType.XpCircle, 0);
 
             if (newLook > 0 && newLook != Mesh % 10)
-                await SetAttributesAsync(ClientUpdateType.Mesh, Mesh - Mesh % 10 + newLook);
+                await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
 
             await SetAttributesAsync(ClientUpdateType.Level, newLev);
             await SetAttributesAsync(ClientUpdateType.Experience, 0);
@@ -2417,18 +2420,18 @@ namespace Comet.Game.States
             if (mete == 0)
             {
                 FirstProfession = Profession;
-                
+                mete++;
             }
             else if (mete == 1)
             {
                 PreviousProfession = Profession;
+                mete++;
             }
             else
             {
                 FirstProfession = PreviousProfession;
                 PreviousProfession = Profession;
             }
-
             await SetAttributesAsync(ClientUpdateType.Class, newProf);
             await SetAttributesAsync(ClientUpdateType.Reborn, mete);
             await SaveAsync();
@@ -2438,7 +2441,7 @@ namespace Comet.Game.States
         {
             int points = 0;
 
-            if (metempsychosis == 1)
+            if (metempsychosis == 0)
             {
                 if (oldProf == HIGHEST_WATER_WIZARD_PROF)
                 {
@@ -3320,7 +3323,7 @@ namespace Comet.Game.States
                 else
                     await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1);
 
-                await AttachStatus(this, 33, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
+                await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
             }
         }
 

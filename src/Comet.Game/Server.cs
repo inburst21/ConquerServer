@@ -23,14 +23,17 @@
 
 using System;
 using System.Net.Sockets;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Network.Packets;
+using Comet.Network.Security;
 using Comet.Network.Sockets;
 using Comet.Shared;
+using Org.BouncyCastle.Utilities.Encoders;
 
 #endregion
 
@@ -54,8 +57,21 @@ namespace Comet.Game
         /// <param name="config">The server's read configuration file</param>
         public Server(ServerConfiguration config) : base(config.GameNetwork.MaxConn)
         {
+            Exchanging = DoExchangeAsync;
+
             Processor = new PacketProcessor<Client>(ProcessAsync);
             Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task<bool> DoExchangeAsync(Client actor, byte[] packet)
+        {// Validate connection
+            if (!actor.Socket.Connected)
+                return false;
+
+            MsgLoginProofA msg = new MsgLoginProofA();
+            msg.Decode(packet);
+            await msg.ProcessAsync(actor);
+            return true;
         }
 
         /// <summary>
@@ -69,8 +85,13 @@ namespace Comet.Game
         protected override Client Accepted(Socket socket, Memory<byte> buffer)
         {
             uint partition = Processor.SelectPartition();
-            return new Client(socket, buffer, partition);
+            Client client = new Client(socket, buffer, partition);
+
+            _ = client.SendAsync(client.Exchange.Request());
+            return client;
         }
+
+        
 
         /// <summary>
         ///     Invoked by the server listener's Receiving method to process a completed packet
@@ -196,6 +217,10 @@ namespace Comet.Game
                         msg = new MsgDataArray();
                         break;
 
+                    case PacketType.MsgEquipLock:
+                        msg = new MsgEquipLock();
+                        break;
+
                     case PacketType.MsgPigeon:
                         msg = new MsgPigeon();
                         break;
@@ -237,7 +262,7 @@ namespace Comet.Game
         {
             if (actor == null)
             {
-                Console.WriteLine("Disconnected with actor null ???");
+                Console.WriteLine(@"Disconnected with actor null ???");
                 return;
             }
             

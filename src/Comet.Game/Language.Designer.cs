@@ -268,6 +268,42 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item is already locked..
+        /// </summary>
+        public static string StrEquipLockAlreadyLocked {
+            get {
+                return ResourceManager.GetString("StrEquipLockAlreadyLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This equipment is already unlocking..
+        /// </summary>
+        public static string StrEquipLockAlreadyUnlocking {
+            get {
+                return ResourceManager.GetString("StrEquipLockAlreadyUnlocking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This equipment cannot be locked..
+        /// </summary>
+        public static string StrEquipLockCantLock {
+            get {
+                return ResourceManager.GetString("StrEquipLockCantLock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This equipment is not locked..
+        /// </summary>
+        public static string StrEquipLockNotLocked {
+            get {
+                return ResourceManager.GetString("StrEquipLockNotLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You are already using an EXP Potion with better power than this. Wait for the old one to finish..
         /// </summary>
         public static string StrExpPotionInUse {

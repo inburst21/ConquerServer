@@ -81,10 +81,7 @@ namespace Comet.Game.States.Items
                 return false;
 
             m_dbItem = item;
-            if (IsArmor(item.Type) || IsShield(item.Type) || IsHelmet(item.Type))
-                m_dbItemtype = Kernel.ItemManager.GetItemtype((uint) (item.Type + ((byte)Color * 100)));
-            else
-                m_dbItemtype = Kernel.ItemManager.GetItemtype(item.Type);
+            m_dbItemtype = Kernel.ItemManager.GetItemtype(item.Type);
 
             if (m_dbItemtype == null)
                 return false;
@@ -156,7 +153,6 @@ namespace Comet.Game.States.Items
                 Type = type,
                 Amount = itemtype.Amount,
                 AmountLimit = itemtype.AmountLimit,
-                StackAmount = 1,
                 Gem1 = itemtype.Gem1,
                 Gem2 = itemtype.Gem2,
                 Monopoly = (byte)(bound ? 3 : itemtype.Monopoly),
@@ -1192,7 +1188,7 @@ namespace Comet.Game.States.Items
                         break;
                 }
 
-                return (int)Math.Ceiling(price * ((MaximumDurability - Durability) / MaximumDurability) * qualityMultiplier);
+                return (int)Math.Ceiling(price * ((MaximumDurability - Durability) / (float)MaximumDurability) * qualityMultiplier);
             }
 
             return 0;
@@ -1237,7 +1233,7 @@ namespace Comet.Game.States.Items
             if (nRecoverDurability == 0)
                 return;
 
-            int nRepairCost = GetRecoverDurCost();
+            int nRepairCost = GetRecoverDurCost() - 1;
 
             if (!await m_user.SpendMoney(Math.Max(1, nRepairCost), true))
                 return;
@@ -1247,7 +1243,70 @@ namespace Comet.Game.States.Items
             await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
             await Log.GmLog("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity, nRepairCost));
         }
-        
+
+        #endregion
+
+        #region Equip Lock
+
+        public async Task<bool> TryUnlockAsync()
+        {
+            if (HasUnlocked())
+            {
+                _ = m_user?.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.UnlockedItem, Identity = Identity });
+                _ = m_user?.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.RequestUnlock, Identity = Identity });
+
+                await DoUnlockAsync();
+                return true;
+            }
+
+            if (IsUnlocking())
+            {
+                _ = m_user?.SendAsync(new MsgEquipLock
+                {
+                    Action = MsgEquipLock.LockMode.RequestUnlock, 
+                    Identity = Identity,
+                    Mode = 3,
+                    Param = (uint)(m_dbItem.Plunder.Value.Year * 10000 + m_dbItem.Plunder.Value.Day * 100 + m_dbItem.Plunder.Value.Month)
+                });
+                return false;
+            }
+
+            return true;
+        }
+
+        public Task SetLockAsync()
+        {
+            m_dbItem.Plunder = DateTime.MinValue;
+            return SaveAsync();
+        }
+
+        public Task SetUnlockAsync()
+        {
+            m_dbItem.Plunder = DateTime.Now.AddDays(3);
+            return SaveAsync();
+        }
+
+        public Task DoUnlockAsync()
+        {
+            m_dbItem.Plunder = null;
+            return SaveAsync();
+        }
+
+        public bool HasUnlocked()
+        {
+            return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue && m_dbItem.Plunder <= DateTime.Now;
+        }
+
+        public bool IsLocked()
+        {
+            return m_dbItem.Plunder != null;
+        }
+
+        public bool IsUnlocking()
+        {
+            return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue && m_dbItem.Plunder > DateTime.Now;
+        }
+
         #endregion
 
         #region Query info
@@ -1259,13 +1318,10 @@ namespace Comet.Game.States.Items
 
         public int GetSellPrice()
         {
-            if (IsBroken() || IsArrowSort() || IsBound)
+            if (IsBroken() || IsArrowSort() || IsBound || IsLocked())
                 return 0;
 
-            int price = (int)(m_dbItemtype?.Price ?? 0);
-            int amount = Math.Min(MaximumDurability, Durability);
-            price = price + Calculations.MulDiv(price, GetQuality() * 5, 100);
-            price = Calculations.MulDiv(price / 3, amount, m_dbItem.AmountLimit);
+            int price = (int)(m_dbItemtype?.Price ?? 0)/3*Durability/MaximumDurability;
             return price;
         }
 
@@ -1337,8 +1393,7 @@ namespace Comet.Game.States.Items
 
         public bool CanBeDropped()
         {
-            // todo check if item is locked
-            return (m_dbItemtype.Monopoly & ITEM_DROP_HINT_MASK) == 0;
+            return (m_dbItemtype.Monopoly & ITEM_DROP_HINT_MASK) == 0 && !IsLocked();
         }
 
         public bool CanBeStored()
@@ -1642,6 +1697,7 @@ namespace Comet.Game.States.Items
                     db.Add(m_dbItem);
                 else
                     db.Update(m_dbItem);
+                m_dbItem.SaveTime = DateTime.Now;
                 return await db.SaveChangesAsync() != 0;
             }
             catch (Exception ex)
@@ -1656,11 +1712,9 @@ namespace Comet.Game.States.Items
         {
             try
             {
-                //await using var db = new ServerDbContext();
-                //db.Remove(m_dbItem);
-                //await db.SaveChangesAsync();
                 await ChangeOwnerAsync(0, type);
                 m_dbItem.OwnerId = 0;
+                m_dbItem.DeleteTime = DateTime.Now;
                 return await SaveAsync();
             }
             catch (Exception ex)

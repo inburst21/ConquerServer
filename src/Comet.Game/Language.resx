@@ -186,6 +186,18 @@
   <data name="StrEmbedTargetNoSocket" xml:space="preserve">
     <value>The target item doesn't have a socket.</value>
   </data>
+  <data name="StrEquipLockAlreadyLocked" xml:space="preserve">
+    <value>This item is already locked.</value>
+  </data>
+  <data name="StrEquipLockAlreadyUnlocking" xml:space="preserve">
+    <value>This equipment is already unlocking.</value>
+  </data>
+  <data name="StrEquipLockCantLock" xml:space="preserve">
+    <value>This equipment cannot be locked.</value>
+  </data>
+  <data name="StrEquipLockNotLocked" xml:space="preserve">
+    <value>This equipment is not locked.</value>
+  </data>
   <data name="StrExpPotionInUse" xml:space="preserve">
     <value>You are already using an EXP Potion with better power than this. Wait for the old one to finish.</value>
   </data>

@@ -223,6 +223,9 @@ namespace Comet.Game.Packets
                     if (item == null)
                         return;
 
+                    if (item.IsLocked())
+                        return;
+
                     int price = item.GetSellPrice();
                     if (!await user.UserPackage.SpendItemAsync(item))
                         return;

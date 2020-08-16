@@ -73,8 +73,16 @@ namespace Comet.Game.States
                 ResetBattle();
                 return false;
             }
-
+            
             Character user = m_owner as Character;
+
+            if (user?.IsBowman == true && !user.Map.IsTrainingMap() && !await user.SpendEquipItem(0050, 1, true))
+            {
+                ResetBattle();
+                return false;
+            }
+
+
             if (user != null && await user.AutoSkillAttack(target))
             {
                 return true;

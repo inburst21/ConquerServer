@@ -197,6 +197,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserVarCompare: result = await ExecuteActionUserVarCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarDefine: result = await ExecuteActionUserVarDefine(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserTestEquipment: result = await ExecuteActionUserTestEquipment(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserExecAction: result = await ExecuteActionUserExecAction(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserTestPos: result = true;  break; // gotta investigate
                     case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
@@ -207,8 +208,12 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserGodTime: result = await ExecuteActionUserGodTime(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserLogEvent: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserExpballExp: result = await ExecuteActionUserExpballExp(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSomethingRelatedToRebirth: result = true; break;
                     case TaskActionType.ActionUserStatusCreate: result = await ExecuteActionUserStatusCreate(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStatusCheck: result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input); break;
+
+                    case TaskActionType.ActionGeneralLottery: result = true; break;
+                    case TaskActionType.ActionAchievements: result = true;  break;
 
                     case TaskActionType.ActionEventSetstatus: result = await ExecuteActionEventSetstatus(action, param, user, role, item, input); break;
                     case TaskActionType.ActionEventDelnpcGenid: result = await ExecuteActionEventDelnpcGenid(action, param, user, role, item, input); break;
@@ -1538,7 +1543,7 @@ namespace Comet.Game.States
                         newItem.AddLife = (byte)Math.Min(byte.MaxValue, value);
                         break;
                     case 10: // plunder
-                        newItem.Plunder = (uint) value;
+                        newItem.Plunder = null;
                         break;
                     case 11: // color
                         if (Enum.IsDefined(typeof(Item.ItemColor), (byte)value))
@@ -2345,8 +2350,6 @@ namespace Comet.Game.States
                 AddLife = 0,
                 AddlevelExp = 0,
                 AntiMonster = 0,
-                ArtifactExpire = 0,
-                ArtifactType = 0,
                 ChkSum = 0,
                 Color = 3,
                 Data = 0,
@@ -2356,13 +2359,8 @@ namespace Comet.Game.States
                 Magic1 = 0,
                 Magic2 = 0,
                 ReduceDmg = 0,
-                Plunder = 0,
+                Plunder = null,
                 Specialflag = 0,
-                Inscribed = 0,
-                StackAmount = 1,
-                RefineryExpire = 0,
-                RefineryLevel = 0,
-                RefineryType = 0,
                 Type = itemtype.Type,
                 Position = 0,
                 PlayerId = user.Identity,
@@ -2418,7 +2416,7 @@ namespace Comet.Game.States
                             newItem.AddLife = (byte)value;
                         break;
                     case 10:
-                        newItem.Plunder = value;
+                        newItem.Plunder = null;
                         break;
                     case 11:
                         if (value == 0)
@@ -3573,8 +3571,8 @@ namespace Comet.Game.States
 
             if (splitParam.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserLog length {action.Identity}, {param}");
-                return false;
+                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserLog length [id:{action.Identity}], {param}");
+                return true;
             }
 
             string file = splitParam[0];
@@ -4336,6 +4334,30 @@ namespace Comet.Game.States
                 default:
                     return false;
             }
+        }
+
+        private static async Task<bool> ExecuteActionUserTestEquipment(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] splitParams = SplitParam(param, 2);
+            if (!ushort.TryParse(splitParams[0], out var pos)
+                || !int.TryParse(splitParams[1], out var type))
+            {
+                await Log.WriteLog(LogLevel.Error,
+                    $"Invalid parsed param ExecuteActionUserTestEquipment, id[{action.Identity}]");
+                return false;
+            }
+
+            if (!Enum.IsDefined(typeof(Item.ItemPosition), pos))
+                return false;
+
+            Item temp = user.UserPackage[(Item.ItemPosition) pos];
+            if (temp == null)
+                return false;
+            return temp.GetItemSubType() == type;
         }
 
         private static async Task<bool> ExecuteActionUserExecAction(DbAction action, string param, Character user, Role role, Item item, string input)
@@ -5494,6 +5516,7 @@ namespace Comet.Game.States
         ActionUserVarCompare = 1060,
         ActionUserVarDefine = 1061,
         ActionUserVarCalc = 1064,
+        ActionUserTestEquipment = 1065,
         ActionUserExecAction = 1071,
         ActionUserTestPos = 1072,
         ActionUserStcCompare = 1073,
@@ -5504,6 +5527,7 @@ namespace Comet.Game.States
         ActionUserGodTime = 1083,
         ActionUserLogEvent = 1085,
         ActionUserExpballExp = 1086,
+        ActionSomethingRelatedToRebirth = 1095,
         ActionUserStatusCreate = 1096,
         ActionUserStatusCheck = 1098,
 
@@ -5519,6 +5543,7 @@ namespace Comet.Game.States
 
         // User -> General
         ActionGeneralLottery = 1508,
+        ActionAchievements = 1554,
 
         ActionUserLimit = 1999,
 

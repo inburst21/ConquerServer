@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.States.Items;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -41,6 +42,7 @@ namespace Comet.Game.Packets
         public uint Itemtype;
         public ushort MapX;
         public ushort MapY;
+        public Item.ItemColor Color;
         public DropType Mode;
 
         /// <summary>
@@ -58,6 +60,7 @@ namespace Comet.Game.Packets
             Itemtype = reader.ReadUInt32();
             MapX = reader.ReadUInt16();
             MapY = reader.ReadUInt16();
+            Color = (Item.ItemColor) reader.ReadUInt16();
             Mode = (DropType) reader.ReadUInt16();
         }
 
@@ -75,6 +78,7 @@ namespace Comet.Game.Packets
             writer.Write(Itemtype);
             writer.Write(MapX);
             writer.Write(MapY);
+            writer.Write((ushort) Color);
             writer.Write((ushort) Mode);
             return writer.ToArray();
         }
