@@ -36,6 +36,8 @@ namespace Comet.Network.Packets
     /// <typeparam name="TClient">Type of client being processed with the packet</typeparam>
     public abstract class MsgBase<TClient> : IPacket
     {
+        public const int MAX_NAME_SIZE = 16;
+
         // Base Properties
         public ushort Length { get; protected set; }
         public PacketType Type { get; protected set; }

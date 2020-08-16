@@ -217,6 +217,10 @@ namespace Comet.Game
                         msg = new MsgDataArray();
                         break;
 
+                    case PacketType.MsgTradeBuddy:
+                        msg = new MsgTradeBuddy();
+                        break;
+
                     case PacketType.MsgEquipLock:
                         msg = new MsgEquipLock();
                         break;
@@ -227,6 +231,18 @@ namespace Comet.Game
 
                     case PacketType.MsgPeerage:
                         msg = new MsgPeerage();
+                        break;
+
+                    case PacketType.MsgGuide:
+                        msg = new MsgGuide();
+                        break;
+
+                    case PacketType.MsgGuideInfo:
+                        msg = new MsgGuideInfo();
+                        break;
+
+                    case PacketType.MsgGuideContribute:
+                        msg = new MsgGuideContribute();
                         break;
 
                     default:

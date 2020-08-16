@@ -79,6 +79,9 @@ namespace Comet.Network.Packets
         MsgPigeon = 2050,
         MsgPigeonQuery = 2051,
         MsgPeerage = 2064,
+        MsgGuide = 2065,
+        MsgGuideInfo = 2066,
+        MsgGuideContribute = 2067,
 
         MsgWalk = 1005,
         MsgAction = 1010,
