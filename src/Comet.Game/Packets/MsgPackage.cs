@@ -60,11 +60,12 @@ namespace Comet.Game.Packets
             public Item.ItemEffect Magic1;
             public byte Magic2;
             public byte Magic3;
-            public byte Blessing;
-            public byte Unknown15;
-            public byte Enchantment;
-            public byte Unknown17;
-            public ushort Unknown18;
+            public ushort Blessing;
+            public ushort Enchantment;
+            public ushort AntiMonster;
+            public bool Suspicious;
+            public bool Locked;
+            public Item.ItemColor Color;
         }
 
         public MsgPackage()
@@ -113,10 +114,12 @@ namespace Comet.Game.Packets
                     writer.Write(item.Magic2); // 12
                     writer.Write(item.Magic3); // 13
                     writer.Write(item.Blessing); // 14
-                    writer.Write(item.Unknown15); // 15
                     writer.Write(item.Enchantment); // 16
-                    writer.Write(item.Unknown17); // 17
-                    writer.Write(item.Unknown18); // 18
+                    writer.Write(item.AntiMonster); // 18
+                    writer.Write(item.Suspicious);
+                    writer.Write((byte)0);
+                    writer.Write(item.Locked);
+                    writer.Write((byte)item.Color);
                 }
             }
             else
@@ -174,7 +177,10 @@ namespace Comet.Game.Packets
                             Blessing = (byte) item.Blessing,
                             Enchantment = item.Enchantment,
                             Magic1 = item.Effect,
-                            Magic3 = item.Plus
+                            Magic3 = item.Plus,
+                            Locked = item.IsLocked(),
+                            Color = item.Color,
+                            Suspicious = false
                         });
                     }
 
