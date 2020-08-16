@@ -582,6 +582,24 @@
   <data name="StrToMakeFriend" xml:space="preserve">
     <value>{0} has sent you a friend request.</value>
   </data>
+  <data name="StrTradeBuddyAlreadyAdded" xml:space="preserve">
+    <value>You're already partners.</value>
+  </data>
+  <data name="StrTradeBuddyAnnouncePartnership" xml:space="preserve">
+    <value>{0} and {1} accepted a trade partnership that will be approved within 3 days.</value>
+  </data>
+  <data name="StrTradeBuddyBrokePartnership0" xml:space="preserve">
+    <value>{0} broke the trade partnership with you.</value>
+  </data>
+  <data name="StrTradeBuddyBrokePartnership1" xml:space="preserve">
+    <value>You broke the trade partnership with {0}.</value>
+  </data>
+  <data name="StrTradeBuddyNotFound" xml:space="preserve">
+    <value>Your partner has not been found.</value>
+  </data>
+  <data name="StrTradeBuddySomethingWrong" xml:space="preserve">
+    <value>Something went wrong when processing your request.</value>
+  </data>
   <data name="StrTradeMuchEmoney" xml:space="preserve">
     <value>[Trade] You cannot trade more than {0:N0} Conquer Points.</value>
   </data>
@@ -592,7 +610,7 @@
     <value>[Trade] Your request has been sent.</value>
   </data>
   <data name="StrTradeSashFull" xml:space="preserve">
-    <value>You cannot trade more items.</value>
+    <value>[Trade] You cannot trade more items.</value>
   </data>
   <data name="StrTradeSuccess" xml:space="preserve">
     <value>[Trade] Trade success.</value>

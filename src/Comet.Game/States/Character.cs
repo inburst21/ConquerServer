@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
@@ -69,6 +70,7 @@ namespace Comet.Game.States
         private TimeOut m_tRevive = new TimeOut();
         private TimeOut m_respawn = new TimeOut();
         private TimeOut m_mine = new TimeOut(2);
+        private TimeOut m_teamLeaderPos = new TimeOut(3);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -2890,6 +2892,113 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Trade Partner
+
+        private Dictionary<uint, TradePartner> m_tradePartners = new Dictionary<uint, TradePartner>();
+
+        public void AddTradePartner(TradePartner partner)
+        {
+            m_tradePartners.TryAdd(partner.Identity, partner);
+        }
+
+        public void RemoveTradePartner(uint idTarget)
+        {
+            if (m_tradePartners.ContainsKey(idTarget))
+                m_tradePartners.Remove(idTarget);
+        }
+
+        public async Task<bool> CreateTradePartnerAsync(Character target)
+        {
+            if (IsTradePartner(target.Identity) || target.IsTradePartner(Identity))
+            {
+                await SendAsync(Language.StrTradeBuddyAlreadyAdded);
+                return false;
+            }
+
+            DbBusiness business = new DbBusiness
+            {
+                User = GetDatabaseObject(),
+                Business = target.GetDatabaseObject(),
+                Date = DateTime.Now.AddDays(3)
+            };
+
+            if (!await BaseRepository.SaveAsync(business))
+            {
+                await SendAsync(Language.StrTradeBuddySomethingWrong);
+                return false;
+            }
+
+            TradePartner me;
+            TradePartner targetTp;
+            AddTradePartner(me = new TradePartner(this, business));
+            target.AddTradePartner(targetTp = new TradePartner(target, business));
+
+            await me.SendAsync();
+            await targetTp.SendAsync();
+
+            await BroadcastRoomMsgAsync(string.Format(Language.StrTradeBuddyAnnouncePartnership, Name, target.Name));
+            return true;
+        }
+
+        public async Task<bool> DeleteTradePartnerAsync(uint idTarget)
+        {
+            if (!IsTradePartner(idTarget))
+                return false;
+
+            TradePartner partner = GetTradePartner(idTarget);
+            if (partner == null)
+                return false;
+
+            await partner.SendRemoveAsync();
+            RemoveTradePartner(idTarget);
+            await SendAsync(string.Format(Language.StrTradeBuddyBrokePartnership1, partner.Name));
+
+            var delete = partner.DeleteAsync();
+            Character target = Kernel.RoleManager.GetUser(idTarget);
+            if (target != null)
+            {
+                partner = target.GetTradePartner(Identity);
+                if (partner != null)
+                {
+                    await partner.SendRemoveAsync();
+                    target.RemoveTradePartner(Identity);
+                }
+
+                await target.SendAsync(string.Format(Language.StrTradeBuddyBrokePartnership0, Name));
+            }
+
+            await delete;
+            return true;
+        }
+
+        public async Task LoadTradePartnerAsync()
+        {
+            var tps = await DbBusiness.GetAsync(Identity);
+            foreach (var tp in tps)
+            {
+                var db = new TradePartner(this, tp);
+                AddTradePartner(db);
+                await db.SendAsync();
+            }
+        }
+
+        public TradePartner GetTradePartner(uint target)
+        {
+            return m_tradePartners.TryGetValue(target, out var result) ? result : null;
+        }
+
+        public bool IsTradePartner(uint target)
+        {
+            return m_tradePartners.ContainsKey(target);
+        }
+
+        public bool IsValidTradePartner(uint target)
+        {
+            return m_tradePartners.ContainsKey(target) && m_tradePartners[target].IsValid();
+        }
+
+        #endregion
+
         #region Syndicate
 
         public Syndicate Syndicate { get; set; }
@@ -3775,6 +3884,17 @@ namespace Comet.Game.States
                 m_ghost.Clear();
             }
 
+            if (Team != null && !Team.IsLeader(Identity) && m_teamLeaderPos.ToNextTime())
+            {
+                _ = SendAsync(new MsgAction
+                {
+                    Action = MsgAction.ActionType.MapTeamLeaderStar,
+                    Command = Team.Leader.Identity,
+                    ArgumentX = Team.Leader.MapX,
+                    ArgumentY = Team.Leader.MapY
+                });
+            }
+
             if (!IsAlive)
                 return;
             
@@ -3960,6 +4080,8 @@ namespace Comet.Game.States
 
         #region Database
 
+        public DbCharacter GetDatabaseObject() => m_dbObject;
+
         public async Task<bool> SaveAsync()
         {
             try
@@ -3974,7 +4096,7 @@ namespace Comet.Game.States
             }
         }
 
-#endregion
+        #endregion
     }
 
     /// <summary>Enumeration type for body types for player characters.</summary>
@@ -4010,6 +4132,8 @@ namespace Comet.Game.States
         TeamApply,
         TeamInvite,
         Trade,
-        Marriage
+        Marriage,
+        TradePartner,
+        Guide
     }
 }

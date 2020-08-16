@@ -85,6 +85,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbPigeon> Pigeons { get; set; }
         public virtual DbSet<DbPigeonQueue> PigeonQueues { get; set; }
         public virtual DbSet<DbRegion> Regions { get; set; }
+        public virtual DbSet<DbBusiness> Business { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

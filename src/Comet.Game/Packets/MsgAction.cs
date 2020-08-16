@@ -136,8 +136,9 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            Role target = null;
             Character user = client.Character;
+            Role target = null;
+            Character targetUser = Kernel.RoleManager.GetUser(Command);
 
             switch (Action)
             {
@@ -203,6 +204,8 @@ namespace Comet.Game.Packets
                                 : Language.StrFemaleMateLogin);
                         }
                     }
+
+                    await user.LoadTradePartnerAsync();
 
                     await client.SendAsync(this);
                     break;
@@ -296,7 +299,7 @@ namespace Comet.Game.Packets
                     await client.SendAsync(this);
                     break;
 
-                case ActionType.MapMine:
+                case ActionType.MapMine: // 99
                     if (!user.IsAlive)
                     {
                         await user.SendAsync(Language.StrDead);
@@ -312,10 +315,28 @@ namespace Comet.Game.Packets
                     user.StartMining();
                     break;
 
+                case ActionType.MapTeamLeaderStar: // 101
+                    if (user.Team == null)
+                        return;
+
+                    targetUser = user.Team.Leader;
+                    ArgumentX = targetUser.MapX;
+                    ArgumentY = targetUser.MapY;
+                    await user.SendAsync(this);
+                    break;
+
                 case ActionType.MapQuery: // 102
-                    Character targetUser = Kernel.RoleManager.GetUser(Command);
                     if (targetUser != null)
                         await targetUser.SendSpawnToAsync(user);
+                    break;
+
+                case ActionType.MapTeamMemberStar: // 106
+                    if (user.Team == null || user.Team.IsMember(Command) || targetUser == null)
+                        return;
+
+                    ArgumentX = targetUser.MapX;
+                    ArgumentY = targetUser.MapY;
+                    await user.SendAsync(this);
                     break;
 
                 case ActionType.BoothLeave: // 114
@@ -345,7 +366,7 @@ namespace Comet.Game.Packets
                         await user.ClearTransformation();
                     break;
 
-                case ActionType.SpellAbortFlight:
+                case ActionType.SpellAbortFlight: // 120
                     if (user.QueryStatus(StatusSet.FLY) != null)
                         await user.DetachStatus(StatusSet.FLY);
                     break;
@@ -418,7 +439,18 @@ namespace Comet.Game.Packets
                     await user.SetGhost();
                     break;
 
-                case ActionType.FriendObservation:
+                case ActionType.QueryTradeBuddy: // 143
+                    TradePartner partner = user.GetTradePartner(Command);
+                    if (partner == null)
+                    {
+                        await user.SendAsync(this);
+                        return;
+                    }
+
+                    await partner.SendInfoAsync();
+                    break;
+
+                case ActionType.FriendObservation: // 310
                     targetUser = Kernel.RoleManager.GetUser(Command);
                     if (targetUser == null)
                         return;
@@ -490,6 +522,7 @@ namespace Comet.Game.Packets
             CharacterDead = 137,
             RelationshipsFriend = 140,
             CharacterAvatar = 142,
+            QueryTradeBuddy = 143,
             SetGhost = 145,
             FriendObservation = 310,
         }

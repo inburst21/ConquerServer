@@ -1456,6 +1456,60 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You&apos;re already partners..
+        /// </summary>
+        public static string StrTradeBuddyAlreadyAdded {
+            get {
+                return ResourceManager.GetString("StrTradeBuddyAlreadyAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1} accepted a trade partnership that will be approved within 3 days..
+        /// </summary>
+        public static string StrTradeBuddyAnnouncePartnership {
+            get {
+                return ResourceManager.GetString("StrTradeBuddyAnnouncePartnership", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} broke the trade partnership with you..
+        /// </summary>
+        public static string StrTradeBuddyBrokePartnership0 {
+            get {
+                return ResourceManager.GetString("StrTradeBuddyBrokePartnership0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You broke the trade partnership with {0}..
+        /// </summary>
+        public static string StrTradeBuddyBrokePartnership1 {
+            get {
+                return ResourceManager.GetString("StrTradeBuddyBrokePartnership1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your partner has not been found..
+        /// </summary>
+        public static string StrTradeBuddyNotFound {
+            get {
+                return ResourceManager.GetString("StrTradeBuddyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Something went wrong when processing your request..
+        /// </summary>
+        public static string StrTradeBuddySomethingWrong {
+            get {
+                return ResourceManager.GetString("StrTradeBuddySomethingWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] You cannot trade more than {0:N0} Conquer Points..
         /// </summary>
         public static string StrTradeMuchEmoney {
@@ -1483,7 +1537,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot trade more items..
+        ///   Consulta uma cadeia de caracteres localizada semelhante a [Trade] You cannot trade more items..
         /// </summary>
         public static string StrTradeSashFull {
             get {

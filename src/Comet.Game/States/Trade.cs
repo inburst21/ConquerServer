@@ -88,6 +88,13 @@ namespace Comet.Game.States
                 await sender.SendAsync(RemoveMsg(idItem));
                 return false;
             }
+
+            if (item.IsLocked() && !sender.IsValidTradePartner(target.Identity))
+            {
+                await sender.SendAsync(Language.StrNotToTrade);
+                await sender.SendAsync(RemoveMsg(idItem));
+                return false;
+            }
             
             if (items.Count >= MAX_TRADE_ITEMS)
             {

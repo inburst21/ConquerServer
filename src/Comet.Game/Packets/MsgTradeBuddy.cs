@@ -78,10 +78,42 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
+            Character user = client.Character;
+            Character target = Kernel.RoleManager.GetUser(Identity);
             switch (Action)
             {
-                default:
+                case TradeBuddyAction.RequestPartnership:
+                    if (target == null)
+                    {
+                        await user.SendAsync(Language.StrTargetNotInRange);
+                        return;
+                    }
 
+                    if (user.QueryRequest(RequestType.TradePartner) == target.Identity)
+                    {
+                        user.PopRequest(RequestType.TradePartner);
+                        await user.CreateTradePartnerAsync(target);
+                        return;
+                    }
+
+                    target.SetRequest(RequestType.TradePartner, user.Identity);
+                    Identity = user.Identity;
+                    Name = user.Name;
+                    await target.SendAsync(this);
+                    break;
+
+                case TradeBuddyAction.RejectRequest:
+                    if (target == null)
+                        return;
+
+                    Identity = user.Identity;
+                    Name = user.Name;
+                    IsOnline = true;
+                    await target.SendAsync(this);
+                    break;
+
+                case TradeBuddyAction.BreakPartnership:
+                    await user.DeleteTradePartnerAsync(Identity);
                     break;
             }
         }

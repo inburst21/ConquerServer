@@ -56,7 +56,7 @@ namespace Comet.Game.Packets
             SyndicatePosition = (byte) user.SyndicateRank;
 
             NobilityRank = (uint) user.NobilityRank;
-            NobilityIdentity = user.Identity;
+            NobilityIdentity = 0; // SharedBattlePower
             NobilityPosition = (uint) user.NobilityPosition;
 
             Helmet = user.Headgear?.Type ?? 0;
