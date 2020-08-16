@@ -145,10 +145,16 @@ namespace Comet.Game.World
 
             Point pos = await FindGenPosAsync();
             if (pos == default)
+            {
+                IdentityGenerator.Monster.ReturnIdentity(mob.Identity);
                 return null;
+            }
 
             if (!mob.Initialize(m_pMap.Identity, (ushort) pos.X, (ushort) pos.Y))
+            {
+                IdentityGenerator.Monster.ReturnIdentity(mob.Identity);
                 return null;
+            }
             return mob;
         }
 
