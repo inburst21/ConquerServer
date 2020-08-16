@@ -593,8 +593,8 @@ namespace Comet.Game.States
 
         public override async Task LeaveMap()
         {
-            IdentityGenerator.Monster.ReturnIdentity(Identity);
             m_generator.Remove(Identity);
+            IdentityGenerator.Monster.ReturnIdentity(Identity);
             if (Map != null)
             {
                 await Map.RemoveAsync(Identity);

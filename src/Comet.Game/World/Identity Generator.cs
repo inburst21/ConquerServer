@@ -59,12 +59,9 @@ namespace Comet.Game.World
         {
             get
             {
-                if (!m_cqidQueue.IsEmpty)
-                {
-                    if (m_cqidQueue.TryDequeue(out long result))
-                        return result;
-                }
-                return m_idNext < m_idMax ? Interlocked.Increment(ref m_idNext) : 0;
+                if (m_cqidQueue.TryDequeue(out long result))
+                    return result;
+                return 0;
             }
         }
 
