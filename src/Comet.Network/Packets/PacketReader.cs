@@ -44,7 +44,7 @@ namespace Comet.Network.Packets
         ///     to read from.
         /// </summary>
         /// <param name="bytes">Packet bytes to be read in</param>
-        public PacketReader(byte[] bytes) : base(new MemoryStream(bytes))
+        public PacketReader(byte[] bytes) : base(new MemoryStream(bytes), CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII)
         {
         }
 
@@ -57,7 +57,8 @@ namespace Comet.Network.Packets
         public override string ReadString()
         {
             var length = ReadByte();
-            return (CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII).GetString(ReadBytes(length)).TrimEnd('\0');
+            Encoding enc = CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII;
+            return enc.GetString(ReadBytes(length)).TrimEnd('\0');
         }
 
         /// <summary>
@@ -70,7 +71,8 @@ namespace Comet.Network.Packets
         /// <returns>Returns the resulting string from the read.</returns>
         public string ReadString(int fixedLength)
         {
-            return (CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII).GetString(ReadBytes(fixedLength)).TrimEnd('\0');
+            Encoding enc = CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII;
+            return enc.GetString(ReadBytes(fixedLength)).TrimEnd('\0');
         }
 
         /// <summary>

@@ -221,10 +221,12 @@ namespace Comet.Game.World.Managers
             {
                 Mode = 0
             };
+            bool sent = false;
             foreach (var pigeon in temp)
             {
                 if (msg.Messages.Count >= 8)
                 {
+                    sent = true;
                     await user.SendAsync(msg);
                     msg.Messages.Clear();
                 }
@@ -240,7 +242,7 @@ namespace Comet.Game.World.Managers
                 });
             }
 
-            if (msg.Messages.Count > 0)
+            if (msg.Messages.Count > 0 && !sent)
                 await user.SendAsync(msg);
         }
 

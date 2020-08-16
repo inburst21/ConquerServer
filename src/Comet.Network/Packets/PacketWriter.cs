@@ -43,7 +43,7 @@ namespace Comet.Network.Packets
         ///     Instantiates a new instance of <see cref="PacketWriter" /> and writes the
         ///     first unsigned short to the stream as a placeholder for the packet length.
         /// </summary>
-        public PacketWriter() : base(new MemoryStream())
+        public PacketWriter() : base(new MemoryStream(), CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? Encoding.ASCII)
         {
             base.Write((ushort) 0);
         }
