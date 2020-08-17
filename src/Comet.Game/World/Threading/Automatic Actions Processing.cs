@@ -35,7 +35,7 @@ namespace Comet.Game.World.Threading
     public sealed class AutomaticActionsProcessing : TimerBase
     {
         private const int _ACTION_SYSTEM_EVENT = 2030000;
-        private const int _ACTION_SYSTEM_EVENT_LIMIT = 100;
+        private const int _ACTION_SYSTEM_EVENT_LIMIT = 9999;
 
         private readonly ConcurrentDictionary<uint, DbAction> m_dicActions;
 

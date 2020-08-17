@@ -669,7 +669,8 @@ namespace Comet.Game.States.Items
                 OldOwnerIdentity = PlayerIdentity,
                 NewOwnerIdentity = idNewOwner,
                 Operation = (byte) type,
-                Time = DateTime.Now
+                Time = DateTime.Now,
+                ItemIdentity = Identity
             });
 
             PlayerIdentity = idNewOwner;

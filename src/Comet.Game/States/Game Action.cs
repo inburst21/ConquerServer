@@ -2323,6 +2323,7 @@ namespace Comet.Game.States
                     return false;
             }
 
+            await pItem.SaveAsync();
             if (update)
                 await user.SendAsync(new MsgItemInfo(pItem, MsgItemInfo.ItemMode.Update));
             return true;
