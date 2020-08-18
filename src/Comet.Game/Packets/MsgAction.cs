@@ -257,7 +257,7 @@ namespace Comet.Game.Packets
                         }
                     }
 
-                    await client.SendAsync(this);
+                    await user.BroadcastRoomMsgAsync(this, true);
                     break;
 
                 case ActionType.MapPortal: // 85

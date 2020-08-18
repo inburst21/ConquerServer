@@ -1920,6 +1920,8 @@ namespace Comet.Game.States
                             return false;
                         if (IsMate(user.Identity))
                             return false;
+                        if (Syndicate?.QueryMember(user.SyndicateIdentity) != null)
+                            return false;
                         if (Syndicate?.IsAlly(user.SyndicateIdentity) == true)
                             return false;
                         if (Team?.IsMember(user.Identity) == true)

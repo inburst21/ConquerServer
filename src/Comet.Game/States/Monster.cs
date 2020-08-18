@@ -437,7 +437,13 @@ namespace Comet.Game.States
                     case 6:
                         drops.RemoveAll(x => !Item.IsShoes(x.Type));
                         break;
+                    default:
+                        drops.Clear();
                 }
+            }
+            else
+            {
+                drops.Clear();
             }
 
             DbItemtype pot = Kernel.ItemManager.GetItemtype(m_dbMonster.DropHp);

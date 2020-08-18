@@ -479,7 +479,7 @@ namespace Comet.Game.States.Magics
         private async Task<bool> ProcessFanAsync(Magic magic)
         {
             int nRange = (int)m_pMagic.Distance + 2;
-            const int nWidth = DEFAULT_MAGIC_FAN + 30;
+            const int nWidth = DEFAULT_MAGIC_FAN;
             long nExp = 0, battleExp = 0;
 
             List<Role> setTarget = new List<Role>();
@@ -491,7 +491,7 @@ namespace Comet.Game.States.Magics
                     continue;
 
                 Point posThis = new Point(target.MapX, target.MapY);
-                if (!ScreenCalculations.IsInFan(center, m_targetPos, posThis, nWidth-30, nRange))
+                if (!ScreenCalculations.IsInFan(center, m_targetPos, posThis, nWidth, nRange))
                     continue;
 
                 if (target.IsAttackable(m_pOwner)
