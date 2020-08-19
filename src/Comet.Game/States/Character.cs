@@ -968,6 +968,8 @@ namespace Comet.Game.States
 
         #region User Package
 
+        public uint LastAddItemIdentity { get; set; }
+
         public UserPackage UserPackage { get; }
 
         public async Task<bool> SpendEquipItem(uint dwItem, uint dwAmount, bool bSynchro)

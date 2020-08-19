@@ -135,7 +135,7 @@ namespace Comet.Game.States.Items
             Item item = new Item(m_user);
             if (!await item.CreateAsync(itemtype, pos))
                 return false;
-
+            
             return m_dicInventory.TryAdd(item.Identity, item) && await AddItemAsync(item);
         }
 

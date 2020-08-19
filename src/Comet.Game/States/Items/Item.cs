@@ -72,7 +72,7 @@ namespace Comet.Game.States.Items
             m_dbItemtype = type;
             m_dbItemAddition = Kernel.ItemManager.GetItemAddition(Type, Plus);
 
-            return await SaveAsync();
+            return await SaveAsync() && (m_user.LastAddItemIdentity = Identity) != 0;
         }
 
         public async Task<bool> CreateAsync(DbItem item)

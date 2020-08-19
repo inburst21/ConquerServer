@@ -5204,7 +5204,8 @@ namespace Comet.Game.States
                 .Replace("%syn_name", user?.SyndicateName ?? Language.StrNone)
                 .Replace("%account_id", user?.Client.AccountIdentity.ToString() ?? "0")
                 .Replace("%user_virtue", user?.VirtuePoints.ToString() ?? "0")
-                .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0");
+                .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
+                .Replace("%last_add_item_id", user?.LastAddItemIdentity.ToString() ?? "0");
 
             if (result.Contains("%levelup_exp"))
             {
