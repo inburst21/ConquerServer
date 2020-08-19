@@ -1175,7 +1175,7 @@ namespace Comet.Game.States.Magics
             if (pMagic == null)
                 return false;
 
-            if (!CheckAwardExpEnable((ushort)((m_pOwner as Character)?.Profession ?? 0)))
+            if (!CheckAwardExpEnable((m_pOwner as Character)?.Profession ?? 0))
                 return false;
 
             if (m_pOwner.Map.IsTrainingMap() && m_autoAttackNum % 10 != 0)
@@ -1234,7 +1234,8 @@ namespace Comet.Game.States.Magics
             ushort nNewLevel = (ushort)(pMagic.Level + 1);
             pMagic.Experience = 0;
             pMagic.Level = nNewLevel;
-            await pMagic.SendAsync();
+            if (synchro)
+                await pMagic.SendAsync();
             return true;
         }
 

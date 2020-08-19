@@ -161,11 +161,27 @@ namespace Comet.Game.States.Magics
 
         public async Task<bool> Create(ushort type, byte level)
         {
-            Magic pMagic = new Magic(m_pOwner);
-            if (await pMagic.Create(type, level))
+            if (this[type] != null)
             {
-                return Magics.TryAdd(type, pMagic);
+                Magic old = this[type];
+                old.Unlearn = false;
+
+                if (m_pOwner is Character)
+                {
+                    await old.SaveAsync();
+                    await old.SendAsync();
+                }
+                return true;
             }
+            else
+            {
+                Magic pMagic = new Magic(m_pOwner);
+                if (await pMagic.Create(type, level))
+                {
+                    return Magics.TryAdd(type, pMagic);
+                }
+            }
+
             return false;
         }
 

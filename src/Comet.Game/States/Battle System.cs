@@ -219,7 +219,9 @@ namespace Comet.Game.States
             if (attacker.QueryStatus(StatusSet.SUPERMAN) != null && !target.IsDynaNpc() && !target.IsPlayer())
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.SUPERMAN).Power);
 
-            damage = Math.Max(damage, 7);
+            damage = Calculations.MulDiv(damage, target.Defense2, Calculations.DEFAULT_DEFENCE2);
+
+            damage = Math.Max(damage, 1);
 
             if (attacker is Character && target.IsMonster())
             {
@@ -236,6 +238,8 @@ namespace Comet.Game.States
             else
             {
                 damage = attacker.AdjustWeaponDamage(damage);
+                if (attacker is Character && target is Character && attacker.IsBowman)
+                    damage /= 3;
             }
 
             if (targetUser != null && attacker.BattlePower < target.BattlePower)
@@ -270,6 +274,8 @@ namespace Comet.Game.States
                 damage = (int)(damage * (1 - targetUser.Blessing / 100d));
                 damage = (int)(damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
+
+            damage = Calculations.MulDiv(damage, target.Defense2, Calculations.DEFAULT_DEFENCE2);
 
             if (attacker is Character && target.IsMonster())
             {

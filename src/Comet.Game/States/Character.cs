@@ -1855,8 +1855,6 @@ namespace Comet.Game.States
 
         public override int AdjustWeaponDamage(int damage)
         {
-            damage = Calculations.MulDiv(damage, Defense2, Calculations.DEFAULT_DEFENCE2);
-
             int type1 = 0, type2 = 0;
             if (UserPackage[Item.ItemPosition.RightHand] != null)
                 type1 = UserPackage[Item.ItemPosition.RightHand].GetItemSubType();
@@ -3380,7 +3378,29 @@ namespace Comet.Game.States
         }
 
         #endregion
-        
+
+        #region Jar
+
+        public async Task AddJarKillsAsync(int stcType)
+        {
+            Item jar = UserPackage.GetItemByType(Item.TYPE_JAR);
+            if (jar != null)
+            {
+                if (jar.MaximumDurability == stcType)
+                {
+                    jar.Data += 1;
+                    await jar.SaveAsync();
+
+                    if (jar.Data % 50 == 0)
+                    {
+                        await jar.SendJarAsync();
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         #region Multiple Exp
 
         public bool HasMultipleExp => m_dbObject.ExperienceMultiplier > 1 && m_dbObject.ExperienceExpires >= DateTime.Now;
@@ -3888,7 +3908,7 @@ namespace Comet.Game.States
 
             if (Team != null && !Team.IsLeader(Identity) && m_teamLeaderPos.ToNextTime())
             {
-                _ = SendAsync(new MsgAction
+                await SendAsync(new MsgAction
                 {
                     Action = MsgAction.ActionType.MapTeamLeaderStar,
                     Command = Team.Leader.Identity,

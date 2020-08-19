@@ -59,10 +59,10 @@ namespace Comet.Game.States.Magics
                 await Log.WriteLog(LogLevel.Warning, $"Skill not existent for creation (type:{idMgc}, level:{0}, player: {m_pOwner.Identity})");
                 return false;
             }
-
+            
             if (m_pOwner.MagicData.CheckType((ushort)idMgc))
                 return false;
-
+            
             m_dbMagic = new DbMagic
             {
                 OwnerId = m_pOwner.Identity,
@@ -207,6 +207,17 @@ namespace Comet.Game.States.Magics
                     Experience = Experience,
                     Level = Level,
                     Magictype = Type
+                });
+        }
+
+        public async Task FlushAsync()
+        {
+            if (m_pOwner is Character user)
+                await user.SendAsync(new MsgFlushExp
+                {
+                    Action = MsgFlushExp.FlushMode.Magic,
+                    Identity = Type,
+                    Experience = Experience
                 });
         }
 

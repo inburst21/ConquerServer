@@ -35,7 +35,7 @@ using Comet.Game.States.Items;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
-using Microsoft.VisualStudio.Threading;
+using Comet.Shared;
 
 #endregion
 
@@ -228,24 +228,23 @@ namespace Comet.Game.States
             if (m_dbMonster.Action > 0)
                 await GameAction.ExecuteActionAsync(m_dbMonster.Action, user, this, null, "");
 
-            uint idDropOwner = user?.Identity ?? 0;
-
-            if (IsGuard())
+            if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc())
                 return;
 
-            Item jar = user?.UserPackage.GetItemByType(Item.TYPE_JAR);
-            if (jar != null)
-            {
-                if (jar.MaximumDurability == m_dbMonster.StcType)
-                {
-                    jar.Data += 1;
-                    await jar.SaveAsync();
+            uint idDropOwner = user?.Identity ?? 0;
 
-                    if (jar.Data % 50 == 0)
-                    {
-                        await jar.SendJarAsync();
-                    }
+            if (user?.Team != null)
+            {
+                foreach (var member in user.Team.Members)
+                {
+                    if (member.MapIdentity == user.MapIdentity
+                        && member.GetDistance(user) <= Screen.VIEW_SIZE * 2)
+                        await member.AddJarKillsAsync(m_dbMonster.StcType);
                 }
+            }
+            else if (user != null)
+            {
+                await user.AddJarKillsAsync(m_dbMonster.StcType);
             }
 
             int chanceAdjust = 35;
@@ -268,7 +267,14 @@ namespace Comet.Game.States
                 }
             }
 
-            if (await Kernel.ChanceCalcAsync(625, 3500000))
+            if (await Kernel.ChanceCalcAsync(50, 1000))
+            {
+                uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
+                await DropItem(cpsBagType, idDropOwner);
+                _ = Log.GmLog("cps_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
+            }
+
+            if (await Kernel.ChanceCalcAsync(625, 3000000))
             {
                 await DropItem(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name), MsgTalk.TalkChannel.TopLeft);
@@ -279,14 +285,12 @@ namespace Comet.Game.States
                 await DropItem(Item.TYPE_METEOR, idDropOwner);
             }
 
-            if (!IsPkKiller() && !IsGuard() && !IsEvilKiller() && !IsDynaNpc())
+            if (await Kernel.ChanceCalcAsync(.1d))
             {
-                if (await Kernel.ChanceCalcAsync(.1d))
-                {
-                    uint[] normalGem = { 700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121 };
-                    uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
-                    await DropItem(dGem, idDropOwner); // normal gems
-                }
+                uint[] normalGem =
+                    {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
+                uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
+                await DropItem(dGem, idDropOwner); // normal gems
             }
 
             if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
@@ -439,6 +443,7 @@ namespace Comet.Game.States
                         break;
                     default:
                         drops.Clear();
+                        break;
                 }
             }
             else
@@ -456,11 +461,11 @@ namespace Comet.Game.States
             if (drops.Count < 1)
                 return 0;
 
-            if (await Kernel.ChanceCalcAsync(625, 30000000))
+            if (await Kernel.ChanceCalcAsync(625, 20000000))
             {
                 drops.RemoveAll(x => Item.GetQuality(x.Type) != 9);
             }
-            else if (await Kernel.ChanceCalcAsync(625, 5000000))
+            else if (await Kernel.ChanceCalcAsync(625, 4000000))
             {
                 drops.RemoveAll(x => Item.GetQuality(x.Type) != 8);
             }
