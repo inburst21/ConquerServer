@@ -195,8 +195,9 @@ namespace Comet.Game.States.BaseEntities
                 return false;
             }
 
-            if (!Map.IsStandEnable(newX, newY) && user != null)
+            if (!Map.IsMoveEnable(newX, newY) && user != null)
             {
+                await user.KickbackAsync();
                 await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red); 
                 return false;
             }

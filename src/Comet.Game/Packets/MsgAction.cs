@@ -33,6 +33,7 @@ using Comet.Game.States.Relationship;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 #endregion
 
@@ -448,6 +449,15 @@ namespace Comet.Game.Packets
                         return;
 
                     await user.SetGhost();
+                    break;
+
+                case ActionType.CharacterAvatar:
+                    if (user.Gender == 1 && Command >= 200 || user.Gender == 2 && Command < 200)
+                        return;
+                    
+                    user.Avatar = (ushort) Command;
+                    await user.BroadcastRoomMsgAsync(this, true);
+                    await user.SaveAsync();
                     break;
 
                 case ActionType.QueryTradeBuddy: // 143

@@ -83,7 +83,7 @@ namespace Comet.Game.Packets
 
         public override Task ProcessAsync(Client client)
         {
-            return base.ProcessAsync(client);
+            return client.SendAsync(this);
         }
     }
 }

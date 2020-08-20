@@ -66,6 +66,34 @@ namespace Comet.Game.Packets
         public ushort Composition;
         public List<string> Names = new List<string>();
 
+        public override void Decode(byte[] bytes)
+        {
+            PacketReader reader = new PacketReader(bytes);
+            Length = reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
+            Mode = (RequestMode) reader.ReadUInt32();
+            SenderIdentity = reader.ReadUInt32();
+            Identity = reader.ReadUInt32();
+            Mesh = reader.ReadUInt32();
+            SharedBattlePower = reader.ReadUInt32();
+            Unknown24 = reader.ReadUInt32();
+            EnroleDate = reader.ReadUInt32();
+            Level = reader.ReadByte();
+            Profession = reader.ReadByte();
+            PkPoints = reader.ReadUInt16();
+            Syndicate = reader.ReadUInt16();
+            Unknown38 = reader.ReadByte();
+            SyndicatePosition = (SyndicateMember.SyndicateRank) reader.ReadByte();
+            Unknown40 = reader.ReadUInt64();
+            IsOnline = reader.ReadBoolean();
+            Fill41 = reader.ReadBytes(Fill41.Length);
+            Unknown52 = reader.ReadUInt32();
+            Experience = reader.ReadUInt64();
+            Blessing = reader.ReadUInt16();
+            Composition = reader.ReadUInt16();
+            Names = reader.ReadStrings();
+        }
+
         public override byte[] Encode()
         {
             PacketWriter writer = new PacketWriter();
