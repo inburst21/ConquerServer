@@ -139,10 +139,7 @@ namespace Comet.Game.Packets
                         return;
                     if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
                         return;
-
-                    //if (Item.IsShield(Command) || Item.IsHelmet(Command) || Item.IsArmor(Command))
-                    //    Command = Command - (Command % 1000 - Command % 100);
-
+                    
                     DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
                     if (goods == null)
                     {
@@ -174,15 +171,15 @@ namespace Comet.Game.Packets
                     switch ((Moneytype) goods.Moneytype)
                     {
                         case Moneytype.Silver:
-                            //if ((Moneytype) goods.Moneytype != Moneytype.Silver)
-                            //    return;
+                            if ((Moneytype)goods.Moneytype != Moneytype.Silver)
+                                return;
 
                             if (!await user.SpendMoney((int) (itemtype.Price * amount), true))
                                 return;
                             break;
                         case Moneytype.ConquerPoints:
-                            //if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
-                            //    return;
+                            if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
+                                return;
 
                             if (!await user.SpendConquerPoints((int) (itemtype.EmoneyPrice * amount), true))
                                 return;
@@ -447,6 +444,55 @@ namespace Comet.Game.Packets
                         $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_METEOR}");
                     break;
                 }
+
+                case ItemActionType.BoothQuery:
+                {
+                    var targetNpc = user.Screen.Roles.Values.FirstOrDefault(x =>
+                        x is Character targetUser && targetUser.Booth?.Identity == Identity) as Character;
+                    if (targetNpc?.Booth == null)
+                        return;
+
+                    await targetNpc.Booth.QueryItemsAsync(user);
+                    break;
+                }
+
+                case ItemActionType.BoothSell:
+                {
+                    if (user.AddBoothItem(Identity, Command, Moneytype.Silver))
+                        await user.SendAsync(this);
+                    break;
+                }
+
+                case ItemActionType.BoothRemove:
+                {
+                    if (user.RemoveBoothItem(Identity))
+                        await user.SendAsync(this);
+                    break;
+                }
+
+                case ItemActionType.BoothPurchase:
+                {
+                    var targetNpc = user.Screen.Roles.Values.FirstOrDefault(x =>
+                        x is Character targetUser && targetUser.Booth?.Identity == Command) as Character;
+                    if (targetNpc?.Booth == null)
+                        return;
+
+                    if (await targetNpc.SellBoothItemAsync(Identity, user))
+                    {
+                        Action = ItemActionType.BoothRemove;
+                        await targetNpc.SendAsync(this);
+                        await user.SendAsync(this);
+                    }
+                    break;
+                }
+
+                case ItemActionType.BoothSellPoints:
+                {
+                    if (user.AddBoothItem(Identity, Command, Moneytype.ConquerPoints))
+                        await user.SendAsync(this);
+                    break;
+                }
+
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
                     break;

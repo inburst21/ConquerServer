@@ -135,6 +135,27 @@
   <data name="StrBonus" xml:space="preserve">
     <value>Congratulations! You have got {0} prizes.  Please find PrizeNPC in the market (185,170) to claim your rewards!</value>
   </data>
+  <data name="StrBoothAlreadyCreated" xml:space="preserve">
+    <value>You already have a booth set up.</value>
+  </data>
+  <data name="StrBoothBought" xml:space="preserve">
+    <value>{0} purchased successfully for {1} {2}.</value>
+  </data>
+  <data name="StrBoothMapCantSetup" xml:space="preserve">
+    <value>You cannot set up a shop in this map.</value>
+  </data>
+  <data name="StrBoothMaxItems" xml:space="preserve">
+    <value>You cannot add more than 20 items to your shop.</value>
+  </data>
+  <data name="StrBoothNoShop" xml:space="preserve">
+    <value>You don't have a booth.</value>
+  </data>
+  <data name="StrBoothRegionCantSetup" xml:space="preserve">
+    <value>You cannot set up a shop in this area.</value>
+  </data>
+  <data name="StrBoothSold" xml:space="preserve">
+    <value>{0} purchased your {1} for {2} {3}.</value>
+  </data>
   <data name="StrBreakFriend" xml:space="preserve">
     <value>{0} broke up friendship with {1}.</value>
   </data>
@@ -149,6 +170,12 @@
   </data>
   <data name="StrComposeOverpowerMale" xml:space="preserve">
     <value>Congratulations! {0} has upgraded his {1} to +{2}!</value>
+  </data>
+  <data name="StrConquerPoints" xml:space="preserve">
+    <value>CPs</value>
+  </data>
+  <data name="StrConquerPointsMono" xml:space="preserve">
+    <value>CPs (B)</value>
   </data>
   <data name="StrDamagedRepair" xml:space="preserve">
     <value>{0} has been severely damaged. Please repair it soon, otherwise it will break.</value>
@@ -428,6 +455,9 @@
   </data>
   <data name="StrShieldActiveT" xml:space="preserve">
     <value>Shield for {0} seconds, your defense will be increased by {1} times.</value>
+  </data>
+  <data name="StrSilvers" xml:space="preserve">
+    <value>Silvers</value>
   </data>
   <data name="StrSilversExceedAmount" xml:space="preserve">
     <value>You'll exceed the maximum amount of silvers to store. Can't exceed {0:N0}.</value>

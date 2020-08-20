@@ -556,7 +556,7 @@ namespace Comet.Game.States.Magics
             }
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
-
+            await CheckCrime(setTarget.ToDictionary(x => x.Identity));
             await AwardExp(battleExp, nExp, false, magic);
             return true;
         }
@@ -824,7 +824,7 @@ namespace Comet.Game.States.Magics
                 return false;
 
             var allTargets = m_pOwner.Map.Query9BlocksByPos(m_pOwner.MapX, m_pOwner.MapY);
-
+            List<Role> targets = new List<Role>();
             List<Point> setPoint = new List<Point>();
             var pos = new Point(m_pOwner.MapX, m_pOwner.MapY);
             ScreenCalculations.DDALine(pos.X, pos.Y, m_targetPos.X, m_targetPos.Y, (int)m_pMagic.Range, ref setPoint);
@@ -889,12 +889,13 @@ namespace Comet.Game.States.Magics
                     await m_pOwner.Kill(target, GetDieMode());
 
                 msg.Append(target.Identity, result.Damage, true);
+                targets.Add(target);
             }
 
             if (msg.Count > 0)
                 await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
-            await CheckCrime(allTargets.ToDictionary(x => x.Identity, x => x));
+            await CheckCrime(targets.ToDictionary(x => x.Identity, x => x));
             await AwardExp(0, battleExp, exp, magic);
             return true;
         }

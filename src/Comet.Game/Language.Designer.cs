@@ -115,6 +115,69 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You already have a booth set up..
+        /// </summary>
+        public static string StrBoothAlreadyCreated {
+            get {
+                return ResourceManager.GetString("StrBoothAlreadyCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} purchased successfully for {1} {2}..
+        /// </summary>
+        public static string StrBoothBought {
+            get {
+                return ResourceManager.GetString("StrBoothBought", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot set up a shop in this map..
+        /// </summary>
+        public static string StrBoothMapCantSetup {
+            get {
+                return ResourceManager.GetString("StrBoothMapCantSetup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot add more than 20 items to your shop..
+        /// </summary>
+        public static string StrBoothMaxItems {
+            get {
+                return ResourceManager.GetString("StrBoothMaxItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You don&apos;t have a booth..
+        /// </summary>
+        public static string StrBoothNoShop {
+            get {
+                return ResourceManager.GetString("StrBoothNoShop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot set up a shop in this area..
+        /// </summary>
+        public static string StrBoothRegionCantSetup {
+            get {
+                return ResourceManager.GetString("StrBoothRegionCantSetup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} purchased your {1} for {2} {3}..
+        /// </summary>
+        public static string StrBoothSold {
+            get {
+                return ResourceManager.GetString("StrBoothSold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} broke up friendship with {1}..
         /// </summary>
         public static string StrBreakFriend {
@@ -156,6 +219,24 @@ namespace Comet.Game {
         public static string StrComposeOverpowerMale {
             get {
                 return ResourceManager.GetString("StrComposeOverpowerMale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a CPs.
+        /// </summary>
+        public static string StrConquerPoints {
+            get {
+                return ResourceManager.GetString("StrConquerPoints", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a CPs (B).
+        /// </summary>
+        public static string StrConquerPointsMono {
+            get {
+                return ResourceManager.GetString("StrConquerPointsMono", resourceCulture);
             }
         }
         
@@ -993,6 +1074,15 @@ namespace Comet.Game {
         public static string StrShieldActiveT {
             get {
                 return ResourceManager.GetString("StrShieldActiveT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Silvers.
+        /// </summary>
+        public static string StrSilvers {
+            get {
+                return ResourceManager.GetString("StrSilvers", resourceCulture);
             }
         }
         

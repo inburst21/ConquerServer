@@ -339,7 +339,18 @@ namespace Comet.Game.Packets
                     await user.SendAsync(this);
                     break;
 
+                case ActionType.BoothSpawn:
+                    if (await user.CreateBoothAsync())
+                    {
+                        Command = user.Booth.Identity;
+                        ArgumentX = user.Booth.MapX;
+                        ArgumentY = user.Booth.MapY;
+                        await user.SendAsync(this);
+                    }
+                    break;
+
                 case ActionType.BoothLeave: // 114
+                    await user.DestroyBoothAsync();
                     await user.Screen.SynchroScreenAsync();
                     break;
 

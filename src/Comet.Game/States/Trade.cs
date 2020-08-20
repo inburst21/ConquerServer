@@ -95,6 +95,13 @@ namespace Comet.Game.States
                 await sender.SendAsync(RemoveMsg(idItem));
                 return false;
             }
+
+            if (sender.Booth?.QueryItem(item.Identity) != null)
+            {
+                await sender.SendAsync(Language.StrNotToTrade);
+                await sender.SendAsync(RemoveMsg(idItem));
+                return false;
+            }
             
             if (items.Count >= MAX_TRADE_ITEMS)
             {

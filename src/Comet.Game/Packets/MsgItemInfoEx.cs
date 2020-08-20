@@ -22,6 +22,7 @@
 #region References
 
 using Comet.Game.States;
+using Comet.Game.States.Items;
 using Comet.Network.Packets;
 
 #endregion
@@ -30,11 +31,73 @@ namespace Comet.Game.Packets
 {
     public sealed class MsgItemInfoEx : MsgBase<Client>
     {
-        public MsgItemInfoEx()
+        public enum ViewMode : ushort
         {
-            Type = PacketType.MsgItemInfoEx;
+            None, 
+            Silvers,
+            Unknown,
+            Emoney,
+            ViewEquipment
         }
 
+        public MsgItemInfoEx(BoothItem item)
+        {
+            Type = PacketType.MsgItemInfoEx;
 
+            Identity = item.Identity;
+            TargetIdentity = item.Item.PlayerIdentity;
+            ItemType = item.Item.Type;
+            Amount = item.Item.Durability;
+            AmountLimit = item.Item.MaximumDurability;
+            Position = Item.ItemPosition.Inventory;
+            SocketOne = item.Item.SocketOne;
+            SocketTwo = item.Item.SocketTwo;
+            Addition = item.Item.Plus;
+            Blessing = (byte) item.Item.Blessing;
+            Enchantment = item.Item.Enchantment;
+            Color = item.Item.Color;
+            Mode = item.IsSilver ? ViewMode.Silvers : ViewMode.Emoney;
+            Price = item.Value;
+        }
+
+        public uint Identity;
+        public uint TargetIdentity;
+        public uint Price;
+        public uint ItemType;
+        public ushort Amount;
+        public ushort AmountLimit;
+        public ViewMode Mode;
+        public Item.ItemPosition Position;
+        public Item.SocketGem SocketOne;
+        public Item.SocketGem SocketTwo;
+        public byte Addition;
+        public byte Blessing;
+        public byte Enchantment;
+        public Item.ItemColor Color;
+
+        public override byte[] Encode()
+        {
+            PacketWriter writer = new PacketWriter();
+            writer.Write((ushort) Type);
+            writer.Write(Identity);
+            writer.Write(TargetIdentity);
+            writer.Write(Price);
+            writer.Write(ItemType);
+            writer.Write(Amount);
+            writer.Write(AmountLimit);
+            writer.Write((ushort) Mode);
+            writer.Write((ushort) Position);
+            writer.Write(0);
+            writer.Write((byte) SocketOne);
+            writer.Write((byte) SocketTwo);
+            writer.Write((ushort) 0);
+            writer.Write(Addition);
+            writer.Write(Blessing);
+            writer.Write(Enchantment);
+            writer.Write((byte) 0);
+            writer.Write(0UL);
+            writer.Write((ushort) Color);
+            return writer.ToArray();
+        }
     }
 }

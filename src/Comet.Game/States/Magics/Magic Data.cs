@@ -23,7 +23,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Comet.Core;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;

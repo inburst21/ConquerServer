@@ -469,7 +469,7 @@ namespace Comet.Game.States.Items
         {
             if (IsPackFull())
                 return false;
-
+            
             item.PlayerIdentity = m_user.Identity;
             item.Position = Item.ItemPosition.Inventory;
             m_dicInventory.TryAdd(item.Identity, item);

@@ -1135,6 +1135,108 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Booth
+
+        public BoothNpc Booth { get; private set; }
+
+        public async Task<bool> CreateBoothAsync()
+        {
+            if (Booth != null)
+            {
+                await Booth.LeaveMap();
+                Booth = null;
+                return false;
+            }
+
+            if (Map?.IsBoothEnable() != true)
+            {
+                await SendAsync(Language.StrBoothRegionCantSetup);
+                return false;
+            }
+
+            Booth = new BoothNpc(this);
+            if (!await Booth.InitializeAsync())
+                return false;
+            return true;
+        }
+
+        public async Task<bool> DestroyBoothAsync()
+        {
+            if (Booth == null)
+                return false;
+
+            await Booth.LeaveMap();
+            Booth = null;
+            return true;
+        }
+
+        public bool AddBoothItem(uint idItem, uint value, MsgItem.Moneytype type)
+        {
+            if (Booth == null)
+                return false;
+
+            if (!Booth.ValidateItem(idItem))
+                return false;
+
+            Item item = UserPackage[idItem];
+            return Booth.AddItem(item, value, type);
+        }
+
+        public bool RemoveBoothItem(uint idItem)
+        {
+            if (Booth == null)
+                return false;
+            return Booth.RemoveItem(idItem);
+        }
+
+        public async Task<bool> SellBoothItemAsync(uint idItem, Character target)
+        {
+            if (Booth == null)
+                return false;
+
+            if (target.Identity == Identity)
+                return false;
+
+            if (!target.UserPackage.IsPackSpare(1))
+                return false;
+
+            if (GetDistance(target) > Screen.VIEW_SIZE)
+                return false;
+
+            if (!Booth.ValidateItem(idItem))
+                return false;
+
+            BoothItem item = Booth.QueryItem(idItem);
+            int value = (int) item.Value;
+            string moneyType = item.IsSilver ? Language.StrSilvers : Language.StrConquerPoints;
+            if (item.IsSilver)
+            {
+                if (!await target.SpendMoney((int) item.Value, true))
+                    return false;
+                await AwardMoney(value);
+            }
+            else
+            {
+                if (!await target.SpendConquerPoints((int) item.Value, true))
+                    return false;
+                await AwardConquerPoints(value);
+            }
+
+            Booth.RemoveItem(idItem);
+
+            await SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.BoothRemove) {Command = Booth.Identity});
+            await UserPackage.RemoveFromInventoryAsync(item.Item, UserPackage.RemovalType.RemoveAndDisappear);
+            await item.Item.ChangeOwnerAsync(target.Identity, Item.ChangeOwnerType.BoothSale);
+            await target.UserPackage.AddItemAsync(item.Item);
+
+            await SendAsync(string.Format(Language.StrBoothSold, target.Name, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
+            await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
+
+            return true;
+        }
+
+        #endregion
+
         #region Map Item
 
         public async Task<bool> DropItem(uint idItem, int x, int y, bool force = false)
@@ -2436,6 +2538,8 @@ namespace Comet.Game.States
                 FirstProfession = PreviousProfession;
                 PreviousProfession = Profession;
             }
+
+
             await SetAttributesAsync(ClientUpdateType.Class, newProf);
             await SetAttributesAsync(ClientUpdateType.Reborn, mete);
             await SaveAsync();
@@ -3735,6 +3839,10 @@ namespace Comet.Game.States
                     Profession = (byte) value;
                     break;
 
+                case ClientUpdateType.Reborn:
+                    Metempsychosis = (byte) value;
+                    break;
+
                 default:
                     bool result = await base.SetAttributesAsync(type, value);
                     return result && await SaveAsync();
@@ -4005,6 +4113,17 @@ namespace Comet.Game.States
 
             m_dbObject.LogoutTime = DateTime.Now;
             m_dbObject.OnlineSeconds += (int)(m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+
+            try
+            {
+                if (Booth != null)
+                    await Booth.LeaveMap();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, "Error on booth disconnection");
+                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+            }
 
             try
             {               

@@ -1902,7 +1902,8 @@ namespace Comet.Game.States.Items
             DeleteItem,
             ItemUsage,
             DeleteDroppedItem,
-            InvalidItemType
+            InvalidItemType,
+            BoothSale
         }
 
         #endregion
