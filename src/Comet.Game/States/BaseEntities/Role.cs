@@ -688,7 +688,7 @@ namespace Comet.Game.States.BaseEntities
                     break;
 
                 case ClientUpdateType.StatusFlag:
-                    value = (long) StatusFlag;
+                    StatusFlag = (ulong) value;
                     screen = true;
                     break;
 
@@ -710,7 +710,7 @@ namespace Comet.Game.States.BaseEntities
             if (screen)
             {
                 if (this is Character user)
-                    await user.BroadcastRoomMsgAsync(msg, screen);
+                    await user.BroadcastRoomMsgAsync(msg, true);
                 else
                     Map?.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
             }

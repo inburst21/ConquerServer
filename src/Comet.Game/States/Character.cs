@@ -71,6 +71,7 @@ namespace Comet.Game.States
         private TimeOut m_respawn = new TimeOut();
         private TimeOut m_mine = new TimeOut(2);
         private TimeOut m_teamLeaderPos = new TimeOut(3);
+        private TimeOut m_timeSync = new TimeOut(15);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -2445,7 +2446,7 @@ namespace Comet.Game.States
                 }
             }
 
-            if (!UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == false)
+            if (UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == false)
                 await UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
 
             if (UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true && ProfessionSort != 4)
@@ -2506,7 +2507,7 @@ namespace Comet.Game.States
 
             AutoAllot = false;
 
-            int newAttrib = GetRebirthAddPoint(Profession, Level, mete) + (15 * 3) - (Level * 3);
+            int newAttrib = (GetRebirthAddPoint(Profession, Level, mete) + (newLev * 3));
             await SetAttributesAsync(ClientUpdateType.Atributes, newAttrib);
             await SetAttributesAsync(ClientUpdateType.Strength, force);
             await SetAttributesAsync(ClientUpdateType.Agility, speed);
@@ -3922,6 +3923,11 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
+            if (m_timeSync.ToNextTime())
+            {
+                _ = SendAsync(new MsgData(DateTime.Now));
+            }
+
             try
             {
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)

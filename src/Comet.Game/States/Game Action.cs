@@ -606,7 +606,7 @@ namespace Comet.Game.States
             }
             else if (ope.Equals("ownerid", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (ope == "=")
+                if (opt == "=")
                 {
                     if (!(npc is DynamicNpc dyna))
                         return false;
@@ -621,7 +621,7 @@ namespace Comet.Game.States
             }
             else if (ope.Equals("maxlife", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (ope == "=")
+                if (opt == "=")
                 {
                     return await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, data);
                 }
@@ -630,13 +630,13 @@ namespace Comet.Game.States
             }
             else if (ope.StartsWith("data", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (ope == "=")
+                if (opt == "=")
                 {
                     npc.SetData(ope, data);
                     return await npc.SaveAsync();
                 }
 
-                if (ope == "+=")
+                if (opt == "+=")
                 {
                     npc.SetData(ope, npc.GetData(ope) + data);
                     return await npc.SaveAsync();

@@ -256,6 +256,9 @@ namespace Comet.Game.Packets
                         return;
                     }
 
+                    SenderMesh = sender.Mesh;
+                    RecipientMesh = target.Mesh;
+
                     await target.SendAsync(this);
                     break;
 
@@ -494,6 +497,15 @@ namespace Comet.Game.Packets
                     case "/reloadactionall":
                         await Kernel.EventManager.ReloadActionTaskAllAsync();
                         return true;
+
+                    case "/xp":
+                        await user.AddXp(100);
+                        await user.BurstXp();
+                        return true;
+
+                    case "/sp":
+                        await user.SetAttributesAsync(ClientUpdateType.Stamina, user.MaxEnergy);
+                        return true;
                 }
             }
 
@@ -603,7 +615,7 @@ namespace Comet.Game.Packets
                     return true;
 
                 case "/battleattr":
-                    Role target = null;
+                    Role target;
                     if (!string.IsNullOrEmpty(param) && uint.TryParse(param, out uint idBpTarget))
                     {
                         target = Kernel.RoleManager.GetRole(idBpTarget) ?? user;

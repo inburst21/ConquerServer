@@ -83,7 +83,8 @@ namespace Comet.Game.World.Managers
                     .ThenBy(y => y.FirstDonation))
                 {
                     Character targetUser = Kernel.RoleManager.GetUser(peer.UserIdentity);
-                    await targetUser?.SendNobilityInfo(true);
+                    if (targetUser != null)
+                        await targetUser.SendNobilityInfo(true);
                 }
             }
 

@@ -139,6 +139,12 @@ namespace Comet.Game.States.NPCs
                     Mesh = (uint) value;
                     await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
                     return await SaveAsync();
+
+                case ClientUpdateType.Hitpoints:
+                    m_dbNpc.Life = Math.Min((uint)value, MaxLife);
+                    await BroadcastRoomMsgAsync(new MsgUserAttrib(Identity, ClientUpdateType.Hitpoints, Life), false);
+                    return await SaveAsync();
+
                 case ClientUpdateType.MaxHitpoints:
                     m_dbNpc.Maxlife = (uint) value;
                     await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);

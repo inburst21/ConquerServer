@@ -89,7 +89,10 @@ namespace Comet.Game.States.Items
             m_dbItemAddition = Kernel.ItemManager.GetItemAddition(item.Type, item.Magic3);
 
             if (m_dbItem.Id == 0)
+            {
                 await SaveAsync();
+                m_user.LastAddItemIdentity = Identity;
+            }
             return true;
         }
 
@@ -933,9 +936,7 @@ namespace Comet.Game.States.Items
             if (nQuality < 3 || nQuality >= 9)
                 return 0;
 
-            nQuality++;
-            if (nQuality < 5)
-                nQuality = nQuality + (5 - nQuality) + 1;
+            nQuality = Math.Min(6, Math.Max(9, ++nQuality));
 
             type = type - type % 10 + nQuality;
 

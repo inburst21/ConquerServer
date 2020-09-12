@@ -71,6 +71,7 @@ namespace Comet.Game.Packets
         {
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) Type);
+            writer.Write((uint) Action);
             writer.Write(Year);
             writer.Write(Month);
             writer.Write(DayOfYear);

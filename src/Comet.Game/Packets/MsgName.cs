@@ -113,6 +113,25 @@ namespace Comet.Game.Packets
 
                     await client.Character.Syndicate.SendMembersAsync((int) Identity, client.Character);
                     break;
+
+                case StringAction.WhisperWindowInfo:
+                    if (Strings.Count == 0)
+                    {
+                        await client.SendAsync(this);
+                        return;
+                    }
+
+                    targetUser = Kernel.RoleManager.GetUser(Strings[0]);
+                    if (targetUser == null)
+                    {
+                        await client.SendAsync(this);
+                        return;
+                    }
+
+                    Strings.Add(
+                        $"{targetUser.Identity} {targetUser.Level} {targetUser.BattlePower} #{targetUser.SyndicateName} #None {targetUser.MateName} {(int) targetUser.NobilityRank} {targetUser.Gender}");
+                    await client.SendAsync(this);
+                    break;
             }
         }
     }
