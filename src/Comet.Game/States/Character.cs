@@ -43,6 +43,7 @@ using Comet.Game.States.NPCs;
 using Comet.Game.States.Relationship;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -3748,26 +3749,7 @@ namespace Comet.Game.States
 
                 case ClientUpdateType.PkPoints:
                     value = PkPoints = (ushort) Math.Max(0, Math.Min(PkPoints + value, ushort.MaxValue));
-
-                    if (m_dbObject.KillPoints != value)
-                    {
-                        if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
-                        {
-                            await DetachStatus(StatusSet.RED_NAME);
-                            await AttachStatus(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
-                        }
-                        else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
-                        {
-                            await DetachStatus(StatusSet.BLACK_NAME);
-                            await AttachStatus(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
-                        }
-                        else
-                        {
-                            await DetachStatus(StatusSet.BLACK_NAME);
-                            await DetachStatus(StatusSet.RED_NAME);
-                        }
-                    }
-
+                    await CheckPkStatusAsync((int) value);
                     break;
 
                 default:
@@ -3808,6 +3790,7 @@ namespace Comet.Game.States
 
                 case ClientUpdateType.PkPoints:
                     PkPoints = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, value));
+                    await CheckPkStatusAsync((int)value);
                     break;
 
                 case ClientUpdateType.Mesh:
@@ -3852,6 +3835,29 @@ namespace Comet.Game.States
             await SaveAsync();
             await SynchroAttributesAsync(type, value, screen);
             return true;
+        }
+
+        /// <param name="value">The old value.</param>
+        public async Task CheckPkStatusAsync(int value)
+        {
+            if (m_dbObject.KillPoints != value)
+            {
+                if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
+                {
+                    await DetachStatus(StatusSet.RED_NAME);
+                    await AttachStatus(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
+                }
+                else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
+                {
+                    await DetachStatus(StatusSet.BLACK_NAME);
+                    await AttachStatus(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
+                }
+                else
+                {
+                    await DetachStatus(StatusSet.BLACK_NAME);
+                    await DetachStatus(StatusSet.RED_NAME);
+                }
+            }
         }
 
         #endregion
@@ -4175,7 +4181,8 @@ namespace Comet.Game.States
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
             }
 
-            await SaveAsync();
+            if (!m_IsDeleted)
+                await SaveAsync();
 
             try
             {
@@ -4243,6 +4250,34 @@ namespace Comet.Game.States
             {
                 return await Task.FromResult(false);
             }
+        }
+
+        #endregion
+
+        #region Deletion
+
+        private bool m_IsDeleted = false;
+
+        public async Task DeleteCharacterAsync()
+        {
+            await BaseRepository.ScalarAsync($"INSERT INTO `cq_deluser` SELECT * FROM `cq_user` WHERE `id`={Identity};");
+            await BaseRepository.DeleteAsync(m_dbObject);
+            await Log.GmLog("delete_user", $"{Identity},{Name},{MapIdentity},{MapX},{MapY},{Silvers},{ConquerPoints},{Level},{Profession},{FirstProfession},{PreviousProfession}");
+
+            foreach (var friend in m_dicFriends.Values)
+                await friend.DeleteAsync();
+
+            foreach (var enemy in m_dicEnemies.Values)
+                await enemy.DeleteAsync();
+
+            foreach (var tradePartner in m_tradePartners.Values)
+                await tradePartner.DeleteAsync();
+
+            DbPeerage peerage = Kernel.PeerageManager.GetUser(Identity);
+            if (peerage != null)
+                await BaseRepository.DeleteAsync(peerage);
+
+            m_IsDeleted = true;
         }
 
         #endregion

@@ -284,7 +284,15 @@ namespace Comet.Game.Packets
                     await user.Reborn(Command == 0);
                     break;
 
-                case ActionType.CharacterPkMode: // 95
+                case ActionType.CharacterDelete:
+                    if (user.SecondaryPassword != Command)
+                        return;
+
+                    await user.DeleteCharacterAsync();
+                    await Kernel.RoleManager.KickoutAsync(user.Identity, "DELETED");
+                    break;
+
+                case ActionType.CharacterPkMode: // 96
                     if (!Enum.IsDefined(typeof(PkModeType), (int) Command))
                         Command = (uint) PkModeType.Capture;
 

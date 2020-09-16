@@ -186,7 +186,7 @@ namespace Comet.Game.Packets
 
         private async Task GenerateInitialEquipment(DbCharacter user)
         {
-            await CreateItemAsync((uint) await Kernel.NextAsync(132303, 132305), user.Identity, Item.ItemPosition.Armor);
+            await CreateItemAsync((uint) await Kernel.NextAsync(132003, 132005), user.Identity, Item.ItemPosition.Armor);
             switch (user.Profession)
             {
                 case 10:
@@ -209,6 +209,8 @@ namespace Comet.Game.Packets
         private async Task CreateItemAsync(uint type, uint idOwner, Item.ItemPosition position)
         {
             DbItem item = Item.CreateEntity(type);
+            if (item == null)
+                return;
             item.Position = (byte)position;
             item.PlayerId = idOwner;
             await BaseRepository.SaveAsync(item);

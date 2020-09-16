@@ -23,8 +23,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using Comet.Shared;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -94,6 +96,38 @@ namespace Comet.Game.Database
                 await Log.WriteLog(LogLevel.Exception, ex.ToString());
                 return false;
             }
+        }
+
+        public static async Task<DataTable> SelectAsync(string query)
+        {
+            await using var db = new ServerDbContext();
+            return await db.SelectAsync(query);
+        }
+
+        public static async Task<string> ScalarAsync(string query)
+        {
+            await using var db = new ServerDbContext();
+            var connection = db.Database.GetDbConnection();
+            var state = connection.State;
+
+            string result;
+            try
+            {
+                if ((state & ConnectionState.Open) == 0)
+                    await connection.OpenAsync();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = query;
+
+                result = (await cmd.ExecuteScalarAsync())?.ToString();
+            }
+            finally
+            {
+                if (state != ConnectionState.Closed)
+                    await connection.CloseAsync();
+            }
+            return result;
         }
     }
 }
