@@ -212,7 +212,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserStatusCreate: result = await ExecuteActionUserStatusCreate(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStatusCheck: result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input); break;
 
-                    case TaskActionType.ActionGeneralLottery: result = true; break;
+                    case TaskActionType.ActionGeneralLottery: result = await ExecuteGeneralLottery(action, param, user, role, item, input); break;
                     case TaskActionType.ActionAchievements: result = true;  break;
 
                     case TaskActionType.ActionEventSetstatus: result = await ExecuteActionEventSetstatus(action, param, user, role, item, input); break;
@@ -4747,6 +4747,83 @@ namespace Comet.Game.States
             }
 
             return false;
+        }
+
+        #endregion
+
+        #region General
+
+        private static async Task<bool> ExecuteGeneralLottery(DbAction action, string param, Character user, Role role, Item item,
+            string input)
+        {
+            if (user == null)
+            {
+                await Log.WriteLog(LogLevel.Error, $"No user for ExecuteGeneralLottery, {action.Identity}");
+                return false;
+            }
+
+            List<DbLottery> allItems = await DbLottery.GetAsync();
+            int lottoChance = await Kernel.NextAsync(10000);
+            if (lottoChance > 150)
+            {
+                allItems.RemoveAll(x => x.Rank == 1);
+            }
+            if (lottoChance > 300)
+            {
+                allItems.RemoveAll(x => x.Rank == 2);
+            }
+            if (lottoChance > 500)
+            {
+                allItems.RemoveAll(x => x.Rank == 3);
+            }
+            if (lottoChance > 1000)
+            {
+                allItems.RemoveAll(x => x.Rank == 4);
+            }
+            if (lottoChance > 2000)
+            {
+                allItems.RemoveAll(x => x.Rank == 5);
+            }
+            if (lottoChance > 4000)
+            {
+                allItems.RemoveAll(x => x.Rank == 6);
+            }
+
+            allItems.RemoveAll(x => Kernel.ItemManager.GetItemtype(x.ItemIdentity) == null);
+
+            DbLottery lottery = allItems[await Kernel.NextAsync(allItems.Count) % allItems.Count];
+            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(lottery.ItemIdentity);
+
+            DbItem lottoItem = new DbItem
+            {
+                Type = lottery.ItemIdentity,
+                Amount = itemtype.Amount,
+                AmountLimit = itemtype.AmountLimit,
+                Magic3 = lottery.Plus > 0 ? lottery.Plus : itemtype.Magic3,
+                Gem1 = (byte) (lottery.SocketNum > 0 ? 255: 0),
+                Gem2 = (byte) (lottery.SocketNum > 1 ? 255: 0),
+                Color = 3,
+                PlayerId = user.Identity
+            };
+
+            Item newItem = new Item(user);
+            if (!await newItem.CreateAsync(lottoItem))
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error to create lottery item {newItem.ToJson()}");
+                return false;
+            }
+
+            await user.UserPackage.AddItemAsync(newItem);
+
+            if (lottery.Rank < 5)
+            {
+                await user.SendAsync(string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
+            }
+            else
+            {
+                await user.SendAsync(string.Format(Language.StrLotteryLow, lottery.Itemname));
+            }
+            return true;
         }
 
         #endregion

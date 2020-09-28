@@ -619,6 +619,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has won {1} from the Lottery..
+        /// </summary>
+        public static string StrLotteryHigh {
+            get {
+                return ResourceManager.GetString("StrLotteryHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You won {0} from the Lottery..
+        /// </summary>
+        public static string StrLotteryLow {
+            get {
+                return ResourceManager.GetString("StrLotteryLow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1} are friends from now on..
         /// </summary>
         public static string StrMakeFriend {
