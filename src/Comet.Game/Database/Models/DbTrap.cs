@@ -48,7 +48,9 @@ namespace Comet.Game.Database.Models
         public static async Task<List<DbTrap>> GetAsync()
         {
             await using ServerDbContext ctx = new ServerDbContext();
-            return await ctx.Traps.ToListAsync();
+            return await ctx.Traps
+                .Include(x => x.Type)
+                .ToListAsync();
         }
     }
 }

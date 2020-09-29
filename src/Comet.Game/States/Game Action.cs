@@ -5304,7 +5304,7 @@ namespace Comet.Game.States
                 Id = (uint)IdentityGenerator.Traps.GetNextIdentity
             });
 
-            if (!await trap.InitializeAsync(user))
+            if (!await trap.InitializeAsync())
             {
                 await Log.WriteLog(LogLevel.Error,
                     $"could not start trap for ExecuteActionTrapCreate {action.Identity}");

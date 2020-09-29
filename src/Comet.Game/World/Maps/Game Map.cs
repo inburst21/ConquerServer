@@ -203,6 +203,16 @@ namespace Comet.Game.World.Maps
 
             m_regions = await DbRegion.GetAsync(Identity);
 
+            foreach (var dbTrap in (await DbTrap.GetAsync()).Where(x => x.MapId == Identity))
+            {
+                MapTrap trap = new MapTrap(dbTrap);
+                if (!await trap.InitializeAsync())
+                {
+                    await Log.WriteLog(LogLevel.Error, $"Could not start system map trap for {Identity} > Trap {dbTrap.Id}");
+                    continue;
+                }
+            }
+
             return true;
         }
 
@@ -741,7 +751,7 @@ namespace Comet.Game.World.Maps
                     GameBlock block = m_blocks[x, y];
                     if (block.IsActive)
                     {
-                        roles.AddRange(Query9Blocks(x, y));
+                        roles.AddRange(Query9Blocks(x, y).Where(z => z is Monster));
                     }
                 }
             }

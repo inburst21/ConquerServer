@@ -84,8 +84,10 @@ namespace Comet.Game.States
 
         #region Initialization
 
-        public async Task<bool> InitializeAsync(Role owner)
+        public async Task<bool> InitializeAsync(Role owner = null)
         {
+            m_dbTrap.Type ??= await DbTrapType.GetAsync(m_dbTrap.TypeId);
+
             if (m_dbTrap.Type == null)
             {
                 await Log.WriteLog(LogLevel.Error, $"Trap has no type {m_dbTrap.Type} [TrapId: {m_dbTrap.Id}]");
@@ -95,6 +97,8 @@ namespace Comet.Game.States
             m_owner = owner;
 
             m_tFight.SetInterval(m_dbTrap.Type.AttackSpeed);
+
+            Mesh = m_dbTrap.Look;
 
             m_idMap = m_dbTrap.MapId;
             m_posX = m_dbTrap.PosX;
@@ -110,7 +114,12 @@ namespace Comet.Game.States
 
         public override Task EnterMap()
         {
-            return base.EnterMap();
+            Map = Kernel.MapManager.GetMap(MapIdentity);
+            if (Map != null)
+            {
+                return Map.AddAsync(this);
+            }
+            return Task.CompletedTask;
         }
 
         public override async Task LeaveMap()
@@ -124,7 +133,7 @@ namespace Comet.Game.States
                 Mode = DropType.DropTrap
             }, false);
 
-            await base.LeaveMap();
+            await Map.RemoveAsync(Identity);
 
             if (Identity >= MAGICTRAPID_FIRST && Identity <= MAGICTRAPID_LAST)
                 IdentityGenerator.Traps.ReturnIdentity(Identity);
@@ -170,8 +179,8 @@ namespace Comet.Game.States
             if (IdAction > 0)
             {
                 if ((AttackMode & (int) TargetType.User) != 0)
-                    await GameAction.ExecuteActionAsync(IdAction, target as Character, null, null, "");
-                else if ((AttackMode & (int)TargetType.User) != 0)
+                    await GameAction.ExecuteActionAsync(IdAction, target as Character, this, null, "");
+                else if ((AttackMode & (int)TargetType.Monster) != 0)
                     await GameAction.ExecuteActionAsync(IdAction, null, target, null, "");
                 else
                     await GameAction.ExecuteActionAsync(IdAction, null, null, null, "");

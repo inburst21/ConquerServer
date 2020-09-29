@@ -23,6 +23,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -46,5 +47,11 @@ namespace Comet.Game.Database.Models
         [Column("magic_hitrate")] public virtual int MagicHitrate { get; set; }
         [Column("size")] public virtual int Size { get; set; }
         [Column("atk_mode")] public virtual int AtkMode { get; set; }
+
+        public static async Task<DbTrapType> GetAsync(uint id)
+        {
+            await using ServerDbContext ctx = new ServerDbContext();
+            return await ctx.TrapTypes.FindAsync(id);
+        }
     }
 }
