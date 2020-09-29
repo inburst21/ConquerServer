@@ -21,6 +21,7 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
@@ -244,11 +245,15 @@ namespace Comet.Game.States.BaseEntities
             await DetachStatus(StatusSet.INTENSIFY);
         }
 
-        public virtual Task ProcessAfterMove()
+        public virtual async Task ProcessAfterMove()
         {
             Action = EntityAction.Stand;
 
-            return Task.CompletedTask;
+            foreach (var trap in Map.Query9BlocksByPos(MapX, MapY).Where(x => x is MapTrap).Cast<MapTrap>())
+            {
+                if (trap.IsTrapSort && trap.IsInRange(this))
+                    await trap.TrapAttackAsync(this);
+            }
         }
 
         public virtual async Task ProcessOnAttack()

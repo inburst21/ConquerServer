@@ -637,6 +637,11 @@ namespace Comet.Game.Packets
                     if (target is Character tgtUsr)
                         await user.SendAsync($"DG: {tgtUsr.DragonGemBonus}%, PG: {tgtUsr.PhoenixGemBonus}%, Blessing: {tgtUsr.Blessing}%, TG: {tgtUsr.TortoiseGemBonus}%", TalkChannel.Talk, Color.White);
                     return true;
+
+                case "/onlinetime":
+                    await user.SendAsync($"You have been online on the current session for {user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds.", TalkChannel.Talk);
+                    await user.SendAsync($"You have been online in the game for {user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds", TalkChannel.Talk);
+                    return true;
             }
 
             return false;

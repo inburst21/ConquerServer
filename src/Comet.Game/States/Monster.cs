@@ -1276,7 +1276,7 @@ namespace Comet.Game.States
         #endregion
 
         #region On Timer
-        
+
         public override async Task OnTimerAsync()
         {
             if (!IsAlive)
@@ -1297,23 +1297,20 @@ namespace Comet.Game.States
                 }
             }
 
-            if (IsPkKiller() && Type == 910)
+            switch (m_stage)
             {
-                switch (m_stage)
-                {
-                    case AiStage.Escape:
-                        await EscapeAsync();
-                        break;
-                    case AiStage.Attack:
-                        await AttackAsync();
-                        break;
-                    case AiStage.Move:
-                        await FowardAsync();
-                        break;
-                    case AiStage.Idle:
-                        await IdleAsync();
-                        break;
-                }
+                case AiStage.Escape:
+                    await EscapeAsync();
+                    break;
+                case AiStage.Attack:
+                    await AttackAsync();
+                    break;
+                case AiStage.Move:
+                    await FowardAsync();
+                    break;
+                case AiStage.Idle:
+                    await IdleAsync();
+                    break;
             }
         }
 

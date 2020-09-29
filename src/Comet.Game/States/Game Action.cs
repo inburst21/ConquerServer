@@ -229,6 +229,10 @@ namespace Comet.Game.States
                     case TaskActionType.ActionEventTeleport: result = await ExecuteActionEventTeleport(action, param, user, role, item, input); break;
                     case TaskActionType.ActionEventMassaction: result = await ExecuteActionEventMassaction(action, param, user, role, item, input); break;
 
+                    case TaskActionType.ActionTrapCreate: result = await ExecuteActionTrapCreate(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionTrapErase: result = await ExecuteActionTrapErase(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionTrapCount: result = await ExecuteActionTrapCount(action, param, user, role, item, input); break;
+
                     default:
                         await Log.WriteLog(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
                         break;
@@ -5260,6 +5264,76 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Trap
+
+        private static async Task<bool> ExecuteActionTrapCreate(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            string[] splitParams = SplitParam(param, 7);
+
+            if (splitParams.Length < 7)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Invalid param length ExecuteActionTrapCreate {action.Identity}");
+                return false;
+            }
+
+            uint type = uint.Parse(splitParams[0]),
+                look = uint.Parse(splitParams[1]),
+                owner = uint.Parse(splitParams[2]),
+                idMap = uint.Parse(splitParams[3]);
+            ushort posX = ushort.Parse(splitParams[4]),
+                posY = ushort.Parse(splitParams[5]),
+                data = ushort.Parse(splitParams[6]);
+
+            if (Kernel.MapManager.GetMap(idMap) == null)
+            {
+                await Log.WriteLog(LogLevel.Error,
+                    $"Invalid map for ExecuteActionTrapCreate {idMap}:{action.Identity}");
+                return false;
+            }
+
+            MapTrap trap = new MapTrap(new DbTrap
+            {
+                TypeId = type,
+                Look = look,
+                OwnerId = owner,
+                Data = data,
+                MapId = idMap,
+                PosX = posX,
+                PosY = posY,
+                Id = (uint)IdentityGenerator.Traps.GetNextIdentity
+            });
+
+            if (!await trap.InitializeAsync(user))
+            {
+                await Log.WriteLog(LogLevel.Error,
+                    $"could not start trap for ExecuteActionTrapCreate {action.Identity}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTrapErase(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            MapTrap trap = role as MapTrap;
+            if (trap == null)
+                return false;
+
+            await trap.LeaveMap();
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTrapCount(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            throw new NotImplementedException("No action for this yet.");
+            // return true;
+        }
+
+        #endregion
+
         private static string FormatParam(DbAction action, Character user, Role role, Item item, string input)
         {
             string result = action.Param;
@@ -5282,7 +5356,9 @@ namespace Comet.Game.States
                 .Replace("%account_id", user?.Client.AccountIdentity.ToString() ?? "0")
                 .Replace("%user_virtue", user?.VirtuePoints.ToString() ?? "0")
                 .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
-                .Replace("%last_add_item_id", user?.LastAddItemIdentity.ToString() ?? "0");
+                .Replace("%last_add_item_id", user?.LastAddItemIdentity.ToString() ?? "0")
+                .Replace("%online_time", $"{user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds")
+                .Replace("%session_time", $"{user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds");
 
             if (result.Contains("%levelup_exp"))
             {

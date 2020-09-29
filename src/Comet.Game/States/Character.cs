@@ -141,8 +141,16 @@ namespace Comet.Game.States
             set => m_dbObject.Mate = value;
         }
 
+        public TimeSpan OnlineTime =>
+            TimeSpan.Zero
+                .Add(new TimeSpan(0, 0, 0, m_dbObject.OnlineSeconds))
+                .Add(new TimeSpan(0, 0, 0, (int) (DateTime.Now - m_dbObject.LoginTime).TotalSeconds));
+
+        public TimeSpan SessionOnlineTime => TimeSpan.Zero
+            .Add(new TimeSpan(0, 0, 0, (int)(DateTime.Now - m_dbObject.LoginTime).TotalSeconds));
+
         #endregion
-        
+
         #region Appearence
 
         private uint m_mesh = 0;

@@ -263,13 +263,13 @@ namespace Comet.Game.World.Managers
                     m_mapItemSet.TryRemove(item.Identity, out _);
                 }
             }
+
+            foreach (var trap in m_roleSet.Values.Where(x => x is MapTrap).Cast<MapTrap>())
+            {
+                await trap.OnTimerAsync();
+            }
         }
-
-        public async Task OnAiTimerAsync()
-        {
-
-        }
-
+        
         public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
             Color? color = null)
         {
