@@ -36,13 +36,16 @@ namespace Comet.Game.World.Threading
         {
         }
 
+        public int ProcessedMonsters { get; private set; }
+
         public override async Task<bool> OnElapseAsync()
         {
             try
             {
+                ProcessedMonsters = 0;
                 foreach (var map in Kernel.MapManager.GameMaps.Values)
                 {
-                    await map.OnTimerAsync();
+                    ProcessedMonsters += await map.OnTimerAsync();
                 }
             }
             catch (Exception ex)

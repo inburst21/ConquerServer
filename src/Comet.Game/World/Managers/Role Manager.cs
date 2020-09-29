@@ -51,6 +51,7 @@ namespace Comet.Game.World.Managers
         private readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new Dictionary<byte, DbLevelExperience>();
         private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
+        private readonly Dictionary<uint, List<DbMonsterMagic>> m_dicMonsterMagics = new Dictionary<uint, List<DbMonsterMagic>>();
 
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
@@ -89,6 +90,13 @@ namespace Comet.Game.World.Managers
             foreach (var dbOp in await MagictypeOpRepository.GetAsync())
             {
                 m_magicOps.Add(new MagicTypeOp(dbOp));
+            }
+
+            foreach (var magic in await DbMonsterMagic.GetAsync())
+            {
+                if (!m_dicMonsterMagics.ContainsKey(magic.OwnerIdentity))
+                    m_dicMonsterMagics.TryAdd(magic.OwnerIdentity, new List<DbMonsterMagic>());
+                m_dicMonsterMagics[magic.OwnerIdentity].Add(magic);
             }
         }
 
@@ -257,6 +265,11 @@ namespace Comet.Game.World.Managers
             }
         }
 
+        public async Task OnAiTimerAsync()
+        {
+
+        }
+
         public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
             Color? color = null)
         {
@@ -320,6 +333,11 @@ namespace Comet.Game.World.Managers
         public List<T> QueryRoleByType<T>() where T : Role
         {
             return m_roleSet.Values.Where(x => x is T).Cast<T>().ToList();
+        }
+
+        public List<DbMonsterMagic> GetMonsterMagics(uint roleType)
+        {
+            return m_dicMonsterMagics.TryGetValue(roleType, out var result) ? result : new List<DbMonsterMagic>();
         }
     }
 }

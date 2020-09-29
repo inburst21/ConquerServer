@@ -546,6 +546,13 @@ namespace Comet.Game.World.Maps
             return m_mapData[x, y].IsAccessible();
         }
 
+        public bool IsMoveEnable(int x, int y, FacingDirection dir)
+        {
+            int newX = x + WalkXCoords[(int) dir];
+            int newY = y + WalkYCoords[(int) dir];
+            return IsMoveEnable(newX, newY);
+        }
+
         public bool IsMoveEnable(int x, int y)
         {
             return IsValidPoint(x, y) && IsStandEnable(x, y);
@@ -719,13 +726,14 @@ namespace Comet.Game.World.Maps
 
         #region Ai Timer
 
-        public async Task OnTimerAsync()
+        public async Task<int> OnTimerAsync()
         {
-            if (m_users.Count == 0)
-                return;
-
             await Weather.OnTimerAsync();
-            
+
+            if (m_users.Count == 0)
+                return 0;
+
+            List<Role> roles = new List<Role>();
             for (int x = 0; x < BlocksX; x++)
             {
                 for (int y = 0; y < BlocksY; y++)
@@ -733,13 +741,20 @@ namespace Comet.Game.World.Maps
                     GameBlock block = m_blocks[x, y];
                     if (block.IsActive)
                     {
-                        foreach (var monster in block.RoleSet.Values.Where(z => z is Monster).Cast<Monster>())
-                        {
-                            await monster.OnTimerAsync();
-                        }
+                        roles.AddRange(Query9Blocks(x, y));
                     }
                 }
             }
+
+            roles.AddRange(m_roles.Values.Where(x => x is Monster mob && mob.IsGuard()));
+
+            int result = 0;
+            foreach (var role in roles.Distinct())
+            {
+                await role.OnTimerAsync();
+                result++;
+            }
+            return result;
         }
 
         #endregion

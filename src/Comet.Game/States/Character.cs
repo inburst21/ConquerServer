@@ -944,7 +944,8 @@ namespace Comet.Game.States
                 return true;
             }
 
-            if (target.IsMonster() && ((Monster) target).IsGuard())
+            //if (target.IsMonster() && ((Monster) target).IsGuard())
+            if (target is Monster mob && (mob.IsGuard() || mob.IsPkKiller()))
             {
                 await SetCrimeStatus(25);
                 return true;

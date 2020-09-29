@@ -33,6 +33,66 @@ namespace Comet.Core.Mathematics
     {
         public const double RADIAN_TO_DEGREE = 57.29;
 
+        public static byte GetDirection(int sourceX, int sourceY, int destX, int destY)
+        {
+            return GetDirection(new Point(sourceX, sourceY), new Point(destX, destY));
+        }
+
+        public static byte GetDirection(Point from, Point to)
+        {
+            int dir = 0;
+            int[] tan = { -241, -41, 41, 241 };
+            int deltaX = to.X - from.X;
+            int deltaY = to.Y - from.Y;
+
+            if (deltaX == 0)
+                if (deltaY > 0)
+                    dir = 0;
+                else
+                    dir = 4;
+            else if (deltaY == 0)
+                if (deltaX > 0)
+                    dir = 6;
+                else
+                    dir = 2;
+            else
+            {
+                int flag = Math.Abs(deltaX) / deltaX;
+                int tempY = deltaY * 100 * flag;
+                int i;
+                for (i = 0; i < 4; i++)
+                    tan[i] *= Math.Abs(deltaX);
+                for (i = 0; i < 3; i++)
+                    if (tempY >= tan[i] && tempY < tan[i + 1])
+                        break;
+                if (deltaX > 0)
+                {
+                    if (i == 0) dir = 5;
+                    else if (i == 1) dir = 6;
+                    else if (i == 2) dir = 7;
+                    else if (i == 3)
+                        if (deltaY > 0)
+                            dir = 0;
+                        else
+                            dir = 4;
+                }
+                else
+                {
+                    if (i == 0) dir = 1;
+                    else if (i == 1) dir = 2;
+                    else if (i == 2) dir = 3;
+                    else if (i == 3)
+                        if (deltaY > 0)
+                            dir = 0;
+                        else
+                            dir = 4;
+                }
+            }
+
+            dir = (dir + 8) % 8;
+            return (byte)dir;
+        }
+
         /// <summary> This function returns the direction for a jump or attack. </summary>
         /// <param name="x1">The x coordinate of the destination point.</param>
         /// <param name="y1">The y coordinate of the destination point.</param>

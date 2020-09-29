@@ -4966,7 +4966,7 @@ namespace Comet.Game.States
             }
 
             Monster monster = new Monster(monstertype, (uint)IdentityGenerator.Monster.GetNextIdentity, generator);
-            if (!monster.Initialize(idMap, usPosX, usPosY))
+            if (!await monster.InitializeAsync(idMap, usPosX, usPosY))
             {
                 await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] could not initialize monster: {param}");
                 return false;

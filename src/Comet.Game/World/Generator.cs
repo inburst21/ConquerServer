@@ -150,7 +150,7 @@ namespace Comet.Game.World
                 return null;
             }
 
-            if (!mob.Initialize(m_pMap.Identity, (ushort) pos.X, (ushort) pos.Y))
+            if (!await mob.InitializeAsync(m_pMap.Identity, (ushort) pos.X, (ushort) pos.Y))
             {
                 IdentityGenerator.Monster.ReturnIdentity(mob.Identity);
                 return null;

@@ -53,6 +53,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbWeaponSkill> WeaponSkills { get; set; }
         public virtual DbSet<DbPeerage> Peerage { get; set; }
         public virtual DbSet<DbMonstertype> Monstertype { get; set; }
+        public virtual DbSet<DbMonsterMagic> MonsterMagics { get; set; }
         public virtual DbSet<DbGenerator> Generator { get; set; }
         public virtual DbSet<DbPassway> Passway { get; set; }
         public virtual DbSet<DbPortal> Portal { get; set; }

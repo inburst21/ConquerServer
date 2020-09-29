@@ -142,7 +142,7 @@ namespace Comet.Game.States.BaseEntities
 
         #region Movement
 
-        public async Task<bool> JumpPosAsync(int x, int y)
+        public async Task<bool> JumpPosAsync(int x, int y, bool sync = false)
         {
             if (x == MapX && y == MapY)
                 return false;
@@ -167,6 +167,20 @@ namespace Comet.Game.States.BaseEntities
 
             Direction = (FacingDirection)ScreenCalculations.GetDirectionSector(MapX, MapY, x, y);
 
+            if (sync)
+            {
+                await BroadcastRoomMsgAsync(new MsgAction
+                {
+                    CommandX = (ushort) x,
+                    CommandY = (ushort) y,
+                    ArgumentX = m_posX,
+                    ArgumentY = m_posY,
+                    Identity = Identity,
+                    Action = MsgAction.ActionType.MapJump,
+                    Direction = (ushort) Direction
+                }, true);
+            }
+
             m_posX = (ushort)x;
             m_posY = (ushort)y;
 
@@ -174,14 +188,14 @@ namespace Comet.Game.States.BaseEntities
             return true;
         }
 
-        public async Task<bool> MoveTowardAsync(int direction, int mode)
+        public async Task<bool> MoveTowardAsync(int direction, int mode, bool sync = false)
         {
             direction %= 8;
             ushort newX = (ushort)(MapX + GameMap.WalkXCoords[direction]);
             ushort newY = (ushort)(MapY + GameMap.WalkYCoords[direction]);
 
-            bool isRunning = mode >= (int)RoleMoveMode.MOVEMODE_RUN_DIR0 &&
-                             mode <= (int)RoleMoveMode.MOVEMODE_RUN_DIR7;
+            bool isRunning = mode >= (int)RoleMoveMode.RunDir0 &&
+                             mode <= (int)RoleMoveMode.RunDir7;
             if (isRunning && IsAlive)
             {
                 newX += (ushort)GameMap.WalkXCoords[direction];
@@ -205,6 +219,16 @@ namespace Comet.Game.States.BaseEntities
             Map.EnterBlock(this, newX, newY, MapX, MapY);
 
             Direction = (FacingDirection)direction;
+
+            if (sync)
+            {
+                await BroadcastRoomMsgAsync(new MsgWalk
+                {
+                    Direction = (byte) direction,
+                    Identity = Identity,
+                    Mode = (byte) mode
+                }, true);
+            }
 
             m_posX = newX;
             m_posY = newY;

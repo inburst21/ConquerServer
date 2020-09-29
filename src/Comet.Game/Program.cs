@@ -168,6 +168,12 @@ namespace Comet.Game
                     case "/players":
 
                         break;
+
+                    case "/analytics":
+                    {
+                        await Kernel.SystemThread.DoAnalyticsAsync();
+                        break;
+                    }
                 }
             }
         }

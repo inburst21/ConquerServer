@@ -176,7 +176,9 @@ namespace Comet.Game.States.Magics
                 case MagicState.Delay:
                     return false;
                 case MagicState.Launch:
-                    return false;
+                    if (!(m_pOwner is Monster))
+                        return false;
+                    break;
             }
 
             if (!Magics.TryGetValue(usMagicType, out Magic magic)
@@ -1073,7 +1075,7 @@ namespace Comet.Game.States.Magics
             if (m_pOwner is Character character)
             {
                 await character.ProcessOnMove();
-                await character.MoveTowardAsync(nDir, (int) RoleMoveMode.MOVEMODE_COLLIDE);
+                await character.MoveTowardAsync(nDir, (int) RoleMoveMode.Collide);
             }
             return true;
         }

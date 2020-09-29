@@ -32,6 +32,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.States.Magics;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
@@ -52,14 +53,22 @@ namespace Comet.Game.States
         private TimeOutMS m_tMoveMs = new TimeOutMS();
         private TimeOut m_tHealPeriod = new TimeOut(2);
         private TimeOut m_disappear = new TimeOut(5);
+        private TimeOut m_locked = new TimeOut();
 
         private AiStage m_stage;
         private FacingDirection m_nextDir = FacingDirection.Invalid;
 
         private Role m_actTarget;
+        private Role m_moveTarget;
+        private Role m_attackMe;
+
         private bool m_bAheadPath;
+        private bool m_atkFirst;
 
         private uint m_idRole = 0;
+
+        private uint m_idUseMagic = 0;
+        private List<DbMonsterMagic> m_monsterMagics = new List<DbMonsterMagic>();
 
         public Monster(DbMonstertype type, uint identity, Generator generator)
         {
@@ -94,7 +103,7 @@ namespace Comet.Game.States
 
         #region Initialization
 
-        public bool Initialize(uint idMap, ushort x, ushort y)
+        public async Task<bool> InitializeAsync(uint idMap, ushort x, ushort y)
         {
             m_idMap = idMap;
 
@@ -105,6 +114,22 @@ namespace Comet.Game.States
             m_posY = y;
 
             Life = MaxLife;
+
+            m_monsterMagics = Kernel.RoleManager.GetMonsterMagics(m_dbMonster.Type);
+
+            if (m_dbMonster.MagicType > 0)
+            {
+                Magic defaultMagic = new Magic(this);
+                if (await defaultMagic.Create(m_dbMonster.MagicType))
+                    MagicData.Magics.TryAdd(defaultMagic.Type, defaultMagic);
+            }
+
+            foreach (var dbMagic in m_monsterMagics)
+            {
+                Magic magic = new Magic(this);
+                if (await magic.Create(dbMagic.MagicIdentity, dbMagic.MagicLevel))
+                    MagicData.Magics.TryAdd(magic.Type, magic);
+            }
 
             return true;
         }
@@ -123,9 +148,11 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Battle Attributes
+
         public override byte Level
         {
-            get => (byte) (m_dbMonster?.Level ?? 0);
+            get => (byte)(m_dbMonster?.Level ?? 0);
             set => m_dbMonster.Level = value;
         }
 
@@ -135,9 +162,7 @@ namespace Comet.Game.States
             set;
         }
 
-        public override uint MaxLife => (uint) (m_dbMonster?.Life ?? 1);
-
-        #region Battle Attributes
+        public override uint MaxLife => (uint)(m_dbMonster?.Life ?? 1);
 
         public override int BattlePower => 1;
 
@@ -165,9 +190,46 @@ namespace Comet.Game.States
 
         #region Battle
 
+        private async Task<bool> CheckMagicAttack()
+        {
+            m_idUseMagic = 0;
+
+            if (m_actTarget == null)
+                return false;
+
+            foreach (var magic in m_monsterMagics.OrderBy(x => x.Chance))
+            {
+                if (MagicData.CheckType(magic.MagicIdentity) && await Kernel.ChanceCalcAsync((int) magic.Chance, 10000))
+                {
+                    m_idUseMagic = magic.MagicIdentity;
+                    return true;
+                }
+            }
+
+            if (m_idUseMagic == 0 && m_dbMonster.MagicType != 0 &&
+                await Kernel.ChanceCalcAsync(m_dbMonster.MagicHitrate))
+                m_idUseMagic = m_dbMonster.MagicType;
+
+            return false;
+        }
+
         public async Task Attack()
         {
+            if (m_actTarget == null)
+                return;
 
+            if (!m_tAttackMs.ToNextTime(AttackSpeed))
+                return;
+
+            if (m_idUseMagic != 0)
+            {
+                await ProcessMagicAttack((ushort) m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY);
+            }
+            else
+            {
+                BattleSystem.CreateBattle(m_actTarget.Identity);
+                await BattleSystem.ProcessAttackAsync();
+            }
         }
 
         public override bool IsAttackable(Role attacker)
@@ -503,57 +565,62 @@ namespace Comet.Game.States
 
         public bool IsLockUser()
         {
-            return (AttackUser & 256) != 0;
+            return (AttackUser & ATKUSER_LOCKUSER) != 0;
         }
 
         public bool IsRighteous()
         {
-            return (AttackUser & 4) != 0;
+            return (AttackUser & ATKUSER_RIGHTEOUS) != 0;
         }
 
         public bool IsGuard()
         {
-            return (AttackUser & 8) != 0;
+            return (AttackUser & ATKUSER_GUARD) != 0;
         }
 
         public bool IsPkKiller()
         {
-            return (AttackUser & 16) != 0;
+            return (AttackUser & ATKUSER_PPKER) != 0;
         }
 
         public bool IsWalkEnable()
         {
-            return (AttackUser & 64) == 0;
+            return (AttackUser & ATKUSER_FIXED) == 0;
         }
 
         public bool IsJumpEnable()
         {
-            return (AttackUser & 32) != 0;
+            return (AttackUser & ATKUSER_JUMP) != 0;
         }
 
         public bool IsFastBack()
         {
-            return (AttackUser & 128) != 0;
+            return (AttackUser & ATKUSER_FASTBACK) != 0;
         }
 
         public bool IsLockOne()
         {
-            return (AttackUser & 512) != 0;
+            return (AttackUser & ATKUSER_LOCKONE) != 0;
         }
 
         public bool IsAddLife()
         {
-            return (AttackUser & 1024) != 0;
+            return (AttackUser & ATKUSER_ADDLIFE) != 0;
         }
 
         public bool IsEvilKiller()
         {
-            return (AttackUser & 2048) != 0;
+            return (AttackUser & ATKUSER_EVIL_KILLER) != 0;
         }
 
         public bool IsDormancyEnable()
         {
-            return (AttackUser & 256) == 0;
+            return (AttackUser & ATKUSER_LOCKUSER) == 0;
+        }
+
+        public bool IsEscapeEnable()
+        {
+            return (AttackUser & ATKUSER_NOESCAPE) == 0;
         }
 
         #endregion
@@ -616,6 +683,218 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region AI Movement
+
+        private bool DetectPath(FacingDirection noDir)
+        {
+            ClearPath();
+
+            Point posTarget = new Point();
+            if (m_actTarget != null)
+            {
+                posTarget.X = m_actTarget.MapX;
+                posTarget.Y = m_actTarget.MapY;
+            }
+            else if (m_moveTarget != null)
+            {
+                posTarget.X = m_moveTarget.MapX;
+                posTarget.Y = m_moveTarget.MapY;
+            }
+            else
+            {
+                posTarget = m_generator.GetCenter();
+            }
+
+            int oldDist = GetDistance(posTarget.X, posTarget.Y);
+            int bestDist = oldDist;
+            FacingDirection bestDir = FacingDirection.Invalid;
+            FacingDirection firstDir = FacingDirection.Begin;
+
+            for (FacingDirection i = FacingDirection.Begin; i < FacingDirection.Invalid; i++)
+            {
+                FacingDirection dir = firstDir;
+                if (dir != noDir)
+                {
+                    int x = MapX + GameMap.WalkXCoords[(int)dir];
+                    int y = MapY + GameMap.WalkYCoords[(int)dir];
+                    if (Map.IsMoveEnable(x, y))
+                    {
+                        int dist = GetDistance(x, y);
+                        if (bestDist - dist * (m_bAheadPath ? 1 : -1) > 0)
+                        {
+                            bestDist = dist;
+                            bestDir = dir;
+                        }
+                    }
+                }
+            }
+
+            if (bestDir != FacingDirection.Invalid)
+            {
+                m_nextDir = bestDir;
+                return true;
+            }
+
+            return true;
+        }
+
+        private bool FindPath(int x, int y)
+        {
+            if (x == MapX && y == MapY)
+                return false;
+
+            FacingDirection dir = (FacingDirection) ScreenCalculations.GetDirection(MapX, MapY, x, y);
+            for (int i = 0; i < 8; i++)
+            {
+                dir = (FacingDirection) (((int) dir + i) % 8);
+                if (TestPath(dir))
+                {
+                    m_nextDir = dir;
+                    return true;
+                }
+            }
+
+            return m_nextDir != FacingDirection.Invalid;
+        }
+
+        private bool FindPath(int scapeSteps = 0)
+        {
+            if (m_moveTarget == null)
+                return false;
+
+            m_bAheadPath = scapeSteps == 0;
+            ClearPath();
+
+            Role role = Map.QueryAroundRole(this, m_moveTarget.Identity);
+            if (role == null || !role.IsAlive || GetDistance(role) > ViewRange)
+            {
+                m_moveTarget = null;
+                m_actTarget = null;
+                return false;
+            }
+
+            if (!FindPath(role.MapX, role.MapY))
+            {
+                m_moveTarget = null;
+                m_actTarget = null;
+                return false;
+            }
+
+            if (m_nextDir != FacingDirection.Invalid)
+            {
+                if (!Map.IsMoveEnable(MapX, MapY, m_nextDir))
+                {
+                    DetectPath(m_nextDir);
+                    return m_nextDir != FacingDirection.Invalid;
+                }
+            }
+
+            return m_nextDir != FacingDirection.Invalid;
+        }
+
+        private bool TestPath(FacingDirection dir)
+        {
+            if (dir == FacingDirection.Invalid)
+                return false;
+
+            int x = MapX + GameMap.WalkXCoords[(int) dir];
+            int y = MapY + GameMap.WalkYCoords[(int) dir];
+
+            if (Map.IsMoveEnable(x, y))
+            {
+                m_nextDir = dir;
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<bool> JumpBlockAsync(int x, int y, FacingDirection dir)
+        {
+            int steps = GetDistance(x, y);
+            
+            if (steps <= 0)
+                return false;
+
+            for (int i = 0; i < steps; i++)
+            {
+                Point pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
+                if (Map.IsStandEnable(pos.X, pos.Y))
+                {
+                    await JumpPosAsync(pos.X, pos.Y);
+                    return true;
+                }
+            }
+
+            if (Map.IsStandEnable(x, y))
+            {
+                await JumpPosAsync(x, y);
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<bool> FarJumpAsync(int x, int y, FacingDirection dir)
+        {
+            int steps = GetDistance(x, y);
+
+            if (steps <= 0)
+                return false;
+
+            if (Map.IsStandEnable(x, y))
+            {
+                await JumpPosAsync(x, y);
+                return true;
+            }
+
+            for (int i = 0; i < steps; i++)
+            {
+                Point pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
+                if (Map.IsStandEnable(pos.X, pos.Y))
+                {
+                    await JumpPosAsync(pos.X, pos.Y);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void ClearPath()
+        {
+            m_nextDir = FacingDirection.Invalid;
+        }
+
+        private async Task<bool> PathMoveAsync(RoleMoveMode mode)
+        {
+            if (mode == RoleMoveMode.Walk)
+            {
+                if (!m_tMoveMs.ToNextTime(m_dbMonster.MoveSpeed))
+                    return true;
+            }
+            else
+            {
+                if (!m_tMoveMs.ToNextTime((int) m_dbMonster.RunSpeed))
+                    return true;
+            }
+
+            if (await MoveTowardAsync((int) m_nextDir, (int) mode, true))
+                return true;
+
+            if (DetectPath(m_nextDir))
+                return await MoveTowardAsync((int) m_nextDir, (int) mode, true);
+
+            if (IsJumpEnable())
+            {
+                var pos = m_generator.GetCenter();
+                return await JumpBlockAsync(pos.X, pos.Y, Direction);
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region AI
 
         public bool IsCloseAttack()
@@ -650,6 +929,27 @@ namespace Comet.Game.States
                 return false;
             }
 
+            return true;
+        }
+
+        private async Task<bool> ChangeMode(AiStage mode)
+        {
+            switch (mode)
+            {
+                case AiStage.Dormancy:
+                    Life = MaxLife;
+                    break;
+                case AiStage.Attack:
+                    await Attack();
+                    break;
+            }
+
+            if (mode != AiStage.Move)
+            {
+                ClearPath();
+            }
+
+            m_stage = mode;
             return true;
         }
 
@@ -693,13 +993,13 @@ namespace Comet.Game.States
                     if ((IsGuard() && targetUser.IsCrime())
                         || (pkKill)
                         || (evilKill)
-                        || (IsEvil() && !(IsPkKiller() || IsEvilKiller())))
+                        || (role.IsEvil() && !(IsPkKiller() || IsEvilKiller())))
                     {
                         int nDist = GetDistance(targetUser.MapX, targetUser.MapY);
                         if (nDist <= distance)
                         {
                             distance = nDist;
-                            m_actTarget = targetUser;
+                            m_moveTarget = m_actTarget = targetUser;
 
                             if (pkKill || evilKill)
                                 break;
@@ -717,7 +1017,7 @@ namespace Comet.Game.States
                         if (nDist < distance)
                         {
                             distance = nDist;
-                            m_actTarget = monster;
+                            m_moveTarget = m_actTarget = monster;
                         }
                     }
                 }
@@ -730,18 +1030,247 @@ namespace Comet.Game.States
                     if (IsGuard() && targetUser.IsCrime())
                     {
                         await  targetUser.BroadcastRoomMsgAsync(
-                            new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, target.Name, Name,
+                            new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, targetUser.Name, Name,
                                 Language.StrGuardYouPay), true);
                     }
                     else if (IsPkKiller() && targetUser.IsPker() && m_stage == AiStage.Idle)
                     {
                         await targetUser.BroadcastRoomMsgAsync(
-                            new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, target.Name, Name,
+                            new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, targetUser.Name, Name,
                                 Language.StrGuardYouPay), true);
                     }
                 }
+
+                FindPath();
+                return m_actTarget != null;
             }
             return true;
+        }
+
+        private async Task EscapeAsync()
+        {
+            if (!IsEscapeEnable())
+            {
+                await ChangeMode(AiStage.Idle);
+                return;
+            }
+
+            if ((IsGuard() || IsPkKiller()) && m_actTarget != null)
+            {
+                await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY);
+                await ChangeMode(AiStage.Move);
+                return;
+            }
+
+            if (m_nextDir == FacingDirection.Invalid)
+                FindPath(ViewRange * 2);
+
+            if (m_actTarget == null)
+            {
+                await ChangeMode(AiStage.Idle);
+                return;
+            }
+
+            if (m_actTarget != null && m_nextDir == FacingDirection.Invalid)
+            {
+                await ChangeMode(AiStage.Move);
+                return;
+            }
+
+            await PathMoveAsync(RoleMoveMode.Run);
+        }
+
+        private async Task AttackAsync()
+        {
+            if (m_actTarget != null)
+            {
+                if (m_actTarget.IsAlive
+                    && (await CheckMagicAttack() || GetDistance(m_actTarget) <= GetAttackRange(m_actTarget.SizeAddition)))
+                {
+                    if (m_tAction.ToNextTime())
+                    {
+                        //if (Map.IsSuperPosition(MapX, MapY))
+                        //{
+                        //    m_bAheadPath = false;
+                        //    DetectPath(FacingDirection.Invalid);
+                        //    m_bAheadPath = true;
+                        //    if (m_nextDir != FacingDirection.Invalid) await PathMoveAsync(RoleMoveMode.Shift);
+                        //}
+
+                        await ChangeMode(AiStage.Move);
+                        return;
+                    }
+
+                    return;
+                }
+            }
+
+            await ChangeMode(AiStage.Idle);
+        }
+
+        private async Task FowardAsync()
+        {
+            if (m_actTarget != null)
+            {
+                if (m_actTarget.IsAlive && (await CheckMagicAttack() || GetDistance(m_actTarget) <= GetAttackRange(m_actTarget.SizeAddition)))
+                {
+                    if (!IsGuard() && !IsMoveEnable() && !m_bAheadPath && m_nextDir != FacingDirection.Invalid)
+                        if (await PathMoveAsync(RoleMoveMode.Run))
+                            return;
+
+                    await ChangeMode(AiStage.Attack);
+                    return;
+                }
+            }
+
+            // process forward
+            if ((IsGuard() || IsPkKiller() || IsFastBack()) && m_generator.IsTooFar(MapX, MapY, 48))
+            {
+                Point pos = m_generator.GetCenter();
+
+                m_actTarget = null;
+                m_moveTarget = null;
+
+                await FarJumpAsync(pos.X, pos.Y, Direction);
+                ClearPath();
+                await ChangeMode(AiStage.Idle);
+                return;
+            }
+
+            if ((IsGuard() || IsPkKiller() || IsEvilKiller()) && m_actTarget is Character && GetDistance(m_actTarget.MapX, m_actTarget.MapY) >= 6)
+            {
+                await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY);
+                return;
+            }
+
+            if (m_nextDir == FacingDirection.Invalid)
+            {
+                if (await FindNewTarget())
+                {
+                    if (m_nextDir == FacingDirection.Invalid)
+                    {
+                        if (IsJumpEnable())
+                        {
+                            await JumpBlockAsync(m_actTarget.MapX, m_actTarget.MapY, Direction);
+                            return;
+                        }
+
+                        await ChangeMode(AiStage.Idle);
+                        return;
+                    }
+
+                    return;
+                }
+
+                await ChangeMode(AiStage.Idle);
+                return;
+            }
+
+            if (m_actTarget != null)
+            {
+                if (GetDistance(m_actTarget) <= ViewRange)
+                {
+                    FindPath();
+                    m_tAttackMs.Update();
+                    await PathMoveAsync(RoleMoveMode.Run);
+                }
+                else
+                {
+                    m_actTarget = null;
+                }
+            }
+            else
+            {
+                await ChangeMode(AiStage.Idle);
+            }
+        }
+
+        private async Task IdleAsync()
+        {
+            m_attackMe = null;
+            m_atkFirst = false;
+
+            if (await FindNewTarget())
+            {
+                if (m_actTarget == null)
+                    return;
+
+                int distance = GetDistance(m_actTarget);
+                if (distance <= GetAttackRange(m_actTarget.SizeAddition))
+                {
+                    await ChangeMode(AiStage.Attack);
+                    return;
+                }
+
+                if (IsMoveEnable())
+                {
+                    if (m_nextDir == FacingDirection.Invalid)
+                    {
+                        if (!IsEscapeEnable() || await Kernel.ChanceCalcAsync(80))
+                            return;
+
+                        await ChangeMode(AiStage.Escape);
+                        return;
+                    }
+
+                    await ChangeMode(AiStage.Move);
+                    return;
+                }
+            }
+
+            if (IsGuard() || IsPkKiller() || IsEvilKiller())
+            {
+                if (m_nextDir == FacingDirection.Invalid)
+                {
+                    await PathMoveAsync(RoleMoveMode.Walk);
+                    return;
+                }
+
+                if (m_tAction.ToNextTime())
+                    return;
+            }
+
+            if (!IsMoveEnable())
+                return;
+
+            if (m_generator.IsInRegion(MapX, MapY))
+            {
+                if (IsGuard() || IsPkKiller() || IsEvilKiller())
+                {
+                    if (m_generator.GetWidth() > 1 || m_generator.GetHeight() > 1)
+                    {
+                        int x = MapX + await Kernel.NextAsync(m_generator.GetWidth());
+                        int y = MapY + await Kernel.NextAsync(m_generator.GetHeight());
+
+                        if (FindPath(x, y))
+                            await PathMoveAsync(RoleMoveMode.Walk);
+                    }
+                }
+                else
+                {
+                    FacingDirection dir = (FacingDirection) (await Kernel.NextAsync(int.MaxValue)%8);
+                    if (TestPath(dir))
+                        await PathMoveAsync(RoleMoveMode.Walk);
+                }
+            }
+            else
+            {
+                if (IsGuard() || IsPkKiller() || IsEvilKiller())
+                {
+                    if (m_generator.IsInRegion(MapX, MapY))
+                    {
+                        Point pos = m_generator.GetCenter();
+                        if (FindPath(pos.X, pos.Y))
+                        {
+                            await PathMoveAsync(RoleMoveMode.Walk);
+                        }
+                        else
+                        {
+                            await JumpBlockAsync(pos.X, pos.Y, Direction);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
@@ -765,6 +1294,25 @@ namespace Comet.Game.States
                             await StatusSet.DelObj(stts.Identity);
                         }
                     }
+                }
+            }
+
+            if (IsPkKiller() && Type == 910)
+            {
+                switch (m_stage)
+                {
+                    case AiStage.Escape:
+                        await EscapeAsync();
+                        break;
+                    case AiStage.Attack:
+                        await AttackAsync();
+                        break;
+                    case AiStage.Move:
+                        await FowardAsync();
+                        break;
+                    case AiStage.Idle:
+                        await IdleAsync();
+                        break;
                 }
             }
         }

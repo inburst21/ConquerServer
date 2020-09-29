@@ -93,25 +93,25 @@ namespace Comet.Game.Packets
 
     public enum RoleMoveMode
     {
-        MOVEMODE_WALK = 0,
+        Walk = 0,
 
         // PathMove()
-        MOVEMODE_RUN,
-        MOVEMODE_SHIFT,
+        Run,
+        Shift,
 
         // to server only
-        MOVEMODE_JUMP,
-        MOVEMODE_TRANS,
-        MOVEMODE_CHGMAP,
-        MOVEMODE_JUMPMAGICATTCK,
-        MOVEMODE_COLLIDE,
-        MOVEMODE_SYNCHRO,
+        Jump,
+        Trans,
+        Chgmap,
+        JumpMagicAttack,
+        Collide,
+        Synchro,
 
         // to server only
-        MOVEMODE_TRACK,
+        Track,
 
-        MOVEMODE_RUN_DIR0 = 20,
+        RunDir0 = 20,
 
-        MOVEMODE_RUN_DIR7 = 27
+        RunDir7 = 27
     }
 }
