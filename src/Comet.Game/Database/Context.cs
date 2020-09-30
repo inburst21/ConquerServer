@@ -90,6 +90,11 @@ namespace Comet.Game.Database
         public virtual DbSet<DbLottery> Lottery { get; set; }
         public virtual DbSet<DbTrap> Traps { get; set; }
         public virtual DbSet<DbTrapType> TrapTypes { get; set; }
+        public virtual DbSet<DbTutor> Tutor { get; set; }
+        public virtual DbSet<DbTutorAccess> TutorAccess { get; set; }
+        public virtual DbSet<DbTutorBattleLimitType> TutorBattleLimitTypes { get; set; }
+        public virtual DbSet<DbTutorContributions> TutorContributions { get; set; }
+        public virtual DbSet<DbTutorType> TutorTypes { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

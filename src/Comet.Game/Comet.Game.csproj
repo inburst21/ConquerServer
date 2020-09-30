@@ -46,10 +46,6 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="States\Guide\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
