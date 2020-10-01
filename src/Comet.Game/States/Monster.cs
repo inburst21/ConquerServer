@@ -190,6 +190,11 @@ namespace Comet.Game.States
 
         #region Battle
 
+        public override int GetAttackRange(int sizeAdd)
+        {
+            return m_dbMonster.AttackRange + sizeAdd;
+        }
+
         private async Task<bool> CheckMagicAttack()
         {
             m_idUseMagic = 0;
@@ -821,14 +826,14 @@ namespace Comet.Game.States
                 Point pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
                 if (Map.IsStandEnable(pos.X, pos.Y))
                 {
-                    await JumpPosAsync(pos.X, pos.Y);
+                    await JumpPosAsync(pos.X, pos.Y, true);
                     return true;
                 }
             }
 
             if (Map.IsStandEnable(x, y))
             {
-                await JumpPosAsync(x, y);
+                await JumpPosAsync(x, y, true);
                 return true;
             }
 
@@ -844,7 +849,7 @@ namespace Comet.Game.States
 
             if (Map.IsStandEnable(x, y))
             {
-                await JumpPosAsync(x, y);
+                await JumpPosAsync(x, y, true);
                 return true;
             }
 
@@ -853,7 +858,7 @@ namespace Comet.Game.States
                 Point pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
                 if (Map.IsStandEnable(pos.X, pos.Y))
                 {
-                    await JumpPosAsync(pos.X, pos.Y);
+                    await JumpPosAsync(pos.X, pos.Y, true);
                     return true;
                 }
             }
@@ -989,12 +994,14 @@ namespace Comet.Game.States
                 if (role is Character targetUser)
                 {
                     bool pkKill = IsPkKiller() && targetUser.IsPker();
-                    bool evilKill = IsEvilKiller() && !targetUser.IsVirtuous();
+                    bool evilKill = IsEvilKiller() && targetUser.IsVirtuous();
                     if ((IsGuard() && targetUser.IsCrime())
                         || (pkKill)
                         || (evilKill)
-                        || (role.IsEvil() && !(IsPkKiller() || IsEvilKiller())))
+                        || (IsEvil() && !(IsPkKiller() || IsEvilKiller())))
                     {
+                        // todo IsBeAttackable()
+
                         int nDist = GetDistance(targetUser.MapX, targetUser.MapY);
                         if (nDist <= distance)
                         {
@@ -1057,7 +1064,7 @@ namespace Comet.Game.States
 
             if ((IsGuard() || IsPkKiller()) && m_actTarget != null)
             {
-                await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY);
+                await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY, true);
                 await ChangeMode(AiStage.Move);
                 return;
             }
@@ -1137,9 +1144,9 @@ namespace Comet.Game.States
                 return;
             }
 
-            if ((IsGuard() || IsPkKiller() || IsEvilKiller()) && m_actTarget is Character && GetDistance(m_actTarget.MapX, m_actTarget.MapY) >= 6)
+            if ((IsGuard() || IsPkKiller() || IsEvilKiller()) && m_actTarget != null && GetDistance(m_actTarget.MapX, m_actTarget.MapY) >= GetAttackRange(m_actTarget.SizeAddition))
             {
-                await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY);
+                await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY, true);
                 return;
             }
 
@@ -1220,7 +1227,7 @@ namespace Comet.Game.States
 
             if (IsGuard() || IsPkKiller() || IsEvilKiller())
             {
-                if (m_nextDir == FacingDirection.Invalid)
+                if (m_nextDir == FacingDirection.Invalid && m_generator.GetWidth() > 1 && m_generator.GetHeight() > 1)
                 {
                     await PathMoveAsync(RoleMoveMode.Walk);
                     return;
@@ -1255,7 +1262,7 @@ namespace Comet.Game.States
             }
             else
             {
-                if (IsGuard() || IsPkKiller() || IsEvilKiller())
+                if (IsGuard() || IsPkKiller() || IsEvilKiller() || IsFastBack())
                 {
                     if (m_generator.IsInRegion(MapX, MapY))
                     {

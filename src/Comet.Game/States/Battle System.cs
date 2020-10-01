@@ -219,8 +219,6 @@ namespace Comet.Game.States
             if (attacker.QueryStatus(StatusSet.SUPERMAN) != null && !target.IsDynaNpc() && !target.IsPlayer())
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.SUPERMAN).Power);
 
-            damage = Calculations.MulDiv(damage, target.Defense2, Calculations.DEFAULT_DEFENCE2);
-
             damage = Math.Max(damage, 1);
 
             if (attacker is Character && target.IsMonster())
@@ -237,12 +235,12 @@ namespace Comet.Game.States
             }
             else
             {
-                damage = attacker.AdjustWeaponDamage(damage);
+                damage = target.AdjustWeaponDamage(damage);
                 if (attacker is Character && target is Character && attacker.IsBowman)
                     damage /= 3;
             }
 
-            if (targetUser != null && attacker.BattlePower < target.BattlePower)
+            if (attacker is Character && targetUser != null && attacker.BattlePower < target.BattlePower)
             {
                 double delta = Math.Min(25, target.BattlePower - attacker.BattlePower) * 2 / 100f;
                 damage = (int) (damage * (1 - delta));
@@ -513,7 +511,7 @@ namespace Comet.Game.States
 
             int nDamage = nAtk; //(int) (nAtk - nDef*0.6);
 
-            int nNameType = GetNameType(nAtkLev, nDefLev);
+            int nNameType = GetNameType(nDefLev, nAtkLev);
 
             if (nNameType == NAME_RED)
                 nDamage = (int)(nAtk * 1.5f - nDef);
@@ -569,7 +567,7 @@ namespace Comet.Game.States
                     case Item.ItemPosition.Necklace:
                     case Item.ItemPosition.Headwear:
                     case Item.ItemPosition.Armor:
-                        nMinDamage -= item.GetQuality() / 5;
+                        nMinDamage -= item.GetQuality() / 4;
                         break;
                 }
             }

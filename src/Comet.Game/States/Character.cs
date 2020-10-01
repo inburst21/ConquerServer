@@ -1970,24 +1970,24 @@ namespace Comet.Game.States
 
         public override int AdjustWeaponDamage(int damage)
         {
-            int type1 = 0, type2 = 0;
-            if (UserPackage[Item.ItemPosition.RightHand] != null)
-                type1 = UserPackage[Item.ItemPosition.RightHand].GetItemSubType();
-            if (UserPackage[Item.ItemPosition.LeftHand] != null)
-                type2 = UserPackage[Item.ItemPosition.LeftHand].GetItemSubType();
+            //int type1 = 0, type2 = 0;
+            //if (UserPackage[Item.ItemPosition.RightHand] != null)
+            //    type1 = UserPackage[Item.ItemPosition.RightHand].GetItemSubType();
+            //if (UserPackage[Item.ItemPosition.LeftHand] != null)
+            //    type2 = UserPackage[Item.ItemPosition.LeftHand].GetItemSubType();
 
-            if (type1 > 0 && WeaponSkill[(ushort)type1] != null &&
-                WeaponSkill[(ushort)type1].Level > 12)
-            {
-                damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type1].Level) / 100f));
-            }
-            else if (type2 > 0 && WeaponSkill[(ushort)type2] != null &&
-                     WeaponSkill[(ushort)type2].Level > 12)
-            {
-                damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type2].Level) / 100f));
-            }
+            //if (type1 > 0 && WeaponSkill[(ushort)type1] != null &&
+            //    WeaponSkill[(ushort)type1].Level > 12)
+            //{
+            //    damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type1].Level) / 100f));
+            //}
+            //else if (type2 > 0 && WeaponSkill[(ushort)type2] != null &&
+            //         WeaponSkill[(ushort)type2].Level > 12)
+            //{
+            //    damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type2].Level) / 100f));
+            //}
 
-            return damage;
+            return base.AdjustWeaponDamage(damage);
         }
 
         public override int GetAttackRange(int sizeAdd)
@@ -2067,7 +2067,7 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
-            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY);
+            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
