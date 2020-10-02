@@ -936,7 +936,7 @@ namespace Comet.Game.States.Items
             if (nQuality < 3 || nQuality >= 9)
                 return 0;
 
-            nQuality = Math.Min(6, Math.Max(9, ++nQuality));
+            nQuality = Math.Min(9, Math.Max(6, ++nQuality));
 
             type = type - type % 10 + nQuality;
 
