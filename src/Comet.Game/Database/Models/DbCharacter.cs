@@ -73,7 +73,6 @@ namespace Comet.Game.Database.Models
         [Column("online_time")] public virtual int OnlineSeconds { get; set; }
         [Column("auto_allot")] public virtual byte AutoAllot { get; set; }
         [Column("mete_lev")] public virtual uint MeteLevel { get; set; }
-        [Column("special_mete_no")] public virtual uint Reincarnation { get; set; }
         [Column("exp_ball_usage")] public virtual uint ExpBallUsage { get; set; }
         [Column("exp_ball_num")] public virtual uint ExpBallNum { get; set; }
         [Column("exp_multiply")] public virtual float ExperienceMultiplier { get; set; }

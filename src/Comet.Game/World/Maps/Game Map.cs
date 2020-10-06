@@ -687,9 +687,9 @@ namespace Comet.Game.World.Maps
 
             if (IsDynamicMap())
             {
-                idMap = m_dbMap.LinkMap;
-                target.X = m_dbMap.LinkX;
-                target.Y = m_dbMap.LinkY;
+                idMap = m_dbDynamap.LinkMap;
+                target.X = m_dbDynamap.LinkX;
+                target.Y = m_dbDynamap.LinkY;
                 return true;
             }
 

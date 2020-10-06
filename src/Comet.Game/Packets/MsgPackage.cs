@@ -135,7 +135,7 @@ namespace Comet.Game.Packets
 
             BaseNpc npc = null;
             Item storageItem = null;
-            if (Mode == StorageType.Storage)
+            if (Mode == StorageType.Storage || Mode == StorageType.Trunk)
             {
                 npc = Kernel.RoleManager.GetRole(Identity) as BaseNpc;
 

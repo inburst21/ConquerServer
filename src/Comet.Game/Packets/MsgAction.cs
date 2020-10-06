@@ -412,6 +412,8 @@ namespace Comet.Game.Packets
                     await client.Character.SendNobilityInfo();
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
+
+                    await user.SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
                     await client.SendAsync(this);
                     break;
 

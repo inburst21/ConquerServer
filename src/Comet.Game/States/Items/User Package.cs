@@ -930,7 +930,7 @@ namespace Comet.Game.States.Items
             Item chestItem = null;
             List<Item> items = null;
             int maxStorage = 0;
-            if (mode == MsgPackage.StorageType.Storage)
+            if (mode == MsgPackage.StorageType.Storage || mode == MsgPackage.StorageType.Trunk)
             {
                 npc = Kernel.RoleManager.GetRole(idStorage) as BaseNpc;
                 if (npc == null)
@@ -1003,7 +1003,7 @@ namespace Comet.Game.States.Items
         public async Task<bool> GetFromStorageAsync(uint idStorage, uint idItem, MsgPackage.StorageType mode, bool sync)
         {
             List<Item> storage = null;
-            if (mode == MsgPackage.StorageType.Storage)
+            if (mode == MsgPackage.StorageType.Storage || mode == MsgPackage.StorageType.Trunk)
             {
                 if (!m_dicWarehouses.TryGetValue(idStorage, out storage))
                     return false;
@@ -1044,6 +1044,7 @@ namespace Comet.Game.States.Items
             switch (type)
             {
                 case MsgPackage.StorageType.Storage:
+                case MsgPackage.StorageType.Trunk:
                     return m_dicWarehouses.TryGetValue(idStorage, out var storage) ? storage : new List<Item>();
                 case MsgPackage.StorageType.Chest:
                     return m_dicSashes.TryGetValue(idStorage, out var chest) ? chest : new List<Item>();

@@ -604,7 +604,7 @@ namespace Comet.Game.States
                 metLev = (uint)(newLevel * 10000 + fExp * 1000);
             }
 
-            byte checkLevel = (byte)(m_dbObject.Reincarnation > 0 ? 110 : 130);
+            byte checkLevel = 130; //(byte)(m_dbObject.Reincarnation > 0 ? 110 : 130);
             if (newLevel >= checkLevel && Metempsychosis > 0 && m_dbObject.MeteLevel > metLev)
             {
                 byte extra = 0;
