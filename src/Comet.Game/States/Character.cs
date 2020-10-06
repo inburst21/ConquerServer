@@ -24,11 +24,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Net.Sockets;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Core.Mathematics;
@@ -43,7 +40,6 @@ using Comet.Game.States.NPCs;
 using Comet.Game.States.Relationship;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
-using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -504,9 +500,6 @@ namespace Comet.Game.States
 
         public async Task AwardBattleExp(long nExp, bool bGemEffect)
         {
-            if (Metempsychosis == 2)
-                nExp /= 3;
-
             if (nExp == 0)
                 return;
 
@@ -517,10 +510,13 @@ namespace Comet.Game.States
             if (Level >= 70 && ProfessionSort == 13 && ProfessionLevel >= 3)
                 multiplier += 1;
 
+            if (IsBlessed)
+                multiplier += .2;
+
             /*
              * TODO: Attention, this is only for ALPHA!!! REMOVE
              */
-            multiplier += 10;
+            multiplier += 5;
 
             nExp = (long)(nExp * Math.Max(1, multiplier));
 
@@ -536,8 +532,10 @@ namespace Comet.Game.States
             {
                 nExp += (int)(nExp * (1 + (RainbowGemBonus / 100d)));
 
+#if DEBUG
                 if (RainbowGemBonus > 0 && IsPm())
                     await SendAsync($"got gem exp add percent: {RainbowGemBonus:0.00}%");
+#endif
             }
 
             if (Level >= MAX_UPLEV)
@@ -549,8 +547,10 @@ namespace Comet.Game.States
             if (Metempsychosis >= 2)
                 nExp /= 3;
 
+#if DEBUG
             if (IsPm())
                 await SendAsync($"got battle exp: {nExp}");
+#endif
 
             await AwardExperience(nExp);
         }

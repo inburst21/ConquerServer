@@ -994,7 +994,7 @@ namespace Comet.Game.States
                 if (role is Character targetUser)
                 {
                     bool pkKill = IsPkKiller() && targetUser.IsPker();
-                    bool evilKill = IsEvilKiller() && targetUser.IsVirtuous();
+                    bool evilKill = IsEvilKiller() && !targetUser.IsVirtuous();
                     if ((IsGuard() && targetUser.IsCrime())
                         || (pkKill)
                         || (evilKill)

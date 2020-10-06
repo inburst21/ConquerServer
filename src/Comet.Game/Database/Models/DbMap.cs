@@ -37,7 +37,7 @@ namespace Comet.Game.Database.Models
         [Column("name")] public virtual string Name { get; set; }
         [Column("describe_text")] public virtual string Description { get; set; }
         [Column("mapdoc")] public virtual uint MapDoc { get; set; }
-        [Column("type")] public virtual uint Type { get; set; }
+        [Column("type")] public virtual ulong Type { get; set; }
         [Column("owner_id")] public virtual uint OwnerIdentity { get; set; }
         [Column("mapgroup")] public virtual uint MapGroup { get; set; }
         [Column("idxserver")] public virtual int ServerIndex { get; set; }

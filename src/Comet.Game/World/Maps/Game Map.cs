@@ -101,7 +101,7 @@ namespace Comet.Game.World.Maps
                     m_dbDynamap.MapDoc = value;
             }
         }
-        public uint Type => m_dbMap?.Type ?? m_dbDynamap?.Type ?? 0;
+        public ulong Type => m_dbMap?.Type ?? m_dbDynamap?.Type ?? 0;
 
         public ushort PortalX
         {

@@ -560,7 +560,7 @@ namespace Comet.Game.States
 
         private static async Task<bool> ExecuteActionNpcAttr(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            string[] splitParams = SplitParam(param, 3);
+            string[] splitParams = SplitParam(param, 4);
             if (splitParams.Length < 3)
             {
                 await Log.WriteLog(LogLevel.Warning, $"ExecuteActionNpcAttr invalid param num {param}, {action.Identity}");
@@ -647,6 +647,7 @@ namespace Comet.Game.States
                 }
 
                 cmp = npc.GetData(ope);
+                isInt = true;
             }
             else if (ope.Equals("datastr", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -748,8 +749,8 @@ namespace Comet.Game.States
                         continue;
 
                     resetNpc.OwnerIdentity = npc.OwnerIdentity;
-                    resetNpc.SetData("data0", (int) npc.OwnerIdentity);
-                    resetNpc.SetData("data1", 0);
+                    resetNpc.SetData("data0", 0);
+                    resetNpc.SetData("data1", (int)npc.OwnerIdentity);
                     resetNpc.SetData("data2", 0);
                     resetNpc.SetData("data3", 0);
                     await resetNpc.SaveAsync();
@@ -941,7 +942,7 @@ namespace Comet.Game.States
                 switch (szOpt.ToLowerInvariant())
                 {
                     case "test":
-                        return (map.Type & data) != 0;
+                        return (map.Type & (ulong) data) != 0;
                 }
             }
             else if (szField.Equals("mapdoc", StringComparison.InvariantCultureIgnoreCase))

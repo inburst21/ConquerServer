@@ -49,7 +49,7 @@ namespace Comet.Game
     /// </summary>
     public static class Kernel
     {
-        public const int SERVER_VERSION = 5017;
+        public const int SERVER_VERSION = 5065;
         public static readonly string Version;
 
         // State caches
@@ -81,7 +81,7 @@ namespace Comet.Game
 
         static Kernel()
         {
-            Version = Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? "Error";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Error";
         }
 
         /// <summary>
