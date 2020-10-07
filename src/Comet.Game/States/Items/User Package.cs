@@ -101,7 +101,7 @@ namespace Comet.Game.States.Items
                 {
                     await item.DeleteAsync();
                 }
-                else if (item.Position == Item.ItemPosition.Storage)
+                else if (item.Position == Item.ItemPosition.Storage || item.Position == Item.ItemPosition.Trunk)
                 {
                     BaseNpc npc = Kernel.RoleManager.GetRole(item.OwnerIdentity) as BaseNpc;
                     if (npc == null)

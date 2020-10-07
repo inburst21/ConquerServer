@@ -502,7 +502,7 @@ namespace Comet.Game.States
             Status.TryAdd(pInfo.Status, pStatus);
             StatusFlag |= flag;
 
-            await m_pOwner.SetAttributesAsync(ClientUpdateType.StatusFlag, (long) StatusFlag);
+            await m_pOwner.SetAttributesAsync(ClientUpdateType.StatusFlag, StatusFlag);
             return true;
         }
 
@@ -517,7 +517,7 @@ namespace Comet.Game.States
             ulong uFlag = 1UL << (nFlag - 1);
             StatusFlag &= ~uFlag;
 
-            await m_pOwner.SetAttributesAsync(ClientUpdateType.StatusFlag, (long)StatusFlag);
+            await m_pOwner.SetAttributesAsync(ClientUpdateType.StatusFlag, StatusFlag);
             return true;
         }
 
@@ -543,7 +543,7 @@ namespace Comet.Game.States
         public async Task SendAllStatus()
         {
             if (m_pOwner is Character pUsr)
-                await pUsr.SynchroAttributesAsync(ClientUpdateType.StatusFlag, (long) StatusFlag, true);
+                await pUsr.SynchroAttributesAsync(ClientUpdateType.StatusFlag, StatusFlag, true);
         }
 
         public static ulong GetFlag(int status)

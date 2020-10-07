@@ -88,7 +88,7 @@ namespace Comet.Game.Packets
             await Log.WriteLog(LogLevel.Warning, "Unhandled MsgUserAttrib::Process call");
         }
 
-        private struct UserAttribute
+        private readonly struct UserAttribute
         {
             public UserAttribute(uint type, ulong data)
             {
@@ -111,6 +111,7 @@ namespace Comet.Game.Packets
         Experience = 5,
         PkPoints = 6,
         Class = 7,
+        SizeAdd = 8,
         Stamina = 9,
         Atributes = 11,
         Mesh,

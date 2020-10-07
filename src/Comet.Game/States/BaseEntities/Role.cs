@@ -699,11 +699,11 @@ namespace Comet.Game.States.BaseEntities
                     return false;
             }
 
-            await SynchroAttributesAsync(type, currAttr);
+            await SynchroAttributesAsync(type, (ulong) currAttr);
             return true;
         }
 
-        public virtual async Task<bool> SetAttributesAsync(ClientUpdateType type, long value)
+        public virtual async Task<bool> SetAttributesAsync(ClientUpdateType type, ulong value)
         {
             bool screen = false;
             switch (type)
@@ -717,7 +717,7 @@ namespace Comet.Game.States.BaseEntities
                     break;
 
                 case ClientUpdateType.StatusFlag:
-                    StatusFlag = (ulong) value;
+                    StatusFlag = value;
                     screen = true;
                     break;
 
@@ -730,9 +730,9 @@ namespace Comet.Game.States.BaseEntities
             return true;
         }
 
-        public async Task SynchroAttributesAsync(ClientUpdateType type, long value, bool screen = false)
+        public async Task SynchroAttributesAsync(ClientUpdateType type, ulong value, bool screen = false)
         {
-            MsgUserAttrib msg = new MsgUserAttrib(Identity, type, (ulong)value);
+            MsgUserAttrib msg = new MsgUserAttrib(Identity, type, value);
             if (this is Character && !screen)
                 await SendAsync(msg);
 

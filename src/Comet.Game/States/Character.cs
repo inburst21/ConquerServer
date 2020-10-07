@@ -668,7 +668,7 @@ namespace Comet.Game.States
             }
 
             Experience = (ulong)amount;
-            await SetAttributesAsync(ClientUpdateType.Experience, (long) Experience);
+            await SetAttributesAsync(ClientUpdateType.Experience, Experience);
             return true;
         }
 
@@ -2148,7 +2148,7 @@ namespace Comet.Game.States
                 await BeKill(this);
             } 
             else if (Action == EntityAction.Sit)
-                await SetAttributesAsync(ClientUpdateType.Stamina, Energy / 2);
+                await SetAttributesAsync(ClientUpdateType.Stamina, (ulong) (Energy / 2));
 
             return true;
         }
@@ -2518,11 +2518,11 @@ namespace Comet.Game.States
             AutoAllot = false;
 
             int newAttrib = (GetRebirthAddPoint(Profession, Level, mete) + (newLev * 3));
-            await SetAttributesAsync(ClientUpdateType.Atributes, newAttrib);
-            await SetAttributesAsync(ClientUpdateType.Strength, force);
-            await SetAttributesAsync(ClientUpdateType.Agility, speed);
-            await SetAttributesAsync(ClientUpdateType.Vitality, health);
-            await SetAttributesAsync(ClientUpdateType.Spirit, soul);
+            await SetAttributesAsync(ClientUpdateType.Atributes, (ulong) newAttrib);
+            await SetAttributesAsync(ClientUpdateType.Strength, (ulong)force);
+            await SetAttributesAsync(ClientUpdateType.Agility, (ulong)speed);
+            await SetAttributesAsync(ClientUpdateType.Vitality, (ulong)health);
+            await SetAttributesAsync(ClientUpdateType.Spirit, (ulong)soul);
             await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
             await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
             await SetAttributesAsync(ClientUpdateType.Stamina, MaxEnergy);
@@ -2531,7 +2531,7 @@ namespace Comet.Game.States
             if (newLook > 0 && newLook != Mesh % 10)
                 await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
 
-            await SetAttributesAsync(ClientUpdateType.Level, newLev);
+            await SetAttributesAsync(ClientUpdateType.Level, (ulong)newLev);
             await SetAttributesAsync(ClientUpdateType.Experience, 0);
 
             if (mete == 0)
@@ -3571,7 +3571,8 @@ namespace Comet.Game.States
                 else
                     await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1);
 
-                await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
+                await SynchroAttributesAsync(ClientUpdateType.SizeAdd, 2);
+                //await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
             }
         }
 
@@ -3767,11 +3768,11 @@ namespace Comet.Game.States
             }
 
             await SaveAsync();
-            await SynchroAttributesAsync(type, value, screen);
+            await SynchroAttributesAsync(type, (ulong) value, screen);
             return true;
         }
 
-        public override async Task<bool> SetAttributesAsync(ClientUpdateType type, long value)
+        public override async Task<bool> SetAttributesAsync(ClientUpdateType type, ulong value)
         {
             bool screen = false;
             switch (type)
@@ -3782,7 +3783,7 @@ namespace Comet.Game.States
                     break;
 
                 case ClientUpdateType.Experience:
-                    Experience = (ulong) Math.Max(0, value);
+                    Experience = Math.Max(0, value);
                     break;
 
                 case ClientUpdateType.XpCircle:

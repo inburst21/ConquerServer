@@ -131,7 +131,7 @@ namespace Comet.Game.States.NPCs
             return await base.AddAttributesAsync(type, value) && await SaveAsync();
         }
 
-        public override async Task<bool> SetAttributesAsync(ClientUpdateType type, long value)
+        public override async Task<bool> SetAttributesAsync(ClientUpdateType type, ulong value)
         {
             switch (type)
             {

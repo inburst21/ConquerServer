@@ -589,7 +589,7 @@ namespace Comet.Game.States
             {
                 if (opt == "=")
                 {
-                    return await npc.SetAttributesAsync(ClientUpdateType.Hitpoints, data);
+                    return await npc.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) data);
                 }
 
                 if (opt == "+=")
@@ -603,7 +603,7 @@ namespace Comet.Game.States
             {
                 if (opt == "=")
                 {
-                    return await npc.SetAttributesAsync(ClientUpdateType.Mesh, data);
+                    return await npc.SetAttributesAsync(ClientUpdateType.Mesh, (ulong)data);
                 }
 
                 cmp = (int) npc.Mesh;
@@ -627,7 +627,7 @@ namespace Comet.Game.States
             {
                 if (opt == "=")
                 {
-                    return await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, data);
+                    return await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, (ulong)data);
                 }
 
                 cmp = (int) npc.MaxLife;
@@ -2758,7 +2758,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Strength, forceValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Strength, (ulong) forceValue);
                         return true;
                     }
                     break;
@@ -2787,7 +2787,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Agility, speedValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Agility, (ulong) speedValue);
                         return true;
                     }
                     break;
@@ -2816,7 +2816,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Vitality, healthValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Vitality, (ulong) healthValue);
                         return true;
                     }
                     break;
@@ -2845,7 +2845,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Spirit, soulValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Spirit, (ulong) soulValue);
                         return true;
                     }
                     break;
@@ -2874,7 +2874,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Atributes, attrValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Atributes, (ulong) attrValue);
                         return true;
                     }
                     break;
@@ -2902,7 +2902,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Level, levelValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Level, (ulong) levelValue);
                         return true;
                     }
                     break;
@@ -2930,7 +2930,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Reborn, metempsychosisValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Reborn, (ulong) metempsychosisValue);
                         return true;
                     }
                     break;
@@ -2958,7 +2958,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Money, moneyValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Money, (ulong) moneyValue);
                         return true;
                     }
                     break;
@@ -2987,7 +2987,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.ConquerPoints, emoneyValue);
+                        await user.SetAttributesAsync(ClientUpdateType.ConquerPoints, (ulong) emoneyValue);
                         return true;
                     }
                     break;
@@ -3035,7 +3035,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Experience, (long) expValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Experience, (ulong) expValue);
                         return true;
                     }
                     break;
@@ -3064,7 +3064,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Stamina, energyValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Stamina, (ulong) energyValue);
                         return true;
                     }
                     break;
@@ -3092,7 +3092,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, lifeValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) lifeValue);
                         return true;
                     }
                     break;
@@ -3120,7 +3120,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Mana, manaValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Mana, (ulong) manaValue);
                         return true;
                     }
                     break;
@@ -3148,7 +3148,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.PkPoints, pkValue);
+                        await user.SetAttributesAsync(ClientUpdateType.PkPoints, (ulong) pkValue);
                         return true;
                     }
                     break;
@@ -3181,7 +3181,7 @@ namespace Comet.Game.States
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Class, proValue);
+                        await user.SetAttributesAsync(ClientUpdateType.Class, (ulong) proValue);
                         return true;
                     }
                     break;
