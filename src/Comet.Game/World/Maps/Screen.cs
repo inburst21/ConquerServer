@@ -90,7 +90,7 @@ namespace Comet.Game.World.Maps
                 Character targetUser = target as Character;
                 if (ScreenCalculations.GetDistance(m_user.MapX, m_user.MapY, target.MapX, target.MapY) <= VIEW_SIZE)
                 {
-                    /**
+                    /*
                      * I add the target to my screen and it doesn't matter if he already sees me, I'll try to add myself into his screen.
                      * If succcess, I exchange the spawns.
                      */

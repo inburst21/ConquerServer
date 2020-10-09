@@ -108,7 +108,7 @@ namespace Comet.Game.States
 
         public async Task<bool> KickMember(Character leader, uint idTarget)
         {
-            if (!IsLeader(leader.Identity) || m_dicPlayers.TryRemove(idTarget, out var target))
+            if (!IsLeader(leader.Identity) || !m_dicPlayers.TryRemove(idTarget, out var target))
                 return false;
 
             await SendAsync(new MsgTeam

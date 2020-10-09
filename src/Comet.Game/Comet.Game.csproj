@@ -55,7 +55,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;BATTLE_POWER, NOBILITY, USE_API</DefineConstants>
+    <DefineConstants>TRACE;BATTLE_POWER;NOBILITY;USE_API</DefineConstants>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <OutputPath>../Debug</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
@@ -63,7 +63,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>../Release</OutputPath>
-    <DefineConstants>TRACE;NOBILITY, USE_API</DefineConstants>
+    <DefineConstants>TRACE;NOBILITY;USE_API</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 

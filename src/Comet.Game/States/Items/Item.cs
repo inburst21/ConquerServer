@@ -1863,17 +1863,17 @@ namespace Comet.Game.States.Items
             UserLimit = 199,
             
             /// <summary>
-            ///     Warehouse.
+            ///     Warehouse
             /// </summary>
             Storage = 201,
 
             /// <summary>
-            ///     ??????????????????????? Three kind of storages?
+            ///     House WH
             /// </summary>
             Trunk = 202,
 
             /// <summary>
-            ///     I'll use this for sashes.
+            ///     Sashes
             /// </summary>
             Chest = 203,
 
