@@ -69,6 +69,7 @@ namespace Comet.Game.States
         public uint Identity => Character?.Identity ?? 0;
         public uint AccountIdentity { get; set; }
         public byte VipLevel { get; set; }
+        public ushort AuthorityLevel { get; set; }
 
         public NetDragonDHKeyExchange Exchange { get; }
 

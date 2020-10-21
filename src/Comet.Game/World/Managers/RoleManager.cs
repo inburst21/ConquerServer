@@ -124,7 +124,7 @@ namespace Comet.Game.World.Managers
                 }
 
                 user.Disconnect();
-                await KickoutAsync(user.Character.Identity, "logged twice");
+                await KickOutAsync(user.Character.Identity, "logged twice");
                 return false;
             }
 
@@ -148,7 +148,7 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public async Task<bool> LogoutUser(uint idUser)
+        public async Task<bool> LogoutUserAsync(uint idUser)
         {
             if (m_userSet.TryRemove(idUser, out var user))
             {
@@ -175,7 +175,7 @@ namespace Comet.Game.World.Managers
             m_roleSet.TryRemove(idUser, out _);
         }
 
-        public async Task KickoutAsync(uint idUser, string reason = "")
+        public async Task KickOutAsync(uint idUser, string reason = "")
         {
             if (m_userSet.TryGetValue(idUser, out var user))
             {
@@ -185,7 +185,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task KickoutAllAsync(string reason = "", bool isShutdown = false)
+        public async Task KickOutAllAsync(string reason = "", bool isShutdown = false)
         {
             if (isShutdown)
                 m_isShutdown = true;
@@ -207,6 +207,11 @@ namespace Comet.Game.World.Managers
         public Character GetUser(string name)
         {
             return m_userSet.Values.FirstOrDefault(x => x.Name == name);
+        }
+
+        public List<Character> QueryUserSetByMap(uint idMap)
+        {
+            return m_userSet.Values.Where(x => x.MapIdentity == idMap).ToList();
         }
 
         /// <summary>

@@ -269,7 +269,7 @@ namespace Comet.Game.Packets
                     {
                         client.Character.Map.GetRebornMap(ref idMap, ref tgtPos);
                     }
-                    await client.Character.FlyMap(idMap, tgtPos.X, tgtPos.Y);
+                    await client.Character.FlyMapAsync(idMap, tgtPos.X, tgtPos.Y);
                     break;
 
                 case ActionType.SpellAbortXp: // 93
@@ -281,7 +281,7 @@ namespace Comet.Game.Packets
                     if (user.IsAlive || !user.CanRevive())
                         return;
 
-                    await user.Reborn(Command == 0);
+                    await user.RebornAsync(Command == 0);
                     break;
 
                 case ActionType.CharacterDelete:
@@ -289,7 +289,7 @@ namespace Comet.Game.Packets
                         return;
 
                     await user.DeleteCharacterAsync();
-                    await Kernel.RoleManager.KickoutAsync(user.Identity, "DELETED");
+                    await Kernel.RoleManager.KickOutAsync(user.Identity, "DELETED");
                     break;
 
                 case ActionType.CharacterPkMode: // 96
@@ -432,7 +432,7 @@ namespace Comet.Game.Packets
                         if (user.GetDistance(newX, newY) >= 2 * Screen.VIEW_SIZE)
                         {
                             await user.SendAsync(Language.StrInvalidMsg, MsgTalk.TalkChannel.System, Color.Red);
-                            await Kernel.RoleManager.KickoutAsync(user.Identity, "big jump");
+                            await Kernel.RoleManager.KickOutAsync(user.Identity, "big jump");
                             return;
                         }
 

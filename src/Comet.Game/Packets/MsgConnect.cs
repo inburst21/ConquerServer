@@ -95,12 +95,11 @@ namespace Comet.Game.Packets
             var character = await CharactersRepository.FindAsync(auth.AccountID);
             client.AccountIdentity = auth.AccountID;
             client.VipLevel = auth.VipLevel;
+            client.AuthorityLevel = auth.AuthorityID;
             if (character == null)
             {
                 // Create a new character
-                client.Creation = new Creation();
-                client.Creation.AccountID = auth.AccountID;
-                client.Creation.Token = (uint) Token;
+                client.Creation = new Creation {AccountID = auth.AccountID, Token = (uint) Token};
                 Kernel.Registration.Add(client.Creation.Token);
                 await client.SendAsync(LoginNewRole);
             }
@@ -116,7 +115,7 @@ namespace Comet.Game.Packets
                     await client.SendAsync(new MsgData(DateTime.Now));
 
 #if DEBUG
-                    await client.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}");
+                    await client.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}", TalkChannel.Talk);
 #endif
                 }
             }

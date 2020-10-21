@@ -21,8 +21,12 @@
 
 #region References
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.States.Events;
 using Comet.Game.States.NPCs;
 using Comet.Shared;
 
@@ -33,6 +37,7 @@ namespace Comet.Game.World.Threading
     public sealed class EventsProcessing : TimerBase
     {
         private TimeOut m_rankingBroadcast = new TimeOut(10);
+        private List<GameEvent> m_events = new List<GameEvent>();
 
         public EventsProcessing()
             : base(500, "EventsProcessing")
@@ -56,6 +61,20 @@ namespace Comet.Game.World.Threading
                     await dynaNpc.BroadcastRankingAsync();
             }
 
+            foreach (var @event in m_events)
+            {
+                if (@event.ToNextTime())
+                    await @event.OnTimerAsync();
+            }
+
+            return true;
+        }
+
+        public bool RegisterEvent(GameEvent @event)
+        {
+            if (m_events.Any(x => x.Name.Equals(@event.Name, StringComparison.InvariantCultureIgnoreCase)))
+                return false;
+            m_events.Add(@event);
             return true;
         }
     }

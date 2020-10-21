@@ -437,7 +437,7 @@ namespace Comet.Game.Packets
                             return true;
                         }
 
-                        await bringTarget.FlyMap(user.MapIdentity, user.MapX, user.MapY);
+                        await bringTarget.FlyMapAsync(user.MapIdentity, user.MapX, user.MapY);
                         return true;
 
                     case "/creategen":
@@ -556,7 +556,7 @@ namespace Comet.Game.Packets
                         if (uint.TryParse(chgMapParams[0], out uint chgMapId)
                             && ushort.TryParse(chgMapParams[1], out ushort chgMapX)
                             && ushort.TryParse(chgMapParams[2], out ushort chgMapY))
-                            await user.FlyMap(chgMapId, chgMapX, chgMapY);
+                            await user.FlyMapAsync(chgMapId, chgMapX, chgMapY);
 
                         return true;
 
@@ -602,7 +602,7 @@ namespace Comet.Game.Packets
                             return true;
                         }
 
-                        await user.FlyMap(findTarget.MapIdentity, findTarget.MapX, findTarget.MapY);
+                        await user.FlyMapAsync(findTarget.MapIdentity, findTarget.MapX, findTarget.MapY);
                         return true;
                 }
             }

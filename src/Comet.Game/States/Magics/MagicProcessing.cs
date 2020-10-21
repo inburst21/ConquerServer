@@ -759,7 +759,7 @@ namespace Comet.Game.States.Magics
 
             if (status == 0 && target is Character user)
             {
-                await user.Reborn(false, true);
+                await user.RebornAsync(false, true);
                 await user.Map.SendMapInfoAsync(user);
             }
             else
@@ -1056,7 +1056,7 @@ namespace Comet.Game.States.Magics
                 if (m_pOwner is Character owner)
                 {
                     await owner.SendAsync(Language.StrInvalidMsg);
-                    await Kernel.RoleManager.KickoutAsync(owner.Identity, "INVALID COORDINATES ProcessCollideFail");
+                    await Kernel.RoleManager.KickOutAsync(owner.Identity, "INVALID COORDINATES ProcessCollideFail");
                 }
                 return false;
             }

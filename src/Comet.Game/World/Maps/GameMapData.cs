@@ -19,13 +19,18 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// #define NEW_DMAP
+
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
+using SevenZip;
 
 #endregion
 
@@ -101,7 +106,12 @@ namespace Comet.Game.World.Maps
         {
             if (File.Exists(path))
             {
-                var stream = File.OpenRead(path);
+                Stream stream;// File.OpenRead(path);
+                if (Path.GetExtension(path).Equals(".7z"))
+                    stream = ReadFrom7Zip(path);
+                else
+                    stream = File.OpenRead(path);
+
                 BinaryReader reader = new BinaryReader(stream, Encoding.ASCII);
 
                 LoadData(reader);
@@ -221,8 +231,8 @@ namespace Comet.Game.World.Maps
                             //memory.Seek(332, SeekOrigin.Current);
                             for (int parts = 0; parts < amount; parts++)
                             {
-                                string temp0 = Encoding.ASCII.GetString(scenery.ReadBytes(256));
-                                string temp1 = Encoding.ASCII.GetString(scenery.ReadBytes(64));
+                                string temp0 = Encoding.ASCII.GetString(scenery.ReadBytes(256)).Replace('\0', ' ').TrimEnd();
+                                string temp1 = Encoding.ASCII.GetString(scenery.ReadBytes(64)).Replace('\0', ' ').TrimEnd();
                                 memory.Seek(12, SeekOrigin.Current);
                                 int width = scenery.ReadInt32();
                                 int height = scenery.ReadInt32();
@@ -273,6 +283,20 @@ namespace Comet.Game.World.Maps
                         break;
                 }
             }
+        }
+
+        private MemoryStream ReadFrom7Zip(string fileName)
+        {
+            SevenZipBase.SetLibraryPath(@".\x64\7z.dll");
+            var extractor = new SevenZipExtractor(fileName);
+            var filesInArchive = extractor.ArchiveFileData.ToList();
+            MemoryStream result = new MemoryStream();
+            filesInArchive.ForEach(f =>
+            {
+                extractor.ExtractFile(f.FileName, result);
+            });
+            result.Seek(0, SeekOrigin.Begin);
+            return result;
         }
     }
 

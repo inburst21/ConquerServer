@@ -130,7 +130,7 @@ namespace Comet.Game
 
         public static async Task<bool> CloseAsync()
         {
-            await RoleManager.KickoutAllAsync("Server is now closing");
+            await RoleManager.KickOutAllAsync("Server is now closing");
 
             SystemThread.CloseRequest = true;
             UserThread.CloseRequest = true;

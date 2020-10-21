@@ -3372,7 +3372,7 @@ namespace Comet.Game.States
             if (paramStrings.Length >= 4 && byte.TryParse(paramStrings[3], out var save) && save != 0 && !map.IsRecordDisable())
                 await user.SavePositionAsync(idMap, x, y);
 
-            return await user.FlyMap(idMap, x, y);
+            return await user.FlyMapAsync(idMap, x, y);
         }
 
         private static async Task<bool> ExecuteUserRecordpoint(DbAction action, string param, Character user, Role role, Item item, string input)
@@ -3442,7 +3442,7 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            await user.FlyMap(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
+            await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
             return true;
         }
 
@@ -3819,7 +3819,7 @@ namespace Comet.Game.States
 
             GameMap target = Kernel.MapManager.GetMap(user.HomeIdentity);
 
-            await user.FlyMap(target.Identity, target.PortalX, target.PortalY);
+            await user.FlyMapAsync(target.Identity, target.PortalX, target.PortalY);
 
             if (user.Team != null)
             {
@@ -3827,7 +3827,7 @@ namespace Comet.Game.States
                 {
                     if (member.Identity == user.Identity || member.GetDistance(user) > 5)
                         continue;
-                    await member.FlyMap(target.Identity, target.PortalX, target.PortalY);
+                    await member.FlyMapAsync(target.Identity, target.PortalX, target.PortalY);
                 }
             }
 
@@ -3858,7 +3858,7 @@ namespace Comet.Game.States
             if (map == null)
                 return false;
 
-            await user.FlyMap(map.Identity, map.PortalX, map.PortalY);
+            await user.FlyMapAsync(map.Identity, map.PortalX, map.PortalY);
             return true;
         }
 
@@ -5230,7 +5230,7 @@ namespace Comet.Game.States
             foreach (var player in Kernel.RoleManager.QueryRoleByType<Character>()
                 .Where(x => x.MapIdentity == sourceMap.Identity))
             {
-                await player.FlyMap(idTarget, usMapX, usMapY);
+                await player.FlyMapAsync(idTarget, usMapX, usMapY);
             }
             return true;
         }

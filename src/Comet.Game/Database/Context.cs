@@ -95,6 +95,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbTutorBattleLimitType> TutorBattleLimitTypes { get; set; }
         public virtual DbSet<DbTutorContributions> TutorContributions { get; set; }
         public virtual DbSet<DbTutorType> TutorTypes { get; set; }
+        public virtual DbSet<DbDynaRankRec> DynaRankRec { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

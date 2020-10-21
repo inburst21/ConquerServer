@@ -285,7 +285,7 @@ namespace Comet.Game
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
             
-            _ = Task.Run(() => Kernel.RoleManager.LogoutUser(actor.Identity));
+            _ = Task.Run(() => Kernel.RoleManager.LogoutUserAsync(actor.Identity));
 
             Processor.DeselectPartition(actor.Partition);            
         }

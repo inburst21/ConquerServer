@@ -34,6 +34,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Game.States.NPCs;
@@ -258,11 +259,6 @@ namespace Comet.Game.States
                 msg.Append(ClientUpdateType.Hitpoints, Life);
             }
             await BroadcastRoomMsgAsync(msg, true);
-
-
-            //await SynchroAttributesAsync(ClientUpdateType.Mesh, Mesh, true);
-            //await SynchroAttributesAsync(ClientUpdateType.Hitpoints, Life, true);
-            //await SynchroAttributesAsync(ClientUpdateType.MaxHitpoints, MaxLife, true);
             return true;
         }
 
@@ -273,8 +269,6 @@ namespace Comet.Game.States
             ushort trans = 98;
             if (Gender == 2)
                 trans = 99;
-            //TransformationMesh = trans;
-            //await Transform(trans, int.MaxValue, true);
             TransformationMesh = trans;
             await SynchroTransform();
         }
@@ -658,6 +652,48 @@ namespace Comet.Game.States
                     Action = MsgAction.ActionType.CharacterLevelUp,
                     Identity = Identity
                 });
+
+                if (Level > 3)
+                {
+                    bool burstXp = false;
+                    switch (ProfessionSort)
+                    {
+                        case 1:
+                            if (!MagicData.CheckType(1110))
+                            {
+                                await MagicData.Create(1110, 0);
+                                burstXp = true;
+                            }
+                            break;
+                        case 2:
+                            if (!MagicData.CheckType(1025))
+                            {
+                                await MagicData.Create(1025, 0);
+                                burstXp = true;
+                            }
+                            break;
+                        case 4:
+                            if (!MagicData.CheckType(8002))
+                            {
+                                await MagicData.Create(8002, 0);
+                                burstXp = true;
+                            }
+                            break;
+                        case 10:
+                            if (!MagicData.CheckType(1010))
+                            {
+                                await MagicData.Create(1010, 0);
+                                burstXp = true;
+                            }
+                            break;
+                    }
+
+                    if (burstXp)
+                    {
+                        await SetXp(100);
+                        await BurstXp();
+                    }
+                }
             }
 
             if (Team != null && !Team.IsLeader(Identity) && virtue > 0)
@@ -2251,7 +2287,7 @@ namespace Comet.Game.States
                     if (PkPoints >= 100)
                     {
                         await SavePositionAsync(6000, 31, 72);
-                        await FlyMap(6000, 31, 72);
+                        await FlyMapAsync(6000, 31, 72);
                         await Kernel.RoleManager.BroadcastMsgAsync(
                             string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
                             Color.White);
@@ -2267,7 +2303,7 @@ namespace Comet.Game.States
                 if (monster.IsGuard() && PkPoints > 99)
                 {
                     await SavePositionAsync(6000, 31, 72);
-                    await FlyMap(6000, 31, 72);
+                    await FlyMapAsync(6000, 31, 72);
                     await Kernel.RoleManager.BroadcastMsgAsync(
                         string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
                         Color.White);
@@ -2332,8 +2368,11 @@ namespace Comet.Game.States
             return !IsAlive && m_tRevive.IsTimeOut();
         }
 
-        public async Task Reborn(bool chgMap, bool isSpell = false)
+        public async Task RebornAsync(bool chgMap, bool isSpell = false)
         {
+            if (CurrentEvent != null)
+                await CurrentEvent.OnReviveAsync(this, !isSpell);
+
             if (IsAlive || !CanRevive() && !isSpell)
             {
                 if (QueryStatus(StatusSet.GHOST) != null)
@@ -2365,7 +2404,7 @@ namespace Comet.Game.States
 
             if (chgMap || !IsBlessed && !isSpell)
             {
-                await FlyMap(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
+                await FlyMapAsync(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
             }
             else
             {
@@ -2374,11 +2413,11 @@ namespace Comet.Game.States
                                  || Map.IsPkGameMap()
                                  || Map.IsSynMap()))
                 {
-                    await FlyMap(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
+                    await FlyMapAsync(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
                 }
                 else
                 {
-                    await FlyMap(m_idMap, m_posX, m_posY);
+                    await FlyMapAsync(m_idMap, m_posX, m_posY);
                 }
             }
 
@@ -3260,7 +3299,29 @@ namespace Comet.Game.States
             return IsPm() || Name.Contains("[GM]");
         }
 
-#endregion
+        #endregion
+
+        #region Events
+
+        public GameEvent CurrentEvent { get; private set; }
+
+        public async Task<bool> SignInEventAsync(GameEvent e)
+        {
+            CurrentEvent = e;
+
+            await e.OnEnterAsync(this);
+            return true;
+        }
+
+        public async Task<bool> SignOutEventAsync()
+        {
+            await CurrentEvent.OnExitAsync(this);
+
+            CurrentEvent = null;
+            return true;
+        }
+
+        #endregion
 
         #region Screen
 
@@ -3359,16 +3420,24 @@ namespace Comet.Game.States
             await Screen.ClearAsync();
         }
 
-        public override Task ProcessOnMove()
+        public override async Task ProcessOnMove()
         {
             StopMining();
-            return base.ProcessOnMove();
+
+            if (CurrentEvent != null)
+                await CurrentEvent.OnMoveAsync(this);
+
+            await base.ProcessOnMove();
         }
 
-        public override Task ProcessOnAttack()
+        public override async Task ProcessOnAttack()
         {
             StopMining();
-            return base.ProcessOnAttack();
+
+            if (CurrentEvent != null)
+                await CurrentEvent.OnAttackAsync(this);
+
+            await base.ProcessOnAttack();
         }
 
         public async Task SavePositionAsync()
@@ -3393,7 +3462,7 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task<bool> FlyMap(uint idMap, int x, int y)
+        public async Task<bool> FlyMapAsync(uint idMap, int x, int y)
         {
             if (Map == null)
             {
@@ -4222,7 +4291,7 @@ namespace Comet.Game.States
             if (m_socket != null)
             {
                 if (await m_socket.SendAsync(msg) < 0)
-                    await Kernel.RoleManager.LogoutUser(Identity);
+                    await Kernel.RoleManager.LogoutUserAsync(Identity);
             }
         }
 

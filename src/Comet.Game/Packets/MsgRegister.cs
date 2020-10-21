@@ -85,7 +85,7 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
@@ -126,22 +126,40 @@ namespace Comet.Game.Packets
                 };
             }
 
+            switch(client.AuthorityLevel)
+            {
+                case 4:
+                case 5:
+                    const string PM_S = "[PM]";
+                    if (CharacterName.Length + PM_S.Length > 16)
+                    {
+                        CharacterName = CharacterName.Substring(0, 16 - (16 - CharacterName.Length + PM_S.Length)) + PM_S;
+                    }
+                    else
+                    {
+                        CharacterName += PM_S;
+                    }
+                    break;
+            }
+
             // Create the character
-            var character = new DbCharacter();
-            character.AccountIdentity = client.Creation.AccountID;
-            character.Name = CharacterName;
-            character.Mate = 0;
-            character.Profession = (byte) Class;
-            character.Mesh = Mesh;
-            character.Silver = 1000;
-            character.Level = 1;
-            character.MapID = 1010;
-            character.X = 61;
-            character.Y = 109;
-            character.Strength = allot.Strength;
-            character.Agility = allot.Agility;
-            character.Vitality = allot.Vitality;
-            character.Spirit = allot.Spirit;
+            var character = new DbCharacter
+            {
+                AccountIdentity = client.Creation.AccountID,
+                Name = CharacterName,
+                Mate = 0,
+                Profession = (byte) Class,
+                Mesh = Mesh,
+                Silver = 1000,
+                Level = 1,
+                MapID = 1010,
+                X = 61,
+                Y = 109,
+                Strength = allot.Strength,
+                Agility = allot.Agility,
+                Vitality = allot.Vitality,
+                Spirit = allot.Spirit
+            };
             character.HealthPoints =
                 (ushort) (character.Strength * 3
                           + character.Agility * 3
@@ -149,10 +167,11 @@ namespace Comet.Game.Packets
                           + character.Vitality * 24);
             character.ManaPoints = (ushort) (character.Spirit * 5);
             character.Registered = DateTime.Now;
-            character.ExperienceMultiplier = 5;
+            character.ExperienceMultiplier = 10;
             character.ExperienceExpires = DateTime.Now.AddHours(12);
             character.HeavenBlessing = DateTime.Now.AddDays(30);
             character.AutoAllot = 1;
+
             // Generate a random look for the character
             BodyType body = (BodyType) Mesh;
             switch (body)
@@ -165,6 +184,7 @@ namespace Comet.Game.Packets
                     character.Mesh += 10000;
                     break;
             }
+
             character.Hairstyle = (ushort) (
                 await Kernel.NextAsync(3, 9) * 100 + Hairstyles[
                     await Kernel.NextAsync(0, Hairstyles.Length)]);
@@ -186,6 +206,10 @@ namespace Comet.Game.Packets
 
         private async Task GenerateInitialEquipment(DbCharacter user)
         {
+            await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
+            await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
+            await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
+
             await CreateItemAsync((uint) await Kernel.NextAsync(132003, 132005), user.Identity, Item.ItemPosition.Armor);
             switch (user.Profession)
             {
@@ -198,22 +222,51 @@ namespace Comet.Game.Packets
                     await CreateItemAsync((uint)await Kernel.NextAsync(150003, 150005), user.Identity, Item.ItemPosition.Ring);
                     await CreateItemAsync(500301, user.Identity, Item.ItemPosition.RightHand);
                     await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.LeftHand);
+
+                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.Inventory);
+                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.Inventory);
+                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.Inventory);
                     break;
                 case 100:
+                    await CreateMagicAsync(user.Identity, 1000);
+                    await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
+                    await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
+                    await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
                     await CreateItemAsync((uint)await Kernel.NextAsync(152013, 152015), user.Identity, Item.ItemPosition.Ring);
                     await CreateItemAsync(421301, user.Identity, Item.ItemPosition.RightHand);
                     break;
             }
+
+            await CreateItemAsync(1060020, user.Identity, Item.ItemPosition.Inventory);
+            await CreateItemAsync(1060020, user.Identity, Item.ItemPosition.Inventory);
+            await CreateItemAsync(1060020, user.Identity, Item.ItemPosition.Inventory);
         }
 
-        private async Task CreateItemAsync(uint type, uint idOwner, Item.ItemPosition position)
+        private async Task CreateItemAsync(uint type, uint idOwner, Item.ItemPosition position, byte add = 0,
+            Item.SocketGem gem1 = Item.SocketGem.NoSocket, Item.SocketGem gem2 = Item.SocketGem.NoSocket,
+            byte enchant = 0, byte reduceDmg = 0)
         {
             DbItem item = Item.CreateEntity(type);
             if (item == null)
                 return;
-            item.Position = (byte)position;
+            item.Position = (byte) position;
             item.PlayerId = idOwner;
+            item.AddLife = enchant;
+            item.ReduceDmg = reduceDmg;
+            item.Magic3 = add;
+            item.Gem1 = (byte) gem1;
+            item.Gem2 = (byte) gem2;
             await BaseRepository.SaveAsync(item);
+        }
+
+        private Task CreateMagicAsync(uint idOwner, ushort type, byte level = 0)
+        {
+            return BaseRepository.SaveAsync(new DbMagic
+            {
+                Type = type,
+                Level = level,
+                OwnerId = idOwner
+            });
         }
     }
 }
