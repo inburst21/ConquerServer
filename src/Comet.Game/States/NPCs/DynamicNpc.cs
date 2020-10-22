@@ -397,6 +397,9 @@ namespace Comet.Game.States.NPCs
 
         public void AddSynWarScore(Syndicate syn, long score)
         {
+            if (syn == null)
+                return;
+
             if (!m_dicScores.ContainsKey(syn.Identity))
                 m_dicScores.TryAdd(syn.Identity, new Score(syn.Identity, syn.Name));
 

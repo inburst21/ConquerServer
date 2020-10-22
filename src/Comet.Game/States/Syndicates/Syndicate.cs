@@ -29,6 +29,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
+using Comet.Game.States.Events;
 using Comet.Network.Packets;
 using Microsoft.EntityFrameworkCore;
 
@@ -234,6 +235,8 @@ namespace Comet.Game.States.Syndicates
                 await BaseRepository.DeleteAsync(member);
             }
 
+            ExitFromEvents();
+
             // additional clean up
             await new ServerDbContext().Database.ExecuteSqlRawAsync($"DELETE FROM `cq_synattr` WHERE `syn_id`={Identity}");
 
@@ -348,6 +351,8 @@ namespace Comet.Game.States.Syndicates
                 PkPoints = 0
             });
 
+            RemoveUserFromEvents(target.Identity);
+
             await SendAsync(string.Format(Language.StrSynMemberExit, target.Name));
             return true;
         }
@@ -385,6 +390,8 @@ namespace Comet.Game.States.Syndicates
                 await target.Screen.SynchroScreenAsync();
                 await target.SendAsync(string.Format(Language.StrSynYouBeenKicked, sender.Name));
             }
+
+            RemoveUserFromEvents(member.UserIdentity);
 
             await BaseRepository.SaveAsync(new DbSyndicateMemberHistory
             {
@@ -738,6 +745,20 @@ namespace Comet.Game.States.Syndicates
         public bool IsEnemy(uint id)
         {
             return m_dicEnemies.ContainsKey((ushort)id);
+        }
+
+        #endregion
+
+        #region Events
+
+        public void ExitFromEvents()
+        {
+            Kernel.EventThread.GetEvent<TimedGuildWar>()?.UnsubscribeSyndicate(Identity);
+        }
+
+        public void RemoveUserFromEvents(uint idUser)
+        {
+            Kernel.EventThread.GetEvent<TimedGuildWar>()?.LeaveSyndicate(idUser, Identity);
         }
 
         #endregion

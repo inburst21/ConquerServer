@@ -57,7 +57,8 @@ namespace Comet.Game.World.Threading
 
                 await dynaNpc.CheckFightTimeAsync();
 
-                if(ranking) 
+                if(ranking
+                    && dynaNpc.MapIdentity != 2058) 
                     await dynaNpc.BroadcastRankingAsync();
             }
 
@@ -70,12 +71,28 @@ namespace Comet.Game.World.Threading
             return true;
         }
 
-        public bool RegisterEvent(GameEvent @event)
+        public override async Task OnStartAsync()
+        {
+            await RegisterEventAsync(new TimedGuildWar());
+
+            await base.OnStartAsync();
+        }
+
+        public async Task<bool> RegisterEventAsync(GameEvent @event)
         {
             if (m_events.Any(x => x.Name.Equals(@event.Name, StringComparison.InvariantCultureIgnoreCase)))
                 return false;
-            m_events.Add(@event);
-            return true;
+            if (await @event.CreateAsync())
+            {
+                m_events.Add(@event);
+                return true;
+            }
+            return false;
+        }
+
+        public T GetEvent<T>() where T : GameEvent
+        {
+            return m_events.FirstOrDefault(x => x.GetType() == typeof(T)) as T;
         }
     }
 }

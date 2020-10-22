@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.States.BaseEntities;
 
 #endregion
 
@@ -51,6 +52,11 @@ namespace Comet.Game.States.Events
         public string Name { get; }
 
         public bool ToNextTime() => m_eventCheck.ToNextTime();
+
+        public virtual bool IsAllowedToJoin(Role sender)
+        {
+            return true;
+        }
 
         public virtual Task<bool> CreateAsync()
         {

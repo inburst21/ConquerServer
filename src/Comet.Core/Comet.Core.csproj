@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
-    <AssemblyVersion>1.2020.294.4</AssemblyVersion>
-    <FileVersion>1.2020.294.4</FileVersion>
+    <AssemblyVersion>1.2020.296.6</AssemblyVersion>
+    <FileVersion>1.2020.296.6</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
