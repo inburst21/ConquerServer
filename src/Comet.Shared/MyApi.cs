@@ -88,8 +88,16 @@ namespace Comet.Shared
             if (auth == null)
                 return false;
 
-            m_token = auth.Token;
-            m_ExpireTime = DateTime.Parse(auth.Expiration);
+            try
+            {
+                m_token = auth.Token;
+                m_ExpireTime = DateTime.Parse(auth.Expiration);
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Error on reply from API [{BASE_URL}] Auth, [{m_token}],[{auth.Expiration}]");
+                return false;
+            }
 
             return true;
         }
