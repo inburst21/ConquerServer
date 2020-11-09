@@ -193,7 +193,7 @@ namespace Comet.Game.World.Maps
                         int startX = reader.ReadInt32();
                         int startY = reader.ReadInt32();
 
-                        file = file.Substring(0, file.IndexOf('\0'));
+                        file = file.Substring(0, file.IndexOf('\0')).Replace("\\", Path.DirectorySeparatorChar.ToString());
                         if (File.Exists(file))
                         {
                             var memory = new MemoryStream(File.ReadAllBytes(file));
@@ -287,7 +287,7 @@ namespace Comet.Game.World.Maps
 
         private MemoryStream ReadFrom7Zip(string fileName)
         {
-            SevenZipBase.SetLibraryPath(@".\x64\7z.dll");
+            SevenZipBase.SetLibraryPath(string.Format(".{0}x64{0}7z.dll", Path.DirectorySeparatorChar));
             var extractor = new SevenZipExtractor(fileName);
             var filesInArchive = extractor.ArchiveFileData.ToList();
             MemoryStream result = new MemoryStream();

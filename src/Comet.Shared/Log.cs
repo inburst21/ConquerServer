@@ -128,8 +128,7 @@ namespace Comet.Shared
                 || fileHandle.Date.DayOfYear != now.DayOfYear)
             {
                 fileHandle.Date = now;
-                fileHandle.Path =
-                    $".\\{LogFolder.SystemLog}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log";
+                fileHandle.Path = $"{GetDirectory(eFolder)}{Path.DirectorySeparatorChar}{file}.log";
             }
 
             try
@@ -156,11 +155,16 @@ namespace Comet.Shared
                 Date = now,
                 Filename = $"{now:YYYYMMdd)} - {file}.log",
                 Handle = new object(),
-                Path = $".\\{folder}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}\\{file}.log",
+                Path = $"{GetDirectory(folder)}{Path.DirectorySeparatorChar}{file}.log",
                 Folder = folder
             };
-
             return logFile;
+        }
+
+        private static string GetDirectory(LogFolder folder)
+        {
+            DateTime now = DateTime.Now;
+            return string.Format($".{{0}}{folder}{{0}}{now.Year:0000}{{0}}{now.Month:00}{{0}}{now.Day:00}", Path.DirectorySeparatorChar);
         }
 
         private static void RefreshFolders()
@@ -168,8 +172,8 @@ namespace Comet.Shared
             DateTime now = DateTime.Now;
             foreach (var eVal in Enum.GetValues(typeof(LogFolder)).Cast<LogFolder>())
             {
-                if (!Directory.Exists($".\\{eVal}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}"))
-                    Directory.CreateDirectory($".\\{eVal}\\{now.Year:0000}\\{now.Month:00}\\{now.Day:00}");
+                if (!Directory.Exists(GetDirectory(eVal)))
+                    Directory.CreateDirectory(GetDirectory(eVal));
             }
         }
     }

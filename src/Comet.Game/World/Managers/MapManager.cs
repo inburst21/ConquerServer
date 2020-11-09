@@ -43,7 +43,7 @@ namespace Comet.Game.World.Managers
 
         public async Task LoadDataAsync()
         {
-            var stream = File.OpenRead(@".\ini\GameMap.dat");
+            var stream = File.OpenRead(string.Format(".{0}ini{0}GameMap.dat", Path.DirectorySeparatorChar));
             BinaryReader reader = new BinaryReader(stream);
 
             int mapDataCount = reader.ReadInt32();
