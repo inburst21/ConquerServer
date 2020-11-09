@@ -32,6 +32,7 @@ using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
 using Comet.Network.RPC;
+using Comet.Network.Security;
 using Comet.Shared;
 using Comet.Shared.Models;
 
@@ -58,7 +59,7 @@ namespace Comet.Game
             Console.Title = @"Comet, Game Server";
             Console.WriteLine();
             await Log.WriteLog(LogLevel.Message, "  Comet: Game Server");
-            await Log.WriteLog(LogLevel.Message, "  Copyright 2018 Gareth Jensen \"Spirited\"");
+            await Log.WriteLog(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
             await Log.WriteLog(LogLevel.Message, "  All Rights Reserved");
             Console.WriteLine();
 
@@ -95,6 +96,7 @@ namespace Comet.Game
             // Start background services
             tasks = new List<Task>();
             tasks.Add(Kernel.Services.Randomness.StartAsync(CancellationToken.None));
+            tasks.Add(DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None));
             Task.WaitAll(tasks.ToArray());
 
             // await ConvertItemsAsync();

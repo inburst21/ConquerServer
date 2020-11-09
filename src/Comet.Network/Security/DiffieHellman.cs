@@ -21,83 +21,81 @@
 
 #region References
 
-using System;
+using System.Threading.Tasks;
+using Comet.Network.Services;
 using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities.Encoders;
 
 #endregion
 
 namespace Comet.Network.Security
 {
     /// <summary>
-    /// The Diffie–Hellman key exchange method allows two parties that have no prior knowledge of each 
-    /// other to jointly establish a shared secret key over an insecure communications channel. This 
-    /// key can then be used to encrypt subsequent communications using a symmetric key cipher.
+    /// This implementation of the Diffie Hellman Key Exchange implements the base modulo
+    /// and big number operations without a hash algorithm. This is non-standard, and was
+    /// later fixed in higher versions of Conquer Online using MD5.
     /// </summary>
-    public class DiffieHellmanKeyExchange
+    public sealed class DiffieHellman
     {
-        private static BigInteger _requestModInteger; // The request's random integer used to mod the request key.
-        private BigInteger _generator; // Generating number used to configure the exchange on both sides.
-        private BigInteger _primeRoot; // Prime number used to configure the exchange on both sides.
-        private BigInteger _publicRequestKey; // The request key being sent to the client.
+        private const string DefaultGenerator = "05";
+        private const string DefaultPrimativeRoot = "E7A69EBDF105F2A6BBDEAD7E798F76A209AD73FB466431E2E7352ED262F8C558F10BEFEA977DE9E21DCEE9B04D245F300ECCBBA03E72630556D011023F9E857F";
 
-        private BigInteger _publicResponseKey; // The response key being received from the client.
-
-        // Exchange Variables:
-        public BigInteger SecretKey; // The secret number computed by the exchange.
+        // Constants and static properties
+        public static readonly PrimeGeneratorService ProbablePrimes;
 
         /// <summary>
-        /// The Diffie–Hellman key exchange method allows two parties that have no prior knowledge of each 
-        /// other to jointly establish a shared secret key over an insecure communications channel. This 
-        /// key can then be used to encrypt subsequent communications using a symmetric key cipher.
+        /// Generate the modulus integer as a static constant. This is an unfortunate
+        /// consequence of creating a randomness service for generating numbers in a
+        /// thread safe environment, and using a language with poor multithreading 
+        /// support.
         /// </summary>
-        /// <param name="p">A prime number being used to configure the exchange on both sides.</param>
-        /// <param name="g">A generating number being used to configure the exchange on both sides.</param>
-        public DiffieHellmanKeyExchange(string p, string g)
+        static DiffieHellman()
         {
-            _primeRoot = new BigInteger(p, 16);
-            _generator = new BigInteger(g, 16);
+            ProbablePrimes = new PrimeGeneratorService();
         }
 
         /// <summary>
-        /// This method generates the private and public key used in computing the shared secret key.
-        /// If the keys have already been generated, this method will not execute and throw an exception.
+        /// Instantiates a new instance of the <see cref="DiffieHellman"/> key exchange.
+        /// If no prime root or generator is specified, then defaults for remaining W
+        /// interoperable with the Conquer Online game client will be used. 
         /// </summary>
-        public string GenerateRequest()
+        /// <param name="p">Prime root to modulo with the generated probable prime.</param>
+        /// <param name="g">Generator used to seed the modulo of primes.</param>
+        public DiffieHellman(
+            string p = DefaultPrimativeRoot,
+            string g = DefaultGenerator)
         {
-            // Error Check:
-            if (_publicRequestKey != null)
-                throw new MethodAccessException();
-
-            // Assign Local Variables:
-            BigInteger request = _generator;
-
-            // Generate Request:
-            _requestModInteger = BigInteger.ProbablePrime(256, new Random());
-            request = request.ModPow(_requestModInteger, _primeRoot);
-            _publicRequestKey = request;
-
-            // Return the request key:
-            return Hex.ToHexString(_publicRequestKey.ToByteArrayUnsigned());
+            PrimeRoot = new BigInteger(p, 16);
+            Generator = new BigInteger(g, 16);
+            DecryptionIV = new byte[8];
+            EncryptionIV = new byte[8];
         }
 
-        /// <summary>
-        /// This method handles the response from the client and generates the response key for the Blowfish
-        /// cipher algorithm. It returns the key for Blowfish to schedule keys.
-        /// </summary>
-        /// <param name="publicKey">The public key from the client.</param>
-        public byte[] GenerateResponse(string publicKey)
+        // Key exchange Properties
+        public BigInteger PrimeRoot { get; set; }
+        public BigInteger Generator { get; set; }
+        public BigInteger Modulus { get; set; }
+        public BigInteger PublicKey { get; private set; }
+        public BigInteger PrivateKey { get; private set; }
+
+        // Blowfish IV exchange properties
+        public byte[] DecryptionIV { get; private set; }
+        public byte[] EncryptionIV { get; private set; }
+
+        /// <summary>Computes the public key for sending to the client.</summary>
+        public async Task ComputePublicKeyAsync()
         {
-            // Finish receiving the public key:
-            _publicResponseKey = new BigInteger(publicKey, 16);
+            if (Modulus == null)
+                Modulus = await ProbablePrimes.NextAsync();
+            PublicKey = Generator.ModPow(Modulus, PrimeRoot);
+        }
 
-            // Generate the secret key:
-            BigInteger response = _publicResponseKey;
-            response = response.ModPow(_requestModInteger, _primeRoot);
-            SecretKey = response;
-
-            // Return result:
-            return SecretKey.ToByteArrayUnsigned();
+        /// <summary>Computes the private key given the client response.</summary>
+        /// <param name="clientKeyString">Client key from the exchange</param>
+        /// <returns>Bytes representing the private key for Blowfish Cipher.</returns>
+        public void ComputePrivateKey(string clientKeyString)
+        {
+            BigInteger clientKey = new BigInteger(clientKeyString, 16);
+            PrivateKey = clientKey.ModPow(Modulus, PrimeRoot);
         }
     }
 }

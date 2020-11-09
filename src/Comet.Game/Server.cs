@@ -55,43 +55,70 @@ namespace Comet.Game
         ///     channels and worker threads. Initializes the TCP server listener.
         /// </summary>
         /// <param name="config">The server's read configuration file</param>
-        public Server(ServerConfiguration config) : base(config.GameNetwork.MaxConn)
+        public Server(ServerConfiguration config) : base(config.GameNetwork.MaxConn, 4096, false, true, 8)
         {
-            Exchanging = DoExchangeAsync;
-
             Processor = new PacketProcessor<Client>(ProcessAsync);
             Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
-        private async Task<bool> DoExchangeAsync(Client actor, byte[] packet)
-        {// Validate connection
-            if (!actor.Socket.Connected)
-                return false;
-
-            MsgLoginProofA msg = new MsgLoginProofA();
-            msg.Decode(packet);
-            await msg.ProcessAsync(actor);
-            return true;
-        }
-
         /// <summary>
-        ///     Invoked by the server listener's Accepting method to create a new server actor
-        ///     around the accepted client socket. Gives the server an opportunity to initialize
-        ///     any processing mechanisms or authentication routines for the client connection.
+        /// Invoked by the server listener's Accepting method to create a new server actor
+        /// around the accepted client socket. Gives the server an opportunity to initialize
+        /// any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
         /// <param name="buffer">Preallocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
-        protected override Client Accepted(Socket socket, Memory<byte> buffer)
+        protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            uint partition = Processor.SelectPartition();
-            Client client = new Client(socket, buffer, partition);
+            var partition = this.Processor.SelectPartition();
+            var client = new Client(socket, buffer, partition);
+            await client.DiffieHellman.ComputePublicKeyAsync();
 
-            _ = client.SendAsync(client.Exchange.Request());
+            await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
+            await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
+
+            var handshakeRequest = new MsgHandshake(
+                client.DiffieHellman,
+                client.DiffieHellman.EncryptionIV,
+                client.DiffieHellman.DecryptionIV);
+
+            await handshakeRequest.RandomizeAsync();
+            await client.SendAsync(handshakeRequest);
             return client;
         }
 
-        
+        /// <summary>
+        /// Invoked by the server listener's Exchanging method to process the client 
+        /// response from the Diffie-Hellman Key Exchange. At this point, the raw buffer 
+        /// from the client has been decrypted and is ready for direct processing.
+        /// </summary>
+        /// <param name="actor">Server actor that represents the remote client</param>
+        /// <param name="buffer">Packet buffer to be processed</param>
+        protected override bool Exchanged(Client actor, ReadOnlySpan<byte> buffer)
+        {
+            try
+            {
+                MsgHandshake msg = new MsgHandshake();
+                msg.Decode(buffer.ToArray());
+
+                actor.DiffieHellman.ComputePrivateKey(msg.ClientKey);
+
+                actor.Cipher.GenerateKeys(new object[] {
+                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned() });
+                (actor.Cipher as BlowfishCipher).SetIVs(
+                    actor.DiffieHellman.DecryptionIV,
+                    actor.DiffieHellman.EncryptionIV);
+
+                actor.DiffieHellman = null;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
 
         /// <summary>
         ///     Invoked by the server listener's Receiving method to process a completed packet

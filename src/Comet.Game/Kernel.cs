@@ -23,18 +23,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.Caching;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
-using Comet.Game.Routines;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Threading;
-using Comet.Network.Security;
+using Comet.Network.Services;
 using Comet.Shared;
 
 #endregion
@@ -93,6 +89,11 @@ namespace Comet.Game
             return NextAsync(0, maxValue);
         }
 
+        /// <summary>Writes random numbers from the generator to a buffer.</summary>
+        /// <param name="buffer">Buffer to write bytes to.</param>
+        public static Task NextBytesAsync(byte[] buffer) =>
+            Services.Randomness.NextBytesAsync(buffer);
+
         /// <summary>
         ///     Returns the next random number from the generator.
         /// </summary>
@@ -124,7 +125,6 @@ namespace Comet.Game
             await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
 
-            Blowfish.InitialKey = Encoding.ASCII.GetBytes("DR654dt34trg4UI6");
             return true;
         }
 

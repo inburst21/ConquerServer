@@ -52,7 +52,7 @@ namespace Comet.Account
             Console.Title = "Comet, Account Server";
             Console.WriteLine();
             await Log.WriteLog(LogLevel.Message, "  Comet: Account Server");
-            await Log.WriteLog(LogLevel.Message, "  Copyright 2018 Gareth Jensen \"Spirited\"");
+            await Log.WriteLog(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
             await Log.WriteLog(LogLevel.Message, "  All Rights Reserved");
             Console.WriteLine();
 

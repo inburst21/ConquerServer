@@ -65,7 +65,7 @@ namespace Comet.Account
         /// <param name="socket">Accepted client socket from the server socket</param>
         /// <param name="buffer">Preallocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
-        protected override Client Accepted(Socket socket, Memory<byte> buffer)
+        protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
             uint partition = Processor.SelectPartition();
             return new Client(socket, buffer, partition);
@@ -108,6 +108,10 @@ namespace Comet.Account
                 {
                     case PacketType.MsgAccount:
                         msg = new MsgAccount();
+                        break;
+
+                    case PacketType.MsgConnect:
+                        msg = new MsgConnect();
                         break;
 
                     default:

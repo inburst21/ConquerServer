@@ -24,6 +24,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using Comet.Network.Packets;
 using Comet.Network.Security;
@@ -48,8 +49,7 @@ namespace Comet.Network.Sockets
         public readonly Socket Socket;
         public readonly uint Partition;
         private readonly object SendLock;
-
-        public byte[] Footer = null;
+        public readonly byte[] PacketFooter;
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="TcpServerActor" /> using an accepted
@@ -63,11 +63,13 @@ namespace Comet.Network.Sockets
             Socket socket,
             Memory<byte> buffer,
             ICipher cipher,
-            uint partition = 0)
+            uint partition = 0,
+            string packetFooter = "")
         {
             Buffer = buffer;
             Cipher = cipher;
             Socket = socket;
+            PacketFooter = Encoding.ASCII.GetBytes(packetFooter);
             Partition = partition;
             SendLock = new object();
         }
@@ -77,7 +79,7 @@ namespace Comet.Network.Sockets
         /// <summary>
         ///     Returns the remote IP address of the connected client.
         /// </summary>
-        public string IPAddress =>  (Socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
+        public string IPAddress =>  (Socket.RemoteEndPoint as IPEndPoint)?.Address.MapToIPv4().ToString();
 
         /// <summary>
         ///     Sends a packet to the game client after encrypting bytes. This may be called
@@ -88,19 +90,24 @@ namespace Comet.Network.Sockets
         /// <param name="packet">Bytes to be encrypted and sent to the client</param>
         public virtual Task<int> SendAsync(byte[] packet)
         {
-            var encrypted = new byte[packet.Length];
-            if (Exchanged)
-                BitConverter.TryWriteBytes(packet, (ushort) (packet.Length - (Footer?.Length ?? 0)));
+            var encrypted = new byte[packet.Length + this.PacketFooter.Length];
+            packet.CopyTo(encrypted, 0);
+
+            BitConverter.TryWriteBytes(encrypted, (ushort)packet.Length);
+            Array.Copy(this.PacketFooter, 0, encrypted, packet.Length, this.PacketFooter.Length);
+
             lock (SendLock)
             {
-                try
+                try 
                 {
-                    Cipher.Encrypt(packet, encrypted);
+                    Cipher.Encrypt(encrypted, encrypted);
                     return Socket?.SendAsync(encrypted, SocketFlags.None) ?? Task.FromResult(-1);
                 }
-                catch (Exception e)
+                catch (SocketException e)
                 {
-                    Console.WriteLine(e.ToString());
+                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
+                        e.SocketErrorCode > SocketError.Shutdown)
+                        Console.WriteLine(e);
                     return Task.FromResult(-1);
                 }
             }
