@@ -31,6 +31,13 @@ namespace Comet.Game.States.Events
 {
     public abstract class GameEvent
     {
+        protected enum EventStage
+        {
+            Idle,
+            Running,
+            Ending
+        }
+
         public enum EventType
         {
             None,

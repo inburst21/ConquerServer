@@ -19,13 +19,78 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#region References
+
+using System;
+using System.Threading.Tasks;
+using Comet.Core;
+using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Maps;
+using Comet.Shared;
+
+#endregion
+
 namespace Comet.Game.States.Events
 {
     public sealed class GuildContest : GameEvent
     {
+        private const int MAP_ID = 2060;
+        private const int MAX_DEATHS_PER_PLAYER = 20;
+        private const int MIN_LEVEL = 40;
+        private const int MIN_TIME_IN_SYNDICATE = 0; // in days
+
+        private const int STARTUP_TIME = 1220000;
+        private const int END_TIME = 4103000;
+
+        private const int MAX_MONEY_REWARD = 60000000;
+        private const int MAX_EMONEY_REWARD = 10750;
+
+        private const int MAX_MONEY_REWARD_PER_USER = MAX_MONEY_REWARD / 15;
+        private const int MAX_EMONEY_REWARD_PER_USER = MAX_EMONEY_REWARD / 15;
+
+        private TimeOut m_updatePoints = new TimeOut(10);
+        private TimeOut m_updateScreens = new TimeOut(10);
+
         public GuildContest(string name, int timeCheck = 1000)
             : base(name, timeCheck)
         {
+        }
+
+        public override EventType Identity { get; } = EventType.GuildContest;
+
+        public GameMap Map { get; private set; }
+
+        public override bool IsAllowedToJoin(Role sender)
+        {
+            if (!(sender is Character user))
+                return false;
+
+            if (sender.Level < MIN_LEVEL)
+                return false;
+
+            if (user.SyndicateIdentity == 0)
+                return false;
+
+            if ((DateTime.Now - user.SyndicateMember.JoinDate).TotalDays < MIN_TIME_IN_SYNDICATE)
+                return false;
+
+            return true;
+        }
+
+        public override async Task<bool> CreateAsync()
+        {
+            Map = Kernel.MapManager.GetMap(MAP_ID);
+            if (Map == null)
+            {
+                await Log.WriteLog(LogLevel.Error, $"Could not start GuildContest, invalid mapid {MAP_ID}");
+                return false;
+            }
+            return true;
+        }
+
+        public override Task OnTimerAsync()
+        {
+            return base.OnTimerAsync();
         }
     }
 }

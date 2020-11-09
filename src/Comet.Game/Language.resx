@@ -540,6 +540,12 @@
   <data name="StrSynRemoveEnemy" xml:space="preserve">
     <value>Guild Leader {0} has removed the Guild {1} from the enemy list.</value>
   </data>
+  <data name="StrSynWarIpRewarded" xml:space="preserve">
+    <value>Your IP Address has already claimed an reward! You cannot claim it twice.</value>
+  </data>
+  <data name="StrSynWarRewardNotify" xml:space="preserve">
+    <value>You received {0:N0} silvers and {1:N0} CPs for winning the Guild War.</value>
+  </data>
   <data name="StrSynYouBeenKicked" xml:space="preserve">
     <value>You have been kicked out of the guild by {0}!</value>
   </data>
@@ -676,7 +682,7 @@
     <value>War has ended!</value>
   </data>
   <data name="StrWarRankingNo" xml:space="preserve">
-    <value>No. {0}: {1}({2:N0})</value>
+    <value>No. {0}: {1} ({2:N0})</value>
   </data>
   <data name="StrWarRankingStart" xml:space="preserve">
     <value>War Ranking:</value>
@@ -686,6 +692,9 @@
   </data>
   <data name="StrWarWon" xml:space="preserve">
     <value>{0} dominated the Guild Area!</value>
+  </data>
+  <data name="StrWarYourScore" xml:space="preserve">
+    <value>Your Score: {0:N0}</value>
   </data>
   <data name="StrWeaponSkillUp" xml:space="preserve">
     <value>Your weapon proeficiency level has been improved.</value>

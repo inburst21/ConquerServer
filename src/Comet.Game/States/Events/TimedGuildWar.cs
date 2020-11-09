@@ -26,6 +26,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.NPCs;
@@ -37,26 +38,24 @@ namespace Comet.Game.States.Events
 {
     public sealed class TimedGuildWar : GameEvent
     {
-        private enum EventStage
-        {
-            Idle,
-            Running,
-            Ending
-        }
-
         private ConcurrentDictionary<uint, SyndicateData> m_synData = new ConcurrentDictionary<uint, SyndicateData>();
 
         private TimeOut m_updateScreens = new TimeOut(10);
         private TimeOut m_updatePoints = new TimeOut(10);
 
-        private const int POLE_IDENTITY = 0;
         private const int MAP_ID = 2058;
         private const int MAX_DEATHS_PER_PLAYER = 20;
         private const int MIN_LEVEL = 70;
         private const int MIN_TIME_IN_SYNDICATE = 7; // in days
 
         private const int STARTUP_TIME = 1220000;
-        private const int END_TIME = 6230000;
+        private const int END_TIME = 4103000;
+
+        private const int MAX_MONEY_REWARD = 120000000;
+        private const int MAX_EMONEY_REWARD = 21500;
+
+        private const int MAX_MONEY_REWARD_PER_USER = MAX_MONEY_REWARD/15;
+        private const int MAX_EMONEY_REWARD_PER_USER = MAX_EMONEY_REWARD/15;
 
         private readonly uint[] m_poleIdentities = new uint[]
         {
@@ -148,6 +147,7 @@ namespace Comet.Game.States.Events
                 return;
             }
 
+            // do event stuff
             if (m_updatePoints.ToNextTime())
             {
                 foreach (var idNpc in m_poleIdentities)
@@ -174,9 +174,18 @@ namespace Comet.Game.States.Events
                     await Map.BroadcastMsgAsync(new MsgTalk(0, MsgTalk.TalkChannel.GuildWarRight2, Color.Yellow,
                         string.Format(Language.StrWarRankingNo, i, data.Name, data.Points)));
                 }
-            }
 
-            // do event stuff
+                foreach (var synData in m_synData.Values)
+                {
+                    foreach (UserData userData in synData.Players.Values)
+                    {
+                        Character user = Kernel.RoleManager.GetUser(userData.Identity);
+                        if (user != null)
+                            await user.SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.GuildWarRight2, Color.Yellow,
+                                string.Format(Language.StrWarYourScore, userData.Points)));
+                    }
+                }
+            }
         }
 
         #endregion
@@ -229,7 +238,8 @@ namespace Comet.Game.States.Events
                             Name = user.Name,
                             Kills = 0,
                             Deaths = 0,
-                            Points = 0
+                            Points = 0,
+                            IpAddress = user.Client.IPAddress
                         };
                         synData.Players.Add(userData.Identity, userData);
                     }
@@ -241,7 +251,46 @@ namespace Comet.Game.States.Events
 
         private async Task DeliverRewardsAsync()
         {
+            SyndicateData winner = m_synData.Values.OrderByDescending(x => x.Points).ThenBy(x => x.Players.Count).FirstOrDefault();
+            if (winner == null)
+                return;
 
+            List<string> ipAddresses = new List<string>();
+            int totalMoney = MAX_MONEY_REWARD;
+            int totalEmoney = MAX_EMONEY_REWARD;
+            foreach (var userData in winner.Players.Values)
+            {
+                Character user = Kernel.RoleManager.GetUser(userData.Identity);
+                if (ipAddresses.Contains(userData.IpAddress))
+                {
+                    if (user != null)
+                        await user.SendAsync(Language.StrSynWarIpRewarded);
+                    continue;
+                }
+
+                ipAddresses.Add(userData.IpAddress);
+
+                double percentual = userData.Points / (double) winner.TotalPoints;
+                int money = (int) Math.Min(MAX_MONEY_REWARD_PER_USER, totalMoney * percentual);
+                int emoney = (int) Math.Min(MAX_EMONEY_REWARD_PER_USER, totalEmoney * percentual);
+
+                totalMoney -= money;
+                totalEmoney -= emoney;
+
+                if (user != null)
+                {
+                    await user.AwardMoney(money);
+                    await user.AwardConquerPoints(emoney);
+                    await user.SendAsync(string.Format(Language.StrSynWarRewardNotify, money, emoney));
+                }
+                else
+                {
+                    await BaseRepository.ScalarAsync($"UPDATE `cq_user` SET `money`=`money`+{money}, `emoney`=`emoney`+{emoney} WHERE `id`={userData.Identity} LIMIT 1");
+                }
+
+                await Log.GmLog($"TimedGuildWarRewards",
+                    $"{userData.Identity},[{userData.Name}],{userData.IpAddress},{userData.MacAddress},{userData.Kills},{userData.Deaths},{userData.Points},{winner.Points},{winner.TotalPoints},{money},{emoney}");
+            }
         }
 
         private SyndicateData CreateSyndicateData(Syndicate syn)
@@ -278,7 +327,8 @@ namespace Comet.Game.States.Events
                 Name = sender.Name,
                 Kills = 0,
                 Deaths = 0,
-                Points = 0
+                Points = 0,
+                IpAddress = sender.Client.IPAddress
             };
             synData.Players.TryAdd(data.Identity, data);
             return data;
@@ -301,6 +351,9 @@ namespace Comet.Game.States.Events
             public long Points { get; set; }
             public int Kills { get; set; }
             public int Deaths { get; set; }
+            
+            public string IpAddress { get; set; }
+            public string MacAddress { get; set; }
         }
 
         private class SyndicateData

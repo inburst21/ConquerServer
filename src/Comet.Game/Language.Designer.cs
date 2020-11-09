@@ -1330,6 +1330,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your IP Address has already claimed an reward! You cannot claim it twice..
+        /// </summary>
+        public static string StrSynWarIpRewarded {
+            get {
+                return ResourceManager.GetString("StrSynWarIpRewarded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You received {0:N0} silvers and {1:N0} CPs for winning the Guild War..
+        /// </summary>
+        public static string StrSynWarRewardNotify {
+            get {
+                return ResourceManager.GetString("StrSynWarRewardNotify", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You have been kicked out of the guild by {0}!.
         /// </summary>
         public static string StrSynYouBeenKicked {
@@ -1735,7 +1753,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a No. {0}: {1}({2:N0}).
+        ///   Consulta uma cadeia de caracteres localizada semelhante a No. {0}: {1} ({2:N0}).
         /// </summary>
         public static string StrWarRankingNo {
             get {
@@ -1767,6 +1785,15 @@ namespace Comet.Game {
         public static string StrWarWon {
             get {
                 return ResourceManager.GetString("StrWarWon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your Score: {0:N0}.
+        /// </summary>
+        public static string StrWarYourScore {
+            get {
+                return ResourceManager.GetString("StrWarYourScore", resourceCulture);
             }
         }
         
