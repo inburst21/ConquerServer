@@ -146,7 +146,7 @@ namespace Comet.Account
                             Password = password,
                             IPAddress = "127.0.0.1",
                             Salt = salt,
-                            StatusID = 2,
+                            StatusID = 1,
                             VipLevel = (byte) vip
                         };
 

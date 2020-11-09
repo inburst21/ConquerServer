@@ -95,16 +95,14 @@ namespace Comet.Network.RPC
         /// <returns>Returns task details for fault tolerance processing.</returns>
         private async Task ReceivingAsync(Socket socket)
         {
-            using (var stream = new NetworkStream(socket, true))
-            {
-                // Initialize streams
-                Stream input = new BufferedStream(stream);
-                Stream output = new BufferedStream(stream);
+            await using var stream = new NetworkStream(socket, true);
+            // Initialize streams
+            Stream input = new BufferedStream(stream);
+            Stream output = new BufferedStream(stream);
 
-                // Attach JSON-RPC wrapper
-                var rpc = JsonRpc.Attach(output, input, Target);
-                await rpc.Completion;
-            }
+            // Attach JSON-RPC wrapper
+            var rpc = JsonRpc.Attach(output, input, Target);
+            await rpc.Completion;
         }
     }
 }

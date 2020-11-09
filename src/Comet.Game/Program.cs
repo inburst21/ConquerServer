@@ -94,9 +94,11 @@ namespace Comet.Game
             Task.WaitAll(tasks.ToArray());
 
             // Start background services
-            tasks = new List<Task>();
-            tasks.Add(Kernel.Services.Randomness.StartAsync(CancellationToken.None));
-            tasks.Add(DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None));
+            tasks = new List<Task>
+            {
+                Kernel.Services.Randomness.StartAsync(CancellationToken.None),
+                DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None)
+            };
             Task.WaitAll(tasks.ToArray());
 
             // await ConvertItemsAsync();
@@ -160,7 +162,7 @@ namespace Comet.Game
                     return true;
                 }
 
-                string[] full = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] full = text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
                 if (full.Length <= 0)
                     continue;
@@ -185,13 +187,15 @@ namespace Comet.Game
             await using ServerDbContext ctx = new ServerDbContext();
             await using StreamWriter writer = new StreamWriter("cq_item_convert.sql", false, Encoding.ASCII);
 
-            await writer.WriteLineAsync($"##############################################################################");
+            await writer.WriteLineAsync(
+                $"##############################################################################");
             await writer.WriteLineAsync($"# ");
             await writer.WriteLineAsync($"# Players items exportation and converting tool");
             await writer.WriteLineAsync($"# {Environment.CurrentDirectory}");
             await writer.WriteLineAsync($"# {Environment.UserName} - {DateTime.Now:U}");
             await writer.WriteLineAsync($"# ");
-            await writer.WriteLineAsync($"##############################################################################");
+            await writer.WriteLineAsync(
+                $"##############################################################################");
 
             int count = 0;
             DataTable oldItems = await ctx.SelectAsync("SELECT * FROM cq_item_old");
@@ -202,13 +206,14 @@ namespace Comet.Game
                 if (Item.IsShield(type) || Item.IsArmor(type) || Item.IsHelmet(type))
                 {
                     uint oldType = type;
-                    int color = (int)(type % 1000 / 100);
+                    int color = (int) (type % 1000 / 100);
                     if (color > 1)
                         newColor = (byte) Math.Max(3, color);
-                    type = (uint)(type - color * 100);
-                    _ = Log.GmLog($"ItemColorChangeType", $"PlayerId: {row["player_id"]}, OwnerId: {row["owner_id"]}, OldType: {oldType}, NewType: {type}");
+                    type = (uint) (type - color * 100);
+                    _ = Log.GmLog($"ItemColorChangeType",
+                        $"PlayerId: {row["player_id"]}, OwnerId: {row["owner_id"]}, OldType: {oldType}, NewType: {type}");
                 }
-                
+
                 Dictionary<string, string> kvp = new Dictionary<string, string>();
                 kvp.Add("`id`", row["id"].ToString());
                 kvp.Add("`type`", type.ToString());
@@ -233,7 +238,8 @@ namespace Comet.Game
                 kvp.Add("`Addlevel_exp`", row["Addlevel_exp"].ToString());
                 kvp.Add("`monopoly`", row["monopoly"].ToString());
 
-                string query = $"INSERT INTO `cq_item` ({string.Join(",", kvp.Keys)}) VALUES ({string.Join(",", kvp.Values)});";
+                string query =
+                    $"INSERT INTO `cq_item` ({string.Join(",", kvp.Keys)}) VALUES ({string.Join(",", kvp.Values)});";
 
                 await writer.WriteLineAsync(query);
                 count++;
