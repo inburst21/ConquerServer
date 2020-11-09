@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -108,7 +109,15 @@ namespace Comet.Game.World.Maps
             {
                 Stream stream;// File.OpenRead(path);
                 if (Path.GetExtension(path).Equals(".7z"))
-                    stream = ReadFrom7Zip(path);
+                {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        stream = ReadFrom7Zip(path);
+                    else
+                    {
+                        Log.WriteLog(LogLevel.Error, $"Map data for file {m_idDoc} could not be loaded. 7z file ({path}).").Forget();
+                        return;
+                    }
+                }
                 else
                     stream = File.OpenRead(path);
 
@@ -123,7 +132,7 @@ namespace Comet.Game.World.Maps
             }
             else
             {
-                Log.WriteLog(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' has not been found.").Wait();
+                Log.WriteLog(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' has not been found.").Forget();
             }
         }
 
@@ -287,16 +296,15 @@ namespace Comet.Game.World.Maps
 
         private MemoryStream ReadFrom7Zip(string fileName)
         {
-            SevenZipBase.SetLibraryPath(string.Format(".{0}x64{0}7z.dll", Path.DirectorySeparatorChar));
-            var extractor = new SevenZipExtractor(fileName);
-            var filesInArchive = extractor.ArchiveFileData.ToList();
-            MemoryStream result = new MemoryStream();
-            filesInArchive.ForEach(f =>
             {
-                extractor.ExtractFile(f.FileName, result);
-            });
-            result.Seek(0, SeekOrigin.Begin);
-            return result;
+                SevenZipBase.SetLibraryPath(string.Format(".{0}x64{0}7z.dll", Path.DirectorySeparatorChar));
+                var extractor = new SevenZipExtractor(fileName);
+                var filesInArchive = extractor.ArchiveFileData.ToList();
+                MemoryStream result = new MemoryStream();
+                filesInArchive.ForEach(f => { extractor.ExtractFile(f.FileName, result); });
+                result.Seek(0, SeekOrigin.Begin);
+                return result;
+            }
         }
     }
 
