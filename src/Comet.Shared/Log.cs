@@ -164,7 +164,7 @@ namespace Comet.Shared
         private static string GetDirectory(LogFolder folder)
         {
             DateTime now = DateTime.Now;
-            return string.Format($".{{0}}{folder}{{0}}{now.Year:0000}{{0}}{now.Month:00}{{0}}{now.Day:00}", Path.DirectorySeparatorChar);
+            return string.Join(Path.DirectorySeparatorChar.ToString(), ".", $"{folder}", $"{now.Year:0000}", $"{now.Month:00}", $"{now.Day:00}");
         }
 
         private static void RefreshFolders()
