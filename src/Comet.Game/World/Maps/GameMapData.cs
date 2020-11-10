@@ -23,15 +23,14 @@
 
 #region References
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Comet.Shared;
+using ManagedLzma;
+using ManagedLzma.SevenZip.Reader;
 using Microsoft.VisualStudio.Threading;
-using SevenZip;
 
 #endregion
 
@@ -110,13 +109,13 @@ namespace Comet.Game.World.Maps
                 Stream stream;// File.OpenRead(path);
                 if (Path.GetExtension(path).Equals(".7z"))
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        stream = ReadFrom7Zip(path);
-                    else
-                    {
-                        Log.WriteLog(LogLevel.Error, $"Map data for file {m_idDoc} could not be loaded. 7z file ({path}).").Forget();
-                        return;
-                    }
+                    //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    stream = ReadFrom7Zip(path);
+                    //else
+                    //{
+                    //    Log.WriteLog(LogLevel.Error, $"Map data for file {m_idDoc} could not be loaded. 7z file ({path}).").Forget();
+                    //    return;
+                    //}
                 }
                 else
                     stream = File.OpenRead(path);
@@ -296,15 +295,33 @@ namespace Comet.Game.World.Maps
 
         private MemoryStream ReadFrom7Zip(string fileName)
         {
+            var file = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            var mdReader = new ManagedLzma.SevenZip.FileModel.ArchiveFileModelMetadataReader();
+            mdReader.EnablePosixFileAttributeExtension = true; // enables an unofficial extension; should be safe to always set to true if you need to deal with those kind of files
+            var mdModel = mdReader.ReadMetadata(file);
+
+            MemoryStream output = new MemoryStream();
+            for (int sectionIndex = 0; sectionIndex < mdModel.Metadata.DecoderSections.Length; sectionIndex++)
             {
-                SevenZipBase.SetLibraryPath(string.Format(".{0}x64{0}7z.dll", Path.DirectorySeparatorChar));
-                var extractor = new SevenZipExtractor(fileName);
-                var filesInArchive = extractor.ArchiveFileData.ToList();
-                MemoryStream result = new MemoryStream();
-                filesInArchive.ForEach(f => { extractor.ExtractFile(f.FileName, result); });
-                result.Seek(0, SeekOrigin.Begin);
-                return result;
+                var dsReader = new DecodedSectionReader(file, mdModel.Metadata, sectionIndex, PasswordStorage.Create(""));
+                var mdFiles = mdModel.GetFilesInSection(sectionIndex);
+                int k = 0;
+                while (dsReader.CurrentStreamIndex < dsReader.StreamCount)
+                {
+                    var mdFile = mdFiles[dsReader.CurrentStreamIndex];
+                    if (mdFile != null)
+                    {
+                        var substream = dsReader.OpenStream();
+                        if (mdFile.Offset != 0)
+                            return new MemoryStream();
+                        substream.CopyTo(output);
+                    }
+                    dsReader.NextStream();
+                }
             }
+
+            output.Position = 0;
+            return output;
         }
     }
 
