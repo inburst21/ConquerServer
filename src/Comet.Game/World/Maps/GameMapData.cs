@@ -102,20 +102,14 @@ namespace Comet.Game.World.Maps
             return -1;
         }
 
-        public void Load(string path)
+        public bool Load(string path)
         {
             if (File.Exists(path))
             {
-                Stream stream;// File.OpenRead(path);
+                Stream stream;
                 if (Path.GetExtension(path).Equals(".7z"))
                 {
-                    //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     stream = ReadFrom7Zip(path);
-                    //else
-                    //{
-                    //    Log.WriteLog(LogLevel.Error, $"Map data for file {m_idDoc} could not be loaded. 7z file ({path}).").Forget();
-                    //    return;
-                    //}
                 }
                 else
                     stream = File.OpenRead(path);
@@ -128,10 +122,12 @@ namespace Comet.Game.World.Maps
 
                 reader.Close();
                 reader.Dispose();
+                return true;
             }
             else
             {
                 Log.WriteLog(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' has not been found.").Forget();
+                return false;
             }
         }
 

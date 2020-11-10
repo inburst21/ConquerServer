@@ -57,9 +57,10 @@ namespace Comet.Game.World.Managers
                 uint puzzle = reader.ReadUInt32();
 
                 GameMapData mapData = new GameMapData(idMap);
-                mapData.Load(name);
-
-                await Log.WriteLog(LogLevel.Debug, $"Map [{idMap}] loaded...");
+                if (mapData.Load(name.Replace("\\", Path.DirectorySeparatorChar.ToString())))
+                {
+                    await Log.WriteLog(LogLevel.Message, $"Map [{idMap},{name}] loaded...");
+                }
                 m_mapData.TryAdd(idMap, mapData);
             }
 
