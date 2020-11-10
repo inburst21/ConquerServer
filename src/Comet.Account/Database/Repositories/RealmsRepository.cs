@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Network.RPC;
+using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
 
 #endregion
@@ -52,6 +53,8 @@ namespace Comet.Account.Database.Repositories
             // Connect to each realm's RPC server
             foreach (var realm in Kernel.Realms.Values)
             {
+                await Log.WriteLog(LogLevel.Message, $"ID: {realm.RealmID}, Realm Name:[{realm.Name}], IP: {realm.GameIPAddress}, Port: {realm.GamePort}");
+
                 realm.Rpc = new RpcClient();
                 var task = realm.Rpc.ConnectAsync(
                     realm.RpcIPAddress, (int) realm.RpcPort, "Account Server");
