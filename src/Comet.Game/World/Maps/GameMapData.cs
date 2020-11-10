@@ -110,13 +110,21 @@ namespace Comet.Game.World.Maps
         {
             if (FileExists(path))
             {
-                Stream stream;
-                if (Path.GetExtension(path).Equals(".7z"))
+                string realPath = GetRealPath(path);
+
+                if (string.IsNullOrEmpty(realPath))
                 {
-                    stream = ReadFrom7Zip(path);
+                    Log.WriteLog(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' (realPath:{realPath}) has not been found.").Forget();
+                    return false;
+                }
+
+                Stream stream;
+                if (Path.GetExtension(realPath).Equals(".7z"))
+                {
+                    stream = ReadFrom7Zip(realPath);
                 }
                 else
-                    stream = File.OpenRead(path);
+                    stream = File.OpenRead(realPath);
 
                 BinaryReader reader = new BinaryReader(stream, Encoding.ASCII);
 
@@ -333,6 +341,14 @@ namespace Comet.Game.World.Maps
                 if (file.Equals(path.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString()), StringComparison.InvariantCultureIgnoreCase))
                     return true;
             return false;
+        }
+
+        private static string GetRealPath(string path)
+        {
+            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(path)))
+                if (file.Equals(path.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString()), StringComparison.InvariantCultureIgnoreCase))
+                    return file;
+            return path;
         }
     }
 
