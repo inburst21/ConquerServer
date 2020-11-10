@@ -23,14 +23,18 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Comet.Shared;
 using ManagedLzma;
 using ManagedLzma.SevenZip.Reader;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.VisualStudio.Threading;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 
 #endregion
 
@@ -104,7 +108,7 @@ namespace Comet.Game.World.Maps
 
         public bool Load(string path)
         {
-            if (File.Exists(path))
+            if (FileExists(path))
             {
                 Stream stream;
                 if (Path.GetExtension(path).Equals(".7z"))
@@ -318,6 +322,17 @@ namespace Comet.Game.World.Maps
 
             output.Position = 0;
             return output;
+        }
+
+        /// <summary>
+        /// This method has been created to avoid the case sensitive Linux path system, which would case us some trouble.
+        /// </summary>
+        private static bool FileExists(string path)
+        {
+            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(path)))
+                if (file.Equals(path.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString()), StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            return false;
         }
     }
 
