@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>dotnet-Comet.Service-6E118029-5C07-48FA-B6C0-4468671784E0</UserSecretsId>
     <AssemblyVersion>1.2020.314.9</AssemblyVersion>
     <FileVersion>1.2020.314.9</FileVersion>
