@@ -141,7 +141,7 @@ namespace Comet.Game
 
             for (int i = 0; i < 5; i++)
             {
-                await Log.WriteLog(LogLevel.Message, $"Server will shutdown in {5-i} seconds...");
+                await Log.WriteLogAsync(LogLevel.Message, $"Server will shutdown in {5-i} seconds...");
                 Thread.Sleep(1000);
             }
             return true;
@@ -173,8 +173,8 @@ namespace Comet.Game
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Chance Calc error!");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Chance Calc error!");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }

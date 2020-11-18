@@ -56,7 +56,7 @@ namespace Comet.Game.States.Magics
             m_dbMagictype = Kernel.MagicManager.GetMagictype(idMgc, level);
             if (m_dbMagictype == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Skill not existent for creation (type:{idMgc}, level:{0}, player: {m_pOwner.Identity})");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Skill not existent for creation (type:{idMgc}, level:{0}, player: {m_pOwner.Identity})");
                 return false;
             }
             
@@ -85,7 +85,7 @@ namespace Comet.Game.States.Magics
             m_dbMagictype = Kernel.MagicManager.GetMagictype(pMgc.Type, pMgc.Level);
             if (m_dbMagictype == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Skill not existent (type:{pMgc.Type}, level:{pMgc.Level}, player: {m_pOwner.Identity})");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Skill not existent (type:{pMgc.Type}, level:{pMgc.Level}, player: {m_pOwner.Identity})");
                 return false;
             }
 
@@ -238,7 +238,7 @@ namespace Comet.Game.States.Magics
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }
@@ -252,7 +252,7 @@ namespace Comet.Game.States.Magics
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }

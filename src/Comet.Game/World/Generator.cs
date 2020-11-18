@@ -63,7 +63,7 @@ namespace Comet.Game.World
             m_pMap = Kernel.MapManager.GetMap(m_dbGen.Mapid);
             if (m_pMap == null)
             {
-                Log.WriteLog(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
+                Log.WriteLogAsync(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
                     .ConfigureAwait(false);
                 return;
             }
@@ -71,7 +71,7 @@ namespace Comet.Game.World
             m_dbMonster = Kernel.RoleManager.GetMonstertype(m_dbGen.Npctype);
             if (m_dbMonster == null)
             {
-                Log.WriteLog(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
+                Log.WriteLogAsync(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
                     .ConfigureAwait(false);
                 return;
             }
@@ -98,7 +98,7 @@ namespace Comet.Game.World
             m_pMap = Kernel.MapManager.GetMap(m_dbGen.Mapid);
             if (m_pMap == null)
             {
-                Log.WriteLog(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
+                Log.WriteLogAsync(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
                     .ConfigureAwait(false);
                 return;
             }
@@ -106,7 +106,7 @@ namespace Comet.Game.World
             m_dbMonster = Kernel.RoleManager.GetMonstertype(m_dbGen.Npctype);
             if (m_dbMonster == null)
             {
-                Log.WriteLog(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
+                Log.WriteLogAsync(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
                     .ConfigureAwait(false);
                 return;
             }
@@ -164,7 +164,7 @@ namespace Comet.Game.World
             {
                 if (!monster.IsAlive && monster.CanDisappear())
                 {
-                    await monster.LeaveMap();
+                    await monster.LeaveMapAsync();
                     return;
                 }
             }
@@ -181,7 +181,7 @@ namespace Comet.Game.World
                 Monster monster = await GenerateMonsterAsync();
                 if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
                     continue;
-                await monster.EnterMap();
+                await monster.EnterMapAsync();
             }
         }
 
@@ -199,7 +199,7 @@ namespace Comet.Game.World
         {
             foreach (var monster in m_dicMonsters.Values)
             {
-                await monster.LeaveMap();
+                await monster.LeaveMapAsync();
             }
 
             m_dicMonsters.Clear();

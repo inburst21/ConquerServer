@@ -167,7 +167,7 @@ namespace Comet.Game.World.Maps
             m_mapData = Kernel.MapManager.GetMapData(MapDoc);
             if (m_mapData == null)
             {
-                Log.WriteLog(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found").Wait();
+                await Log.WriteLogAsync(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found");
                 return false;
             }
 
@@ -188,7 +188,7 @@ namespace Comet.Game.World.Maps
                 DbPortal portal = await PortalRepository.GetAsync(dbPassway.TargetMapId, dbPassway.TargetPortal);
                 if (portal == null)
                 {
-                    await Log.WriteLog(LogLevel.Error, $"Could not find portal for passway [{dbPassway.Identity}]");
+                    await Log.WriteLogAsync(LogLevel.Error, $"Could not find portal for passway [{dbPassway.Identity}]");
                     continue;
                 }
 
@@ -208,7 +208,7 @@ namespace Comet.Game.World.Maps
                 MapTrap trap = new MapTrap(dbTrap);
                 if (!await trap.InitializeAsync())
                 {
-                    await Log.WriteLog(LogLevel.Error, $"Could not start system map trap for {Identity} > Trap {dbTrap.Id}");
+                    await Log.WriteLogAsync(LogLevel.Error, $"Could not start system map trap for {Identity} > Trap {dbTrap.Id}");
                     continue;
                 }
             }
@@ -301,9 +301,9 @@ namespace Comet.Game.World.Maps
             await user.SendAsync(new MsgMapInfo(Identity, MapDoc, Type));
 
             if (Weather.GetType() != Weather.WeatherType.WeatherNone)
-                await Weather.SendWeather(user);
+                await Weather.SendWeatherAsync(user);
             else
-                await Weather.SendNoWeather(user);
+                await Weather.SendNoWeatherAsync(user);
         }
 
         public async Task BroadcastMsgAsync(IPacket msg, uint exclude = 0)
@@ -660,7 +660,7 @@ namespace Comet.Game.World.Maps
             GameMap targetMap = Kernel.MapManager.GetMap(idMap);
             if (targetMap == null)
             {
-                Log.WriteLog(LogLevel.Error, $"Could not get reborn map [{Identity}]!").ConfigureAwait(false);
+                Log.WriteLogAsync(LogLevel.Error, $"Could not get reborn map [{Identity}]!").ConfigureAwait(false);
                 return false;
             }
 

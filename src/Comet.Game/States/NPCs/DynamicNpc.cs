@@ -258,7 +258,7 @@ namespace Comet.Game.States.NPCs
             return IsActive();
         }
 
-        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower,
+        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower,
             bool bReflectEnable)
         {
             await AddAttributesAsync(ClientUpdateType.Hitpoints, nPower * -1);
@@ -281,12 +281,12 @@ namespace Comet.Game.States.NPCs
             }
 
             if (!IsAlive)
-                await BeKill(attacker);
+                await BeKillAsync(attacker);
 
             return true;
         }
 
-        public override async Task BeKill(Role attacker)
+        public override async Task BeKillAsync(Role attacker)
         {
             if (m_dbNpc.Linkid != 0)
                 await GameAction.ExecuteActionAsync(m_dbNpc.Linkid, attacker as Character, this, null, "");
@@ -306,7 +306,7 @@ namespace Comet.Game.States.NPCs
                 await DeleteAsync();
             }
 
-            await LeaveMap();
+            await LeaveMapAsync();
         }
 
         public async Task<bool> SetOwnerAsync(uint idOwner)

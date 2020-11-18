@@ -127,14 +127,14 @@ namespace Comet.Game.States.BaseEntities
 
         /// <summary>
         /// </summary>
-        public virtual Task EnterMap()
+        public virtual Task EnterMapAsync()
         {
             return Task.CompletedTask;
         }
 
         /// <summary>
         /// </summary>
-        public virtual Task LeaveMap()
+        public virtual Task LeaveMapAsync()
         {
             return Task.CompletedTask;
         }
@@ -185,7 +185,7 @@ namespace Comet.Game.States.BaseEntities
             m_posX = (ushort)x;
             m_posY = (ushort)y;
 
-            await ProcessAfterMove();
+            await ProcessAfterMoveAsync();
             return true;
         }
 
@@ -234,18 +234,18 @@ namespace Comet.Game.States.BaseEntities
             m_posX = newX;
             m_posY = newY;
 
-            await ProcessAfterMove();
+            await ProcessAfterMoveAsync();
             return true;
         }
 
-        public virtual async Task ProcessOnMove()
+        public virtual async Task ProcessOnMoveAsync()
         {
             BattleSystem.ResetBattle();
-            await MagicData.AbortMagic(true);
-            await DetachStatus(StatusSet.INTENSIFY);
+            await MagicData.AbortMagicAsync(true);
+            await DetachStatusAsync(StatusSet.INTENSIFY);
         }
 
-        public virtual async Task ProcessAfterMove()
+        public virtual async Task ProcessAfterMoveAsync()
         {
             Action = EntityAction.Stand;
 
@@ -256,10 +256,10 @@ namespace Comet.Game.States.BaseEntities
             }
         }
 
-        public virtual async Task ProcessOnAttack()
+        public virtual async Task ProcessOnAttackAsync()
         {
             Action = EntityAction.Stand;
-            await DetachStatus(StatusSet.INTENSIFY);
+            await DetachStatusAsync(StatusSet.INTENSIFY);
         }
 
         #endregion
@@ -372,7 +372,7 @@ namespace Comet.Game.States.BaseEntities
         public BattleSystem BattleSystem { get; }
         public MagicData MagicData { get; }
 
-        public async Task<bool> ProcessMagicAttack(ushort usMagicType, uint idTarget, ushort x, ushort y,
+        public async Task<bool> ProcessMagicAttackAsync(ushort usMagicType, uint idTarget, ushort x, ushort y,
             byte ucAutoActive = 0)
         {
             return await MagicData.ProcessMagicAttackAsync(usMagicType, idTarget, x, y, ucAutoActive);
@@ -380,7 +380,7 @@ namespace Comet.Game.States.BaseEntities
 
         public int SizeAddition => 1;
 
-        public virtual Task<bool> CheckCrime(Role target)
+        public virtual Task<bool> CheckCrimeAsync(Role target)
         {
             return Task.FromResult(false);
         }
@@ -415,22 +415,22 @@ namespace Comet.Game.States.BaseEntities
             return false;
         }
 
-        public virtual Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
+        public virtual Task<(int Damage, InteractionEffect Effect)> AttackAsync(Role target)
         {
             return Task.FromResult((1, InteractionEffect.None));
         }
 
-        public virtual Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        public virtual Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
         {
             return Task.FromResult(false);
         }
 
-        public virtual Task Kill(Role target, uint dieWay)
+        public virtual Task KillAsync(Role target, uint dieWay)
         {
             return Task.CompletedTask;
         }
 
-        public virtual Task BeKill(Role attacker)
+        public virtual Task BeKillAsync(Role attacker)
         {
             return Task.CompletedTask;
         }
@@ -464,32 +464,32 @@ namespace Comet.Game.States.BaseEntities
 
         public StatusSet StatusSet { get; }
 
-        public virtual async Task<bool> DetachWellStatus()
+        public virtual async Task<bool> DetachWellStatusAsync()
         {
             for (int i = 1; i < 128; i++)
             {
                 if (StatusSet[i] != null)
                     if (IsWellStatus(i))
-                        await DetachStatus(i);
+                        await DetachStatusAsync(i);
             }
             return true;
         }
 
-        public virtual async Task<bool> DetachBadlyStatus()
+        public virtual async Task<bool> DetachBadlyStatusAsync()
         {
             for (int i = 1; i < 128; i++)
             {
                 if (StatusSet[i] != null)
                     if (IsBadlyStatus(i))
-                        await DetachStatus(i);
+                        await DetachStatusAsync(i);
             }
             return true;
         }
 
-        public virtual async Task<bool> DetachAllStatus()
+        public virtual async Task<bool> DetachAllStatusAsync()
         {
-            await DetachBadlyStatus();
-            await DetachWellStatus();
+            await DetachBadlyStatusAsync();
+            await DetachWellStatusAsync();
             return true;
         }
 
@@ -545,24 +545,24 @@ namespace Comet.Game.States.BaseEntities
             return false;
         }
 
-        public virtual async Task<bool> AppendStatus(StatusInfoStruct pInfo)
+        public virtual async Task<bool> AppendStatusAsync(StatusInfoStruct pInfo)
         {
             if (pInfo.Times > 0)
             {
                 var pStatus = new StatusMore();
                 if (pStatus.Create(this, pInfo.Status, pInfo.Power, pInfo.Seconds, pInfo.Times))
-                    await StatusSet.AddObj(pStatus);
+                    await StatusSet.AddObjAsync(pStatus);
             }
             else
             {
                 var pStatus = new StatusOnce();
                 if (pStatus.Create(this, pInfo.Status, pInfo.Power, pInfo.Seconds, pInfo.Times))
-                    await StatusSet.AddObj(pStatus);
+                    await StatusSet.AddObjAsync(pStatus);
             }
             return true;
         }
 
-        public virtual async Task<bool> AttachStatus(Role pSender, int nStatus, int nPower, int nSecs, int nTimes, byte pLevel)
+        public virtual async Task<bool> AttachStatusAsync(Role pSender, int nStatus, int nPower, int nSecs, int nTimes, byte pLevel)
         {
             if (Map == null)
                 return false;
@@ -611,7 +611,7 @@ namespace Comet.Game.States.BaseEntities
                     var pNewStatus = new StatusMore();
                     if (pNewStatus.Create(this, nStatus, nPower, nSecs, nTimes, pSender.Identity, pLevel))
                     {
-                        await StatusSet.AddObj(pNewStatus);
+                        await StatusSet.AddObjAsync(pNewStatus);
                         return true;
                     }
                 }
@@ -620,7 +620,7 @@ namespace Comet.Game.States.BaseEntities
                     var pNewStatus = new StatusOnce();
                     if (pNewStatus.Create(this, nStatus, nPower, nSecs, 0, pSender.Identity, pLevel))
                     {
-                        await StatusSet.AddObj(pNewStatus);
+                        await StatusSet.AddObjAsync(pNewStatus);
                         return true;
                     }
                 }
@@ -628,14 +628,14 @@ namespace Comet.Game.States.BaseEntities
             return false;
         }
 
-        public virtual async Task<bool> DetachStatus(int nType)
+        public virtual async Task<bool> DetachStatusAsync(int nType)
         {
-            return await StatusSet.DelObj(nType);
+            return await StatusSet.DelObjAsync(nType);
         }
 
-        public virtual async Task<bool> DetachStatus(ulong nType, bool b64)
+        public virtual async Task<bool> DetachStatusAsync(ulong nType, bool b64)
         {
-            return await StatusSet.DelObj(StatusSet.InvertFlag(nType, b64));
+            return await StatusSet.DelObjAsync(StatusSet.InvertFlag(nType, b64));
         }
 
         public virtual IStatus QueryStatus(int nType)
@@ -648,9 +648,9 @@ namespace Comet.Game.States.BaseEntities
             return QueryStatus(StatusSet.GHOST) != null;
         }
 
-        public async Task SetCrimeStatus(int nSecs)
+        public async Task SetCrimeStatusAsync(int nSecs)
         {
-            await AttachStatus(this, StatusSet.BLUE_NAME, 0, nSecs, 0, 0);
+            await AttachStatusAsync(this, StatusSet.BLUE_NAME, 0, nSecs, 0, 0);
         }
 
         public virtual bool IsWing => QueryStatus(StatusSet.FLY) != null;
@@ -695,7 +695,7 @@ namespace Comet.Game.States.BaseEntities
                     break;
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"Role::AddAttributes {type} not handled");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Role::AddAttributes {type} not handled");
                     return false;
             }
 
@@ -722,7 +722,7 @@ namespace Comet.Game.States.BaseEntities
                     break;
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"Role::SetAttributes {type} not handled");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Role::SetAttributes {type} not handled");
                     return false;
             }
 
@@ -775,12 +775,12 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual async Task SendAsync(IPacket msg)
         {
-            await Log.WriteLog(LogLevel.Warning, $"{GetType().Name} - {Identity} has no SendAsync handler");
+            await Log.WriteLogAsync(LogLevel.Warning, $"{GetType().Name} - {Identity} has no SendAsync handler");
         }
 
         public virtual async Task SendSpawnToAsync(Character player)
         {
-            await Log.WriteLog(LogLevel.Warning, $"{GetType().Name} - {Identity} has no SendSpawnToAsync handler");
+            await Log.WriteLogAsync(LogLevel.Warning, $"{GetType().Name} - {Identity} has no SendSpawnToAsync handler");
         }
 
         public virtual async Task BroadcastRoomMsgAsync(IPacket msg, bool self)

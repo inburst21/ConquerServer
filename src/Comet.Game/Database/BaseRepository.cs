@@ -45,7 +45,7 @@ namespace Comet.Game.Database
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }
@@ -61,7 +61,7 @@ namespace Comet.Game.Database
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }
@@ -77,7 +77,7 @@ namespace Comet.Game.Database
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }
@@ -93,7 +93,7 @@ namespace Comet.Game.Database
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }

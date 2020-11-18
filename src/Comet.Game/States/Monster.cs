@@ -195,7 +195,7 @@ namespace Comet.Game.States
             return m_dbMonster.AttackRange + sizeAdd;
         }
 
-        private async Task<bool> CheckMagicAttack()
+        private async Task<bool> CheckMagicAttackAsync()
         {
             m_idUseMagic = 0;
 
@@ -218,7 +218,7 @@ namespace Comet.Game.States
             return false;
         }
 
-        public async Task Attack()
+        public async Task DoAttackAsync()
         {
             if (m_actTarget == null)
                 return;
@@ -228,7 +228,7 @@ namespace Comet.Game.States
 
             if (m_idUseMagic != 0)
             {
-                await ProcessMagicAttack((ushort) m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY);
+                await ProcessMagicAttackAsync((ushort) m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY);
             }
             else
             {
@@ -245,7 +245,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
         {
             if (!IsAlive)
                 return false;
@@ -254,7 +254,7 @@ namespace Comet.Game.States
 
             if (!IsAlive)
             {
-                await BeKill(attacker);
+                await BeKillAsync(attacker);
                 return true;
             }
 
@@ -264,7 +264,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public override async Task BeKill(Role attacker)
+        public override async Task BeKillAsync(Role attacker)
         {
             if (m_disappear.IsActive())
                 return;
@@ -272,10 +272,10 @@ namespace Comet.Game.States
             if (attacker?.BattleSystem.IsActive() == true)
                 attacker.BattleSystem.ResetBattle();
 
-            await DetachAllStatus();
-            await AttachStatus(attacker, StatusSet.DEAD, 0, 20, 0, 0);
-            await AttachStatus(attacker, StatusSet.GHOST, 0, 20, 0, 0);
-            await AttachStatus(attacker, StatusSet.FADE, 0, 20, 0, 0);
+            await DetachAllStatusAsync();
+            await AttachStatusAsync(attacker, StatusSet.DEAD, 0, 20, 0, 0);
+            await AttachStatusAsync(attacker, StatusSet.GHOST, 0, 20, 0, 0);
+            await AttachStatusAsync(attacker, StatusSet.FADE, 0, 20, 0, 0);
 
             Character user = attacker as Character;
             int dieType = user?.KoCount * 65541 ?? 1;
@@ -330,26 +330,26 @@ namespace Comet.Game.States
                 for (int i = 0; i < heapNum; i++)
                 {
                     uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
-                    await DropMoney(moneyTmp, idDropOwner);
+                    await DropMoneyAsync(moneyTmp, idDropOwner);
                 }
             }
 
-            if (await Kernel.ChanceCalcAsync(50, 1000))
+            if (await Kernel.ChanceCalcAsync(50, 10000))
             {
                 uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
-                await DropItem(cpsBagType, idDropOwner);
+                await DropItemAsync(cpsBagType, idDropOwner);
                 _ = Log.GmLog("cps_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             }
 
-            if (await Kernel.ChanceCalcAsync(625, 3000000))
+            if (await Kernel.ChanceCalcAsync(625, 2000000))
             {
-                await DropItem(Item.TYPE_DRAGONBALL, idDropOwner);
+                await DropItemAsync(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name), MsgTalk.TalkChannel.TopLeft);
             }
 
-            if (await Kernel.ChanceCalcAsync(100, 30000))
+            if (await Kernel.ChanceCalcAsync(100, 15000))
             {
-                await DropItem(Item.TYPE_METEOR, idDropOwner);
+                await DropItemAsync(Item.TYPE_METEOR, idDropOwner);
             }
 
             if (await Kernel.ChanceCalcAsync(.1d))
@@ -357,38 +357,38 @@ namespace Comet.Game.States
                 uint[] normalGem =
                     {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
                 uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
-                await DropItem(dGem, idDropOwner); // normal gems
+                await DropItemAsync(dGem, idDropOwner); // normal gems
             }
 
             if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
             {
-                await DropItem(1080001, idDropOwner); // emerald
+                await DropItemAsync(1080001, idDropOwner); // emerald
             }
 
             int dropNum = 0;
             int rate = await Kernel.NextAsync(0, 10000);
-            int chance = BattleSystem.AdjustDrop(1000, attacker.Level, Level);
+            int chance = BattleSystem.AdjustDrop(500, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
             {
                 dropNum = 1 + await Kernel.NextAsync(5, 9); // drop 6-10 items
             }
             else
             {
-                chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
+                chance += BattleSystem.AdjustDrop(750, attacker.Level, Level);
                 if (rate < Math.Min(10000, chance))
                 {
                     dropNum = 1 + await Kernel.NextAsync(3, 6); // drop 4-7 items
                 }
                 else
                 {
-                    chance += BattleSystem.AdjustDrop(1500, attacker.Level, Level);
+                    chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
                     if (rate < Math.Min(10000, chance))
                     {
                         dropNum = 1 + await Kernel.NextAsync(1, 4); // drop 4-7 items
                     }
                     else
                     {
-                        chance += BattleSystem.AdjustDrop(5000, attacker.Level, Level);
+                        chance += BattleSystem.AdjustDrop(2000, attacker.Level, Level);
                         if (rate < Math.Min(10000, chance))
                         {
                             dropNum = 1; // drop 1 item
@@ -399,13 +399,13 @@ namespace Comet.Game.States
 
             for (int i = 0; i < dropNum; i++)
             {
-                uint idItemtype = await GetDropItem();
+                uint idItemtype = await GetDropItemAsync();
 
                 DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItemtype);
                 if (itemtype == null)
                     continue;
 
-                await DropItem(itemtype, idDropOwner);
+                await DropItemAsync(itemtype, idDropOwner);
             }
         }
 
@@ -413,13 +413,13 @@ namespace Comet.Game.States
 
         #region Drop Function
 
-        public async Task DropItem(uint type, uint owner)
+        public async Task DropItemAsync(uint type, uint owner)
         {
             DbItemtype itemType = Kernel.ItemManager.GetItemtype(type);
-            if (itemType != null) await DropItem(itemType, owner);
+            if (itemType != null) await DropItemAsync(itemType, owner);
         }
 
-        private async Task DropItem(DbItemtype itemtype, uint idOwner)
+        private async Task DropItemAsync(DbItemtype itemtype, uint idOwner)
         {
             Point targetPos = new Point(MapX, MapY);
             if (Map.FindDropItemCell(4, ref targetPos))
@@ -428,7 +428,7 @@ namespace Comet.Game.States
                 if (drop.Create(Map, targetPos, itemtype, idOwner, 0, 0, 0))
                 {
                     await drop.GenerateRandomInfoAsync();
-                    await drop.EnterMap();
+                    await drop.EnterMapAsync();
                 }
                 else
                 {
@@ -437,14 +437,14 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task DropMoney(uint amount, uint idOwner)
+        public async Task DropMoneyAsync(uint amount, uint idOwner)
         {
             Point targetPos = new Point(MapX, MapY);
             if (Map.FindDropItemCell(4, ref targetPos))
             {
                 MapItem drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                 if (drop.CreateMoney(Map, targetPos, amount, idOwner))
-                    await drop.EnterMap();
+                    await drop.EnterMapAsync();
                 else
                 {
                     IdentityGenerator.MapItem.ReturnIdentity(drop.Identity);
@@ -452,7 +452,7 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task<uint> GetDropItem()
+        public async Task<uint> GetDropItemAsync()
         {
             /*
              * 0 = armet
@@ -659,7 +659,7 @@ namespace Comet.Game.States
             set => m_posY = value;
         }
 
-        public override async Task EnterMap()
+        public override async Task EnterMapAsync()
         {
             Map = Kernel.MapManager.GetMap(MapIdentity);
             if (Map != null)
@@ -674,7 +674,7 @@ namespace Comet.Game.States
             }, false);
         }
 
-        public override async Task LeaveMap()
+        public override async Task LeaveMapAsync()
         {
             m_generator.Remove(Identity);
             IdentityGenerator.Monster.ReturnIdentity(Identity);
@@ -937,7 +937,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        private async Task<bool> ChangeMode(AiStage mode)
+        private async Task ChangeModeAsync(AiStage mode)
         {
             switch (mode)
             {
@@ -945,7 +945,7 @@ namespace Comet.Game.States
                     Life = MaxLife;
                     break;
                 case AiStage.Attack:
-                    await Attack();
+                    await DoAttackAsync();
                     break;
             }
 
@@ -955,10 +955,9 @@ namespace Comet.Game.States
             }
 
             m_stage = mode;
-            return true;
         }
 
-        public async Task<bool> FindNewTarget()
+        public async Task<bool> FindNewTargetAsync()
         {
             Role target = null;
 
@@ -1058,14 +1057,14 @@ namespace Comet.Game.States
         {
             if (!IsEscapeEnable())
             {
-                await ChangeMode(AiStage.Idle);
+                await ChangeModeAsync(AiStage.Idle);
                 return;
             }
 
             if ((IsGuard() || IsPkKiller()) && m_actTarget != null)
             {
                 await JumpPosAsync(m_actTarget.MapX, m_actTarget.MapY, true);
-                await ChangeMode(AiStage.Move);
+                await ChangeModeAsync(AiStage.Move);
                 return;
             }
 
@@ -1074,13 +1073,13 @@ namespace Comet.Game.States
 
             if (m_actTarget == null)
             {
-                await ChangeMode(AiStage.Idle);
+                await ChangeModeAsync(AiStage.Idle);
                 return;
             }
 
             if (m_actTarget != null && m_nextDir == FacingDirection.Invalid)
             {
-                await ChangeMode(AiStage.Move);
+                await ChangeModeAsync(AiStage.Move);
                 return;
             }
 
@@ -1092,7 +1091,7 @@ namespace Comet.Game.States
             if (m_actTarget != null)
             {
                 if (m_actTarget.IsAlive
-                    && (await CheckMagicAttack() || GetDistance(m_actTarget) <= GetAttackRange(m_actTarget.SizeAddition)))
+                    && (await CheckMagicAttackAsync() || GetDistance(m_actTarget) <= GetAttackRange(m_actTarget.SizeAddition)))
                 {
                     if (m_tAction.ToNextTime())
                     {
@@ -1104,7 +1103,7 @@ namespace Comet.Game.States
                         //    if (m_nextDir != FacingDirection.Invalid) await PathMoveAsync(RoleMoveMode.Shift);
                         //}
 
-                        await ChangeMode(AiStage.Move);
+                        await ChangeModeAsync(AiStage.Move);
                         return;
                     }
 
@@ -1112,20 +1111,20 @@ namespace Comet.Game.States
                 }
             }
 
-            await ChangeMode(AiStage.Idle);
+            await ChangeModeAsync(AiStage.Idle);
         }
 
         private async Task FowardAsync()
         {
             if (m_actTarget != null)
             {
-                if (m_actTarget.IsAlive && (await CheckMagicAttack() || GetDistance(m_actTarget) <= GetAttackRange(m_actTarget.SizeAddition)))
+                if (m_actTarget.IsAlive && (await CheckMagicAttackAsync() || GetDistance(m_actTarget) <= GetAttackRange(m_actTarget.SizeAddition)))
                 {
                     if (!IsGuard() && !IsMoveEnable() && !m_bAheadPath && m_nextDir != FacingDirection.Invalid)
                         if (await PathMoveAsync(RoleMoveMode.Run))
                             return;
 
-                    await ChangeMode(AiStage.Attack);
+                    await ChangeModeAsync(AiStage.Attack);
                     return;
                 }
             }
@@ -1140,7 +1139,7 @@ namespace Comet.Game.States
 
                 await FarJumpAsync(pos.X, pos.Y, Direction);
                 ClearPath();
-                await ChangeMode(AiStage.Idle);
+                await ChangeModeAsync(AiStage.Idle);
                 return;
             }
 
@@ -1152,7 +1151,7 @@ namespace Comet.Game.States
 
             if (m_nextDir == FacingDirection.Invalid)
             {
-                if (await FindNewTarget())
+                if (await FindNewTargetAsync())
                 {
                     if (m_nextDir == FacingDirection.Invalid)
                     {
@@ -1162,14 +1161,14 @@ namespace Comet.Game.States
                             return;
                         }
 
-                        await ChangeMode(AiStage.Idle);
+                        await ChangeModeAsync(AiStage.Idle);
                         return;
                     }
 
                     return;
                 }
 
-                await ChangeMode(AiStage.Idle);
+                await ChangeModeAsync(AiStage.Idle);
                 return;
             }
 
@@ -1188,7 +1187,7 @@ namespace Comet.Game.States
             }
             else
             {
-                await ChangeMode(AiStage.Idle);
+                await ChangeModeAsync(AiStage.Idle);
             }
         }
 
@@ -1197,7 +1196,7 @@ namespace Comet.Game.States
             m_attackMe = null;
             m_atkFirst = false;
 
-            if (await FindNewTarget())
+            if (await FindNewTargetAsync())
             {
                 if (m_actTarget == null)
                     return;
@@ -1205,7 +1204,7 @@ namespace Comet.Game.States
                 int distance = GetDistance(m_actTarget);
                 if (distance <= GetAttackRange(m_actTarget.SizeAddition))
                 {
-                    await ChangeMode(AiStage.Attack);
+                    await ChangeModeAsync(AiStage.Attack);
                     return;
                 }
 
@@ -1216,11 +1215,11 @@ namespace Comet.Game.States
                         if (!IsEscapeEnable() || await Kernel.ChanceCalcAsync(80))
                             return;
 
-                        await ChangeMode(AiStage.Escape);
+                        await ChangeModeAsync(AiStage.Escape);
                         return;
                     }
 
-                    await ChangeMode(AiStage.Move);
+                    await ChangeModeAsync(AiStage.Move);
                     return;
                 }
             }
@@ -1295,10 +1294,10 @@ namespace Comet.Game.States
                 {
                     foreach (var stts in StatusSet.Status.Values)
                     {
-                        await stts.OnTimer();
+                        await stts.OnTimerAsync();
                         if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
                         {
-                            await StatusSet.DelObj(stts.Identity);
+                            await StatusSet.DelObjAsync(stts.Identity);
                         }
                     }
                 }

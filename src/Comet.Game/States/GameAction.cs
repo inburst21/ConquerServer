@@ -59,13 +59,13 @@ namespace Comet.Game.States
             {
                 if (actionCount++ > _MAX_ACTION_I)
                 {
-                    await Log.WriteLog(LogLevel.Error, $"Error: too many game action, from: {idAction}, last action: {idNext}");
+                    await Log.WriteLogAsync(LogLevel.Error, $"Error: too many game action, from: {idAction}, last action: {idNext}");
                     return false;
                 }
 
                 if (idAction == idOld && deadLookCount++ >= _DEADLOCK_CHECK_I)
                 {
-                    await Log.WriteLog(LogLevel.Deadloop, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
+                    await Log.WriteLogAsync(LogLevel.Deadloop, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
                     return false;
                 }
                 else
@@ -76,7 +76,7 @@ namespace Comet.Game.States
                 DbAction action = Kernel.EventManager.GetAction(idNext);
                 if (action == null)
                 {
-                    await Log.WriteLog(LogLevel.Error, $"Error: invalid game action: {idNext}");
+                    await Log.WriteLogAsync(LogLevel.Error, $"Error: invalid game action: {idNext}");
                     return false;
                 }
 
@@ -234,7 +234,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionTrapCount: result = await ExecuteActionTrapCount(action, param, user, role, item, input); break;
 
                     default:
-                        await Log.WriteLog(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
+                        await Log.WriteLogAsync(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
                         break;
                 }
 
@@ -250,7 +250,7 @@ namespace Comet.Game.States
         {
             if (user == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Action[{action.Identity}] type 101 non character");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Action[{action.Identity}] type 101 non character");
                 return false;
             }
 
@@ -267,7 +267,7 @@ namespace Comet.Game.States
         {
             if (user == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Action[{action.Identity}] type 101 non character");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Action[{action.Identity}] type 101 non character");
                 return false;
             }
 
@@ -297,7 +297,7 @@ namespace Comet.Game.States
             string[] paramStrings = SplitParam(param, 3);
             if (paramStrings.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Error, $"Invalid input param length for {action.Identity}, param: {param}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid input param length for {action.Identity}, param: {param}");
                 return false;
             }
 
@@ -539,7 +539,7 @@ namespace Comet.Game.States
                 {
                     if (!param.Contains("WHERE") || !param.Contains("LIMIT"))
                     {
-                        await Log.WriteLog("database", LogLevel.Warning, $"ExecuteActionExecutequery {action.Identity} doesn't have WHERE or LIMIT clause [{param}]");
+                        await Log.WriteLogAsync("database", LogLevel.Warning, $"ExecuteActionExecutequery {action.Identity} doesn't have WHERE or LIMIT clause [{param}]");
                         return false;
                     }
                 }
@@ -548,7 +548,7 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
             return true;
@@ -563,7 +563,7 @@ namespace Comet.Game.States
             string[] splitParams = SplitParam(param, 4);
             if (splitParams.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionNpcAttr invalid param num {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionNpcAttr invalid param num {param}, {action.Identity}");
                 return false;
             }
 
@@ -579,7 +579,7 @@ namespace Comet.Game.States
             BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
             if (npc == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionNpcAttr invalid NPC id {idNpc} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionNpcAttr invalid NPC id {idNpc} for action {action.Identity}");
                 return false;
             }
 
@@ -822,7 +822,7 @@ namespace Comet.Game.States
             }
             else
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionMapMapuser invalid cmd {splitParam[0]} for action {action.Identity}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionMapMapuser invalid cmd {splitParam[0]} for action {action.Identity}, {param}");
                 return false;
             }
 
@@ -867,7 +867,7 @@ namespace Comet.Game.States
             MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
             if (mapItem.Create(map, new Point(x, y), idItemtype, 0, 0, 0, 0))
             {
-                await mapItem.EnterMap();
+                await mapItem.EnterMapAsync();
             }
             else
             {
@@ -991,7 +991,7 @@ namespace Comet.Game.States
             }
             else
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionMapAttrib invalid field {szField} for action {action.Identity}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionMapAttrib invalid field {szField} for action {action.Identity}, {param}");
                 return false;
             }
 
@@ -1012,7 +1012,7 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 8)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ERROR: Invalid param amount on actionid: [{action.Identity}]");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ERROR: Invalid param amount on actionid: [{action.Identity}]");
                 return false;
             }
 
@@ -1064,7 +1064,7 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param, 8);
             if (splitParam.Length != 8)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionMapRandDropItem: ItemID MAP  X   Y   CX  CY  AMOUNT DURATION :: {param} ({action.Identity})");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionMapRandDropItem: ItemID MAP  X   Y   CX  CY  AMOUNT DURATION :: {param} ({action.Identity})");
                 return false;
             }
 
@@ -1080,14 +1080,14 @@ namespace Comet.Game.States
             DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItemtype);
             if (itemtype == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid itemtype {idItemtype}, {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid itemtype {idItemtype}, {param}, {action.Identity}");
                 return false;
             }
 
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid map {idMap}, {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid map {idMap}, {param}, {action.Identity}");
                 return false;
             }
 
@@ -1125,7 +1125,7 @@ namespace Comet.Game.States
                     continue;
 
                 mapItem.SetAliveTimeout(duration);
-                await mapItem.EnterMap();
+                await mapItem.EnterMapAsync();
             }
             return true;
         }
@@ -1153,8 +1153,8 @@ namespace Comet.Game.States
             if (map == null)
                 return false;
 
-            await map.Weather.SetNewWeather((Weather.WeatherType) nType, nIntensity, nDir, (int) dwColor, (int) dwKeepSecs, 0);
-            await map.Weather.SendWeather();
+            await map.Weather.SetNewWeatherAsync((Weather.WeatherType) nType, nIntensity, nDir, (int) dwColor, (int) dwKeepSecs, 0);
+            await map.Weather.SendWeatherAsync();
             return true;
         }
 
@@ -1273,7 +1273,7 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(input, 5);
             if (splitParam.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Error, $"Invalid input count for action [{action.Identity}]: {input}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid input count for action [{action.Identity}]: {input}");
                 return false;
             }
 
@@ -1281,7 +1281,7 @@ namespace Comet.Game.States
                 || !ushort.TryParse(splitParam[1], out var mapY)
                 || !uint.TryParse(splitParam[2], out var lookface))
             {
-                await Log.WriteLog(LogLevel.Error, $"Invalid input params for action [{action.Identity}]1: {input}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid input params for action [{action.Identity}]1: {input}");
                 return false;
             }
 
@@ -1497,7 +1497,7 @@ namespace Comet.Game.States
             DbItemtype itemtype = Kernel.ItemManager.GetItemtype(action.Data);
             if (itemtype == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid itemtype: {action.Identity}, {action.Type}, {action.Data}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid itemtype: {action.Identity}, {action.Type}, {action.Data}");
                 return false;
             }
 
@@ -1605,14 +1605,14 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param, 2);
             if (param.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Error, $"ExecuteActionItemHole invalid [{param}] param split length for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionItemHole invalid [{param}] param split length for action {action.Identity}");
                 return false;
             }
 
             string opt = splitParam[0];
             if (!int.TryParse(splitParam[1], out var value))
             {
-                await Log.WriteLog(LogLevel.Error, $"ExecuteActionItemHole invalid value number [{param}] for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionItemHole invalid value number [{param}] for action {action.Identity}");
                 return false;
             }
 
@@ -1789,7 +1789,7 @@ namespace Comet.Game.States
                 }
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"ERROR: [509] [0] [{param}] not properly handled.");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"ERROR: [509] [0] [{param}] not properly handled.");
                     return false;
             }
         }
@@ -1837,7 +1837,7 @@ namespace Comet.Game.States
                 }
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"ACTION: EQUIPTEST error {szCmd}");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"ACTION: EQUIPTEST error {szCmd}");
                     return false;
             }
 
@@ -1948,7 +1948,7 @@ namespace Comet.Game.States
                     user.VarData[7] = pos;
                     return true;
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"ACTION: 516: {pIdx} not handled id: {action.Identity}");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"ACTION: 516: {pIdx} not handled id: {action.Identity}");
                     break;
             }
 
@@ -1972,7 +1972,7 @@ namespace Comet.Game.States
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 5)
             {
-                await Log.WriteLog(LogLevel.Error, $"ACTION: incorrect param, pos type action value update, for action (id:{action.Identity})");
+                await Log.WriteLogAsync(LogLevel.Error, $"ACTION: incorrect param, pos type action value update, for action (id:{action.Identity})");
                 return false;
             }
 
@@ -1999,13 +1999,13 @@ namespace Comet.Game.States
                             if (itemt == null)
                             {
                                 // new item doesnt exist
-                                await Log.WriteLog(LogLevel.Error, $"ACTION: itemtype not found (type:{value}, action:{action.Identity})");
+                                await Log.WriteLogAsync(LogLevel.Error, $"ACTION: itemtype not found (type:{value}, action:{action.Identity})");
                                 return false;
                             }
 
                             if (pItem.Type / 1000 != itemt.Type / 1000)
                             {
-                                await Log.WriteLog(LogLevel.Error, $"ACTION: cant change to different type (type:{pItem.Type}, new:{value}, action:{action.Identity})");
+                                await Log.WriteLogAsync(LogLevel.Error, $"ACTION: cant change to different type (type:{pItem.Type}, new:{value}, action:{action.Identity})");
                                 return false;
                             }
 
@@ -2485,7 +2485,7 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid param count for guild creation: {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid param count for guild creation: {param}, {action.Identity}");
                 return false;
             }
 
@@ -2695,7 +2695,7 @@ namespace Comet.Game.States
             if (ope.Equals("dropitem"))
             {
                 uint idUser = user?.Identity ?? 0u;
-                await monster.DropItem(data, idUser);
+                await monster.DropItemAsync(data, idUser);
                 return true;
             }
             if (ope.Equals("dropmoney"))
@@ -2705,7 +2705,7 @@ namespace Comet.Game.States
                 if (dwMoneyDrop <= 0)
                     return false;
                 uint idUser = user?.Identity ?? 0u;
-                await monster.DropMoney(dwMoneyDrop, idUser);
+                await monster.DropMoneyAsync(dwMoneyDrop, idUser);
                 return true;
             }
             return false;
@@ -2723,7 +2723,7 @@ namespace Comet.Game.States
             string[] parsedParam = SplitParam(param);
             if (parsedParam.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Error, $"GameAction::ExecuteUserAttr[{action.Identity}] invalid param num {param}");
+                await Log.WriteLogAsync(LogLevel.Error, $"GameAction::ExecuteUserAttr[{action.Identity}] invalid param num {param}");
                 return false;
             }
 
@@ -3353,7 +3353,7 @@ namespace Comet.Game.States
             string[] paramStrings = SplitParam(param);
             if (paramStrings.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Action {action.Identity}:{action.Type} invalid param length: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Action {action.Identity}:{action.Type} invalid param length: {param}");
                 return false;
             }
 
@@ -3365,7 +3365,7 @@ namespace Comet.Game.States
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid map identity {idMap} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid map identity {idMap} for action {action.Identity}");
                 return false;
             }
 
@@ -3383,7 +3383,7 @@ namespace Comet.Game.States
             string[] paramStrings = SplitParam(param);
             if (paramStrings.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Action {action.Identity}:{action.Type} invalid param length: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Action {action.Identity}:{action.Type} invalid param length: {param}");
                 return false;
             }
 
@@ -3401,7 +3401,7 @@ namespace Comet.Game.States
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid map identity {idMap} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid map identity {idMap} for action {action.Identity}");
                 return false;
             }
 
@@ -3418,7 +3418,7 @@ namespace Comet.Game.States
 
             if (splitParams.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Warning,
+                await Log.WriteLogAsync(LogLevel.Warning,
                     $"Action {action.Identity}:{action.Type} has not enough argments: {param}");
                 return false;
             }
@@ -3466,7 +3466,7 @@ namespace Comet.Game.States
 
             if (splitParam.Length < 4)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid param count for {action.Identity}:{action.Type}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid param count for {action.Identity}:{action.Type}, {param}");
                 return false;
             }
 
@@ -3486,7 +3486,7 @@ namespace Comet.Game.States
         {
             if (user == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Action type 1010 {action.Identity} no user");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Action type 1010 {action.Identity} no user");
                 return false;
             }
 
@@ -3502,7 +3502,7 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid ActionUserMagic param length: {action.Identity}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid ActionUserMagic param length: {action.Identity}, {param}");
                 return false;
             }
 
@@ -3525,7 +3525,7 @@ namespace Comet.Game.States
                     return await user.MagicData.AwardExp(ushort.Parse(splitParam[1]), 0, int.Parse(splitParam[2]));
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"[ActionType: {action.Type}] Unknown {splitParam[0]} param {action.Identity}");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"[ActionType: {action.Type}] Unknown {splitParam[0]} param {action.Identity}");
                     return false;
             }
         }
@@ -3539,14 +3539,14 @@ namespace Comet.Game.States
 
             if (splitParam.Length < 3)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid param amount: {param} [{action.Identity}]");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid param amount: {param} [{action.Identity}]");
                 return false;
             }
 
             if (!ushort.TryParse(splitParam[1], out var type)
                 || !int.TryParse(splitParam[2], out var value))
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid weapon skill type {param} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid weapon skill type {param} for action {action.Identity}");
                 return false;
             }
 
@@ -3563,7 +3563,7 @@ namespace Comet.Game.States
                     return true;
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserWeaponSkill {splitParam[0]} invalid {action.Identity}");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserWeaponSkill {splitParam[0]} invalid {action.Identity}");
                     return false;
             }
         }
@@ -3577,7 +3577,7 @@ namespace Comet.Game.States
 
             if (splitParam.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserLog length [id:{action.Identity}], {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserLog length [id:{action.Identity}], {param}");
                 return true;
             }
 
@@ -3651,7 +3651,7 @@ namespace Comet.Game.States
             string[] parsedString = SplitParam(param);
             if (parsedString.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Error, $"Invalid parsed param[{param}] ExecuteActionUserEffect[{action.Identity}]");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid parsed param[{param}] ExecuteActionUserEffect[{action.Identity}]");
                 return false;
             }
 
@@ -3701,13 +3701,13 @@ namespace Comet.Game.States
             string[] parsedParam = SplitParam(param);
             if (parsedParam.Length < 2)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid param num [{param}] for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid param num [{param}] for action {action.Identity}");
                 return false;
             }
 
             if (!int.TryParse(parsedParam[1], out var flag) || flag < 0 || flag >= 32)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid mask num {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid mask num {param}");
                 return false;
             }
 
@@ -3763,7 +3763,7 @@ namespace Comet.Game.States
 
             if (safeParam.Length < 10)
             {
-                await Log.WriteLog(LogLevel.Error, $"ExecuteActionUserCreatemap ({action.Identity}) with invalid param length [{param}]");
+                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionUserCreatemap ({action.Identity}) with invalid param length [{param}]");
                 return false;
             }
 
@@ -3799,7 +3799,7 @@ namespace Comet.Game.States
 
             if (!await BaseRepository.SaveAsync(pMapInfo) || pMapInfo.Identity < 1000000)
             {
-                await Log.WriteLog(LogLevel.Error, $"ExecuteActionUserCreatemap error when saving map\n\t{JsonConvert.SerializeObject(pMapInfo)}");
+                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionUserCreatemap error when saving map\n\t{JsonConvert.SerializeObject(pMapInfo)}");
                 return false;
             }
 
@@ -3891,7 +3891,7 @@ namespace Comet.Game.States
             if (!ushort.TryParse(splitParam[0], out var prof)
                 || !ushort.TryParse(splitParam[1], out var look))
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid parameter to rebirth {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid parameter to rebirth {param}, {action.Identity}");
                 return false;
             }
 
@@ -4218,7 +4218,7 @@ namespace Comet.Game.States
 
                         return false;
                     default:
-                        await Log.WriteLog(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
+                        await Log.WriteLogAsync(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
                         return false;
                 }
             }
@@ -4238,7 +4238,7 @@ namespace Comet.Game.States
 
         private static async Task<bool> ExecuteActionUserTaskFind(DbAction action, string param, Character user, Role role, Item item, string input)
         {
-            await Log.WriteLog(LogLevel.Warning, $"ExecuteActionUserTaskFind unhandled");
+            await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserTaskFind unhandled");
             return false;
         }
 
@@ -4352,7 +4352,7 @@ namespace Comet.Game.States
             if (!ushort.TryParse(splitParams[0], out var pos)
                 || !int.TryParse(splitParams[1], out var type))
             {
-                await Log.WriteLog(LogLevel.Error,
+                await Log.WriteLogAsync(LogLevel.Error,
                     $"Invalid parsed param ExecuteActionUserTestEquipment, id[{action.Identity}]");
                 return false;
             }
@@ -4525,7 +4525,7 @@ namespace Comet.Game.States
 
                     return false;
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
                     return false;
             }
         }
@@ -4579,9 +4579,9 @@ namespace Comet.Game.States
             if (target == "self")
             {
                 if (opt == "add")
-                    await user.AttachStatus(user, status, multiply, (int)seconds, times, 0);
+                    await user.AttachStatusAsync(user, status, multiply, (int)seconds, times, 0);
                 else if (opt == "del")
-                    await user.DetachStatus(status);
+                    await user.DetachStatusAsync(status);
                 return true;
             }
 
@@ -4590,9 +4590,9 @@ namespace Comet.Game.States
                 foreach (var member in user.Team.Members)
                 {
                     if (opt == "add")
-                        await member.AttachStatus(member, status, multiply, (int)seconds, times, 0);
+                        await member.AttachStatusAsync(member, status, multiply, (int)seconds, times, 0);
                     else if (opt == "del")
-                        await member.DetachStatus(status);
+                        await member.DetachStatusAsync(status);
                 }
                 return true;
             }
@@ -4605,13 +4605,13 @@ namespace Comet.Game.States
 
                 if (opt == "add")
                 {
-                    await user.AttachStatus(user, status, multiply, (int) seconds, times, 0);
-                    await mate.AttachStatus(user, status, multiply, (int) seconds, times, 0);
+                    await user.AttachStatusAsync(user, status, multiply, (int) seconds, times, 0);
+                    await mate.AttachStatusAsync(user, status, multiply, (int) seconds, times, 0);
                 }
                 else if (opt == "del")
                 {
-                    await user.DetachStatus(status);
-                    await mate.DetachStatus(status);
+                    await user.DetachStatusAsync(status);
+                    await mate.DetachStatusAsync(status);
                 }
 
                 return true;
@@ -4667,14 +4667,14 @@ namespace Comet.Game.States
             // 200 0 604800 0 604800 1
             if (action.Data == 0)
             {
-                await Log.WriteLog(LogLevel.Error, $"ERROR: invalid data num {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error, $"ERROR: invalid data num {action.Identity}");
                 return false;
             }
 
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 5)
             {
-                await Log.WriteLog(LogLevel.Error, $"ERROR: invalid param num {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error, $"ERROR: invalid param num {action.Identity}");
                 return false;
             }
 
@@ -4694,7 +4694,7 @@ namespace Comet.Game.States
                 status.Sort = sort;
                 if (!await BaseRepository.SaveAsync(status))
                 {
-                    await Log.WriteLog(LogLevel.Error,
+                    await Log.WriteLogAsync(LogLevel.Error,
                         string.Format("ERROR: Could not update status {0}[{2}] to {1}", status.Id, action.Data,
                             status.Status));
                     return false;
@@ -4715,12 +4715,12 @@ namespace Comet.Game.States
                 };
                 if (!await BaseRepository.SaveAsync(status))
                 {
-                    await Log.WriteLog(LogLevel.Error, "ERROR: Could not save status");
+                    await Log.WriteLogAsync(LogLevel.Error, "ERROR: Could not save status");
                     return false;
                 }
             }
 
-            await user.AttachStatus(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0);
+            await user.AttachStatusAsync(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0);
             return true;
         }
 
@@ -4742,7 +4742,7 @@ namespace Comet.Game.States
                     foreach (var st in status)
                         if (user.QueryStatus(int.Parse(st)) != null)
                         {
-                            await user.DetachStatus(int.Parse(st));
+                            await user.DetachStatusAsync(int.Parse(st));
                             DbStatus db = (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == uint.Parse(st));
                             if (db != null)
                                 await BaseRepository.DeleteAsync(db);
@@ -4763,7 +4763,7 @@ namespace Comet.Game.States
         {
             if (user == null)
             {
-                await Log.WriteLog(LogLevel.Error, $"No user for ExecuteGeneralLottery, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error, $"No user for ExecuteGeneralLottery, {action.Identity}");
                 return false;
             }
 
@@ -4814,7 +4814,7 @@ namespace Comet.Game.States
             Item newItem = new Item(user);
             if (!await newItem.CreateAsync(lottoItem))
             {
-                await Log.WriteLog(LogLevel.Error, $"Error to create lottery item {newItem.ToJson()}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Error to create lottery item {newItem.ToJson()}");
                 return false;
             }
 
@@ -4861,13 +4861,13 @@ namespace Comet.Game.States
             Generator generator = Kernel.GeneratorThread.GetGenerator(action.Data);
             if (generator == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Invalid generator {action.Data} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid generator {action.Data} for action {action.Identity}");
                 return false;
             }
 
             foreach (var monster in generator.GetRoles())
             {
-                await monster.LeaveMap();
+                await monster.LeaveMapAsync();
             }
             return true;
         }
@@ -4959,26 +4959,26 @@ namespace Comet.Game.States
 
             if (monstertype == null || map == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] invalid monstertype or map: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] invalid monstertype or map: {param}");
                 return false;
             }
 
             Generator generator = Kernel.GeneratorThread.GetGenerator(idGen);
             if (generator == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] unexistent generator: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] unexistent generator: {param}");
                 return false;
             }
 
             Monster monster = new Monster(monstertype, (uint)IdentityGenerator.Monster.GetNextIdentity, generator);
             if (!await monster.InitializeAsync(idMap, usPosX, usPosY))
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] could not initialize monster: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] could not initialize monster: {param}");
                 return false;
             }
 
             generator.Add(monster);
-            await monster.EnterMap();
+            await monster.EnterMapAsync();
             return true;
         }
 
@@ -5051,7 +5051,7 @@ namespace Comet.Game.States
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc invalid {idMap} map identity for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc invalid {idMap} map identity for action {action.Identity}");
                 return false;
             }
 
@@ -5088,7 +5088,7 @@ namespace Comet.Game.States
 
             if (!await BaseRepository.SaveAsync(npc))
             {
-                await Log.WriteLog(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc could not save dynamic npc");
+                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc could not save dynamic npc");
                 return false;
             }
 
@@ -5096,7 +5096,7 @@ namespace Comet.Game.States
             if (!await dynaNpc.InitializeAsync())
                 return false;
 
-            await dynaNpc.EnterMap();
+            await dynaNpc.EnterMapAsync();
             return true;
         }
 
@@ -5274,7 +5274,7 @@ namespace Comet.Game.States
 
             if (splitParams.Length < 7)
             {
-                await Log.WriteLog(LogLevel.Error, $"Invalid param length ExecuteActionTrapCreate {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid param length ExecuteActionTrapCreate {action.Identity}");
                 return false;
             }
 
@@ -5288,7 +5288,7 @@ namespace Comet.Game.States
 
             if (Kernel.MapManager.GetMap(idMap) == null)
             {
-                await Log.WriteLog(LogLevel.Error,
+                await Log.WriteLogAsync(LogLevel.Error,
                     $"Invalid map for ExecuteActionTrapCreate {idMap}:{action.Identity}");
                 return false;
             }
@@ -5307,7 +5307,7 @@ namespace Comet.Game.States
 
             if (!await trap.InitializeAsync())
             {
-                await Log.WriteLog(LogLevel.Error,
+                await Log.WriteLogAsync(LogLevel.Error,
                     $"could not start trap for ExecuteActionTrapCreate {action.Identity}");
                 return false;
             }
@@ -5322,7 +5322,7 @@ namespace Comet.Game.States
             if (trap == null)
                 return false;
 
-            await trap.LeaveMap();
+            await trap.LeaveMapAsync();
             return true;
         }
 

@@ -83,9 +83,13 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
+            Character user = client.Character;
             switch (Action)
             {
-                
+                default:
+                    if (user.IsPm())
+                        await user.SendAsync($"Unhandled MsgGuide:{Action}", MsgTalk.TalkChannel.Talk);
+                    break;
             }
         }
     }

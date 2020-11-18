@@ -51,9 +51,9 @@ namespace Comet.Account
             // project name and version may be removed or changed.
             Console.Title = "Comet, Account Server";
             Console.WriteLine();
-            await Log.WriteLog(LogLevel.Message, "  Comet: Account Server");
-            await Log.WriteLog(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
-            await Log.WriteLog(LogLevel.Message, "  All Rights Reserved");
+            await Log.WriteLogAsync(LogLevel.Message, "  Comet: Account Server");
+            await Log.WriteLogAsync(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
+            await Log.WriteLogAsync(LogLevel.Message, "  All Rights Reserved");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments
@@ -65,11 +65,11 @@ namespace Comet.Account
             }
 
             // Initialize the database
-            await Log.WriteLog(LogLevel.Message, "Initializing server...");
+            await Log.WriteLogAsync(LogLevel.Message, "Initializing server...");
             ServerDbContext.Configuration = config.Database;
             if (!ServerDbContext.Ping())
             {
-                await Log.WriteLog(LogLevel.Message, "Invalid database configuration");
+                await Log.WriteLogAsync(LogLevel.Message, "Invalid database configuration");
                 return;
             }
 
@@ -81,16 +81,16 @@ namespace Comet.Account
 #pragma warning restore VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono
 
             // Start the server listener
-            await Log.WriteLog(LogLevel.Message, "Launching server listener...");
+            await Log.WriteLogAsync(LogLevel.Message, "Launching server listener...");
             var server = new Server(config);
             _ = server.StartAsync(config.Network.Port, config.Network.IPAddress).ConfigureAwait(false);
 
             // Output all clear and wait for user input
-            await Log.WriteLog(LogLevel.Message, "Listening for new connections");
+            await Log.WriteLogAsync(LogLevel.Message, "Listening for new connections");
             Console.WriteLine();
             bool result = await CommandCenterAsync();
             if (!result)
-                await Log.WriteLog(LogLevel.Error, "Account server has exited without success.");
+                await Log.WriteLogAsync(LogLevel.Error, "Account server has exited without success.");
         }
 
         private static async Task<bool> CommandCenterAsync()
@@ -104,7 +104,7 @@ namespace Comet.Account
 
                 if (text == "exit")
                 {
-                    await Log.WriteLog(LogLevel.Warning, "Server will shutdown...");
+                    await Log.WriteLogAsync(LogLevel.Warning, "Server will shutdown...");
                     return true;
                 }
 

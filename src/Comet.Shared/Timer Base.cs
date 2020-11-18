@@ -80,8 +80,8 @@ namespace Comet.Shared
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error on thread {m_name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error on thread {m_name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 if (!StopOnException)
                     m_timer.Start();
             }
@@ -94,18 +94,18 @@ namespace Comet.Shared
 
         public virtual async Task OnStartAsync()
         {
-            await Log.WriteLog(LogLevel.Message, $"Timer [{m_name}] has started");
+            await Log.WriteLogAsync(LogLevel.Message, $"Timer [{m_name}] has started");
         }
 
         public virtual async Task<bool> OnElapseAsync()
         {
-            await Log.WriteLog(LogLevel.Message, $"Timer [{m_name}] has elapsed at {DateTime.Now}");
+            await Log.WriteLogAsync(LogLevel.Message, $"Timer [{m_name}] has elapsed at {DateTime.Now}");
             return true;
         }
 
         public virtual async Task OnCloseAsync()
         {
-            await Log.WriteLog(LogLevel.Message, $"Timer [{m_name}] has finished");
+            await Log.WriteLogAsync(LogLevel.Message, $"Timer [{m_name}] has finished");
         }
     }
 }

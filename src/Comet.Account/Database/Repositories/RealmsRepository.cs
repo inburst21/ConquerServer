@@ -54,7 +54,7 @@ namespace Comet.Account.Database.Repositories
             // Connect to each realm's RPC server
             foreach (var realm in Kernel.Realms.Values)
             {
-                await Log.WriteLog(LogLevel.Message, $"ID: {realm.RealmID}, Realm Name:[{realm.Name}]" +
+                await Log.WriteLogAsync(LogLevel.Message, $"ID: {realm.RealmID}, Realm Name:[{realm.Name}]" +
                     $"{Environment.NewLine}\tIP: {realm.GameIPAddress}, Port: {realm.GamePort}" +
                     $"{Environment.NewLine}\tRpc: {realm.RpcIPAddress}:{realm.RpcPort}");
 

@@ -78,7 +78,7 @@ namespace Comet.Game.Packets
             Character target = Kernel.RoleManager.GetUser(Identity);
             if (target == null && Identity != 0)
             {
-                await Log.WriteLog(LogLevel.Error, $"Team no target");
+                await Log.WriteLogAsync(LogLevel.Error, $"Team no target");
                 return;
             }
 
@@ -104,17 +104,17 @@ namespace Comet.Game.Packets
                         return;
 
                     await user.SendAsync(this);
-                    await user.AttachStatus(user, StatusSet.TEAM_LEADER, 0, int.MaxValue, 0, 0);
+                    await user.AttachStatusAsync(user, StatusSet.TEAM_LEADER, 0, int.MaxValue, 0, 0);
                     break;
 
                 case TeamAction.Dismiss:
                     if (user.Team == null)
                         return;
 
-                    if (await user.Team.Dismiss(user))
+                    if (await user.Team.DismissAsync(user))
                     {
                         await user.SendAsync(this);
-                        await user.DetachStatus(StatusSet.TEAM_LEADER);
+                        await user.DetachStatusAsync(StatusSet.TEAM_LEADER);
                     }
                     break;
 
@@ -312,11 +312,11 @@ namespace Comet.Game.Packets
 
                     if (user.Team.IsLeader(user.Identity))
                     {
-                        await user.Team.Dismiss(user);
+                        await user.Team.DismissAsync(user);
                         return;
                     }
 
-                    await user.Team.DismissMember(user);
+                    await user.Team.DismissMemberAsync(user);
                     break;
 
                 case TeamAction.Kick:
@@ -325,7 +325,7 @@ namespace Comet.Game.Packets
                     if (target?.Team == null || target.Team.IsLeader(target.Identity))
                         return;
 
-                    await user.Team.KickMember(user, Identity);
+                    await user.Team.KickMemberAsync(user, Identity);
                     break;
 
                 case TeamAction.Forbid:

@@ -95,7 +95,7 @@ namespace Comet.Shared
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error on reply from API [{BASE_URL}] Auth, [{m_token}],[{auth.Expiration}]");
+                await Log.WriteLogAsync(LogLevel.Error, $"Error on reply from API [{BASE_URL}] Auth, [{m_token}],[{auth.Expiration}]");
                 return false;
             }
 
@@ -108,7 +108,7 @@ namespace Comet.Shared
 
             if (!m_isAuthenticated)
             {
-                await Log.WriteLog(LogLevel.Error, "Could not authenticate to the API.");
+                await Log.WriteLogAsync(LogLevel.Error, "Could not authenticate to the API.");
                 return false;
             }
 

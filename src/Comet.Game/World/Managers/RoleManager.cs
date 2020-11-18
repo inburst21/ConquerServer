@@ -111,7 +111,7 @@ namespace Comet.Game.World.Managers
 
             if (m_userSet.TryGetValue(user.Character.Identity, out var concurrent))
             {
-                await Log.WriteLog(LogLevel.Message,
+                await Log.WriteLogAsync(LogLevel.Message,
                     $"User {user.Character.Identity} {user.Character.Name} tried to login an already connected client.");
 
                 if (user.IPAddress != concurrent.Client.IPAddress)
@@ -141,7 +141,7 @@ namespace Comet.Game.World.Managers
 
             await user.Character.SetLoginAsync();
 
-            await Log.WriteLog(LogLevel.Message, $"{user.Character.Name} has logged in.");
+            await Log.WriteLogAsync(LogLevel.Message, $"{user.Character.Name} has logged in.");
 
             if (OnlinePlayers > MaxOnlinePlayers)
                 MaxOnlinePlayers = OnlinePlayers;
@@ -162,7 +162,7 @@ namespace Comet.Game.World.Managers
                     // just in case the user is already disconnected and we receive an exception
                 }
 
-                await Log.WriteLog(LogLevel.Message, $"{user.Name} has logged out.");
+                await Log.WriteLogAsync(LogLevel.Message, $"{user.Name} has logged out.");
                 return true;
             }
 
@@ -181,7 +181,7 @@ namespace Comet.Game.World.Managers
             {
                 await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
-                await Log.WriteLog(LogLevel.Message, $"User {user.Name} has been kicked: {reason}");
+                await Log.WriteLogAsync(LogLevel.Message, $"User {user.Name} has been kicked: {reason}");
             }
         }
 
@@ -195,7 +195,7 @@ namespace Comet.Game.World.Managers
                 await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
 
-                await Log.WriteLog(LogLevel.Message, $"User {user.Name} has been kicked (kickoutall): {reason}");
+                await Log.WriteLogAsync(LogLevel.Message, $"User {user.Name} has been kicked (kickoutall): {reason}");
             }
         }
 
@@ -253,7 +253,7 @@ namespace Comet.Game.World.Managers
                 }
                 catch (Exception ex)
                 {
-                    await Log.WriteLog("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
+                    await Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
                 }
             }
         }
@@ -264,7 +264,7 @@ namespace Comet.Game.World.Managers
             {
                 if (item.CanDisappear())
                 {
-                    await item.Disappear();
+                    await item.DisappearAsync();
                     m_mapItemSet.TryRemove(item.Identity, out _);
                 }
             }

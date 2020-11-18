@@ -81,7 +81,7 @@ namespace Comet.Game.World.Maps
             m_tLoop.Startup(1);
         }
 
-        public async Task<bool> Create(WeatherType nType, int nIntensity, int nDir, int nColor, int nSpeedSecs)
+        public async Task<bool> CreateAsync(WeatherType nType, int nIntensity, int nDir, int nColor, int nSpeedSecs)
         {
             if (nType <= WeatherType.WeatherNone || nType >= WeatherType.WeatherAll)
                 return false;
@@ -122,7 +122,7 @@ namespace Comet.Game.World.Maps
             return true;
         }
 
-        public async Task<bool> SetNewWeather(WeatherType nType, int nIntensity, int nDir, int nColor, int nKeepSecs,
+        public async Task<bool> SetNewWeatherAsync(WeatherType nType, int nIntensity, int nDir, int nColor, int nKeepSecs,
             int nSpeedSecs)
         {
             if (nType <= WeatherType.WeatherNone || nType >= WeatherType.WeatherAll)
@@ -271,7 +271,7 @@ namespace Comet.Game.World.Maps
                     if (nType == WeatherType.WeatherCloudy)
                         nKeepSecs *= 5;
 
-                    await SetNewWeather(nType, nIntensity, nDir, m_nDefaultColor, nKeepSecs, m_nDefaultSpeedSecs);
+                    await SetNewWeatherAsync(nType, nIntensity, nDir, m_nDefaultColor, nKeepSecs, m_nDefaultSpeedSecs);
 
                     return;
                 }
@@ -336,7 +336,7 @@ namespace Comet.Game.World.Maps
             }
         }
 
-        public async Task<bool> SendWeather(Character pUser = null)
+        public async Task<bool> SendWeatherAsync(Character pUser = null)
         {
             MsgWeather pMsg = new MsgWeather
             {
@@ -352,7 +352,7 @@ namespace Comet.Game.World.Maps
             return true;
         }
 
-        public async Task<bool> SendNoWeather(Character pUser)
+        public async Task<bool> SendNoWeatherAsync(Character pUser)
         {
             if (pUser == null)
                 return false;

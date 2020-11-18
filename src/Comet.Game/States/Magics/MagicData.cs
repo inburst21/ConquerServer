@@ -301,7 +301,7 @@ namespace Comet.Game.States.Magics
             if (m_pMagic.Crime <= 0)
                 return false;
 
-            return await m_pOwner.CheckCrime(pRole);
+            return await m_pOwner.CheckCrimeAsync(pRole);
         }
 
         public async Task<bool> CheckCrime(Dictionary<uint, Role> pRoleSet)
@@ -312,7 +312,7 @@ namespace Comet.Game.States.Magics
                 return false;
 
             foreach (var pRole in pRoleSet.Values)
-                if (m_pOwner.Identity != pRole.Identity && await m_pOwner.CheckCrime(pRole))
+                if (m_pOwner.Identity != pRole.Identity && await m_pOwner.CheckCrimeAsync(pRole))
                     return true;
             return false;
         }

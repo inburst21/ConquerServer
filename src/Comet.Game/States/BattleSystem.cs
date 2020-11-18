@@ -59,7 +59,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            await m_owner.MagicData.AbortMagic(true);
+            await m_owner.MagicData.AbortMagicAsync(true);
 
             Role target = Kernel.RoleManager.GetRole(m_idTarget);
             if (target == null)
@@ -102,15 +102,15 @@ namespace Comet.Game.States
 
             await m_owner.SendDamageMsgAsync(target.Identity, damage);
             
-            await m_owner.ProcessOnAttack();
+            await m_owner.ProcessOnAttackAsync();
 
             if (damage == 0)
                 return true;
 
-            await target.BeAttack(MagicType.None, m_owner, damage, true);
+            await target.BeAttackAsync(MagicType.None, m_owner, damage, true);
 
             if (user != null)
-                await user.CheckCrime(target);
+                await user.CheckCrimeAsync(target);
 
             DynamicNpc npc = target as DynamicNpc;
             if (npc?.IsAwardScore() == true)
@@ -129,10 +129,10 @@ namespace Comet.Game.States
                     nExp += nAdditionExp;
 
                     if (user.Team != null)
-                        await user.Team.AwardMemberExp(user.Identity, target, nAdditionExp);
+                        await user.Team.AwardMemberExpAsync(user.Identity, target, nAdditionExp);
                 }
 
-                await user.AwardBattleExp(nExp, true);
+                await user.AwardBattleExpAsync(nExp, true);
 
                 if (!target.IsAlive && nAdditionExp > 0
                                     && !m_owner.Map.IsTrainingMap())
@@ -159,7 +159,7 @@ namespace Comet.Game.States
                 if (damage > target.MaxLife / 3)
                     dieWay = 2;
 
-                await m_owner.Kill(target, dieWay);
+                await m_owner.KillAsync(target, dieWay);
             }
 
             return true;
@@ -632,7 +632,7 @@ namespace Comet.Game.States
                 return;
 
             if (m_owner is Character user && user.Team != null)
-                await user.Team.AwardMemberExp(m_owner.Identity, target, nBonusExp);
+                await user.Team.AwardMemberExpAsync(m_owner.Identity, target, nBonusExp);
         }
 
         public const int NAME_GREEN = 0,

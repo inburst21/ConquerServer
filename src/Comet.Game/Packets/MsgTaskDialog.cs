@@ -152,7 +152,7 @@ namespace Comet.Game.Packets
                     break;
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"MsgTaskDialog: {Type}, {InteractionType} unhandled");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"MsgTaskDialog: {Type}, {InteractionType} unhandled");
                     break;
             }
         }

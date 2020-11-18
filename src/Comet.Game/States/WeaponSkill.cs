@@ -97,13 +97,13 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Cannot save Weaponskill");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Cannot save Weaponskill");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }
 
-        public async Task<bool> UnearnAll()
+        public async Task<bool> UnearnAllAsync()
         {
             foreach (var skill in m_skills.Values)
             {

@@ -114,7 +114,7 @@ namespace Comet.Game.World.Maps
 
                 if (string.IsNullOrEmpty(realPath))
                 {
-                    Log.WriteLog(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' (realPath:{realPath}) has not been found.").Forget();
+                    Log.WriteLogAsync(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' (realPath:{realPath}) has not been found.").Forget();
                     return false;
                 }
 
@@ -138,7 +138,7 @@ namespace Comet.Game.World.Maps
             }
             else
             {
-                Log.WriteLog(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' has not been found.").Forget();
+                Log.WriteLogAsync(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' has not been found.").Forget();
                 return false;
             }
         }
@@ -170,7 +170,7 @@ namespace Comet.Game.World.Maps
                 tmp = reader.ReadUInt32();
                 if (checkSum != tmp)
                 {
-                    Log.WriteLog(LogLevel.Error, $"Invalid checksum for block of cells (mapdata: {m_idDoc}), y: {y}")
+                    Log.WriteLogAsync(LogLevel.Error, $"Invalid checksum for block of cells (mapdata: {m_idDoc}), y: {y}")
                         .Forget();
                 }
             }
@@ -313,7 +313,6 @@ namespace Comet.Game.World.Maps
             {
                 var dsReader = new DecodedSectionReader(file, mdModel.Metadata, sectionIndex, PasswordStorage.Create(""));
                 var mdFiles = mdModel.GetFilesInSection(sectionIndex);
-                int k = 0;
                 while (dsReader.CurrentStreamIndex < dsReader.StreamCount)
                 {
                     var mdFile = mdFiles[dsReader.CurrentStreamIndex];

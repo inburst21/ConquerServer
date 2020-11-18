@@ -80,7 +80,7 @@ namespace Comet.Game.States.Items
                 Item item = new Item(m_user);
                 if (!await item.CreateAsync(dbItem))
                 {
-                    await Log.WriteLog(LogLevel.Error, $"Failed to load item {dbItem.Id} to user {m_user.Identity}");
+                    await Log.WriteLogAsync(LogLevel.Error, $"Failed to load item {dbItem.Id} to user {m_user.Identity}");
                     await item.DeleteAsync(Item.ChangeOwnerType.InvalidItemType);
                     continue;
                 }
@@ -94,7 +94,7 @@ namespace Comet.Game.States.Items
                 else if (item.Position == Item.ItemPosition.Inventory)
                 {
                     if (!m_dicInventory.TryAdd(item.Identity, item))
-                        await Log.WriteLog(LogLevel.Warning,
+                        await Log.WriteLogAsync(LogLevel.Warning,
                             $"Failed to insert inventory item {item.Identity}: duplicate???");
                 }
                 else if (item.Position == Item.ItemPosition.Floor)
@@ -106,7 +106,7 @@ namespace Comet.Game.States.Items
                     BaseNpc npc = Kernel.RoleManager.GetRole(item.OwnerIdentity) as BaseNpc;
                     if (npc == null)
                     {
-                        await Log.WriteLog(LogLevel.Error, $"Unexistent warehouse {item.OwnerIdentity} for item {item.Identity}");
+                        await Log.WriteLogAsync(LogLevel.Error, $"Unexistent warehouse {item.OwnerIdentity} for item {item.Identity}");
                         continue;
                     }
 
@@ -118,7 +118,7 @@ namespace Comet.Game.States.Items
                 }
                 else
                 {
-                    await Log.WriteLog(LogLevel.Warning,
+                    await Log.WriteLogAsync(LogLevel.Warning,
                         $"Item {item.Identity} on '{item.Position}' cannot be loaded (unhandled)");
                 }
             }
@@ -738,7 +738,7 @@ namespace Comet.Game.States.Items
             }
 
             if (nNum > 0)
-                await Log.WriteLog(LogLevel.Error, $"Something went wrong when MultiSpendItem({idFirst}, {idLast}, {temp}) {nNum} left???");
+                await Log.WriteLogAsync(LogLevel.Error, $"Something went wrong when MultiSpendItem({idFirst}, {idLast}, {temp}) {nNum} left???");
             return nNum == 0;
         }
 
@@ -813,9 +813,9 @@ namespace Comet.Game.States.Items
                         await item.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
 
                         var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-                        if (await pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
+                        if (await pMapItem.CreateAsync(m_user.Map, pos, item, m_user.Identity))
                         {
-                            await pMapItem.EnterMap();
+                            await pMapItem.EnterMapAsync();
                             await item.SaveAsync();
                             await Log.GmLog("drop_item",
                                 $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
@@ -872,9 +872,9 @@ namespace Comet.Game.States.Items
                     await item.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
 
                     var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-                    if (await pMapItem.Create(m_user.Map, pos, item, m_user.Identity))
+                    if (await pMapItem.CreateAsync(m_user.Map, pos, item, m_user.Identity))
                     {
-                        await pMapItem.EnterMap();
+                        await pMapItem.EnterMapAsync();
                         await item.SaveAsync();
                         await Log.GmLog("drop_item",
                             $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");

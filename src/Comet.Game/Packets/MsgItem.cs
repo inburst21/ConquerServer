@@ -143,7 +143,7 @@ namespace Comet.Game.Packets
                     DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
                     if (goods == null)
                     {
-                        await Log.WriteLog(LogLevel.Cheat, $"Invalid goods itemtype {Command} for Shop {Identity}");
+                        await Log.WriteLogAsync(LogLevel.Cheat, $"Invalid goods itemtype {Command} for Shop {Identity}");
                         return;
                     }
 
@@ -153,7 +153,7 @@ namespace Comet.Game.Packets
                     DbItemtype itemtype = Kernel.ItemManager.GetItemtype(Command);
                     if (itemtype == null)
                     {
-                        await Log.WriteLog(LogLevel.Cheat,
+                        await Log.WriteLogAsync(LogLevel.Cheat,
                             $"Invalid goods itemtype (not existent) {Command} for Shop {Identity}");
                         return;
                     }
@@ -185,7 +185,7 @@ namespace Comet.Game.Packets
                                 return;
                             break;
                         default:
-                            await Log.WriteLog(LogLevel.Cheat,
+                            await Log.WriteLogAsync(LogLevel.Cheat,
                                 $"Invalid moneytype {(Moneytype) Argument}/{Identity}/{Command} - {user.Identity}({user.Name})");
                             return;
                     }

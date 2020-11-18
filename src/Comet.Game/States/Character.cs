@@ -245,7 +245,7 @@ namespace Comet.Game.States
             m_transformation.Clear();
             
             await SynchroTransform();
-            await MagicData.AbortMagic(true);
+            await MagicData.AbortMagicAsync(true);
             BattleSystem.ResetBattle();
         }
 
@@ -492,7 +492,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task AwardBattleExp(long nExp, bool bGemEffect)
+        public async Task AwardBattleExpAsync(long nExp, bool bGemEffect)
         {
             if (nExp == 0)
                 return;
@@ -967,7 +967,7 @@ namespace Comet.Game.States
 
                     await AddAttributesAsync(ClientUpdateType.PkPoints, nAddPk);
 
-                    await SetCrimeStatus(60);
+                    await SetCrimeStatusAsync(60);
 
                     if (PkPoints > 29)
                         await SendAsync(Language.StrKillingTooMuch);
@@ -975,7 +975,7 @@ namespace Comet.Game.States
             }
         }
 
-        public override async Task<bool> CheckCrime(Role target)
+        public override async Task<bool> CheckCrimeAsync(Role target)
         {
             if (target == null) return false;
             if (!target.IsEvil() && !target.IsMonster())
@@ -983,7 +983,7 @@ namespace Comet.Game.States
                 if (!Map.IsTrainingMap() && !Map.IsDeadIsland() && !Map.IsDeadIsland() && !Map.IsPrisionMap() &&
                     !Map.IsFamilyMap() && !Map.IsPkGameMap() && !Map.IsPkField())
                 {
-                    await SetCrimeStatus(25);
+                    await SetCrimeStatusAsync(25);
                 }
                 return true;
             }
@@ -991,7 +991,7 @@ namespace Comet.Game.States
             //if (target.IsMonster() && ((Monster) target).IsGuard())
             if (target is Monster mob && (mob.IsGuard() || mob.IsPkKiller()))
             {
-                await SetCrimeStatus(25);
+                await SetCrimeStatusAsync(25);
                 return true;
             }
 
@@ -1190,7 +1190,7 @@ namespace Comet.Game.States
         {
             if (Booth != null)
             {
-                await Booth.LeaveMap();
+                await Booth.LeaveMapAsync();
                 Booth = null;
                 return false;
             }
@@ -1212,7 +1212,7 @@ namespace Comet.Game.States
             if (Booth == null)
                 return false;
 
-            await Booth.LeaveMap();
+            await Booth.LeaveMapAsync();
             Booth = null;
             return true;
         }
@@ -1316,9 +1316,9 @@ namespace Comet.Game.States
             await item.SaveAsync();
 
             MapItem mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-            if (await mapItem.Create(Map, pos, item, Identity))
+            if (await mapItem.CreateAsync(Map, pos, item, Identity))
             {
-                await mapItem.EnterMap();
+                await mapItem.EnterMapAsync();
                 await item.SaveAsync();
             }
             else
@@ -1350,7 +1350,7 @@ namespace Comet.Game.States
 
             MapItem mapItem = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
             if (mapItem.CreateMoney(Map, pos, amount, 0u))
-                await mapItem.EnterMap();
+                await mapItem.EnterMapAsync();
             else
             {
                 IdentityGenerator.MapItem.ReturnIdentity(mapItem.Identity);
@@ -1413,7 +1413,7 @@ namespace Comet.Game.States
             }
             else
             {
-                Item item = await mapItem.GetInfo(this);
+                Item item = await mapItem.GetInfoAsync(this);
 
                 if (item != null)
                 {
@@ -1424,7 +1424,7 @@ namespace Comet.Game.States
                 }
             }
             
-            await mapItem.LeaveMap();
+            await mapItem.LeaveMapAsync();
             return true;
         }
 
@@ -1746,7 +1746,7 @@ namespace Comet.Game.States
                         || CheckWeaponSubType(magic.WeaponSubtype, magic.UseItemNum))
                     && await Kernel.ChanceCalcAsync(percent))
                 {
-                    return await ProcessMagicAttack(magic.Type, target.Identity, target.MapX, target.MapY, magic.AutoActive);
+                    return await ProcessMagicAttackAsync(magic.Type, target.Identity, target.MapX, target.MapY, magic.AutoActive);
                 }
             }
 
@@ -1815,9 +1815,9 @@ namespace Comet.Game.States
                             msg.Append(pTarget.Identity, 210, true);
                             await BroadcastRoomMsgAsync(msg, true);
 
-                            await pTarget.AttachStatus(this, StatusSet.POISONED, 310, POISONDAMAGE_INTERVAL, 20, 0);
+                            await pTarget.AttachStatusAsync(this, StatusSet.POISONED, 310, POISONDAMAGE_INTERVAL, 20, 0);
 
-                            var result = await Attack(pTarget);
+                            var result = await AttackAsync(pTarget);
                             int nTargetLifeLost = result.Damage;
 
                             await SendDamageMsgAsync(pTarget.Identity, nTargetLifeLost);
@@ -1828,7 +1828,7 @@ namespace Comet.Game.States
                                 if (nTargetLifeLost > pTarget.MaxLife / 3)
                                     dwDieWay = 2;
 
-                                await Kill(pTarget, IsBowman ? 5 : (uint)dwDieWay);
+                                await KillAsync(pTarget, IsBowman ? 5 : (uint)dwDieWay);
                             }
                             break;
                         }
@@ -2106,18 +2106,18 @@ namespace Comet.Game.States
             return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
-        public override async Task<(int Damage, InteractionEffect Effect)> Attack(Role target)
+        public override async Task<(int Damage, InteractionEffect Effect)> AttackAsync(Role target)
         {
             if (target == null)
                 return (0, InteractionEffect.None);
 
             if (!target.IsEvil() && Map.IsDeadIsland() || (target is Monster mob && mob.IsGuard()))
-                await SetCrimeStatus(15);
+                await SetCrimeStatusAsync(15);
 
             return await BattleSystem.CalcPower(BattleSystem.MagicType.None, this, target);
         }
 
-        public override async Task Kill(Role target, uint dieWay)
+        public override async Task KillAsync(Role target, uint dieWay)
         {
             if (target == null)
                 return;
@@ -2149,10 +2149,10 @@ namespace Comet.Game.States
                 }
             }
 
-            await target.BeKill(this);
+            await target.BeKillAsync(this);
         }
 
-        public override async Task<bool> BeAttack(BattleSystem.MagicType magic, Role attacker, int power,
+        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int power,
             bool bReflectEnable)
         {
             if (attacker == null)
@@ -2161,7 +2161,7 @@ namespace Comet.Game.States
             if (PreviousProfession == 25 || FirstProfession == 25 && bReflectEnable && await Kernel.ChanceCalcAsync(15d))
             {
                 power = Math.Max(1700, power);
-                await attacker.BeAttack(magic, this, power, false);
+                await attacker.BeAttackAsync(magic, this, power, false);
                 await BroadcastRoomMsgAsync(new MsgInteract
                 {
                     Action = MsgInteractType.ReflectMagic,
@@ -2181,7 +2181,7 @@ namespace Comet.Game.States
 
             if (!IsAlive)
             {
-                await BeKill(this);
+                await BeKillAsync(this);
             } 
             else if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, (ulong) (Energy / 2));
@@ -2189,7 +2189,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public override async Task BeKill(Role attacker)
+        public override async Task BeKillAsync(Role attacker)
         {
             if (QueryStatus(StatusSet.GHOST) != null)
                 return;
@@ -2202,10 +2202,10 @@ namespace Comet.Game.States
 
             await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
 
-            await DetachStatus(StatusSet.BLUE_NAME);
-            await DetachAllStatus();
-            await AttachStatus(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
-            await AttachStatus(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
+            await DetachStatusAsync(StatusSet.BLUE_NAME);
+            await DetachAllStatusAsync();
+            await AttachStatusAsync(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
+            await AttachStatusAsync(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
             m_ghost.Startup(4);
 
@@ -2377,12 +2377,12 @@ namespace Comet.Game.States
             {
                 if (QueryStatus(StatusSet.GHOST) != null)
                 {
-                    await DetachStatus(StatusSet.GHOST);
+                    await DetachStatusAsync(StatusSet.GHOST);
                 }
 
                 if (QueryStatus(StatusSet.DEAD) != null)
                 {
-                    await DetachStatus(StatusSet.DEAD);
+                    await DetachStatusAsync(StatusSet.DEAD);
                 }
 
                 if (TransformationMesh == 98 || TransformationMesh == 99)
@@ -2392,8 +2392,8 @@ namespace Comet.Game.States
 
             BattleSystem.ResetBattle();
             
-            await DetachStatus(StatusSet.GHOST);
-            await DetachStatus(StatusSet.DEAD);
+            await DetachStatusAsync(StatusSet.GHOST);
+            await DetachStatusAsync(StatusSet.DEAD);
             
             await ClearTransformation();
 
@@ -2623,7 +2623,7 @@ namespace Comet.Game.States
 
         public async Task<bool> UnlearnAllSkill()
         {
-            return await WeaponSkill.UnearnAll();
+            return await WeaponSkill.UnearnAllAsync();
         }
 
         #endregion
@@ -2770,8 +2770,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Test task error");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Test task error");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
             return true;
@@ -3389,7 +3389,7 @@ namespace Comet.Game.States
         /// <summary>
         /// 
         /// </summary>
-        public override async Task EnterMap()
+        public override async Task EnterMapAsync()
         {
             Map = Kernel.MapManager.GetMap(m_idMap);
             if (Map != null)
@@ -3400,7 +3400,7 @@ namespace Comet.Game.States
             }
             else
             {
-                await Log.WriteLog(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}");
                 m_socket?.Disconnect();
             }
         }
@@ -3408,10 +3408,10 @@ namespace Comet.Game.States
         /// <summary>
         /// 
         /// </summary>
-        public override async Task LeaveMap()
+        public override async Task LeaveMapAsync()
         {
             BattleSystem.ResetBattle();
-            await MagicData.AbortMagic(false);
+            await MagicData.AbortMagicAsync(false);
             StopMining();
             
             if (Map != null)
@@ -3420,24 +3420,24 @@ namespace Comet.Game.States
             await Screen.ClearAsync();
         }
 
-        public override async Task ProcessOnMove()
+        public override async Task ProcessOnMoveAsync()
         {
             StopMining();
 
             if (CurrentEvent != null)
                 await CurrentEvent.OnMoveAsync(this);
 
-            await base.ProcessOnMove();
+            await base.ProcessOnMoveAsync();
         }
 
-        public override async Task ProcessOnAttack()
+        public override async Task ProcessOnAttackAsync()
         {
             StopMining();
 
             if (CurrentEvent != null)
                 await CurrentEvent.OnAttackAsync(this);
 
-            await base.ProcessOnAttack();
+            await base.ProcessOnAttackAsync();
         }
 
         public async Task SavePositionAsync()
@@ -3466,7 +3466,7 @@ namespace Comet.Game.States
         {
             if (Map == null)
             {
-                await Log.WriteLog(LogLevel.Warning, $"FlyMap user not in map");
+                await Log.WriteLogAsync(LogLevel.Warning, $"FlyMap user not in map");
                 return false;
             }
 
@@ -3476,13 +3476,13 @@ namespace Comet.Game.States
             GameMap newMap = Kernel.MapManager.GetMap(idMap);
             if (newMap == null || !newMap.IsValidPoint(x, y))
             {
-                await Log.WriteLog(LogLevel.Warning, $"FlyMap user fly invalid position {idMap}[{x},{y}]");
+                await Log.WriteLogAsync(LogLevel.Warning, $"FlyMap user fly invalid position {idMap}[{x},{y}]");
                 return false;
             }
 
             try
             {
-                await LeaveMap();
+                await LeaveMapAsync();
 
                 m_idMap = newMap.Identity;
                 MapX = (ushort) x;
@@ -3498,11 +3498,11 @@ namespace Comet.Game.States
                     Direction = (ushort) Direction
                 });
 
-                await EnterMap();
+                await EnterMapAsync();
             }
             catch
             {
-                await Log.WriteLog(LogLevel.Error, "FlyMap error");
+                await Log.WriteLogAsync(LogLevel.Error, "FlyMap error");
             }
 
             return true;
@@ -3535,7 +3535,7 @@ namespace Comet.Game.States
             if (!Map.IsValidPoint(x, y))
                 return false;
 
-            await ProcessOnMove();
+            await ProcessOnMoveAsync();
             await JumpPosAsync(x, y);
             await Screen.BroadcastRoomMsgAsync(new MsgAction
             {
@@ -3711,7 +3711,7 @@ namespace Comet.Game.States
             if (pStatus != null)
                 return true;
 
-            await AttachStatus(this, StatusSet.START_XP, 0, 20, 0, 0);
+            await AttachStatusAsync(this, StatusSet.START_XP, 0, 20, 0, 0);
             return true;
         }
 
@@ -3732,7 +3732,7 @@ namespace Comet.Game.States
         public async Task ClsXpVal()
         {
             XpPoints = 0;
-            await StatusSet.DelObj(StatusSet.START_XP);
+            await StatusSet.DelObjAsync(StatusSet.START_XP);
         }
 
         #endregion
@@ -3923,18 +3923,18 @@ namespace Comet.Game.States
             {
                 if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
                 {
-                    await DetachStatus(StatusSet.RED_NAME);
-                    await AttachStatus(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
+                    await DetachStatusAsync(StatusSet.RED_NAME);
+                    await AttachStatusAsync(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
                 }
                 else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
                 {
-                    await DetachStatus(StatusSet.BLACK_NAME);
-                    await AttachStatus(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
+                    await DetachStatusAsync(StatusSet.BLACK_NAME);
+                    await AttachStatusAsync(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
                 }
                 else
                 {
-                    await DetachStatus(StatusSet.BLACK_NAME);
-                    await DetachStatus(StatusSet.RED_NAME);
+                    await DetachStatusAsync(StatusSet.BLACK_NAME);
+                    await DetachStatusAsync(StatusSet.RED_NAME);
                 }
             }
         }
@@ -4029,19 +4029,19 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error pk decrease for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error pk decrease for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
             {
                 foreach (var status in StatusSet.Status.Values)
                 {
-                    await status.OnTimer();
+                    await status.OnTimerAsync();
 
                     if (!status.IsValid && status.Identity != StatusSet.GHOST && status.Identity != StatusSet.DEAD)
                     {
-                        await StatusSet.DelObj(status.Identity);
+                        await StatusSet.DelObjAsync(status.Identity);
 
                         if (status.Identity == StatusSet.SUPERMAN || status.Identity == StatusSet.CYCLONE
                             && (QueryStatus(StatusSet.SUPERMAN) == null && QueryRole(StatusSet.CYCLONE) == null))
@@ -4054,8 +4054,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4069,8 +4069,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error in battle processing for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error in battle processing for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4079,8 +4079,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error in battle magic processing for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error in battle magic processing for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4097,8 +4097,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error in action queue for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error in action queue for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
@@ -4141,8 +4141,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error updating energy for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error updating energy for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4154,8 +4154,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error updating xp value for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error updating xp value for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4167,8 +4167,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error heal life for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error heal life for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4178,8 +4178,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error mine for user {Identity}:{Name}");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error mine for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
         }
 
@@ -4208,12 +4208,12 @@ namespace Comet.Game.States
             try
             {
                 if (Booth != null)
-                    await Booth.LeaveMap();
+                    await Booth.LeaveMapAsync();
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Error on booth disconnection");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Error on booth disconnection");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4222,21 +4222,21 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Error on notifying friends disconnection");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Error on notifying friends disconnection");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
             {
                 if (Team != null && Team.IsLeader(Identity))
-                    await Team.Dismiss(this);
+                    await Team.DismissAsync(this);
                 else if (Team != null)
-                    await Team.DismissMember(this);                
+                    await Team.DismissMemberAsync(this);                
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Error on team dismiss");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Error on team dismiss");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
@@ -4246,18 +4246,18 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Error on close trade");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Error on close trade");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             try
             {
-                await LeaveMap();
+                await LeaveMapAsync();
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Error on leave map");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Error on leave map");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             if (!m_IsDeleted)
@@ -4281,8 +4281,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Error on saving login rcd");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Error on saving login rcd");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
         }
 

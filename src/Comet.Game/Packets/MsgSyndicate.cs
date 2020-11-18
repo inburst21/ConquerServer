@@ -163,7 +163,7 @@ namespace Comet.Game.Packets
                     break;
 
                 default:
-                    await Log.WriteLog(LogLevel.Warning, $"Type: {Type}, Subtype: {Mode} not handled");
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Type: {Type}, Subtype: {Mode} not handled");
                     break;
             }
         }

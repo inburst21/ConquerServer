@@ -57,9 +57,9 @@ namespace Comet.Game.States
             return m_dbBusiness.Date < DateTime.Now;
         }
 
-        public async Task SendAsync()
+        public Task SendAsync()
         {
-            _ = Owner.SendAsync(new MsgTradeBuddy
+            return Owner.SendAsync(new MsgTradeBuddy
             {
                 Name = Name,
                 Action = MsgTradeBuddy.TradeBuddyAction.AddPartner,
@@ -69,13 +69,13 @@ namespace Comet.Game.States
             });
         }
 
-        public async Task SendInfoAsync()
+        public Task SendInfoAsync()
         {
             Character target = Target;
             if (target == null)
-                return;
+                return Task.CompletedTask;
 
-            _ = Owner.SendAsync(new MsgTradeBuddyInfo
+            return Owner.SendAsync(new MsgTradeBuddyInfo
             {
                 Identity = Identity,
                 Name = target.MateName,
@@ -88,9 +88,9 @@ namespace Comet.Game.States
             });
         }
 
-        public async Task SendRemoveAsync()
+        public Task SendRemoveAsync()
         {
-            _ = Owner.SendAsync(new MsgTradeBuddy
+            return Owner.SendAsync(new MsgTradeBuddy
             {
                 Action = MsgTradeBuddy.TradeBuddyAction.BreakPartnership,
                 Identity = Identity,

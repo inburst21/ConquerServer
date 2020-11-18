@@ -685,7 +685,7 @@ namespace Comet.Game.States.Items
             DbItemtype itemtype = Kernel.ItemManager.GetItemtype(newType);
             if (itemtype == null)
             {
-                await Log.WriteLog(LogLevel.Error, $"ChangeType() Invalid itemtype id {newType}");
+                await Log.WriteLogAsync(LogLevel.Error, $"ChangeType() Invalid itemtype id {newType}");
                 return false;
             }
 
@@ -1704,8 +1704,8 @@ namespace Comet.Game.States.Items
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Problem when saving item!");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Problem when saving item!");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }
@@ -1721,8 +1721,8 @@ namespace Comet.Game.States.Items
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "Problem when Delete item!");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "Problem when Delete item!");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
         }

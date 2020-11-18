@@ -47,7 +47,7 @@ namespace Comet.Game.World.Managers
             BinaryReader reader = new BinaryReader(stream);
 
             int mapDataCount = reader.ReadInt32();
-            await Log.WriteLog(LogLevel.Debug, $"Loading {mapDataCount} maps...");
+            await Log.WriteLogAsync(LogLevel.Debug, $"Loading {mapDataCount} maps...");
 
             for (int i = 0; i < mapDataCount; i++)
             {
@@ -59,7 +59,7 @@ namespace Comet.Game.World.Managers
                 GameMapData mapData = new GameMapData(idMap);
                 if (mapData.Load(name.Replace("\\", Path.DirectorySeparatorChar.ToString())))
                 {
-                    await Log.WriteLog(LogLevel.Message, $"Map [{idMap},{name}] loaded...");
+                    await Log.WriteLogAsync(LogLevel.Message, $"Map [{idMap},{name}] loaded...");
                 }
                 m_mapData.TryAdd(idMap, mapData);
             }

@@ -187,7 +187,7 @@ namespace Comet.Game.Packets
 #endif
                     break;
                 default:
-                    await Log.WriteLog(LogLevel.Error, $"Invalid MsgDataArray Action: {Action}." +
+                    await Log.WriteLogAsync(LogLevel.Error, $"Invalid MsgDataArray Action: {Action}." +
                                                        $"{user.Identity},{user.Name},{user.Level},{user.MapIdentity}[{user.Map.Name}],{user.MapX},{user.MapY}");
                     return;
             }

@@ -50,8 +50,8 @@ namespace Comet.Game.World.Threading
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"AiProcessing::OnElapseAsync error");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"AiProcessing::OnElapseAsync error");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             return true;

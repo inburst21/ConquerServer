@@ -90,7 +90,7 @@ namespace Comet.Game.States.NPCs
                 ShopGoods = await GoodsRepository.GetAsync(Identity);
             }
 
-            await EnterMap();
+            await EnterMapAsync();
             return true;
         }
 
@@ -114,11 +114,11 @@ namespace Comet.Game.States.NPCs
                 if (!map.IsStandEnable(x, y))
                     return false;
 
-                await LeaveMap();
+                await LeaveMapAsync();
                 m_idMap = idMap;
                 m_posX = x;
                 m_posY = y;
-                await EnterMap();
+                await EnterMapAsync();
                 return true;
             }
             return false;
@@ -128,7 +128,7 @@ namespace Comet.Game.States.NPCs
         
         #region Map
 
-        public override async Task EnterMap()
+        public override async Task EnterMapAsync()
         {
             Map = Kernel.MapManager.GetMap(MapIdentity);
             if (Map != null)
@@ -137,7 +137,7 @@ namespace Comet.Game.States.NPCs
             }
         }
 
-        public override async Task LeaveMap()
+        public override async Task LeaveMapAsync()
         {
             if (Map != null)
             {

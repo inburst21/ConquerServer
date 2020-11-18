@@ -171,7 +171,7 @@ namespace Comet.Game.States.Magics
             switch (m_state)
             {
                 case MagicState.Intone:
-                    await AbortMagic(true);
+                    await AbortMagicAsync(true);
                     break;
                 case MagicState.Delay:
                     return false;
@@ -194,7 +194,7 @@ namespace Comet.Game.States.Magics
                 if (magic.Sort == MagicSort.Collide)
                     await ProcessCollideFail(x, y, (int) idTarget);
 
-                await AbortMagic(true);
+                await AbortMagicAsync(true);
                 return false;
             }
 
@@ -225,11 +225,11 @@ namespace Comet.Game.States.Magics
                 IStatus pStatus = m_pOwner.QueryStatus(StatusSet.START_XP);
                 if (pStatus == null)
                 {
-                    await AbortMagic(true);
+                    await AbortMagicAsync(true);
                     return false;
                 }
 
-                await user.DetachStatus(StatusSet.START_XP);
+                await user.DetachStatusAsync(StatusSet.START_XP);
                 await user.ClsXpVal();
             }
 
@@ -344,15 +344,15 @@ namespace Comet.Game.States.Magics
                         break;
 
                     default:
-                        await Log.WriteLog(LogLevel.Warning, $"MagicProcessing::LaunchAsync {magic.Sort} not handled!!!");
+                        await Log.WriteLogAsync(LogLevel.Warning, $"MagicProcessing::LaunchAsync {magic.Sort} not handled!!!");
                         result = true;
                         break;
                 }
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, $"Error ocurred on MagicProcessing::LaunchAsync");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, $"Error ocurred on MagicProcessing::LaunchAsync");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
             if (m_autoAttack)
@@ -405,7 +405,7 @@ namespace Comet.Game.States.Magics
             if (power > 0)
             {
                 int lifeLost = (int) Math.Min(targetRole.MaxLife, power);
-                await targetRole.BeAttack(byMagic, m_pOwner, power, true);
+                await targetRole.BeAttackAsync(byMagic, m_pOwner, power, true);
                 totalExp = lifeLost;
 
                 if (user != null && targetRole is DynamicNpc dynaNpc && dynaNpc.IsAwardScore())
@@ -423,7 +423,7 @@ namespace Comet.Game.States.Magics
             {
                 int nBonusExp = (int)(targetRole.MaxLife * 20 / 100);
                 await m_pOwner.BattleSystem.OtherMemberAwardExp(targetRole, nBonusExp);
-                await m_pOwner.Kill(targetRole, GetDieMode());
+                await m_pOwner.KillAsync(targetRole, GetDieMode());
             }
             else if (user != null)
                 await user.SendWeaponMagic2(targetRole);
@@ -526,7 +526,7 @@ namespace Comet.Game.States.Magics
                 msg.Append(target.Identity, result.Damage, true);
 
                 int lifeLost = (int)Math.Min(target.Life, result.Damage);
-                await target.BeAttack(byMagic, m_pOwner, lifeLost, true);
+                await target.BeAttackAsync(byMagic, m_pOwner, lifeLost, true);
 
                 if (user != null && target is Monster monster)
                 {
@@ -537,7 +537,7 @@ namespace Comet.Game.States.Magics
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
 
                         if (user.Team != null)
-                            await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
+                            await user.Team.AwardMemberExpAsync(user.Identity, target, nBonusExp);
 
                         nExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
@@ -549,7 +549,7 @@ namespace Comet.Game.States.Magics
                 }
 
                 if (!target.IsAlive)
-                    await m_pOwner.Kill(target, GetDieMode());
+                    await m_pOwner.KillAsync(target, GetDieMode());
                 else if (!bMagic2Dealt && await Kernel.ChanceCalcAsync(5d) && user != null)
                 {
                     await user.SendWeaponMagic2(target);
@@ -589,7 +589,7 @@ namespace Comet.Game.States.Magics
                 var atkResult = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
                 int lifeLost = (int) Math.Min(atkResult.Damage, target.Life);
                 
-                await target.BeAttack(HitByMagic(), m_pOwner, atkResult.Damage, true);
+                await target.BeAttackAsync(HitByMagic(), m_pOwner, atkResult.Damage, true);
 
                 if (user != null && target is Monster monster)
                 {
@@ -599,7 +599,7 @@ namespace Comet.Game.States.Magics
                     {
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
                         if (user.Team != null)
-                            await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
+                            await user.Team.AwardMemberExpAsync(user.Identity, target, nBonusExp);
                         battleExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
                 }
@@ -610,7 +610,7 @@ namespace Comet.Game.States.Magics
                 }
 
                 if (!target.IsAlive)
-                    await m_pOwner.Kill(target, GetDieMode());
+                    await m_pOwner.KillAsync(target, GetDieMode());
 
                 if (msg.Count < _MAX_TARGET_NUM)
                     msg.Append(target.Identity, atkResult.Damage, true);
@@ -646,7 +646,7 @@ namespace Comet.Game.States.Magics
 
             if (power < 0)
             {
-                await Log.WriteLog(LogLevel.Warning, $"Error magic type invalid power {magic.Type} {magic.Power}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Error magic type invalid power {magic.Type} {magic.Power}");
                 return false;
             }
 
@@ -689,7 +689,7 @@ namespace Comet.Game.States.Magics
 
             await CheckCrime(target);
 
-            await target.AttachStatus(m_pOwner, status, power, secs, times, level);
+            await target.AttachStatusAsync(m_pOwner, status, power, secs, times, level);
 
             if (power >= Calculations.ADJUST_PERCENT)
             {
@@ -781,7 +781,7 @@ namespace Comet.Game.States.Magics
             if (power > 0)
             {
                 int lifeLost = (int) Math.Min(target.Life, Math.Max(0, Calculations.AdjustData(target.Life, power)));
-                await target.BeAttack(HitByMagic(), m_pOwner, lifeLost, true);
+                await target.BeAttackAsync(HitByMagic(), m_pOwner, lifeLost, true);
                 await target.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeLost * -1);
             }
 
@@ -867,7 +867,7 @@ namespace Comet.Game.States.Magics
                 var result = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
                 int lifeLost = (int)Math.Min(result.Damage, target.Life);
 
-                await target.BeAttack(HitByMagic(), m_pOwner, result.Damage, true);
+                await target.BeAttackAsync(HitByMagic(), m_pOwner, result.Damage, true);
 
                 if (user != null && target is Monster monster)
                 {
@@ -877,7 +877,7 @@ namespace Comet.Game.States.Magics
                     {
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
                         if (user.Team != null)
-                            await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
+                            await user.Team.AwardMemberExpAsync(user.Identity, target, nBonusExp);
                         battleExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
                 }
@@ -888,7 +888,7 @@ namespace Comet.Game.States.Magics
                 }
 
                 if (!target.IsAlive)
-                    await m_pOwner.Kill(target, GetDieMode());
+                    await m_pOwner.KillAsync(target, GetDieMode());
 
                 msg.Append(target.Identity, result.Damage, true);
                 targets.Add(target);
@@ -953,7 +953,7 @@ namespace Comet.Game.States.Magics
             {
                 int lifeLost = (int) Math.Max(0, Math.Min(target.Life, power));
 
-                await target.BeAttack(HitByMagic(), m_pOwner, power, true);
+                await target.BeAttackAsync(HitByMagic(), m_pOwner, power, true);
 
                 if (user != null && target is Monster monster)
                 {
@@ -964,7 +964,7 @@ namespace Comet.Game.States.Magics
                         int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
 
                         if (user.Team != null)
-                            await user.Team.AwardMemberExp(user.Identity, target, nBonusExp);
+                            await user.Team.AwardMemberExpAsync(user.Identity, target, nBonusExp);
 
                         battleExp += user.AdjustExperience(monster, nBonusExp, false);
                     }
@@ -979,7 +979,7 @@ namespace Comet.Game.States.Magics
             await AwardExp(0, battleExp, exp, magic);
 
             if (!target.IsAlive)
-                await target.BeKill(m_pOwner);
+                await target.BeKillAsync(m_pOwner);
 
             return true;
         }
@@ -1019,7 +1019,7 @@ namespace Comet.Game.States.Magics
             }
             else // unhandled
             {
-                await Log.WriteLog(LogLevel.Warning, $"Add mana unhandled target {magic.Target}");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Add mana unhandled target {magic.Target}");
                 return false;
             }
 
@@ -1074,7 +1074,7 @@ namespace Comet.Game.States.Magics
             await m_pOwner.BroadcastRoomMsgAsync(pMsg, true);
             if (m_pOwner is Character character)
             {
-                await character.ProcessOnMove();
+                await character.ProcessOnMoveAsync();
                 await character.MoveTowardAsync(nDir, (int) RoleMoveMode.Collide);
             }
             return true;
@@ -1173,7 +1173,7 @@ namespace Comet.Game.States.Magics
             }
 
             if (nBattleExp > 0 && m_pOwner is Character user)
-                await user.AwardBattleExp(nBattleExp, true);
+                await user.AwardBattleExpAsync(nBattleExp, true);
 
             if (pMagic == null)
                 return false;
@@ -1293,11 +1293,11 @@ namespace Comet.Game.States.Magics
                             {
                                 var pTarget = m_pOwner.Map.QueryAroundRole(m_pOwner, m_idTarget);
                                 if (pTarget != null && !pTarget.IsAlive && pTarget.IsAttackable(m_pOwner))
-                                    await m_pOwner.Kill(pTarget, (uint)GetDieMode());
+                                    await m_pOwner.KillAsync(pTarget, (uint)GetDieMode());
                             }
                             ResetDelay();
                             m_state = MagicState.None;
-                            await AbortMagic(false);
+                            await AbortMagicAsync(false);
                         }
                         break;
                     }
@@ -1310,7 +1310,7 @@ namespace Comet.Game.States.Magics
                             if (m_tDelay.IsTimeOut())
                             {
                                 m_state = MagicState.None;
-                                if (!await m_pOwner.ProcessMagicAttack(m_pMagic.Type, m_idTarget, (ushort)m_targetPos.X,
+                                if (!await m_pOwner.ProcessMagicAttackAsync(m_pMagic.Type, m_idTarget, (ushort)m_targetPos.X,
                                         (ushort)m_targetPos.Y,
                                         0))
                                     m_state = MagicState.Delay;
@@ -1321,7 +1321,7 @@ namespace Comet.Game.States.Magics
                         if (!m_tDelay.IsActive())
                         {
                             m_state = MagicState.None;
-                            await AbortMagic(true);
+                            await AbortMagicAsync(true);
                             return;
                         }
 
@@ -1331,17 +1331,17 @@ namespace Comet.Game.States.Magics
                                 return;
 
                             m_state = MagicState.None;
-                            await m_pOwner.ProcessMagicAttack(m_pMagic.Type, m_idTarget, (ushort)m_targetPos.X, (ushort)m_targetPos.Y,
+                            await m_pOwner.ProcessMagicAttackAsync(m_pMagic.Type, m_idTarget, (ushort)m_targetPos.X, (ushort)m_targetPos.Y,
                                 0);
 
                             if (m_idTarget != 0 && m_pOwner.Map.QueryAroundRole(m_pOwner, m_idTarget)?.IsPlayer() == true)
-                                await AbortMagic(false);
+                                await AbortMagicAsync(false);
                         }
 
                         if (m_tDelay.IsActive() && m_tDelay.TimeOver())
                         {
                             m_state = MagicState.None;
-                            await AbortMagic(false);
+                            await AbortMagicAsync(false);
                         }
                         break;
                     }
@@ -1368,7 +1368,7 @@ namespace Comet.Game.States.Magics
             m_autoAttack = false;
         }
 
-        public async Task<bool> AbortMagic(bool bSynchro)
+        public async Task<bool> AbortMagicAsync(bool bSynchro)
         {
             if (m_state == MagicState.Launch)
             {

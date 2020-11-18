@@ -68,7 +68,7 @@ namespace Comet.Account.Packets
             if (client.Account == null || !AccountsRepository.CheckPassword(
                     Password, client.Account.Password, client.Account.Salt))
             {
-                await Log.WriteLog("login_fail", LogLevel.Message, $"[{Username}] tried to login with an invalid account or password.");
+                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] tried to login with an invalid account or password.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidPassword));
                 client.Socket.Disconnect(false);
                 return;
@@ -77,7 +77,7 @@ namespace Comet.Account.Packets
             // Connect to the game server
             if (!Kernel.Realms.TryGetValue(Realm, out var server) || !server.Rpc.Online)
             {
-                await Log.WriteLog("login_fail", LogLevel.Message, $"[{Username}] tried to login on a not connected [{Realm}] server.");
+                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] tried to login on a not connected [{Realm}] server.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
                 client.Socket.Disconnect(false);
                 return;
@@ -100,7 +100,7 @@ namespace Comet.Account.Packets
             //    serverIpAddr = "192.168.0.23";
 
             await client.SendAsync(new MsgConnectEx(serverIpAddr, server.GamePort, token));
-            await Log.WriteLog("login", LogLevel.Message, $"[{Username}] has authenticated successfully on [{Realm}].");
+            await Log.WriteLogAsync("login", LogLevel.Message, $"[{Username}] has authenticated successfully on [{Realm}].");
         }
 
         /// <summary>

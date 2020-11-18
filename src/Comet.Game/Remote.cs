@@ -47,7 +47,7 @@ namespace Comet.Game
         /// <param name="agentName">Name of the client connecting</param>
         public void Connected(string agentName)
         {
-            _ = Log.WriteLog(LogLevel.Message, "{0} has connected", agentName);
+            _ = Log.WriteLogAsync(LogLevel.Message, "{0} has connected", agentName);
         }
 
         /// <summary>

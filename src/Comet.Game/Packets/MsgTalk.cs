@@ -416,7 +416,7 @@ namespace Comet.Game.Packets
                     case "/status":
                         if (int.TryParse(param, out int flag))
                         {
-                            await user.AttachStatus(user, flag, 0, 10, 0, 0);
+                            await user.AttachStatusAsync(user, flag, 0, 10, 0, 0);
                         }
                         return true;
 

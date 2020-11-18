@@ -64,7 +64,7 @@ namespace Comet.Game.World.Threading
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
             return true;
         }
@@ -77,7 +77,7 @@ namespace Comet.Game.World.Threading
             }
             catch (Exception e)
             {
-                await Log.WriteLog(LogLevel.Exception, e.ToString());
+                await Log.WriteLogAsync(LogLevel.Exception, e.ToString());
                 return false;
             }
             return true;

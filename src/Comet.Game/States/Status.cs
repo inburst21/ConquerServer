@@ -137,7 +137,7 @@ namespace Comet.Game.States
 
         public bool IsUserCast => CasterId == m_pOwner.Identity || CasterId == 0;
 
-        public Task OnTimer()
+        public Task OnTimerAsync()
         {
             return Task.CompletedTask;
         }
@@ -241,7 +241,7 @@ namespace Comet.Game.States
 
         public bool IsUserCast => CasterId == m_pOwner.Identity || CasterId == 0;
 
-        public async Task OnTimer()
+        public async Task OnTimerAsync()
         {
             try
             {
@@ -269,7 +269,7 @@ namespace Comet.Game.States
                             await m_pOwner.BroadcastRoomMsgAsync(msg2, true);
 
                             if (!m_pOwner.IsAlive)
-                                await m_pOwner.BeKill(null);
+                                await m_pOwner.BeKillAsync(null);
                             break;
                     }
 
@@ -278,8 +278,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLog(LogLevel.Error, "StatusOnce::OnTimer() error!");
-                await Log.WriteLog(LogLevel.Exception, ex.ToString());
+                await Log.WriteLogAsync(LogLevel.Error, "StatusOnce::OnTimer() error!");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
         }
 
@@ -491,7 +491,7 @@ namespace Comet.Game.States
             return Status.TryGetValue(InvertFlag(nKey, b64), out ret) ? ret : null;
         }
 
-        public async Task<bool> AddObj(IStatus pStatus)
+        public async Task<bool> AddObjAsync(IStatus pStatus)
         {
             var pInfo = new StatusInfoStruct();
             pStatus.GetInfo(ref pInfo);
@@ -506,7 +506,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> DelObj(int nFlag)
+        public async Task<bool> DelObjAsync(int nFlag)
         {
             if (nFlag > 192)
                 return false;
@@ -594,6 +594,6 @@ namespace Comet.Game.States
 
         bool IncTime(int nMilliSecs, int nLimit);
         bool ToFlash();
-        Task OnTimer();
+        Task OnTimerAsync();
     }
 }

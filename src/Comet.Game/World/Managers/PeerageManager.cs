@@ -46,7 +46,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task Donate(Character user, ulong amount)
+        public async Task DonateAsync(Character user, ulong amount)
         {
             int oldPosition = GetPosition(user.Identity);
             NobilityRank oldRank = GetRanking(user.Identity);
@@ -247,7 +247,7 @@ namespace Comet.Game.World.Managers
                 if (ranking++ == position)
                     break;
             }
-            return donation;
+            return Math.Max(3000000, donation);
         }
 
         public async Task SaveAsync()

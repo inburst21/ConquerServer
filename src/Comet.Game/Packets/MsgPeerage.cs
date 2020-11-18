@@ -150,12 +150,14 @@ namespace Comet.Game.Packets
                             return;
                     }
 
-                    await Kernel.PeerageManager.Donate(user, Data);
+                    await Kernel.PeerageManager.DonateAsync(user, Data);
                     break;
                 case NobilityAction.List:
                     await Kernel.PeerageManager.SendRankingAsync(user, DataLow1);
                     break;
                 case NobilityAction.QueryRemainingSilver:
+                    Data = Kernel.PeerageManager.GetNextRankSilver((NobilityRank) DataLow1, user.NobilityDonation);
+                    await user.SendAsync(this);
                     break;
             }
 #endif

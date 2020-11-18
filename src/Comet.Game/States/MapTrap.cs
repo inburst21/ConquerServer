@@ -90,7 +90,7 @@ namespace Comet.Game.States
 
             if (m_dbTrap.Type == null)
             {
-                await Log.WriteLog(LogLevel.Error, $"Trap has no type {m_dbTrap.Type} [TrapId: {m_dbTrap.Id}]");
+                await Log.WriteLogAsync(LogLevel.Error, $"Trap has no type {m_dbTrap.Type} [TrapId: {m_dbTrap.Id}]");
                 return false;
             }
 
@@ -104,7 +104,7 @@ namespace Comet.Game.States
             m_posX = m_dbTrap.PosX;
             m_posY = m_dbTrap.PosY;
 
-            await EnterMap();
+            await EnterMapAsync();
             return true;
         }
 
@@ -112,7 +112,7 @@ namespace Comet.Game.States
 
         #region Map
 
-        public override Task EnterMap()
+        public override Task EnterMapAsync()
         {
             Map = Kernel.MapManager.GetMap(MapIdentity);
             if (Map != null)
@@ -122,7 +122,7 @@ namespace Comet.Game.States
             return Task.CompletedTask;
         }
 
-        public override async Task LeaveMap()
+        public override async Task LeaveMapAsync()
         {
             await BroadcastRoomMsgAsync(new MsgMapItem
             {
@@ -168,7 +168,7 @@ namespace Comet.Game.States
 
             Character user = m_owner as Character;
             if (user?.IsEvil() == true)
-                await user.SetCrimeStatus(25);
+                await user.SetCrimeStatusAsync(25);
 
             if ((AttackMode & (int) TargetType.Passive) == 0)
             {
@@ -187,17 +187,17 @@ namespace Comet.Game.States
             }
 
             if (ActiveTimes > 0 && RemainingActiveTimes <= 0)
-                await LeaveMap();
+                await LeaveMapAsync();
         }
 
-        public override async Task Kill(Role target, uint dieWay)
+        public override async Task KillAsync(Role target, uint dieWay)
         {
             if (target == null)
                 return;
 
             if (m_owner != null)
             {
-                await m_owner.Kill(target, dieWay);
+                await m_owner.KillAsync(target, dieWay);
                 return;
             }
 
@@ -211,7 +211,7 @@ namespace Comet.Game.States
                 Data = (int)dieWay
             }, true);
 
-            await target.BeKill(this);
+            await target.BeKillAsync(this);
         }
 
         #endregion
@@ -227,7 +227,7 @@ namespace Comet.Game.States
             {
                 if (m_tLifePeriod.ToNextTime())
                 {
-                    await LeaveMap();
+                    await LeaveMapAsync();
                     m_tLifePeriod.Clear();
                 }
             }
@@ -242,7 +242,7 @@ namespace Comet.Game.States
                     // only on higher versions we have magic attacks on traps, wont implement this now
 
                     if (ActiveTimes > 0 && RemainingActiveTimes <= 0)
-                        await LeaveMap();
+                        await LeaveMapAsync();
                 }
             }
         }

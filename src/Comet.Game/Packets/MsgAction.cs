@@ -148,7 +148,7 @@ namespace Comet.Game.Packets
                 case ActionType.CharacterObservation: // 117
                 case ActionType.FriendObservation: // 310
                     user.BattleSystem.ResetBattle();
-                    await user.MagicData.AbortMagic(true);
+                    await user.MagicData.AbortMagicAsync(true);
                     break;
             }
 
@@ -163,7 +163,7 @@ namespace Comet.Game.Packets
                     if (user.Life == 0)
                         await user.SetAttributesAsync(ClientUpdateType.Hitpoints, 1);
 
-                    await client.Character.EnterMap();
+                    await client.Character.EnterMapAsync();
                     await client.SendAsync(this);
 
                     await GameAction.ExecuteActionAsync(1000000, user, null, null, "");
@@ -274,7 +274,7 @@ namespace Comet.Game.Packets
 
                 case ActionType.SpellAbortXp: // 93
                     if (client.Character.QueryStatus(StatusSet.START_XP) != null)
-                        await client.Character.DetachStatus(StatusSet.START_XP);
+                        await client.Character.DetachStatusAsync(StatusSet.START_XP);
                     break;
 
                 case ActionType.CharacterRevive: // 94
@@ -388,7 +388,7 @@ namespace Comet.Game.Packets
 
                 case ActionType.SpellAbortFlight: // 120
                     if (user.QueryStatus(StatusSet.FLY) != null)
-                        await user.DetachStatus(StatusSet.FLY);
+                        await user.DetachStatusAsync(StatusSet.FLY);
                     break;
 
                 case ActionType.RelationshipsEnemy: // 123
@@ -436,7 +436,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        await user.ProcessOnMove();
+                        await user.ProcessOnMoveAsync();
                         await user.JumpPosAsync(newX, newY);
                         await user.SendAsync(this);
                         await user.Screen.UpdateAsync(this);
@@ -497,7 +497,7 @@ namespace Comet.Game.Packets
                             $"Missing packet {Type}, Action {Action}, Length {Length}"));
                     }
 
-                    await Log.WriteLog(LogLevel.Warning,
+                    await Log.WriteLogAsync(LogLevel.Warning,
                         "Missing packet {0}, Action {1}, Length {2}\n{3}",
                         Type, Action, Length, PacketDump.Hex(Encode()));
                     break;

@@ -116,12 +116,12 @@ namespace Comet.Game.States.NPCs
 
         #region Enter and Leave Map
 
-        public override Task EnterMap()
+        public override Task EnterMapAsync()
         {
-            return base.EnterMap();
+            return base.EnterMapAsync();
         }
 
-        public override async Task LeaveMap()
+        public override async Task LeaveMapAsync()
         {
             if (m_ownerNpc != null)
             {
@@ -130,7 +130,7 @@ namespace Comet.Game.States.NPCs
                 m_ownerNpc = null;
             }
             m_items.Clear();
-            await base.LeaveMap();
+            await base.LeaveMapAsync();
         }
 
         #endregion

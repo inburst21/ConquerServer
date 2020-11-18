@@ -70,7 +70,7 @@ namespace Comet.Game.States
         /// <summary>
         /// Erase the team.
         /// </summary>
-        public async Task<bool> Dismiss(Character request)
+        public async Task<bool> DismissAsync(Character request)
         {
             if (request.Identity != m_leader.Identity)
             {
@@ -91,7 +91,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> DismissMember(Character user)
+        public async Task<bool> DismissMemberAsync(Character user)
         {
             if (!m_dicPlayers.TryRemove(user.Identity, out var target))
                 return false;
@@ -106,7 +106,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> KickMember(Character leader, uint idTarget)
+        public async Task<bool> KickMemberAsync(Character leader, uint idTarget)
         {
             if (!IsLeader(leader.Identity) || !m_dicPlayers.TryRemove(idTarget, out var target))
                 return false;
@@ -191,7 +191,7 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task AwardMemberExp(uint idKiller, Role target, long exp)
+        public async Task AwardMemberExpAsync(uint idKiller, Role target, long exp)
         {
             if (target == null || exp == 0)
                 return;
@@ -224,7 +224,7 @@ namespace Comet.Game.States
                 if (user.IsMate(killer))
                     addExp *= 2;
 
-                await user.AwardBattleExp(addExp, false);
+                await user.AwardBattleExpAsync(addExp, false);
                 await user.SendAsync(string.Format(Language.StrTeamExperience, addExp));
             }
         }

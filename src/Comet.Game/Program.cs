@@ -58,34 +58,34 @@ namespace Comet.Game
             // project name and version may be removed or changed.
             Console.Title = @"Comet, Game Server";
             Console.WriteLine();
-            await Log.WriteLog(LogLevel.Message, "  Comet: Game Server");
-            await Log.WriteLog(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
-            await Log.WriteLog(LogLevel.Message, "  All Rights Reserved");
+            await Log.WriteLogAsync(LogLevel.Message, "  Comet: Game Server");
+            await Log.WriteLogAsync(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
+            await Log.WriteLogAsync(LogLevel.Message, "  All Rights Reserved");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments
             var config = new ServerConfiguration(args);
             if (!config.Valid)
             {
-                await Log.WriteLog(LogLevel.Error, "Invalid server configuration file");
+                await Log.WriteLogAsync(LogLevel.Error, "Invalid server configuration file");
                 return;
             }
 
             Kernel.Configuration = config.GameNetwork;
 
             // Initialize the database
-            await Log.WriteLog(LogLevel.Message, "Initializing server...");
+            await Log.WriteLogAsync(LogLevel.Message, "Initializing server...");
             MsgConnect.StrictAuthentication = config.Authentication.StrictAuthPass;
             ServerDbContext.Configuration = config.Database;
             if (!await ServerDbContext.PingAsync())
             {
-                await Log.WriteLog(LogLevel.Error, "Invalid database configuration");
+                await Log.WriteLogAsync(LogLevel.Error, "Invalid database configuration");
                 return;
             }
 
             if (!await Kernel.StartupAsync())
             {
-                await Log.WriteLog(LogLevel.Error, "Could not load database related stuff");
+                await Log.WriteLogAsync(LogLevel.Error, "Could not load database related stuff");
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace Comet.Game
             // await ConvertItemsAsync();
 
             // Start the RPC server listener
-            await Log.WriteLog(LogLevel.Message, "Launching server listeners...");
+            await Log.WriteLogAsync(LogLevel.Message, "Launching server listeners...");
             var rpcserver = new RpcServerListener(new Remote());
             _ = rpcserver.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress)
                 .ConfigureAwait(false);
@@ -126,12 +126,12 @@ namespace Comet.Game
 #endif
 
             // Output all clear and wait for user input
-            await Log.WriteLog(LogLevel.Message, "Listening for new connections");
+            await Log.WriteLogAsync(LogLevel.Message, "Listening for new connections");
             Console.WriteLine();
 
             bool result = await CommandCenterAsync();
             if (!result)
-                await Log.WriteLog(LogLevel.Error, "Game server has exited without success.");
+                await Log.WriteLogAsync(LogLevel.Error, "Game server has exited without success.");
 
 #if !DEBUG && USE_API
             await Kernel.Api.PostAsync(new ServerInformation
@@ -158,7 +158,7 @@ namespace Comet.Game
 
                 if (text == "exit")
                 {
-                    await Log.WriteLog(LogLevel.Warning, "Server will shutdown...");
+                    await Log.WriteLogAsync(LogLevel.Warning, "Server will shutdown...");
                     return true;
                 }
 
@@ -246,7 +246,7 @@ namespace Comet.Game
             }
 
             writer.Close();
-            await Log.WriteLog(LogLevel.Debug, $"Converted items: {count}");
+            await Log.WriteLogAsync(LogLevel.Debug, $"Converted items: {count}");
         }
     }
 }

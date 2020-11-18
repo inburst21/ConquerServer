@@ -85,7 +85,7 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
-            await Log.WriteLog(LogLevel.Warning, "Unhandled MsgUserAttrib::Process call");
+            await Log.WriteLogAsync(LogLevel.Warning, "Unhandled MsgUserAttrib::Process call");
         }
 
         private readonly struct UserAttribute

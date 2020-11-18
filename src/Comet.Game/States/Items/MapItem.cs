@@ -103,7 +103,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public async Task<bool> Create(GameMap map, Point pos, Item pInfo, uint idOwner)
+        public async Task<bool> CreateAsync(GameMap map, Point pos, Item pInfo, uint idOwner)
         {
             if (map == null || pInfo == null) return false;
 
@@ -222,20 +222,22 @@ namespace Comet.Game.States.Items
 
                 if (Item.GetQuality(Itemtype) == 6)
                 {
-                    message += "Refined";
+                    message += $"Refined";
                 }
                 else if (Item.GetQuality(Itemtype) == 7)
                 {
-                    message += "Unique";
+                    message += $"Unique";
                 }
                 else if (Item.GetQuality(Itemtype) == 8)
                 {
-                    message += "Elite";
+                    message += $"Elite";
                 }
                 else if (Item.GetQuality(Itemtype) == 9)
                 {
-                    message += "Super";
+                    message += $"Super";
                 }
+
+                message += $"{m_itemtype?.Name}";
 
                 if (Item.IsWeapon(Itemtype)
                     && await Kernel.ChanceCalcAsync(30, 500)) // socketed item
@@ -253,31 +255,31 @@ namespace Comet.Game.States.Items
                     }
                 }
 
-                if (await Kernel.ChanceCalcAsync(1, 300))
+                if (await Kernel.ChanceCalcAsync(1, 500))
                 {
                     message += "(Addition: +1)";
                     m_info.Addition = 1;
                 }
 
-                if (await Kernel.ChanceCalcAsync(15, 500))
+                if (await Kernel.ChanceCalcAsync(15, 1500))
                 {
                     message += "(ReduceDamage: -3%)";
                     m_info.ReduceDamage = 3;
                 }
-                else if (await Kernel.ChanceCalcAsync(20, 750))
+                else if (await Kernel.ChanceCalcAsync(20, 2250))
                 {
                     message += "(ReduceDamage: -5%)";
                     m_info.ReduceDamage = 5;
                 }
 
-                if (!string.IsNullOrEmpty(message))
+                if (!string.IsNullOrEmpty(message) && !message.Equals(m_itemtype?.Name))
                 {
-                    await Log.WriteLog("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapX}, {MapY}][{Itemtype}]{message}");
+                    await Log.WriteLogAsync("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapIdentity}:{MapX},{MapY}][{Itemtype}]{message}");
                 }
             }
         }
 
-        public async Task<Item> GetInfo(Character owner)
+        public async Task<Item> GetInfoAsync(Character owner)
         {
             if (m_itemtype == null && m_itemInfo == null)
                 return null;
@@ -332,22 +334,22 @@ namespace Comet.Game.States.Items
             return m_tAlive.IsTimeOut();
         }
 
-        public async Task Disappear()
+        public async Task DisappearAsync()
         {
             if (m_itemInfo != null)
                 await m_itemInfo.DeleteAsync(Item.ChangeOwnerType.DeleteDroppedItem);
 
-            await LeaveMap();
+            await LeaveMapAsync();
         }
 
-        public override async Task EnterMap()
+        public override async Task EnterMapAsync()
         {
             Map = Kernel.MapManager.GetMap(MapIdentity);
             if (Map != null)
                 await Map.AddAsync(this);
         }
 
-        public override async Task LeaveMap()
+        public override async Task LeaveMapAsync()
         {
             IdentityGenerator.MapItem.ReturnIdentity(Identity);
             if (Map != null)

@@ -82,7 +82,7 @@ namespace Comet.Game.States.Events
             Map = Kernel.MapManager.GetMap(MAP_ID);
             if (Map == null)
             {
-                await Log.WriteLog(LogLevel.Error, $"Could not start GuildContest, invalid mapid {MAP_ID}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Could not start GuildContest, invalid mapid {MAP_ID}");
                 return false;
             }
             return true;
