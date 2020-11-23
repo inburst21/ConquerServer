@@ -206,6 +206,11 @@ namespace Comet.Game.States.Items
             return m_moneyAmount > 0;
         }
 
+        public bool IsConquerPointsPack()
+        {
+            return Itemtype == 729910 || Itemtype == 729911 || Itemtype == 729912;
+        }
+
         #endregion
 
         #region Generation

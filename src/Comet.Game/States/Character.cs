@@ -1421,6 +1421,23 @@ namespace Comet.Game.States
                     await SendAsync(string.Format(Language.StrPickupItem, item.Name));
 
                     await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
+
+                    if (Client.VipLevel > 0 && mapItem.IsConquerPointsPack())
+                    {
+                        await UserPackage.UseItemAsync(item.Identity, Item.ItemPosition.Inventory);
+                    }
+
+                    if (Client.VipLevel > 1 && UserPackage.MultiCheckItem(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true))
+                    {
+                        await UserPackage.MultiSpendItemAsync(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true);
+                        await UserPackage.AwardItemAsync(Item.TYPE_METEOR_SCROLL);
+                    }
+
+                    if (Client.VipLevel > 2 && UserPackage.MultiCheckItem(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
+                    {
+                        await UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true);
+                        await UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
+                    }
                 }
             }
             
@@ -2103,7 +2120,7 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
-            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
+            return base.IsAttackable(attacker) && (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> AttackAsync(Role target)

@@ -242,7 +242,7 @@ namespace Comet.Game.States
             if (!IsAlive)
                 return false;
 
-            return true;
+            return base.IsAttackable(attacker);
         }
 
         public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
@@ -338,29 +338,24 @@ namespace Comet.Game.States
             {
                 uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
                 await DropItemAsync(cpsBagType, idDropOwner);
-                _ = Log.GmLog("cps_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
-            }
-
-            if (await Kernel.ChanceCalcAsync(625, 2000000))
+                await Log.GmLog("cps_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
+            } 
+            else if (await Kernel.ChanceCalcAsync(625, 2000000))
             {
                 await DropItemAsync(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name), MsgTalk.TalkChannel.TopLeft);
             }
-
-            if (await Kernel.ChanceCalcAsync(100, 15000))
+            else if (await Kernel.ChanceCalcAsync(100, 15000))
             {
                 await DropItemAsync(Item.TYPE_METEOR, idDropOwner);
             }
-
-            if (await Kernel.ChanceCalcAsync(.1d))
+            else if (await Kernel.ChanceCalcAsync(.1d))
             {
-                uint[] normalGem =
-                    {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
+                uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
                 uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
                 await DropItemAsync(dGem, idDropOwner); // normal gems
             }
-
-            if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
+            else if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
             {
                 await DropItemAsync(1080001, idDropOwner); // emerald
             }

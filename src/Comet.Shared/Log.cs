@@ -77,9 +77,9 @@ namespace Comet.Shared
         {
             RefreshFolders();
 
-            DateTime now = DateTime.Now;
+            var now = DateTime.Now;
             message = string.Format(message, values);
-            message = $"{DateTime.Now:HH:mm:ss.fff} [{level.ToString()}] - {message}";
+            message = $"{DateTime.Now:HH:mm:ss.fff} [{level}] - {message}";
 
             await WriteToFile(file, LogFolder.SystemLog, message);
 
@@ -120,7 +120,7 @@ namespace Comet.Shared
 
         private static async Task WriteToFile(string file, LogFolder eFolder, string value)
         {
-            DateTime now = DateTime.Now;
+            var now = DateTime.Now;
             if (!Files.TryGetValue(file, out var fileHandle))
                 Files.Add(file, fileHandle = CreateHandle(file, eFolder));
 
@@ -133,9 +133,9 @@ namespace Comet.Shared
 
             try
             {
-                using FileStream fWriter = new FileStream(fileHandle.Path, FileMode.Append, FileAccess.Write,
+                await using var fWriter = new FileStream(fileHandle.Path, FileMode.Append, FileAccess.Write,
                     FileShare.Write, 4096);
-                using StreamWriter writer = new StreamWriter(fWriter);
+                await using var writer = new StreamWriter(fWriter);
                 await writer.WriteLineAsync(value);
             }
             catch (Exception ex)
@@ -149,8 +149,8 @@ namespace Comet.Shared
             if (Files.ContainsKey(file))
                 return Files[file];
 
-            DateTime now = DateTime.Now;
-            LogFile logFile = new LogFile
+            var now = DateTime.Now;
+            var logFile = new LogFile
             {
                 Date = now,
                 Filename = $"{now:YYYYMMdd)} - {file}.log",
@@ -163,18 +163,16 @@ namespace Comet.Shared
 
         private static string GetDirectory(LogFolder folder)
         {
-            DateTime now = DateTime.Now;
-            return string.Join(Path.DirectorySeparatorChar.ToString(), ".", $"{folder}", $"{now.Year:0000}", $"{now.Month:00}", $"{now.Day:00}");
+            var now = DateTime.Now;
+            return string.Join(Path.DirectorySeparatorChar.ToString(), ".", $"{folder}", $"{now.Year:0000}",
+                $"{now.Month:00}", $"{now.Day:00}");
         }
 
         private static void RefreshFolders()
         {
-            DateTime now = DateTime.Now;
             foreach (var eVal in Enum.GetValues(typeof(LogFolder)).Cast<LogFolder>())
-            {
                 if (!Directory.Exists(GetDirectory(eVal)))
                     Directory.CreateDirectory(GetDirectory(eVal));
-            }
         }
     }
 }

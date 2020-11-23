@@ -88,7 +88,7 @@ namespace Comet.Game.States
                 return true;
             }
 
-            if (await IsTargetDodged(m_owner, target))
+            if (await IsTargetDodgedAsync(m_owner, target))
             {
                 await m_owner.SendDamageMsgAsync(m_idTarget, 0);
                 return false;
@@ -294,7 +294,7 @@ namespace Comet.Game.States
 
             if (targetUser != null && attacker.BattlePower < target.BattlePower)
             {
-                double delta = Math.Min(25, target.BattlePower - attacker.BattlePower) * 2 / 100f;
+                double delta = Math.Min(50, target.BattlePower - attacker.BattlePower) / 100f;
                 damage = (int)(damage * (1 - delta));
             }
 
@@ -304,7 +304,7 @@ namespace Comet.Game.States
             return (damage, effect);
         }
 
-        public async Task<bool> IsTargetDodged(Role attacker, Role target)
+        public async Task<bool> IsTargetDodgedAsync(Role attacker, Role target)
         {
             if (attacker == null || target == null || attacker.Identity == target.Identity)
                 return false;
@@ -357,6 +357,9 @@ namespace Comet.Game.States
             if (m_owner.IsWing && !target.IsWing && !m_owner.IsBowman)
                 return false;
 
+            if (target.IsWing && target.IsBowman && !m_owner.IsWing)
+                return false;
+
             if (m_owner.GetDistance(target) > m_owner.GetAttackRange(target.SizeAddition))
                 return false;
 
@@ -398,7 +401,7 @@ namespace Comet.Game.States
                     if (nDeltaLev < 3)
                     {
                     }
-                    else if (3 <= nDeltaLev && nDeltaLev < 6)
+                    else if (nDeltaLev < 6)
                         nDrop = nDrop / 5;
                     else
                         nDrop = nDrop / 10;
@@ -408,7 +411,7 @@ namespace Comet.Game.States
                     if (nDeltaLev < 5)
                     {
                     }
-                    else if (5 <= nDeltaLev && nDeltaLev < 10)
+                    else if (nDeltaLev < 10)
                         nDrop = nDrop / 5;
                     else
                         nDrop = nDrop / 10;
@@ -418,7 +421,7 @@ namespace Comet.Game.States
                     if (nDeltaLev < 4)
                     {
                     }
-                    else if (4 <= nDeltaLev && nDeltaLev < 8)
+                    else if (nDeltaLev < 8)
                         nDrop = nDrop / 5;
                     else
                         nDrop = nDrop / 10;
@@ -428,37 +431,17 @@ namespace Comet.Game.States
                     if (nDeltaLev < 3)
                     {
                     }
-                    else if (3 <= nDeltaLev && nDeltaLev < 6)
+                    else if (nDeltaLev < 6)
                         nDrop = nDrop / 5;
                     else
                         nDrop = nDrop / 10;
                 }
-                else if (112 < nAtkLev && nAtkLev <= 120)
+                else if (112 < nAtkLev)
                 {
                     if (nDeltaLev < 2)
                     {
                     }
-                    else if (2 <= nDeltaLev && nDeltaLev < 4)
-                        nDrop = nDrop / 5;
-                    else
-                        nDrop = nDrop / 10;
-                }
-                else if (120 < nAtkLev && nAtkLev <= 130)
-                {
-                    if (nDeltaLev < 2)
-                    {
-                    }
-                    else if (2 <= nDeltaLev && nDeltaLev < 4)
-                        nDrop = nDrop / 5;
-                    else
-                        nDrop = nDrop / 10;
-                }
-                else if (130 < nAtkLev && nAtkLev <= 140)
-                {
-                    if (nDeltaLev < 2)
-                    {
-                    }
-                    else if (2 <= nDeltaLev && nDeltaLev < 4)
+                    else if (nDeltaLev < 4)
                         nDrop = nDrop / 5;
                     else
                         nDrop = nDrop / 10;
@@ -524,7 +507,7 @@ namespace Comet.Game.States
                     nAtk = (int)(nAtk * 3.5f);
                 else if (nDeltaLev < -20)
                     nAtk *= 5;
-                //nDamage = nAtk - nDef;
+                nDamage = nAtk - nDef;
             }
 
             return Calculations.CutTrail(0, nDamage);

@@ -403,6 +403,8 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual bool IsAttackable(Role attacker)
         {
+            if (IsWing && !attacker.IsWing && !attacker.IsBowman)
+                return false;
             return true;
         }
 

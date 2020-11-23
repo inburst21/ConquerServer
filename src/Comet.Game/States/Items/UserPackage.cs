@@ -475,6 +475,7 @@ namespace Comet.Game.States.Items
             m_dicInventory.TryAdd(item.Identity, item);
             await item.SaveAsync();
             await m_user.SendAsync(new MsgItemInfo(item));
+
             return true;
         }
 
@@ -763,12 +764,12 @@ namespace Comet.Game.States.Items
             return nAmount;
         }
 
-        public bool MultiCheckItem(uint idFirst, uint idLast, int nNum, bool dontAllowBound = false)
+        public bool MultiCheckItem(uint idFirst, uint idLast, int nNum, bool disallowBound = false)
         {
             int nAmount = 0;
             foreach (var item in m_dicInventory.Values.Where(x => x.Type >= idFirst && x.Type <= idLast))
             {
-                if (dontAllowBound && item.IsBound)
+                if (disallowBound && item.IsBound)
                     continue;
 
                 nAmount += 1;
