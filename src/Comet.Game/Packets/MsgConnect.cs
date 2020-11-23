@@ -89,13 +89,22 @@ namespace Comet.Game.Packets
                 client.Socket.Disconnect(false);
                 return;
             }
-
+            
             // Generate new keys and check for an existing character
             //client.Cipher.GenerateKeys(new object[] {Token});
             var character = await CharactersRepository.FindAsync(auth.AccountID);
             client.AccountIdentity = auth.AccountID;
             client.VipLevel = auth.VipLevel;
             client.AuthorityLevel = auth.AuthorityID;
+
+            // temp code for pre-release
+            if (client.AuthorityLevel < 2)
+            {
+                await client.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.NonCooperatorAccount));
+                client.Socket.Disconnect(false);
+                return;
+            }
+
             if (character == null)
             {
                 // Create a new character

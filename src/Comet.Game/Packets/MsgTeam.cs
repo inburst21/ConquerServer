@@ -85,7 +85,7 @@ namespace Comet.Game.Packets
 #if !DEBUG
             if (user.IsGm() && target != null && !target.IsPm())
             {
-                await Log.WriteLog(LogLevel.Warning, $"GM Character trying to team with no GM");
+                await Log.WriteLogAsync(LogLevel.Warning, $"GM Character trying to team with no GM");
                 return;
             }
 #endif

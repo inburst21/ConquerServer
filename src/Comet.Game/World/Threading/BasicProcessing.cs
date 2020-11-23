@@ -86,7 +86,7 @@ namespace Comet.Game.World.Threading
             }
             catch
             {
-                await Log.WriteLog(LogLevel.Debug, "Failed to Write to the API.");
+                await Log.WriteLogAsync(LogLevel.Debug, "Failed to Write to the API.");
             }
 #endif
 
