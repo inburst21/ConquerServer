@@ -98,12 +98,14 @@ namespace Comet.Game.Packets
             client.AuthorityLevel = auth.AuthorityID;
 
             // temp code for pre-release
+#if DEBUG
             if (client.AuthorityLevel < 2)
             {
                 await client.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.NonCooperatorAccount));
                 client.Socket.Disconnect(false);
                 return;
             }
+#endif
 
             if (character == null)
             {
