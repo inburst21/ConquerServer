@@ -21,7 +21,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -68,7 +67,8 @@ namespace Comet.Game.States
                     await Log.WriteLogAsync(LogLevel.Deadloop, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
                     return false;
                 }
-                else
+
+                if (idNext != idOld)
                 {
                     deadLookCount = 0;
                 }
@@ -1553,6 +1553,9 @@ namespace Comet.Game.States
                     case 11: // color
                         if (Enum.IsDefined(typeof(Item.ItemColor), (byte)value))
                             newItem.Color = (byte)value;
+                        break;
+                    case 12: // monopoly
+                        newItem.Monopoly = (byte) Math.Min(byte.MaxValue, Math.Max(0, value));
                         break;
                 }
             }
@@ -4037,7 +4040,7 @@ namespace Comet.Game.States
             bool parsed = ulong.TryParse(input, out var password);
             if (string.IsNullOrEmpty(input) || (parsed && password == 0))
             {
-                //user.SecondaryPassword = 0;
+                user.SecondaryPassword = 0;
                 await user.SaveAsync();
                 return true;
             }
@@ -4401,24 +4404,24 @@ namespace Comet.Game.States
             uint idType = uint.Parse(pStc[1]);
 
             DbStatistic dbStc = user.Statistic.GetStc(idEvent, idType);
-            if (dbStc == null)
-                return value == 0;
 
+            long data = dbStc?.Data ?? 0L;
             switch (opt)
             {
                 case ">=":
-                    return dbStc.Data >= value;
+                    return data >= value;
                 case "<=":
-                    return dbStc.Data <= value;
+                    return data <= value;
                 case ">":
-                    return dbStc.Data > value;
+                    return data > value;
                 case "<":
-                    return dbStc.Data < value;
+                    return data < value;
                 case "!=":
                 case "<>":
-                    return dbStc.Data != value;
+                    return data != value;
+                case "=":
                 case "==":
-                    return dbStc.Data == value;
+                    return data == value;
             }
 
             return false;
@@ -4456,6 +4459,7 @@ namespace Comet.Game.States
                     long tempValue = user.Statistic.GetValue(idEvent, idType) + value;
                     return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)Math.Max(0, tempValue), bUpdate);
                 case "=":
+                case "set":
                     if (value < 0) return false;
                     return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)Math.Max(0, value), bUpdate);
             }

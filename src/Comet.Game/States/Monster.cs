@@ -340,12 +340,12 @@ namespace Comet.Game.States
                 await DropItemAsync(cpsBagType, idDropOwner);
                 await Log.GmLog("cps_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync(625, 2000000))
+            else if (await Kernel.ChanceCalcAsync(725, 2000000))
             {
                 await DropItemAsync(Item.TYPE_DRAGONBALL, idDropOwner);
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker.Name, attacker.Map.Name), MsgTalk.TalkChannel.TopLeft);
+                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync(100, 15000))
+            else if (await Kernel.ChanceCalcAsync(125, 15000))
             {
                 await DropItemAsync(Item.TYPE_METEOR, idDropOwner);
             }
