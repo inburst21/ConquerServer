@@ -1361,21 +1361,21 @@ namespace Comet.Game.States.Items
             int nGem1 = (int)SocketOne % 10;
             int nGem2 = (int)SocketTwo % 10;
 
-            bool bIsnonsuch = false;
+            bool isNonSuchItem = false;
 
             if (IsWeapon())
             {
                 if (SocketOne != SocketGem.EmptySocket && nGem1 >= 2
                     || SocketTwo != SocketGem.EmptySocket && nGem2 >= 2)
-                    bIsnonsuch = true;
+                    isNonSuchItem = true;
             }
             else if (IsShield())
             {
                 if (SocketOne != SocketGem.NoSocket || SocketTwo != SocketGem.NoSocket)
-                    bIsnonsuch = true;
+                    isNonSuchItem = true;
             }
 
-            return bIsnonsuch;
+            return isNonSuchItem;
         }
 
         public bool IsMonopoly()
@@ -1385,17 +1385,17 @@ namespace Comet.Game.States.Items
 
         public bool IsNeverDropWhenDead()
         {
-            return (m_dbItemtype.Monopoly & ITEM_NEVER_DROP_WHEN_DEAD_MASK) != 0 || IsMonopoly();
+            return (m_dbItemtype.Monopoly & ITEM_NEVER_DROP_WHEN_DEAD_MASK) != 0 || IsMonopoly() || Plus > 5 || IsLocked();
         }
 
         public bool IsDisappearWhenDropped()
         {
-            return (m_dbItemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;
+            return IsMonopoly();
         }
 
         public bool CanBeDropped()
         {
-            return (m_dbItemtype.Monopoly & ITEM_DROP_HINT_MASK) == 0 && !IsLocked();
+            return !IsMonopoly() && !IsLocked() && BattlePower < 8;
         }
 
         public bool CanBeStored()

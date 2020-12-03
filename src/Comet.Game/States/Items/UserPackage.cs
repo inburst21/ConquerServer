@@ -993,7 +993,9 @@ namespace Comet.Game.States.Items
                             Blessing = (byte) item.Blessing,
                             Enchantment = item.Enchantment,
                             Magic1 = item.Effect,
-                            Magic3 = item.Plus
+                            Magic3 = item.Plus,
+                            Color = item.Color,
+                            Locked = item.IsLocked()
                         }
                     }
                 });
