@@ -4027,7 +4027,7 @@ namespace Comet.Game.States
         {
             if (m_timeSync.ToNextTime())
             {
-                _ = SendAsync(new MsgData(DateTime.Now));
+                await SendAsync(new MsgData(DateTime.Now));
             }
 
             try
@@ -4124,7 +4124,7 @@ namespace Comet.Game.States
                 m_ghost.Clear();
             }
 
-            if (Team != null && !Team.IsLeader(Identity) && m_teamLeaderPos.ToNextTime())
+            if (Team != null && !Team.IsLeader(Identity) && Team.Leader.MapIdentity == MapIdentity && m_teamLeaderPos.ToNextTime())
             {
                 await SendAsync(new MsgAction
                 {

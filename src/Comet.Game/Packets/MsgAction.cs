@@ -325,7 +325,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.MapTeamLeaderStar: // 101
-                    if (user.Team == null)
+                    if (user.Team == null || user.Team.Leader.MapIdentity != user.MapIdentity)
                         return;
 
                     targetUser = user.Team.Leader;
@@ -340,7 +340,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.MapTeamMemberStar: // 106
-                    if (user.Team == null || user.Team.IsMember(Command) || targetUser == null)
+                    if (user.Team == null || user.Team.IsMember(Command) || targetUser == null || targetUser.MapIdentity != user.MapIdentity)
                         return;
 
                     ArgumentX = targetUser.MapX;

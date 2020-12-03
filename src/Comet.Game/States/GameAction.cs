@@ -3522,6 +3522,9 @@ namespace Comet.Game.States
                     return await user.MagicData.Create(ushort.Parse(splitParam[1]), 0);
 
                 case "uplev":
+                case "up_lev":
+                case "uplevel":
+                case "up_level":
                     return await user.MagicData.UpLevelByTask(ushort.Parse(splitParam[1]));
 
                 case "addexp":

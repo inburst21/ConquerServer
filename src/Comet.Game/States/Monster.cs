@@ -295,7 +295,7 @@ namespace Comet.Game.States
             if (m_dbMonster.Action > 0)
                 await GameAction.ExecuteActionAsync(m_dbMonster.Action, user, this, null, "");
 
-            if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc())
+            if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc() || attacker == null)
                 return;
 
             uint idDropOwner = user?.Identity ?? 0;
@@ -345,7 +345,7 @@ namespace Comet.Game.States
                 await DropItemAsync(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync(125, 15000))
+            else if (await Kernel.ChanceCalcAsync(100, 15000))
             {
                 await DropItemAsync(Item.TYPE_METEOR, idDropOwner);
             }
