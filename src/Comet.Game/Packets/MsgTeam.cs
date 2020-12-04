@@ -93,6 +93,9 @@ namespace Comet.Game.Packets
             if (user.Map.IsTeamDisable())
                 return;
 
+            if (user.Team != null && !user.Team.IsLeader(user.Identity))
+                await user.DetachStatusAsync(StatusSet.TEAM_LEADER);
+
             switch (Action)
             {
                 case TeamAction.Create:
