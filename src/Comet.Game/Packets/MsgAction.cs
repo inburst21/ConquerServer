@@ -340,7 +340,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.MapTeamMemberStar: // 106
-                    if (user.Team == null || user.Team.IsMember(Command) || targetUser == null || targetUser.MapIdentity != user.MapIdentity)
+                    if (user.Team == null || targetUser == null || !user.Team.IsMember(targetUser.Identity) || targetUser.MapIdentity != user.MapIdentity)
                         return;
 
                     Command = targetUser.RecordMapIdentity;

@@ -102,7 +102,6 @@ namespace Comet.Game.States
                 Action = MsgTeam.TeamAction.LeaveTeam
             });
             user.Team = null;
-
             return true;
         }
 

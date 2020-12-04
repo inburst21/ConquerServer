@@ -317,6 +317,7 @@ namespace Comet.Game.Packets
                     }
 
                     await user.Team.DismissMemberAsync(user);
+                    await user.SendAsync(this);
                     break;
 
                 case TeamAction.Kick:
