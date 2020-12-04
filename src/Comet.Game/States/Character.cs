@@ -2078,7 +2078,7 @@ namespace Comet.Game.States
                     case PkModeType.Peace:
                         return true;
                     case PkModeType.FreePk:
-                        if (Level >= 70 && user.Level < 70)
+                        if (Level >= 26 && user.Level < 26)
                             return true;
                         return false;
                     case PkModeType.Team:
@@ -2120,7 +2120,7 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
-            return base.IsAttackable(attacker) && (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && !Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
+            return base.IsAttackable(attacker) && (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> AttackAsync(Role target)
