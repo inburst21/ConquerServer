@@ -429,6 +429,17 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual Task KillAsync(Role target, uint dieWay)
         {
+            if (this is Monster guard && guard.IsGuard())
+                return BroadcastRoomMsgAsync(new MsgInteract
+                {
+                    Action = MsgInteractType.Kill,
+                    SenderIdentity = Identity,
+                    TargetIdentity = target.Identity,
+                    PosX = target.MapX,
+                    PosY = target.MapY,
+                    Data = (int) dieWay
+                }, true);
+
             return Task.CompletedTask;
         }
 
@@ -568,10 +579,7 @@ namespace Comet.Game.States.BaseEntities
         {
             if (Map == null)
                 return false;
-
-            if (nStatus == StatusSet.BLUE_NAME && (Map.IsPkField() || Map.IsSynMap() || Map.IsDeadIsland()))
-                return false;
-
+            
             IStatus pStatus = QueryStatus(nStatus);
             if (pStatus != null)
             {

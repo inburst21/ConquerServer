@@ -995,6 +995,8 @@ namespace Comet.Game.States
                         || (IsEvil() && !(IsPkKiller() || IsEvilKiller())))
                     {
                         // todo IsBeAttackable()
+                        if (!targetUser.IsAttackable(this))
+                            continue;
 
                         int nDist = GetDistance(targetUser.MapX, targetUser.MapY);
                         if (nDist <= distance)
