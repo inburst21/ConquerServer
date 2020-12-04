@@ -343,6 +343,7 @@ namespace Comet.Game.Packets
                     if (user.Team == null || user.Team.IsMember(Command) || targetUser == null || targetUser.MapIdentity != user.MapIdentity)
                         return;
 
+                    Command = targetUser.RecordMapIdentity;
                     ArgumentX = targetUser.MapX;
                     ArgumentY = targetUser.MapY;
                     await user.SendAsync(this);
