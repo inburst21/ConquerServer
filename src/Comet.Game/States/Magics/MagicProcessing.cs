@@ -182,7 +182,7 @@ namespace Comet.Game.States.Magics
             }
 
             if (!Magics.TryGetValue(usMagicType, out Magic magic)
-                && (ucAutoActive == 0 || (magic.AutoActive & ucAutoActive) != 0))
+                && (ucAutoActive == 0 || (magic?.AutoActive ?? 0 & ucAutoActive) != 0))
             {
                 await Log.GmLog("cheat", $"invalid magic type: {usMagicType}, user[{m_pOwner.Name}][{m_pOwner.Identity}]");
                 return false;
@@ -998,7 +998,7 @@ namespace Comet.Game.States.Magics
                 MagicLevel = magic.Level
             };
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
-            await user.Transform((uint) magic.Power, (int) magic.StepSeconds, true);
+            await user.TransformAsync((uint) magic.Power, (int) magic.StepSeconds, true);
             await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }

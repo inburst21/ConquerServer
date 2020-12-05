@@ -384,7 +384,7 @@ namespace Comet.Game.Packets
 
                 case ActionType.SpellAbortTransform: // 118
                     if (user.Transformation != null)
-                        await user.ClearTransformation();
+                        await user.ClearTransformationAsync();
                     break;
 
                 case ActionType.SpellAbortFlight: // 120

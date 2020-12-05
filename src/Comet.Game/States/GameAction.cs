@@ -3475,7 +3475,7 @@ namespace Comet.Game.States
 
             uint transformation = uint.Parse(splitParam[2]);
             int time = int.Parse(splitParam[3]);
-            return await user.Transform(transformation, time, true);
+            return await user.TransformAsync(transformation, time, true);
         }
 
         private static async Task<bool> ExecuteActionUserIspure(DbAction action, string param, Character user, Role role, Item item, string input)

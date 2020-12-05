@@ -199,13 +199,13 @@ namespace Comet.Game.States
 
         public Transformation Transformation { get; protected set; }
 
-        public async Task<bool> Transform(uint dwLook, int nKeepSecs, bool bSynchro)
+        public async Task<bool> TransformAsync(uint dwLook, int nKeepSecs, bool bSynchro)
         {
             bool bBack = false;
 
             if (Transformation != null)
             {
-                await ClearTransformation();
+                await ClearTransformationAsync();
                 bBack = true;
             }
 
@@ -238,7 +238,7 @@ namespace Comet.Game.States
             return false;
         }
 
-        public async Task ClearTransformation()
+        public async Task ClearTransformationAsync()
         {
             TransformationMesh = 0;
             Transformation = null;
@@ -2403,7 +2403,7 @@ namespace Comet.Game.States
                 }
 
                 if (TransformationMesh == 98 || TransformationMesh == 99)
-                    await ClearTransformation();
+                    await ClearTransformationAsync();
                 return;
             }
 
@@ -2412,7 +2412,7 @@ namespace Comet.Game.States
             await DetachStatusAsync(StatusSet.GHOST);
             await DetachStatusAsync(StatusSet.DEAD);
             
-            await ClearTransformation();
+            await ClearTransformationAsync();
 
             await SetAttributesAsync(ClientUpdateType.Stamina, DEFAULT_USER_ENERGY);
             await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
@@ -4137,6 +4137,9 @@ namespace Comet.Game.States
 
             if (!IsAlive)
                 return;
+
+            if (Transformation != null && m_transformation.IsTimeOut())
+                await ClearTransformationAsync();
             
             try
             {
