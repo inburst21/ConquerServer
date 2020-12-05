@@ -4308,7 +4308,7 @@ namespace Comet.Game.States
             if (m_socket != null)
             {
                 if (await m_socket.SendAsync(msg) < 0)
-                    await Kernel.RoleManager.LogoutUserAsync(Identity);
+                    await Kernel.RoleManager.KickOutAsync(Identity);
             }
         }
 

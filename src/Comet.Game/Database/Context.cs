@@ -130,7 +130,7 @@ namespace Comet.Game.Database
             try
             {
                 await using ServerDbContext ctx = new ServerDbContext();
-                return ctx.Database.CanConnect();
+                return await ctx.Database.CanConnectAsync();
             }
             catch (Exception ex)
             {
