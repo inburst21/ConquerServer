@@ -559,7 +559,7 @@ namespace Comet.Game.States.Magics
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
             await CheckCrimeAsync(setTarget.ToDictionary(x => x.Identity));
-            await AwardExp(battleExp, nExp, false, magic);
+            await AwardExpAsync(battleExp, nExp, false, magic);
             return true;
         }
 
@@ -619,7 +619,7 @@ namespace Comet.Game.States.Magics
             await m_pOwner.Map.BroadcastRoomMsgAsync(result.Center.X, result.Center.Y, msg);
 
             await CheckCrimeAsync(result.Roles.ToDictionary(x => x.Identity, x => x));
-            await AwardExp(0, battleExp, exp, magic);
+            await AwardExpAsync(0, battleExp, exp, magic);
             return true;
         }
 
@@ -730,7 +730,7 @@ namespace Comet.Game.States.Magics
             }
 
             if (m_pOwner is Character player)
-                await AwardExp(0, 0, AWARDEXP_BY_TIMES, magic);
+                await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }
 
@@ -816,7 +816,7 @@ namespace Comet.Game.States.Magics
             }
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
-            await AwardExp(0, 0, AWARDEXP_BY_TIMES, magic);
+            await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }
 
@@ -898,7 +898,7 @@ namespace Comet.Game.States.Magics
                 await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
             await CheckCrimeAsync(targets.ToDictionary(x => x.Identity, x => x));
-            await AwardExp(0, battleExp, exp, magic);
+            await AwardExpAsync(0, battleExp, exp, magic);
             return true;
         }
 
@@ -976,7 +976,7 @@ namespace Comet.Game.States.Magics
                 }
             }
             
-            await AwardExp(0, battleExp, exp, magic);
+            await AwardExpAsync(0, battleExp, exp, magic);
 
             if (!target.IsAlive)
                 await target.BeKillAsync(m_pOwner);
@@ -999,7 +999,7 @@ namespace Comet.Game.States.Magics
             };
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
             await user.Transform((uint) magic.Power, (int) magic.StepSeconds, true);
-            await AwardExp(0, 0, AWARDEXP_BY_TIMES, magic);
+            await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }
 
@@ -1042,7 +1042,7 @@ namespace Comet.Game.States.Magics
 
             await target.AddAttributesAsync(ClientUpdateType.Mana, addMana);
 
-            await AwardExp(0, 0, Math.Max(addMana, AWARDEXP_BY_TIMES), magic);
+            await AwardExpAsync(0, 0, Math.Max(addMana, AWARDEXP_BY_TIMES), magic);
             return true;
         }
 
@@ -1143,19 +1143,19 @@ namespace Comet.Game.States.Magics
                         await pOwner.SendAsync(string.Format(Language.StrKillingExperience, nBonusExp));
                 }
 
-                await AwardExp(0, (int)battleExp, exp);
+                await AwardExpAsync(0, (int)battleExp, exp);
             }
             return true;
         }
 
-        public async Task<bool> AwardExp(int nType, long nBattleExp, long nExp, Magic pMagic = null)
+        public async Task<bool> AwardExpAsync(int nType, long nBattleExp, long nExp, Magic pMagic = null)
         {
             if (pMagic == null)
-                return await AwardExp(nBattleExp, nExp, true, m_pMagic);
-            return await AwardExp(nBattleExp, nExp, true, pMagic);
+                return await AwardExpAsync(nBattleExp, nExp, true, m_pMagic);
+            return await AwardExpAsync(nBattleExp, nExp, true, pMagic);
         }
 
-        public async Task<bool> AwardExp(long nBattleExp, long nExp, bool bIgnoreFlag, Magic pMagic = null)
+        public async Task<bool> AwardExpAsync(long nBattleExp, long nExp, bool bIgnoreFlag, Magic pMagic = null)
         {
             if (nBattleExp <= 0 && nExp == 0) return false;
 

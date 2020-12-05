@@ -3528,7 +3528,7 @@ namespace Comet.Game.States
                     return await user.MagicData.UpLevelByTaskAsync(ushort.Parse(splitParam[1]));
 
                 case "addexp":
-                    return await user.MagicData.AwardExp(ushort.Parse(splitParam[1]), 0, int.Parse(splitParam[2]));
+                    return await user.MagicData.AwardExpAsync(ushort.Parse(splitParam[1]), 0, int.Parse(splitParam[2]));
 
                 default:
                     await Log.WriteLogAsync(LogLevel.Warning, $"[ActionType: {action.Type}] Unknown {splitParam[0]} param {action.Identity}");
