@@ -398,7 +398,7 @@ namespace Comet.Game.States.Magics
             msg.Append(targetRole.Identity, power, true);
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
-            await CheckCrime(targetRole);
+            await CheckCrimeAsync(targetRole);
 
             Character user = m_pOwner as Character;
             int totalExp = 0;
@@ -558,7 +558,7 @@ namespace Comet.Game.States.Magics
             }
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
-            await CheckCrime(setTarget.ToDictionary(x => x.Identity));
+            await CheckCrimeAsync(setTarget.ToDictionary(x => x.Identity));
             await AwardExp(battleExp, nExp, false, magic);
             return true;
         }
@@ -618,7 +618,7 @@ namespace Comet.Game.States.Magics
 
             await m_pOwner.Map.BroadcastRoomMsgAsync(result.Center.X, result.Center.Y, msg);
 
-            await CheckCrime(result.Roles.ToDictionary(x => x.Identity, x => x));
+            await CheckCrimeAsync(result.Roles.ToDictionary(x => x.Identity, x => x));
             await AwardExp(0, battleExp, exp, magic);
             return true;
         }
@@ -687,7 +687,7 @@ namespace Comet.Game.States.Magics
             msg.Append(target.Identity, damage, damage != 0);
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
-            await CheckCrime(target);
+            await CheckCrimeAsync(target);
 
             await target.AttachStatusAsync(m_pOwner, status, power, secs, times, level);
 
@@ -897,7 +897,7 @@ namespace Comet.Game.States.Magics
             if (msg.Count > 0)
                 await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
-            await CheckCrime(targets.ToDictionary(x => x.Identity, x => x));
+            await CheckCrimeAsync(targets.ToDictionary(x => x.Identity, x => x));
             await AwardExp(0, battleExp, exp, magic);
             return true;
         }

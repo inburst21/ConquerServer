@@ -46,12 +46,12 @@ namespace Comet.Game.States.Magics
             m_pOwner = owner;
         }
 
-        public async Task<bool> Create(uint idMgc)
+        public async Task<bool> CreateAsync(uint idMgc)
         {
-            return await Create(idMgc, 0);
+            return await CreateAsync(idMgc, 0);
         }
 
-        public async Task<bool> Create(uint idMgc, ushort level)
+        public async Task<bool> CreateAsync(uint idMgc, ushort level)
         {
             m_dbMagictype = Kernel.MagicManager.GetMagictype(idMgc, level);
             if (m_dbMagictype == null)
@@ -80,7 +80,7 @@ namespace Comet.Game.States.Magics
             return true;
         }
 
-        public async Task<bool> Create(DbMagic pMgc)
+        public async Task<bool> CreateAsync(DbMagic pMgc)
         {
             m_dbMagictype = Kernel.MagicManager.GetMagictype(pMgc.Type, pMgc.Level);
             if (m_dbMagictype == null)

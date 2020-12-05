@@ -661,28 +661,28 @@ namespace Comet.Game.States
                         case 1:
                             if (!MagicData.CheckType(1110))
                             {
-                                await MagicData.Create(1110, 0);
+                                await MagicData.CreateAsync(1110, 0);
                                 burstXp = true;
                             }
                             break;
                         case 2:
                             if (!MagicData.CheckType(1025))
                             {
-                                await MagicData.Create(1025, 0);
+                                await MagicData.CreateAsync(1025, 0);
                                 burstXp = true;
                             }
                             break;
                         case 4:
                             if (!MagicData.CheckType(8002))
                             {
-                                await MagicData.Create(8002, 0);
+                                await MagicData.CreateAsync(8002, 0);
                                 burstXp = true;
                             }
                             break;
                         case 10:
                             if (!MagicData.CheckType(1010))
                             {
-                                await MagicData.Create(1010, 0);
+                                await MagicData.CreateAsync(1010, 0);
                                 burstXp = true;
                             }
                             break;
@@ -2492,7 +2492,7 @@ namespace Comet.Game.States
             {
                 foreach (var skill in removeSkills)
                 {
-                    await MagicData.UnlearnMagic(skill, true);
+                    await MagicData.UnlearnMagicAsync(skill, true);
                 }
             }
 
@@ -2500,7 +2500,7 @@ namespace Comet.Game.States
             {
                 foreach (var skill in resetSkills)
                 {
-                    await MagicData.UnlearnMagic(skill, false);
+                    await MagicData.UnlearnMagicAsync(skill, false);
                 }
             }
 
@@ -2508,7 +2508,7 @@ namespace Comet.Game.States
             {
                 foreach (var skill in learnSkills)
                 {
-                    await MagicData.Create(skill, 0);
+                    await MagicData.CreateAsync(skill, 0);
                 }
             }
 

@@ -141,7 +141,7 @@ namespace Comet.Game.States.Magics
                 foreach (var dbMagic in await MagicRepository.GetAsync(m_pOwner.Identity))
                 {
                     Magic magic = new Magic(m_pOwner);
-                    if (!await magic.Create(dbMagic))
+                    if (!await magic.CreateAsync(dbMagic))
                         continue;
 
                     Magics.TryAdd(magic.Type, magic);
@@ -158,7 +158,7 @@ namespace Comet.Game.States.Magics
             return Magics.ContainsKey(type);
         }
 
-        public async Task<bool> Create(ushort type, byte level)
+        public async Task<bool> CreateAsync(ushort type, byte level)
         {
             if (this[type] != null)
             {
@@ -175,7 +175,7 @@ namespace Comet.Game.States.Magics
             else
             {
                 Magic pMagic = new Magic(m_pOwner);
-                if (await pMagic.Create(type, level))
+                if (await pMagic.CreateAsync(type, level))
                 {
                     return Magics.TryAdd(type, pMagic);
                 }
@@ -184,12 +184,10 @@ namespace Comet.Game.States.Magics
             return false;
         }
 
-        public async Task<bool> UpLevelByTask(ushort type)
+        public async Task<bool> UpLevelByTaskAsync(ushort type)
         {
             Magic pMagic;
             if (!Magics.TryGetValue(type, out pMagic))
-                return false;
-            if (!IsWeaponMagic(pMagic.Type))
                 return false;
 
             byte nNewLevel = (byte)(pMagic.Level + 1);
@@ -199,6 +197,7 @@ namespace Comet.Game.States.Magics
             pMagic.Experience = 0;
             pMagic.Level = nNewLevel;
             await pMagic.SendAsync();
+            await pMagic.SaveAsync();
             return true;
         }
 
@@ -261,7 +260,7 @@ namespace Comet.Game.States.Magics
             return false;
         }
 
-        public async Task<bool> UnlearnMagic(ushort type, bool drop)
+        public async Task<bool> UnlearnMagicAsync(ushort type, bool drop)
         {
             Magic magic = this[type];
             if (magic == null)
@@ -294,7 +293,7 @@ namespace Comet.Game.States.Magics
 
         #region Crime
 
-        public async Task<bool> CheckCrime(Role pRole)
+        public async Task<bool> CheckCrimeAsync(Role pRole)
         {
             if (pRole == null || m_pMagic == null) return false;
 
@@ -304,7 +303,7 @@ namespace Comet.Game.States.Magics
             return await m_pOwner.CheckCrimeAsync(pRole);
         }
 
-        public async Task<bool> CheckCrime(Dictionary<uint, Role> pRoleSet)
+        public async Task<bool> CheckCrimeAsync(Dictionary<uint, Role> pRoleSet)
         {
             if (pRoleSet == null || m_pMagic == null) return false;
 

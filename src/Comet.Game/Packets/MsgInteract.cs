@@ -115,7 +115,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case MsgInteractType.Attack:
-                case MsgInteractType.Unknown:
+                case MsgInteractType.Shoot5065:
                     if (SenderIdentity == client.Identity)
                     {
                         client.Character.BattleSystem.CreateBattle(TargetIdentity);
@@ -307,7 +307,7 @@ namespace Comet.Game.Packets
         AbortMagic = 22,
         ReflectWeapon = 23,
         MagicAttack = 24,
-        Unknown = 25,
+        Shoot5065 = 25,
         ReflectMagic = 26,
         Dash = 27,
         Shoot = 28,

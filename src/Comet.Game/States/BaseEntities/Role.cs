@@ -459,9 +459,7 @@ namespace Comet.Game.States.BaseEntities
                 PosY = MapY
             };
             
-            if (IsBowman)
-                msg.Action = MsgInteractType.Attack;
-            else msg.Action = MsgInteractType.Attack;
+            msg.Action = IsBowman ? MsgInteractType.Shoot5065 : MsgInteractType.Attack;
 
             if (this is Character user)
                 await user.Screen.BroadcastRoomMsgAsync(msg);

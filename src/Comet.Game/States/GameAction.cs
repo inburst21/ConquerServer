@@ -3518,14 +3518,14 @@ namespace Comet.Game.States
 
                 case "learn":
                     if (splitParam.Length >= 3)
-                        return await user.MagicData.Create(ushort.Parse(splitParam[1]), byte.Parse(splitParam[2]));
-                    return await user.MagicData.Create(ushort.Parse(splitParam[1]), 0);
+                        return await user.MagicData.CreateAsync(ushort.Parse(splitParam[1]), byte.Parse(splitParam[2]));
+                    return await user.MagicData.CreateAsync(ushort.Parse(splitParam[1]), 0);
 
                 case "uplev":
                 case "up_lev":
                 case "uplevel":
                 case "up_level":
-                    return await user.MagicData.UpLevelByTask(ushort.Parse(splitParam[1]));
+                    return await user.MagicData.UpLevelByTaskAsync(ushort.Parse(splitParam[1]));
 
                 case "addexp":
                     return await user.MagicData.AwardExp(ushort.Parse(splitParam[1]), 0, int.Parse(splitParam[2]));
@@ -3880,7 +3880,7 @@ namespace Comet.Game.States
                 ushort idMagic = ushort.Parse(id);
                 if (user.MagicData.CheckType(idMagic))
                 {
-                    await user.MagicData.UnlearnMagic(idMagic, false);
+                    await user.MagicData.UnlearnMagicAsync(idMagic, false);
                 }
             }
 
@@ -3942,7 +3942,7 @@ namespace Comet.Game.States
                 ushort idMagic = ushort.Parse(id);
                 if (user.MagicData.CheckType(idMagic))
                 {
-                    await user.MagicData.UnlearnMagic(idMagic, true);
+                    await user.MagicData.UnlearnMagicAsync(idMagic, true);
                 }
             }
 

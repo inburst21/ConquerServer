@@ -389,7 +389,7 @@ namespace Comet.Game.Packets
                         }
                         else
                         {
-                            if (!await user.MagicData.Create(skillType, skillLevel))
+                            if (!await user.MagicData.CreateAsync(skillType, skillLevel))
                                 await user.SendAsync("[Award Skill] Could not create skill!");
                         }
 

@@ -120,14 +120,14 @@ namespace Comet.Game.States
             if (m_dbMonster.MagicType > 0)
             {
                 Magic defaultMagic = new Magic(this);
-                if (await defaultMagic.Create(m_dbMonster.MagicType))
+                if (await defaultMagic.CreateAsync(m_dbMonster.MagicType))
                     MagicData.Magics.TryAdd(defaultMagic.Type, defaultMagic);
             }
 
             foreach (var dbMagic in m_monsterMagics)
             {
                 Magic magic = new Magic(this);
-                if (await magic.Create(dbMagic.MagicIdentity, dbMagic.MagicLevel))
+                if (await magic.CreateAsync(dbMagic.MagicIdentity, dbMagic.MagicLevel))
                     MagicData.Magics.TryAdd(magic.Type, magic);
             }
 
