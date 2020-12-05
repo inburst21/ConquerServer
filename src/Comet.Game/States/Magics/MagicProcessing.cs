@@ -869,16 +869,16 @@ namespace Comet.Game.States.Magics
 
                 await target.BeAttackAsync(HitByMagic(), m_pOwner, result.Damage, true);
 
-                if (user != null && target is Monster monster)
+                if (user != null && (target is Monster monster || (target is DynamicNpc npc && npc.IsGoal())))
                 {
                     exp += lifeLost;
                     battleExp += user.AdjustExperience(target, lifeLost, false);
-                    if (!monster.IsAlive)
+                    if (!target.IsAlive)
                     {
-                        int nBonusExp = (int)(monster.MaxLife * 20 / 100d);
+                        int nBonusExp = (int)(target.MaxLife * 20 / 100d);
                         if (user.Team != null)
                             await user.Team.AwardMemberExpAsync(user.Identity, target, nBonusExp);
-                        battleExp += user.AdjustExperience(monster, nBonusExp, false);
+                        battleExp += user.AdjustExperience(target, nBonusExp, false);
                     }
                 }
 
@@ -1194,7 +1194,7 @@ namespace Comet.Game.States.Magics
                 pMagic.Experience += (uint)nExp;
 
                 if ((pMagic.AutoActive & 8) == 0)
-                    await pMagic.SendAsync();
+                    await pMagic.FlushAsync();
 
                 await UpLevelMagic(true, pMagic);
                 await pMagic.SaveAsync();
@@ -1210,7 +1210,7 @@ namespace Comet.Game.States.Magics
                 pMagic.Experience += (uint)nExp;
 
                 if ((pMagic.AutoActive & 8) == 0)
-                    await pMagic.SendAsync();
+                    await pMagic.FlushAsync();
                 await UpLevelMagic(true, pMagic);
 
                 await pMagic.SaveAsync();
