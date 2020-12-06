@@ -353,6 +353,7 @@ namespace Comet.Game.States.Syndicates
 
             RemoveUserFromEvents(target.Identity);
 
+            await member.DeleteAsync();
             await SendAsync(string.Format(Language.StrSynMemberExit, target.Name));
             return true;
         }
@@ -408,6 +409,7 @@ namespace Comet.Game.States.Syndicates
 
             m_syndicate.Amount = (uint)MemberCount;
             await SaveAsync();
+            await member.DeleteAsync();
             await SendAsync(string.Format(Language.StrSynMemberKickout, sender.SyndicateRank, sender.Name, member.UserName));
             return true;
         }
