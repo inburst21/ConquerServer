@@ -105,7 +105,7 @@ namespace Comet.Game.Packets
                 case DropType.PickupItem:
                     if (await user.SynPosition(MapX, MapY, 0))
                     {
-                        await user.PickMapItem(Identity);
+                        await user.PickMapItemAsync(Identity);
                         await user.BroadcastRoomMsgAsync(this, true);
                     }
                     break;

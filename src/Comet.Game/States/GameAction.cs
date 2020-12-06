@@ -749,10 +749,14 @@ namespace Comet.Game.States
                         continue;
 
                     resetNpc.OwnerIdentity = npc.OwnerIdentity;
-                    resetNpc.SetData("data0", 0);
-                    resetNpc.SetData("data1", (int)npc.OwnerIdentity);
-                    resetNpc.SetData("data2", 0);
-                    resetNpc.SetData("data3", 0);
+                    if (!resetNpc.IsSysTrans())
+                    {
+                        resetNpc.SetData("data0", 0);
+                        resetNpc.SetData("data1", (int) npc.OwnerIdentity);
+                        resetNpc.SetData("data2", 0);
+                        resetNpc.SetData("data3", 0);
+                    }
+
                     await resetNpc.SaveAsync();
                 }
             }
@@ -1357,7 +1361,7 @@ namespace Comet.Game.States
             if (splitParam.Length >= 21)
                 idData3 = int.Parse(splitParam[20]);
 
-            if (usType == BaseNpc.SYNTRANS_NPC && !user.Map.IsTeleportDisable())
+            if (usType == BaseNpc.SYNTRANS_NPC && user.Map.IsTeleportDisable())
             {
                 _ = user.SendAsync(Language.StrLayNpcSynTransInvalidMap);
                 return false;
@@ -1397,7 +1401,7 @@ namespace Comet.Game.States
                     break;
             }
 
-            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0);
+            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0) ?? Kernel.RoleManager.QueryRoleByType<DynamicNpc>().FirstOrDefault(x => x.LinkId == idLink);
             if (npc == null)
             {
                 npc = new DynamicNpc(new DbDynanpc
@@ -1429,7 +1433,7 @@ namespace Comet.Game.States
                     Celly = mapY,
                     Idxserver = 0,
                     Itemid = 0,
-                    Lookface = 0,
+                    Lookface = (ushort) lookface,
                     MagicDef = 0,
                     Mapid = user.MapIdentity
                 });
@@ -1440,8 +1444,9 @@ namespace Comet.Game.States
             else
             {
                 npc.SetType(usType);
-                npc.OwnerIdentity = idOwner;
+                // npc.OwnerIdentity = idOwner;
                 npc.OwnerType = (byte)dwOwnerType;
+                await npc.SetOwnerAsync(idOwner);
                 npc.Name = szName;
                 await npc.SetAttributesAsync(ClientUpdateType.Mesh, lookface);
                 npc.SetSort(usSort);
@@ -5410,8 +5415,8 @@ namespace Comet.Game.States
 
                 for (int i = 0; i < Role.MAX_VAR_AMOUNT; i++)
                 {
-                    result = result.Replace($"%iter_var_data{i}", user?.VarData[i].ToString());
-                    result = result.Replace($"%iter_var_str{i}", user?.VarString[i]);
+                    result = result.Replace($"%iter_var_data{i}", user.VarData[i].ToString());
+                    result = result.Replace($"%iter_var_str{i}", user.VarString[i]);
                 }
             }
 

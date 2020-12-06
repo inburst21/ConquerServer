@@ -162,6 +162,12 @@ namespace Comet.Game.States.NPCs
 
         #region Task and Data
 
+        public uint LinkId
+        {
+            get => m_dbNpc.Linkid;
+            set => m_dbNpc.Linkid = value;
+        }
+
         public void SetTask(int id, uint task)
         {
             switch (id)

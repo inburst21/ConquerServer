@@ -295,6 +295,11 @@ namespace Comet.Game.States.NPCs
             return (Type == SYNFLAG_NPC || Type == ROLE_CTFBASE_NPC) && IsSynNpc();
         }
 
+        public bool IsSysTrans()
+        {
+            return Type == SYNTRANS_NPC;
+        }
+
         public bool IsCtfFlag()
         {
             return IsSynFlag() && Type == ROLE_CTFBASE_NPC;

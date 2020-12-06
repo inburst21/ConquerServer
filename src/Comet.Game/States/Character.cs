@@ -1364,7 +1364,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> PickMapItem(uint idItem)
+        public async Task<bool> PickMapItemAsync(uint idItem)
         {
             MapItem mapItem = Map.QueryAroundRole(this, idItem) as MapItem;
             if (mapItem == null)
@@ -1387,9 +1387,15 @@ namespace Comet.Game.States
                 Character owner = Kernel.RoleManager.GetUser(mapItem.OwnerIdentity);
                 if (owner != null && !IsMate(owner))
                 {
-                    // todo check team
-                    await SendAsync(Language.StrCannotPickupOtherItems);
-                    return false;
+                    if (Team == null 
+                        || (!Team.IsMember(mapItem.OwnerIdentity)
+                        || mapItem.IsMoney() && !Team.MoneyEnable)
+                        || mapItem.IsJewel() && !Team.JewelEnable
+                        || mapItem.IsItem() && !Team.ItemEnable)
+                    {
+                        await SendAsync(Language.StrCannotPickupOtherItems);
+                        return false;
+                    }
                 }
             }
 

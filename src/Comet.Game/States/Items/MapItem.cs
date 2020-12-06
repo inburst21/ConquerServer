@@ -206,6 +206,16 @@ namespace Comet.Game.States.Items
             return m_moneyAmount > 0;
         }
 
+        public bool IsJewel()
+        {
+            return false;
+        }
+
+        public bool IsItem()
+        {
+            return !IsMoney() && !IsJewel();
+        }
+
         public bool IsConquerPointsPack()
         {
             return Itemtype == 729910 || Itemtype == 729911 || Itemtype == 729912;
