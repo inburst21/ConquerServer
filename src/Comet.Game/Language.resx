@@ -694,7 +694,7 @@
     <value>{0} dominated the Guild Area!</value>
   </data>
   <data name="StrWarYourScore" xml:space="preserve">
-    <value>Your Score: {0:N0}</value>
+    <value>Your Score: {0:N0} Lives: {1}</value>
   </data>
   <data name="StrWeaponSkillUp" xml:space="preserve">
     <value>Your weapon proeficiency level has been improved.</value>

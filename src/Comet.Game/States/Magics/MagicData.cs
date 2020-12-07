@@ -289,6 +289,20 @@ namespace Comet.Game.States.Magics
             return Magics.TryRemove(type, out _);
         }
 
+        public async Task<bool> ResetMagicAsync(ushort type)
+        {
+            Magic magic = this[type];
+            if (magic == null)
+                return false;
+
+            magic.OldLevel = (byte)magic.Level;
+            magic.Level = 0;
+            magic.Experience = 0;
+            await magic.SaveAsync();
+            await magic.SendAsync();
+            return true;
+        }
+
         #endregion
 
         #region Crime

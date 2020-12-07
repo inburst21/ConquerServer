@@ -1789,7 +1789,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a Your Score: {0:N0}.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your Score: {0:N0} Lives: {1}.
         /// </summary>
         public static string StrWarYourScore {
             get {

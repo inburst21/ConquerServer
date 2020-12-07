@@ -280,6 +280,9 @@ namespace Comet.Game.States.Syndicates
             if (target.Level < MEMBER_MIN_LEVEL)
                 return false;
 
+            if (MemberCount >= MAX_MEMBER_SIZE)
+                return false;
+
             if (Money < SYNDICATE_ACTION_COST)
             {
                 await caller.SendAsync(string.Format(Language.StrSynNoMoney, SYNDICATE_ACTION_COST));

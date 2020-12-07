@@ -167,6 +167,8 @@ namespace Comet.Game.Packets
                     await client.SendAsync(this);
 
                     await GameAction.ExecuteActionAsync(1000000, user, null, null, "");
+
+                    user.Connection = Character.ConnectionStage.Ready; // set user ready to be processed.
                     break;
 
                 case ActionType.LoginInventory: // 75

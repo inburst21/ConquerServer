@@ -113,6 +113,8 @@ namespace Comet.Game.States
 
         public Client Client => m_socket;
 
+        public ConnectionStage Connection { get; set; }
+
         #region Identity
 
         public override uint Identity
@@ -2186,7 +2188,7 @@ namespace Comet.Game.States
             if (attacker == null)
                 return false;
 
-            if (PreviousProfession == 25 || FirstProfession == 25 && bReflectEnable && await Kernel.ChanceCalcAsync(10d))
+            if ((PreviousProfession == 25 || FirstProfession == 25) && bReflectEnable && await Kernel.ChanceCalcAsync(10d))
             {
                 power = Math.Min(1700, power);
                 await attacker.BeAttackAsync(magic, this, power, false);
@@ -2498,7 +2500,7 @@ namespace Comet.Game.States
                 UserPackage[pos]?.DegradeItem(false);
             }
 
-            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf/10, prof/10)?.Magics;
+            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf / 10, prof / 10)?.Magics;
             var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf / 10, prof/10)?.Magics;
             var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf / 10, prof/10)?.Magics;
 
@@ -2514,7 +2516,7 @@ namespace Comet.Game.States
             {
                 foreach (var skill in resetSkills)
                 {
-                    await MagicData.UnlearnMagicAsync(skill, false);
+                    await MagicData.ResetMagicAsync(skill);
                 }
             }
 
@@ -4039,6 +4041,9 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
+            if (Connection != ConnectionStage.Ready)
+                return;
+
             if (m_timeSync.ToNextTime())
             {
                 await SendAsync(new MsgData(DateTime.Now));
@@ -4294,6 +4299,8 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
+            Connection = ConnectionStage.Disconnected;
+
             if (!m_IsDeleted)
                 await SaveAsync();
 
@@ -4394,6 +4401,13 @@ namespace Comet.Game.States
         }
 
         #endregion
+
+        public enum ConnectionStage
+        {
+            Connected,
+            Ready,
+            Disconnected
+        }
     }
 
     /// <summary>Enumeration type for body types for player characters.</summary>

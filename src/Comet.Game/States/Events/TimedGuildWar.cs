@@ -192,7 +192,7 @@ namespace Comet.Game.States.Events
                         Character user = Kernel.RoleManager.GetUser(userData.Identity);
                         if (user != null)
                             await user.SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.GuildWarRight2, Color.Yellow,
-                                string.Format(Language.StrWarYourScore, userData.Points) + $" Lives: {(MAX_DEATHS_PER_PLAYER - userData.Deaths)}"));
+                                string.Format(Language.StrWarYourScore, userData.Points, MAX_DEATHS_PER_PLAYER - userData.Deaths)));
                     }
                 }
             }

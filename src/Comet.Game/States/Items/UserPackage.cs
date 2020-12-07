@@ -731,7 +731,7 @@ namespace Comet.Game.States.Items
 
             foreach (var item in items)
             {
-                if (dontAllowBound && item.IsBound)
+                if (dontAllowBound && item.IsBound && (item.Itemtype.Monopoly & 1) == 0)
                     continue;
 
                 nNum--;
@@ -751,7 +751,7 @@ namespace Comet.Game.States.Items
                 .Where(x => x.Type >= idFirst && x.Type <= idLast)
                 .OrderBy(x => x.Type))
             {
-                if (dontAllowBound && item.IsBound)
+                if (dontAllowBound && item.IsBound && (item.Itemtype.Monopoly & 1) == 0)
                     continue;
 
                 pItems.Add(item);
@@ -769,7 +769,7 @@ namespace Comet.Game.States.Items
             int nAmount = 0;
             foreach (var item in m_dicInventory.Values.Where(x => x.Type >= idFirst && x.Type <= idLast))
             {
-                if (disallowBound && item.IsBound)
+                if (disallowBound && item.IsBound && (item.Itemtype.Monopoly & 1) == 0)
                     continue;
 
                 nAmount += 1;

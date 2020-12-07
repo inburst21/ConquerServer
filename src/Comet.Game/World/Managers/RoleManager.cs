@@ -150,9 +150,8 @@ namespace Comet.Game.World.Managers
 
         public async Task<bool> LogoutUserAsync(uint idUser)
         {
-            if (m_userSet.TryRemove(idUser, out var user))
+            if (m_userSet.TryGetValue(idUser, out var user))
             {
-                m_roleSet.TryRemove(idUser, out _);
                 try
                 {
                     await user.OnDisconnectAsync();
@@ -161,7 +160,7 @@ namespace Comet.Game.World.Managers
                 {
                     // just in case the user is already disconnected and we receive an exception
                 }
-
+                
                 await Log.WriteLogAsync(LogLevel.Message, $"{user.Name} has logged out.");
                 return true;
             }
@@ -255,6 +254,20 @@ namespace Comet.Game.World.Managers
                 {
                     await Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
                 }
+            }
+
+            try
+            {
+                uint[] disconnectRoles = m_userSet.Values.Where(x => x.Connection == Character.ConnectionStage.Disconnected).Select(x => x.Identity).ToArray();
+                foreach (var role in disconnectRoles)
+                {
+                    m_userSet.TryRemove(role, out _);
+                    m_roleSet.TryRemove(role, out _);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
             }
         }
 

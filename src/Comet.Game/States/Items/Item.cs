@@ -280,17 +280,17 @@ namespace Comet.Game.States.Items
 
         public bool IsBound
         {
-            get => (m_dbItem.Monopoly & 3) != 0;
+            get => IsMonopoly();
             set
             {
                 if (value)
                 {
-                    m_dbItem.Monopoly |= 3;
+                    m_dbItem.Monopoly |= 1;
                 }
                 else
                 {
                     int monopoly = m_dbItem.Monopoly;
-                    monopoly &= ~3;
+                    monopoly &= ~1;
                     m_dbItem.Monopoly = (byte) monopoly;
                 }
             }

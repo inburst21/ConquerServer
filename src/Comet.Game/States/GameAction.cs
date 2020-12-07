@@ -202,6 +202,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserTestPos: result = true;  break; // gotta investigate
                     case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserSelectToData: result = await ExecuteActionUserSelectToData(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserStcTimeCheck(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcTimeOperation: result = await ExecuteActionUserStcTimeOpe(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserAttachStatus: result = await ExecuteActionUserAttachStatus(action, param, user, role, item, input); break;
@@ -4523,6 +4524,25 @@ namespace Comet.Game.States
             return false;
         }
 
+        private static async Task<bool> ExecuteActionUserSelectToData(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            try
+            {
+                user.VarData[action.Data] = long.Parse(await BaseRepository.ScalarAsync(param));
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
         private static async Task<bool> ExecuteActionUserStcTimeCheck(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
@@ -5737,6 +5757,7 @@ namespace Comet.Game.States
         ActionUserTestPos = 1072,
         ActionUserStcCompare = 1073,
         ActionUserStcOpe = 1074,
+        ActionUserSelectToData = 1077,
         ActionUserStcTimeOperation = 1080,
         ActionUserStcTimeCheck = 1081,
         ActionUserAttachStatus = 1082,
