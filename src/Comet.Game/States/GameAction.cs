@@ -3022,6 +3022,55 @@ namespace Comet.Game.States
 
                 #endregion
 
+                #region Syn Time (>, >=, <, <=, =)
+
+                case "syn_time":
+                {
+                    int synTime = int.Parse(value);
+                    if (user.Syndicate == null)
+                        return false;
+
+                    int synDays = (int)(DateTime.Now - user.Syndicate.CreationDate).TotalDays;
+                    if (opt.Equals("==") || opt.Equals("="))
+                        return synDays == synTime;
+                    if (opt.Equals(">="))
+                        return synDays >= synTime;
+                    if (opt.Equals(">"))
+                        return synDays > synTime;
+                    if (opt.Equals("<="))
+                        return synDays <= synTime;
+                    if (opt.Equals("<"))
+                        return synDays < synTime;
+                    break;
+                    }
+
+                #endregion
+
+                #region Syn User Time (>, >=, <, <=, =)
+
+                case "syn_user_time":
+                {
+                    int synTime = int.Parse(value);
+                    if (user.Syndicate == null)
+                        return false;
+
+                    int synDays = (int) (DateTime.Now - user.SyndicateMember.JoinDate).TotalDays;
+                    if (opt.Equals("==") || opt.Equals("="))
+                        return synDays == synTime;
+                    if (opt.Equals(">="))
+                        return synDays >= synTime;
+                    if (opt.Equals(">"))
+                        return synDays > synTime;
+                    if (opt.Equals("<="))
+                        return synDays <= synTime;
+                    if (opt.Equals("<"))
+                        return synDays < synTime;
+                    break;
+                }
+
+                #endregion
+
+
                 #region Experience (>, >=, <, <=, =, +=, set)
 
                 case "exp":

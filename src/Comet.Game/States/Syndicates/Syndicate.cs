@@ -78,13 +78,15 @@ namespace Comet.Game.States.Syndicates
         {
             get => m_syndicate.Announce;
             set => m_syndicate.Announce = value;
-        }
+        }     
 
         public DateTime AnnounceDate
         {
             get => m_syndicate.AnnounceDate;
             set => m_syndicate.AnnounceDate = value;
         }
+
+        public DateTime CreationDate => m_syndicate.CreationDate;
 
         public bool Deleted => m_syndicate.DelFlag != null;
 
