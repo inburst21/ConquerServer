@@ -3070,7 +3070,6 @@ namespace Comet.Game.States
 
                 #endregion
 
-
                 #region Experience (>, >=, <, <=, =, +=, set)
 
                 case "exp":

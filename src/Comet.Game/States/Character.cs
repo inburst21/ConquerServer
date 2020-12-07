@@ -2186,9 +2186,9 @@ namespace Comet.Game.States
             if (attacker == null)
                 return false;
 
-            if (PreviousProfession == 25 || FirstProfession == 25 && bReflectEnable && await Kernel.ChanceCalcAsync(15d))
+            if (PreviousProfession == 25 || FirstProfession == 25 && bReflectEnable && await Kernel.ChanceCalcAsync(10d))
             {
-                power = Math.Max(1700, power);
+                power = Math.Min(1700, power);
                 await attacker.BeAttackAsync(magic, this, power, false);
                 await BroadcastRoomMsgAsync(new MsgInteract
                 {
