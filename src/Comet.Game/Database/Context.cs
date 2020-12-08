@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
@@ -96,6 +97,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbTutorContributions> TutorContributions { get; set; }
         public virtual DbSet<DbTutorType> TutorTypes { get; set; }
         public virtual DbSet<DbDynaRankRec> DynaRankRec { get; set; }
+        public virtual DbSet<DbSuperman> Superman { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

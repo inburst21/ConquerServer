@@ -70,8 +70,11 @@ namespace Comet.Game.States
         private TimeOut m_mine = new TimeOut(2);
         private TimeOut m_teamLeaderPos = new TimeOut(3);
         private TimeOut m_timeSync = new TimeOut(15);
+        private TimeOut m_heavenBlessing = new TimeOut(60);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
+
+        private int m_blessPoints = 0;
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -496,7 +499,7 @@ namespace Comet.Game.States
 
         public async Task AwardBattleExpAsync(long nExp, bool bGemEffect)
         {
-            if (nExp == 0)
+            if (nExp == 0 && QueryStatus(StatusSet.CURSED) != null)
                 return;
 
             double multiplier = 1;
@@ -946,30 +949,30 @@ namespace Comet.Game.States
             set => m_dbObject.KillPoints = value;
         }
 
-        public async Task ProcessPk(Character target)
+        public async Task ProcessPkAsync(Character target)
         {
             if (!Map.IsPkField() && !Map.IsPkGameMap() && !Map.IsSynMap() && !Map.IsPrisionMap())
             {
                 if (!Map.IsDeadIsland() && !target.IsEvil())
                 {
                     int nAddPk = 10;
-                    if (target.Level < 130)
+                    if (target.Level < 70)
                     {
                         nAddPk = 20;
                     }
                     else
                     {
-                        //if (Syndicate?.IsHostile((ushort)target.SyndicateIdentity) == true)
-                        //    nAddPk = 3;
-                        //else if (ContainsEnemy(target.Identity))
-                        //    nAddPk = 5;
+                        if (Syndicate?.IsEnemy(target.SyndicateIdentity) == true)
+                            nAddPk = 3;
+                        else if (IsEnemy(target.Identity))
+                            nAddPk = 5;
                         if (target.PkPoints > 29)
                             nAddPk /= 2;
                     }
 
                     await AddAttributesAsync(ClientUpdateType.PkPoints, nAddPk);
 
-                    await SetCrimeStatusAsync(60);
+                    await SetCrimeStatusAsync(90);
 
                     if (PkPoints > 29)
                         await SendAsync(Language.StrKillingTooMuch);
@@ -995,7 +998,6 @@ namespace Comet.Game.States
                 return true;
             }
 
-            //if (target.IsMonster() && ((Monster) target).IsGuard())
             if (target is Monster mob && (mob.IsGuard() || mob.IsPkKiller()))
             {
                 await SetCrimeStatusAsync(25);
@@ -2152,8 +2154,7 @@ namespace Comet.Game.States
             if (target == null)
                 return;
 
-            Character targetUser = target as Character;
-            if (targetUser != null)
+            if (target is Character targetUser)
             {
                 await BroadcastRoomMsgAsync(new MsgInteract
                 {
@@ -2165,7 +2166,12 @@ namespace Comet.Game.States
                     Data = (int) dieWay
                 }, true);
 
-                await ProcessPk(targetUser);
+                await ProcessPkAsync(targetUser);
+
+                if (targetUser.IsBlessed && !IsBlessed)
+                {
+
+                }
             }
             else if (target is Monster monster)
             {
@@ -2266,8 +2272,6 @@ namespace Comet.Game.States
 
             if (!Map.IsDeadIsland())
             {
-                // todo enemy
-
                 int nChance = 0;
                 if (PkPoints < 30)
                     nChance = 10 + await Kernel.NextAsync(40);
@@ -2281,37 +2285,46 @@ namespace Comet.Game.States
 
                 await UserPackage.RandDropItemAsync(nDropItem);
 
-                if (attacker.Identity != Identity && attacker is Character targetUser)
+                if (attacker.Identity != Identity && attacker is Character atkrUser)
                 {
-                    await CreateEnemy(targetUser);
+                    await CreateEnemy(atkrUser);
 
-                    float nLossPercent;
-                    if (PkPoints < 30)
-                        nLossPercent = 0.01f;
-                    else if (PkPoints < 100)
-                        nLossPercent = 0.02f;
-                    else nLossPercent = 0.03f;
-                    long nLevExp = (long)Experience;
-                    long nLostExp = (long)(nLevExp * nLossPercent);
-
-                    if (nLostExp > 0)
+                    if (!IsBlessed)
                     {
-                        await AddAttributesAsync(ClientUpdateType.Experience, nLostExp * -1);
-                        await attacker.AddAttributesAsync(ClientUpdateType.Experience, nLostExp / 3);
+                        float nLossPercent;
+                        if (PkPoints < 30)
+                            nLossPercent = 0.01f;
+                        else if (PkPoints < 100)
+                            nLossPercent = 0.02f;
+                        else nLossPercent = 0.03f;
+
+                        long nLevExp = (long) Experience;
+                        long nLostExp = (long) (nLevExp * nLossPercent);
+
+                        if (nLostExp > 0)
+                        {
+                            await AddAttributesAsync(ClientUpdateType.Experience, nLostExp * -1);
+                            await attacker.AddAttributesAsync(ClientUpdateType.Experience, nLostExp / 3);
+                        }
+                    }
+
+                    if (!atkrUser.IsBlessed && IsBlessed)
+                    {
+                        await atkrUser.AttachStatusAsync(this, StatusSet.CURSED, 0, 300, 0, 0);
                     }
 
                     if (PkPoints >= 300)
                     {
-                        await UserPackage.RandDropEquipmentAsync(targetUser);
-                        await UserPackage.RandDropEquipmentAsync(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        await UserPackage.RandDropEquipmentAsync(atkrUser);
                     }
                     else if (PkPoints >= 100)
                     {
-                        await UserPackage.RandDropEquipmentAsync(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(atkrUser);
                     }
                     else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(30))
                     {
-                        await UserPackage.RandDropEquipmentAsync(targetUser);
+                        await UserPackage.RandDropEquipmentAsync(atkrUser);
                     }
 
                     if (PkPoints >= 100)
@@ -2341,7 +2354,7 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task SendGemEffect()
+        public async Task SendGemEffectAsync()
         {
             var setGem = new List<Item.SocketGem>();
 
@@ -3705,7 +3718,7 @@ namespace Comet.Game.States
 
         public byte Energy { get; private set; } = DEFAULT_USER_ENERGY;
 
-        public byte MaxEnergy => (byte) (IsBlessed ? 180 : 100);
+        public byte MaxEnergy => (byte) (IsBlessed ? 150 : 100);
 
         public byte XpPoints = 0;
 
@@ -4082,7 +4095,15 @@ namespace Comet.Game.States
                         if (status.Identity == StatusSet.SUPERMAN || status.Identity == StatusSet.CYCLONE
                             && (QueryStatus(StatusSet.SUPERMAN) == null && QueryRole(StatusSet.CYCLONE) == null))
                         {
-                            // Todo Superman Points
+                            int currentPoints = Kernel.RoleManager.GetSupermanPoints(Identity);
+                            if (XpPoints >= 25 
+                                && currentPoints < XpPoints)
+                            {
+                                await Kernel.RoleManager.AddOrUpdateSupermanAsync(Identity, XpPoints);
+                                int rank = Kernel.RoleManager.GetSupermanRank(Identity);
+                                if (rank < 100)
+                                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, XpPoints, rank), MsgTalk.TalkChannel.Talk);
+                            }
                             XpPoints = 0;
                         }
                     }
@@ -4091,6 +4112,31 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                if (IsBlessed && m_heavenBlessing.ToNextTime() && !Map.IsTrainingMap())
+                {
+                    m_blessPoints++;
+                    if (m_blessPoints >= 10)
+                    {
+                        await AwardExperience(CalculateExpBall(100));
+                        await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 5);
+                        await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0);
+                        m_blessPoints = 0;
+                    }
+                    else
+                    {
+                        await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 4);
+                        await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 3);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, $"Error in heaven blessing for user {Identity}:{Name}");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
@@ -4296,6 +4342,30 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Error on leave map");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                if (QueryStatus(StatusSet.CURSED) != null)
+                {
+                    var curse = QueryStatus(StatusSet.CURSED);
+                    await BaseRepository.SaveAsync(new DbStatus
+                    {
+                        EndTime = DateTime.Now.AddSeconds(curse.RemainingTime),
+                        IntervalTime = (uint) curse.Time,
+                        LeaveTimes = 0,
+                        OwnerId = Identity,
+                        Power = 0,
+                        RemainTime = (uint) curse.RemainingTime,
+                        Status = StatusSet.CURSED,
+                        Sort = 0
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on save curse");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 

@@ -243,6 +243,9 @@ namespace Comet.Game.States.BaseEntities
             BattleSystem.ResetBattle();
             await MagicData.AbortMagicAsync(true);
             await DetachStatusAsync(StatusSet.INTENSIFY);
+
+            await DetachStatusAsync(StatusSet.LUCKY_DIFFUSE);
+            await DetachStatusAsync(StatusSet.LUCKY_ABSORB);
         }
 
         public virtual async Task ProcessAfterMoveAsync()
@@ -260,6 +263,9 @@ namespace Comet.Game.States.BaseEntities
         {
             Action = EntityAction.Stand;
             await DetachStatusAsync(StatusSet.INTENSIFY);
+
+            await DetachStatusAsync(StatusSet.LUCKY_DIFFUSE);
+            await DetachStatusAsync(StatusSet.LUCKY_ABSORB);
         }
 
         #endregion

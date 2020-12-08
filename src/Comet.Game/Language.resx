@@ -474,6 +474,9 @@
   <data name="StrStigmaActiveT" xml:space="preserve">
     <value>Stigma for {0} seconds, your attack will be increased by {1} times.</value>
   </data>
+  <data name="StrSupermanBroadcast" xml:space="preserve">
+    <value>{0} has killed {1} monsters and is now rank {2} on KO Board.</value>
+  </data>
   <data name="StrSynAbdicate" xml:space="preserve">
     <value>Guild Leader {1} has abdicated the leadership to {2}.</value>
   </data>

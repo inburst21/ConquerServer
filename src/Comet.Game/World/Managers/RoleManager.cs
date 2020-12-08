@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
@@ -52,6 +53,7 @@ namespace Comet.Game.World.Managers
         private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
         private readonly Dictionary<uint, List<DbMonsterMagic>> m_dicMonsterMagics = new Dictionary<uint, List<DbMonsterMagic>>();
+        private readonly Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
 
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
@@ -356,6 +358,38 @@ namespace Comet.Game.World.Managers
         public List<DbMonsterMagic> GetMonsterMagics(uint roleType)
         {
             return m_dicMonsterMagics.TryGetValue(roleType, out var result) ? result : new List<DbMonsterMagic>();
+        }
+
+        public Task AddOrUpdateSupermanAsync(uint idUser, int amount)
+        {
+            if (!m_superman.TryGetValue(idUser, out var superman))
+            {
+                m_superman.Add(idUser, superman = new DbSuperman
+                {
+                    UserIdentity = idUser
+                });
+            }
+
+            superman.Amount = (uint) amount;
+            return BaseRepository.SaveAsync(superman);
+        }
+
+        public int GetSupermanPoints(uint idUser)
+        {
+            return (int) (m_superman.TryGetValue(idUser, out var value) ? value.Amount : 0);
+        }
+
+        public int GetSupermanRank(uint idUser)
+        {
+            int result = 1;
+            foreach (var super in m_superman.Values.OrderByDescending(x => x.Amount))
+            {
+                if (super.UserIdentity == idUser)
+                    return result;
+                result++;
+            }
+            
+            return result;
         }
     }
 }

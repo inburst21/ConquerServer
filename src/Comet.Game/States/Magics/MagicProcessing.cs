@@ -253,7 +253,7 @@ namespace Comet.Game.States.Magics
                     await user.DecEquipmentDurability(false, (int) HitByMagic(), (ushort)m_pMagic.UseItemNum);
 
                 if (await Kernel.ChanceCalcAsync(7) && user != null)
-                    await user.SendGemEffect();
+                    await user.SendGemEffectAsync();
             }
 
             if (magic.IntoneSpeed <= 0)
@@ -274,12 +274,8 @@ namespace Comet.Game.States.Magics
                         return true;
                     }
 
-                    if (m_tApply == null)
-                        m_tApply = new TimeOutMS(0);
-                    if (m_pMagic == null)
-                        return false;
-                    
-                    m_tApply.Startup((int)m_pMagic.StepSeconds);
+                    m_tApply ??= new TimeOutMS();
+                    m_tApply.Startup(magic.DelayMs);
                     m_state = MagicState.Launch;
                 }
             }
@@ -665,14 +661,8 @@ namespace Comet.Game.States.Magics
                         return false;
                     break;
 
-                case StatusSet.LUCKY_ABSORB:
-                    status = StatusSet.LUCKY_DIFFUSE;
+                case StatusSet.LUCKY_DIFFUSE:
                     damage = 0;
-
-                    if (target is Character user)
-                    {
-                        // todo check booth
-                    }
                     break;
             }
 

@@ -150,7 +150,7 @@ namespace Comet.Game.States
                         nWeaponExp / 2);
 
                 if (await Kernel.ChanceCalcAsync(7f))
-                    await user.SendGemEffect();
+                    await user.SendGemEffectAsync();
             }
 
             if (!target.IsAlive)

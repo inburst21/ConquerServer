@@ -1132,6 +1132,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has killed {1} monsters and is now rank {2} on KO Board..
+        /// </summary>
+        public static string StrSupermanBroadcast {
+            get {
+                return ResourceManager.GetString("StrSupermanBroadcast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {1} has abdicated the leadership to {2}..
         /// </summary>
         public static string StrSynAbdicate {
