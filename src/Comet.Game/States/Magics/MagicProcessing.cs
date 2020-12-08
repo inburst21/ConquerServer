@@ -174,7 +174,9 @@ namespace Comet.Game.States.Magics
                     await AbortMagicAsync(true);
                     break;
                 case MagicState.Delay:
-                    return false;
+                    if (!(m_pOwner is Monster))
+                        return false;
+                    break;
                 case MagicState.Launch:
                     if (!(m_pOwner is Monster))
                         return false;
@@ -250,7 +252,7 @@ namespace Comet.Game.States.Magics
             if (magic.UseMana != 0)
             {
                 if (!map.IsTrainingMap() && user != null)
-                    await user.DecEquipmentDurability(false, (int) HitByMagic(), (ushort)m_pMagic.UseItemNum);
+                    await user.DecEquipmentDurabilityAsync(false, (int) HitByMagic(), (ushort)m_pMagic.UseItemNum);
 
                 if (await Kernel.ChanceCalcAsync(7) && user != null)
                     await user.SendGemEffectAsync();
@@ -421,7 +423,7 @@ namespace Comet.Game.States.Magics
                 await m_pOwner.KillAsync(targetRole, GetDieMode());
             }
             else if (user != null)
-                await user.SendWeaponMagic2(targetRole);
+                await user.SendWeaponMagic2Async(targetRole);
 
             return true;
         }
@@ -547,7 +549,7 @@ namespace Comet.Game.States.Magics
                     await m_pOwner.KillAsync(target, GetDieMode());
                 else if (!bMagic2Dealt && await Kernel.ChanceCalcAsync(5d) && user != null)
                 {
-                    await user.SendWeaponMagic2(target);
+                    await user.SendWeaponMagic2Async(target);
                     bMagic2Dealt = true;
                 }
             }

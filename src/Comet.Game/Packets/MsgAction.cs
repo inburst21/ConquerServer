@@ -406,17 +406,18 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginComplete: // 130
-                    int bonusCount = await user.BonusCount();
+                    int bonusCount = await user.BonusCountAsync();
                     if (bonusCount > 0)
-                        _ = user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
+                        await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
 
-                    await client.Character.SendMultipleExp();
-                    await client.Character.SendBless();
-                    await client.Character.SendNobilityInfo();
+                    await user.LoadStatusAsync();
+                    await client.Character.SendMultipleExpAsync();
+                    await client.Character.SendBlessAsync();
+                    await client.Character.SendNobilityInfoAsync();
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
 
-                    await user.SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
+                    // await user.SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
                     await client.SendAsync(this);
                     break;
 
@@ -461,7 +462,7 @@ namespace Comet.Game.Packets
                     if (user.IsAlive)
                         return;
 
-                    await user.SetGhost();
+                    await user.SetGhostAsync();
                     break;
 
                 case ActionType.CharacterAvatar:

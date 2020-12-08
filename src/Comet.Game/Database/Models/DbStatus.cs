@@ -22,8 +22,13 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO.Pipes;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -41,5 +46,11 @@ namespace Comet.Game.Database.Models
         [Column("remain_time")] public virtual uint RemainTime { get; set; }
         [Column("end_time")] public virtual DateTime EndTime { get; set; }
         [Column("interval_time")] public virtual uint IntervalTime { get; set; }
+
+        public static async Task<List<DbStatus>> GetAsync(uint idUser)
+        {
+            await using var ctx = new ServerDbContext();
+            return await ctx.Status.Where(x => x.OwnerId == idUser).ToListAsync();
+        }
     }
 }

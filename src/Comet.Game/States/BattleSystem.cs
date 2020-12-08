@@ -83,7 +83,7 @@ namespace Comet.Game.States
             }
 
 
-            if (user != null && await user.AutoSkillAttack(target))
+            if (user != null && await user.AutoSkillAttackAsync(target))
             {
                 return true;
             }
@@ -115,7 +115,7 @@ namespace Comet.Game.States
             DynamicNpc npc = target as DynamicNpc;
             if (npc?.IsAwardScore() == true)
             {
-                user?.AddSynWarScore(npc, lifeLost);
+                user?.AddSynWarScoreAsync(npc, lifeLost);
             }
 
             if (user != null && (target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true))
@@ -507,7 +507,7 @@ namespace Comet.Game.States
                     nAtk = (int)(nAtk * 3.5f);
                 else if (nDeltaLev < -20)
                     nAtk *= 5;
-                nDamage = nAtk - nDef;
+                // nDamage = nAtk - nDef;
             }
 
             return Calculations.CutTrail(0, nDamage);

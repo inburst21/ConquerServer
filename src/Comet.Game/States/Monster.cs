@@ -115,6 +115,7 @@ namespace Comet.Game.States
 
             Life = MaxLife;
 
+            m_idUseMagic = m_dbMonster.MagicType;
             m_monsterMagics = Kernel.RoleManager.GetMonsterMagics(m_dbMonster.Type);
 
             if (m_dbMonster.MagicType > 0)
@@ -197,8 +198,6 @@ namespace Comet.Game.States
 
         private async Task<bool> CheckMagicAttackAsync()
         {
-            m_idUseMagic = 0;
-
             if (m_actTarget == null)
                 return false;
 
@@ -293,7 +292,10 @@ namespace Comet.Game.States
             m_disappear.Startup(5);
 
             if (m_dbMonster.Action > 0)
+            {
                 await GameAction.ExecuteActionAsync(m_dbMonster.Action, user, this, null, "");
+                return;
+            }
 
             if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc() || attacker == null)
                 return;

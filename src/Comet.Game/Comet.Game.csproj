@@ -64,7 +64,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>../Release</OutputPath>
-    <DefineConstants>TRACE;NOBILITY;USE_API</DefineConstants>
+    <DefineConstants>TRACE;BATTLE_POWER;NOBILITY;USE_API</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 

@@ -4762,45 +4762,45 @@ namespace Comet.Game.States
             uint leaveTimes = uint.Parse(pszParam[1]);
             uint remainTime = uint.Parse(pszParam[2]);
             uint intervalTime = uint.Parse(pszParam[4]);
-            bool unknown = pszParam[5] != "0"; // ??
+            bool save = pszParam[5] != "0"; // ??
 
-            var status =  (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == action.Data);
-            if (status != null)
-            {
-                status.EndTime = DateTime.Now.AddSeconds(remainTime);
-                status.IntervalTime = intervalTime;
-                status.LeaveTimes = leaveTimes;
-                status.RemainTime = remainTime;
-                status.Sort = sort;
-                if (!await BaseRepository.SaveAsync(status))
-                {
-                    await Log.WriteLogAsync(LogLevel.Error,
-                        string.Format("ERROR: Could not update status {0}[{2}] to {1}", status.Id, action.Data,
-                            status.Status));
-                    return false;
-                }
-            }
-            else
-            {
-                status = new DbStatus
-                {
-                    EndTime = DateTime.Now.AddSeconds(remainTime),
-                    IntervalTime = intervalTime,
-                    LeaveTimes = leaveTimes,
-                    OwnerId = user.Identity,
-                    Power = 0,
-                    RemainTime = remainTime,
-                    Status = action.Data,
-                    Sort = sort
-                };
-                if (!await BaseRepository.SaveAsync(status))
-                {
-                    await Log.WriteLogAsync(LogLevel.Error, "ERROR: Could not save status");
-                    return false;
-                }
-            }
+            //var status =  (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == action.Data);
+            //if (status != null)
+            //{
+            //    status.EndTime = DateTime.Now.AddSeconds(remainTime);
+            //    status.IntervalTime = intervalTime;
+            //    status.LeaveTimes = leaveTimes;
+            //    status.RemainTime = remainTime;
+            //    status.Sort = sort;
+            //    if (!await BaseRepository.SaveAsync(status))
+            //    {
+            //        await Log.WriteLogAsync(LogLevel.Error,
+            //            string.Format("ERROR: Could not update status {0}[{2}] to {1}", status.Id, action.Data,
+            //                status.Status));
+            //        return false;
+            //    }
+            //}
+            //else
+            //{
+            //    status = new DbStatus
+            //    {
+            //        EndTime = DateTime.Now.AddSeconds(remainTime),
+            //        IntervalTime = intervalTime,
+            //        LeaveTimes = leaveTimes,
+            //        OwnerId = user.Identity,
+            //        Power = 0,
+            //        RemainTime = remainTime,
+            //        Status = action.Data,
+            //        Sort = sort
+            //    };
+            //    if (!await BaseRepository.SaveAsync(status))
+            //    {
+            //        await Log.WriteLogAsync(LogLevel.Error, "ERROR: Could not save status");
+            //        return false;
+            //    }
+            //}
 
-            await user.AttachStatusAsync(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0);
+            await user.AttachStatusAsync(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0, save);
             return true;
         }
 

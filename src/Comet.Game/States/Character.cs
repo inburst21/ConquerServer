@@ -71,10 +71,13 @@ namespace Comet.Game.States
         private TimeOut m_teamLeaderPos = new TimeOut(3);
         private TimeOut m_timeSync = new TimeOut(15);
         private TimeOut m_heavenBlessing = new TimeOut(60);
+        private TimeOut m_luckyAbsorbStart = new TimeOut(2);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
         private int m_blessPoints = 0;
+        private uint m_idLuckyTarget = 0;
+        private int m_luckyTimeCount = 0;
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -267,7 +270,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task SetGhost()
+        public async Task SetGhostAsync()
         {
             if (IsAlive) return;
 
@@ -1480,7 +1483,7 @@ namespace Comet.Game.States
             set => m_dbObject.Donation = value;
         }
 
-        public async Task SendNobilityInfo(bool broadcast = false)
+        public async Task SendNobilityInfoAsync(bool broadcast = false)
         {
             MsgPeerage msg = new MsgPeerage
             {
@@ -1767,7 +1770,7 @@ namespace Comet.Game.States
 
         public override bool IsBowman => UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true;
 
-        public async Task<bool> AutoSkillAttack(Role target)
+        public async Task<bool> AutoSkillAttackAsync(Role target)
         {
             foreach (var magic in MagicData.Magics.Values)
             {
@@ -1785,7 +1788,7 @@ namespace Comet.Game.States
             return false;
         }
 
-        public async Task SendWeaponMagic2(Role pTarget = null)
+        public async Task SendWeaponMagic2Async(Role pTarget = null)
         {
             Item item = null;
 
@@ -1868,7 +1871,7 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task<bool> DecEquipmentDurability(bool bAttack, int hitByMagic, ushort useItemNum)
+        public async Task<bool> DecEquipmentDurabilityAsync(bool bAttack, int hitByMagic, ushort useItemNum)
         {
             int nInc = -1 * useItemNum;
 
@@ -1886,12 +1889,12 @@ namespace Comet.Game.States
                         || i == Item.ItemPosition.Boots)
                     {
                         if (!bAttack)
-                            await AddEquipmentDurability(i, nInc);
+                            await AddEquipmentDurabilityAsync(i, nInc);
                     }
                     else
                     {
                         if (bAttack)
-                            await AddEquipmentDurability(i, nInc);
+                            await AddEquipmentDurabilityAsync(i, nInc);
                     }
                 }
                 else
@@ -1902,12 +1905,12 @@ namespace Comet.Game.States
                         || i == Item.ItemPosition.Boots)
                     {
                         if (!bAttack)
-                            await AddEquipmentDurability(i, -1);
+                            await AddEquipmentDurabilityAsync(i, -1);
                     }
                     else
                     {
                         if (bAttack)
-                            await AddEquipmentDurability(i, nInc);
+                            await AddEquipmentDurabilityAsync(i, nInc);
                     }
                 }
             }
@@ -1915,7 +1918,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task AddEquipmentDurability(Item.ItemPosition pos, int nInc)
+        public async Task AddEquipmentDurabilityAsync(Item.ItemPosition pos, int nInc)
         {
             if (nInc >= 0)
                 return;
@@ -1984,7 +1987,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task AddSynWarScore(DynamicNpc npc, int score)
+        public async Task AddSynWarScoreAsync(DynamicNpc npc, int score)
         {
             if (npc == null || score == 0)
                 return;
@@ -2006,7 +2009,7 @@ namespace Comet.Game.States
             npc.AddSynWarScore(Syndicate, score);
         }
 
-        public async Task<int> GetInterAtkRate()
+        public async Task<int> GetInterAtkRateAsync()
         {
             int nRate = USER_ATTACK_SPEED;
             int nRateR = 0, nRateL = 0;
@@ -2704,7 +2707,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<int> BonusCount()
+        public async Task<int> BonusCountAsync()
         {
             return await BonusRepository.CountAsync(m_dbObject.AccountIdentity);
         }
@@ -3473,7 +3476,23 @@ namespace Comet.Game.States
             if (CurrentEvent != null)
                 await CurrentEvent.OnMoveAsync(this);
 
+            if (QueryStatus(StatusSet.LUCKY_DIFFUSE) != null)
+            {
+                foreach (var user in Screen.Roles.Values.Where(x => x.IsPlayer() && x.QueryStatus(StatusSet.LUCKY_ABSORB)?.CasterId == Identity).Cast<Character>())
+                {
+                    await user.DetachStatusAsync(StatusSet.LUCKY_DIFFUSE);
+                }
+            }
+
+            m_luckyAbsorbStart.Clear();
+            m_idLuckyTarget = 0;
+
             await base.ProcessOnMoveAsync();
+        }
+
+        public override Task ProcessAfterMoveAsync()
+        {
+            return base.ProcessAfterMoveAsync();
         }
 
         public override async Task ProcessOnAttackAsync()
@@ -3563,7 +3582,7 @@ namespace Comet.Game.States
 
         #region Movement
 
-        public async Task<bool> SynPosition(ushort x, ushort y, int nMaxDislocation)
+        public async Task<bool> SynPositionAsync(ushort x, ushort y, int nMaxDislocation)
         {
             if (nMaxDislocation <= 0 || x == 0 && y == 0) // ignore in this condition
                 return true;
@@ -3640,7 +3659,7 @@ namespace Comet.Game.States
         public float ExperienceMultiplier =>
             !HasMultipleExp || m_dbObject.ExperienceMultiplier <= 0 ? 1f : m_dbObject.ExperienceMultiplier;
 
-        public async Task SendMultipleExp()
+        public async Task SendMultipleExpAsync()
         {
             if (RemainingExperienceSeconds > 0)
                 await SynchroAttributesAsync(ClientUpdateType.DoubleExpTimer, RemainingExperienceSeconds, false);
@@ -3666,7 +3685,7 @@ namespace Comet.Game.States
         {
             m_dbObject.ExperienceExpires = DateTime.Now.AddSeconds(nSeconds);
             m_dbObject.ExperienceMultiplier = nMultiplier;
-            await SendMultipleExp();
+            await SendMultipleExpAsync();
             return true;
         }
 
@@ -3674,7 +3693,7 @@ namespace Comet.Game.States
 
         #region Heaven Blessing
 
-        public async Task SendBless()
+        public async Task SendBlessAsync()
         {
             if (IsBlessed)
             {
@@ -3704,7 +3723,7 @@ namespace Comet.Game.States
             else
                 m_dbObject.HeavenBlessing = now.AddHours(amount);
 
-            await SendBless();
+            await SendBlessAsync();
             return true;
         }
 
@@ -4050,6 +4069,19 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Status
+
+        public async Task LoadStatusAsync()
+        {
+            var statusList = await DbStatus.GetAsync(Identity);
+            foreach (var status in statusList)
+            {
+                await AttachStatusAsync(status);
+            }
+        }
+
+        #endregion
+
         #region Timer
 
         public override async Task OnTimerAsync()
@@ -4144,7 +4176,7 @@ namespace Comet.Game.States
             {
                 if (BattleSystem != null
                     && BattleSystem.IsActive()
-                    && BattleSystem.NextAttack(await GetInterAtkRate()))
+                    && BattleSystem.NextAttack(await GetInterAtkRateAsync()))
                 {
                     await BattleSystem.ProcessAttackAsync();
                 }
@@ -4183,9 +4215,57 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
+            try
+            {
+                if (QueryStatus(StatusSet.LUCKY_DIFFUSE) != null) // user is caster
+                {
+
+                }
+                else if (QueryStatus(StatusSet.LUCKY_ABSORB) != null) // user is receiving
+                {
+
+                }
+
+                if (m_idLuckyTarget == 0)
+                {
+                    if (QueryStatus(StatusSet.LUCKY_ABSORB) == null)
+                    {
+                        foreach (var user in Screen.Roles.Values.Where(x => x.IsPlayer()).Cast<Character>())
+                        {
+                            if (user.QueryStatus(StatusSet.LUCKY_DIFFUSE) != null && GetDistance(user) <= 3)
+                            {
+                                m_idLuckyTarget = user.Identity;
+                                m_luckyAbsorbStart.Startup(3);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Character role = QueryRole(m_idLuckyTarget) as Character;
+                    if (role == null || GetDistance(role) > 3)
+                    {
+                        m_idLuckyTarget = 0;
+                        m_luckyAbsorbStart.Clear();
+                    }
+                    else if (m_luckyAbsorbStart.IsTimeOut())
+                    {
+                        await AttachStatusAsync(role, StatusSet.LUCKY_ABSORB, 0, 1, 0, 0);
+                        m_idLuckyTarget = 0;
+                        m_luckyAbsorbStart.Clear();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, $"Error in lucky time for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
             if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
             {
-                await SetGhost();
+                await SetGhostAsync();
                 m_ghost.Clear();
             }
 
@@ -4366,6 +4446,25 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Error on save curse");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                foreach (var status in StatusSet.Status.Values.Where(x => x.Model != null))
+                {
+                    if (status is StatusMore && status.RemainingTimes == 0)
+                        continue;
+
+                    status.Model.LeaveTimes = (uint) status.RemainingTimes;
+                    status.Model.RemainTime = (uint) status.RemainingTime;
+
+                    await BaseRepository.SaveAsync(status.Model);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on save status");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 

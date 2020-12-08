@@ -75,7 +75,7 @@ namespace Comet.Game.World.Managers
             NobilityRank rank = GetRanking(user.Identity);
             int position = GetPosition(user.Identity);
 
-            await user.SendNobilityInfo();
+            await user.SendNobilityInfoAsync();
 
             if (position != oldPosition && position < 50)
             {
@@ -84,7 +84,7 @@ namespace Comet.Game.World.Managers
                 {
                     Character targetUser = Kernel.RoleManager.GetUser(peer.UserIdentity);
                     if (targetUser != null)
-                        await targetUser.SendNobilityInfo(true);
+                        await targetUser.SendNobilityInfoAsync(true);
                 }
             }
 

@@ -460,6 +460,17 @@ namespace Comet.Game.Packets
                         ushort restSecs = ushort.Parse(szComs[7]);
                         ushort maxPerGen = ushort.Parse(szComs[8]);
 
+                        if (idMap == 0)
+                        {
+                            idMap = user.MapIdentity;
+                        }
+
+                        if (mapX == 0 || mapY == 0)
+                        {
+                            mapX = user.MapX;
+                            mapY = user.MapY;
+                        }
+
                         DbGenerator newGen = new DbGenerator
                         {
                             Mapid = idMap,

@@ -24,6 +24,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core.Mathematics;
+using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.Magics;
 using Comet.Game.World.Maps;
@@ -523,10 +524,10 @@ namespace Comet.Game.States.BaseEntities
                 case StatusSet.START_XP:
                 case StatusSet.INVISIBLE:
                 case StatusSet.SUPERMAN:
+                case StatusSet.CYCLONE:
                 case StatusSet.PARTIALLY_INVISIBLE:
                 case StatusSet.LUCKY_ABSORB:
                 case StatusSet.VORTEX:
-                case StatusSet.POISON_STAR:
                 case StatusSet.FLY:
                 case StatusSet.FATAL_STRIKE:
                 case StatusSet.AZURE_SHIELD:
@@ -556,30 +557,47 @@ namespace Comet.Game.States.BaseEntities
                 case StatusSet.HUGE_DAZED:
                 case StatusSet.DAZED:
                 case StatusSet.SHACKLED:
+                case StatusSet.POISON_STAR:
                 case StatusSet.TOXIC_FOG:
                     return true;
             }
             return false;
         }
 
-        public virtual async Task<bool> AppendStatusAsync(StatusInfoStruct pInfo)
+        public virtual async Task<bool> AttachStatusAsync(DbStatus status)
         {
-            if (pInfo.Times > 0)
+            if (Map == null)
+                return false;
+
+            if (status.LeaveTimes > 1)
             {
-                var pStatus = new StatusMore();
-                if (pStatus.Create(this, pInfo.Status, pInfo.Power, pInfo.Seconds, pInfo.Times))
-                    await StatusSet.AddObjAsync(pStatus);
+                var pNewStatus = new StatusMore
+                {
+                    Model = status
+                };
+                if (await pNewStatus.CreateAsync(this, (int) status.Status, status.Power, (int) status.RemainTime, (int) status.LeaveTimes))
+                {
+                    await StatusSet.AddObjAsync(pNewStatus);
+                    return true;
+                }
             }
             else
             {
-                var pStatus = new StatusOnce();
-                if (pStatus.Create(this, pInfo.Status, pInfo.Power, pInfo.Seconds, pInfo.Times))
-                    await StatusSet.AddObjAsync(pStatus);
+                var pNewStatus = new StatusOnce
+                {
+                    Model = status
+                };
+                if (await pNewStatus.CreateAsync(this, (int) status.Status, status.Power, (int) status.RemainTime, 0))
+                {
+                    await StatusSet.AddObjAsync(pNewStatus);
+                    return true;
+                }
             }
-            return true;
-        }
 
-        public virtual async Task<bool> AttachStatusAsync(Role pSender, int nStatus, int nPower, int nSecs, int nTimes, byte pLevel)
+            return false;
+        }
+        
+        public virtual async Task<bool> AttachStatusAsync(Role pSender, int nStatus, int nPower, int nSecs, int nTimes, byte pLevel, bool save = false)
         {
             if (Map == null)
                 return false;
@@ -614,7 +632,7 @@ namespace Comet.Game.States.BaseEntities
 
                 if (bChangeData)
                 {
-                    pStatus.ChangeData(nPower, nSecs, nTimes, pSender.Identity);
+                    await pStatus.ChangeDataAsync(nPower, nSecs, nTimes, pSender.Identity);
                 }
                 return true;
             }
@@ -623,7 +641,7 @@ namespace Comet.Game.States.BaseEntities
                 if (nTimes > 1)
                 {
                     var pNewStatus = new StatusMore();
-                    if (pNewStatus.Create(this, nStatus, nPower, nSecs, nTimes, pSender.Identity, pLevel))
+                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, nTimes, pSender.Identity, pLevel, save))
                     {
                         await StatusSet.AddObjAsync(pNewStatus);
                         return true;
@@ -632,7 +650,7 @@ namespace Comet.Game.States.BaseEntities
                 else
                 {
                     var pNewStatus = new StatusOnce();
-                    if (pNewStatus.Create(this, nStatus, nPower, nSecs, 0, pSender.Identity, pLevel))
+                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, 0, pSender.Identity, pLevel, save))
                     {
                         await StatusSet.AddObjAsync(pNewStatus);
                         return true;

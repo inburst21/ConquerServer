@@ -38,7 +38,7 @@ namespace Comet.Game.World
 {
     public sealed class Generator
     {
-        private const int _MAX_PER_GEN = 25;
+        private const int _MAX_PER_GEN = 50;
         private const int _MIN_TIME_BETWEEN_GEN = 5;
         private static uint m_idGenerator = 2000000;
 

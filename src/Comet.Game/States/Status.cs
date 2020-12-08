@@ -27,6 +27,8 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Core.Mathematics;
+using Comet.Game.Database;
+using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Shared;
@@ -78,7 +80,11 @@ namespace Comet.Game.States
 
         public int Power { get; set; }
 
+        public DbStatus Model { get; set; }
+
         public byte Level { get; private set; }
+
+        public int RemainingTimes => 0;
 
         public int Time => m_tKeep.GetInterval();
 
@@ -94,13 +100,21 @@ namespace Comet.Game.States
             return IsValid;
         }
 
-        public bool ChangeData(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0)
+        public async Task<bool> ChangeDataAsync(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0U)
         {
             try
             {
                 Power = nPower;
                 m_tKeep.SetInterval(nSecs * 1000);
                 m_tKeep.Update();
+
+                if (Model != null)
+                {
+                    Model.Power = nPower;
+                    Model.IntervalTime = (uint) nSecs;
+                    Model.EndTime = DateTime.Now.AddSeconds(nSecs);
+                    await BaseRepository.SaveAsync(Model);
+                }
 
                 if (wCaster != 0)
                     CasterId = wCaster;
@@ -142,7 +156,7 @@ namespace Comet.Game.States
             return Task.CompletedTask;
         }
 
-        public bool Create(Role pRole, int nStatus, int nPower, int nSecs, int nTimes, uint caster = 0, byte level = 0)
+        public async Task<bool> CreateAsync(Role pRole, int nStatus, int nPower, int nSecs, int nTimes, uint caster = 0, byte level = 0, bool save = false)
         {
             m_pOwner = pRole;
             CasterId = caster;
@@ -154,6 +168,22 @@ namespace Comet.Game.States
             m_tInterval = new TimeOutMS(1000);
             m_tInterval.Update();
             Level = level;
+
+            if (save)
+            {
+                Model = new DbStatus
+                {
+                    Status = (uint) nStatus,
+                    Power = nPower,
+                    IntervalTime = (uint) nSecs,
+                    LeaveTimes = 0,
+                    RemainTime = (uint) nSecs,
+                    EndTime = DateTime.Now.AddSeconds(nSecs),
+                    OwnerId = m_pOwner.Identity,
+                    Sort = 0
+                };
+            }
+
             return true;
         }
     }
@@ -183,7 +213,11 @@ namespace Comet.Game.States
 
         public int Power { get; set; }
 
+        public DbStatus Model { get; set; }
+
         public byte Level { get; private set; }
+
+        public int RemainingTimes => m_nTimes;
 
         public int RemainingTime => m_tKeep.GetRemain();
 
@@ -199,15 +233,27 @@ namespace Comet.Game.States
             return IsValid;
         }
 
-        public bool ChangeData(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0)
+        public async Task<bool> ChangeDataAsync(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0U)
         {
             try
             {
                 Power = nPower;
                 m_tKeep.SetInterval(nSecs);
                 m_tKeep.Update();
-
                 CasterId = wCaster;
+
+                if (nTimes > 0)
+                    m_nTimes = nTimes;
+
+                if (Model != null)
+                {
+                    Model.Power = nPower;
+                    Model.LeaveTimes = (uint) nTimes;
+                    Model.IntervalTime = (uint)nSecs;
+                    Model.EndTime = DateTime.Now.AddSeconds(nSecs);
+                    await BaseRepository.SaveAsync(Model);
+                }
+
                 return true;
             }
             catch
@@ -288,7 +334,7 @@ namespace Comet.Game.States
             // todo destroy and detach status
         }
 
-        public bool Create(Role pRole, int nStatus, int nPower, int nSecs, int nTimes, uint wCaster = 0, byte level = 0)
+        public Task<bool> CreateAsync(Role pRole, int nStatus, int nPower, int nSecs, int nTimes, uint wCaster = 0, byte level = 0, bool save = false)
         {
             m_pOwner = pRole;
             Identity = nStatus;
@@ -298,7 +344,23 @@ namespace Comet.Game.States
             m_nTimes = nTimes;
             CasterId = wCaster;
             Level = level;
-            return true;
+
+            if (save)
+            {
+                Model = new DbStatus
+                {
+                    Status = (uint)nStatus,
+                    Power = nPower,
+                    IntervalTime = (uint)nSecs,
+                    LeaveTimes = (uint) nTimes,
+                    RemainTime = (uint)nSecs,
+                    EndTime = DateTime.Now.AddSeconds(nSecs),
+                    OwnerId = m_pOwner.Identity,
+                    Sort = 0
+                };
+            }
+
+            return Task.FromResult(true);
         }
     }
 
@@ -511,11 +573,16 @@ namespace Comet.Game.States
             if (nFlag > 192)
                 return false;
 
-            if (!Status.TryRemove(nFlag, out _))
+            if (!Status.TryRemove(nFlag, out var status))
                 return false;
 
             ulong uFlag = 1UL << (nFlag - 1);
             StatusFlag &= ~uFlag;
+
+            if (status?.Model != null)
+            {
+                await BaseRepository.DeleteAsync(status.Model);
+            }
 
             await m_pOwner.SetAttributesAsync(ClientUpdateType.StatusFlag, StatusFlag);
             return true;
@@ -571,6 +638,8 @@ namespace Comet.Game.States
 
         int Time { get; }
 
+        int RemainingTimes { get; }
+
         int RemainingTime { get; }
 
         byte Level { get; }
@@ -590,10 +659,12 @@ namespace Comet.Game.States
         /// <param name="nSecs">The remaining time to the status.</param>
         /// <param name="nTimes">How many times the status will appear. If StatusMore.</param>
         /// <param name="wCaster">The identity of the caster.</param>
-        bool ChangeData(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0);
+        Task<bool> ChangeDataAsync(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0);
 
         bool IncTime(int nMilliSecs, int nLimit);
         bool ToFlash();
         Task OnTimerAsync();
+
+        DbStatus Model { get; set; }
     }
 }
