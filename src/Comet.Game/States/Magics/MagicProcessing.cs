@@ -258,9 +258,8 @@ namespace Comet.Game.States.Magics
 
             if (magic.IntoneSpeed <= 0)
             {
-                if (!await LaunchAsync(magic))
+                if (!await LaunchAsync(magic)) // pode ocorrer caso o monstro desapareça, morra antes da hora
                 {
-                    // fail? cancel
                     m_tApply.Clear();
                     ResetDelay();
                 }
@@ -275,7 +274,7 @@ namespace Comet.Game.States.Magics
                     }
 
                     m_tApply ??= new TimeOutMS();
-                    m_tApply.Startup(magic.DelayMs);
+                    m_tApply.Startup(0);
                     m_state = MagicState.Launch;
                 }
             }

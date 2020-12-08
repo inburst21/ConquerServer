@@ -4092,19 +4092,19 @@ namespace Comet.Game.States
                     {
                         await StatusSet.DelObjAsync(status.Identity);
 
-                        if (status.Identity == StatusSet.SUPERMAN || status.Identity == StatusSet.CYCLONE
+                        if ((status.Identity == StatusSet.SUPERMAN || status.Identity == StatusSet.CYCLONE)
                             && (QueryStatus(StatusSet.SUPERMAN) == null && QueryRole(StatusSet.CYCLONE) == null))
                         {
                             int currentPoints = Kernel.RoleManager.GetSupermanPoints(Identity);
-                            if (XpPoints >= 25 
-                                && currentPoints < XpPoints)
+                            if (KoCount >= 25 
+                                && currentPoints < KoCount)
                             {
-                                await Kernel.RoleManager.AddOrUpdateSupermanAsync(Identity, XpPoints);
+                                await Kernel.RoleManager.AddOrUpdateSupermanAsync(Identity, KoCount);
                                 int rank = Kernel.RoleManager.GetSupermanRank(Identity);
                                 if (rank < 100)
-                                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, XpPoints, rank), MsgTalk.TalkChannel.Talk);
+                                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), MsgTalk.TalkChannel.Talk);
                             }
-                            XpPoints = 0;
+                            KoCount = 0;
                         }
                     }
                 }
