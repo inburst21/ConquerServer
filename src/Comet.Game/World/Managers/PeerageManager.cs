@@ -185,7 +185,7 @@ namespace Comet.Game.World.Managers
             const int MAX_PER_PAGE_I = 10;
             const int MAX_PAGES = 5;
 
-            int currentPagesNum = Math.Max(1, Math.Min(PeerageSet.Count / MAX_PER_PAGE_I, MAX_PAGES));
+            int currentPagesNum = Math.Max(1, Math.Min(PeerageSet.Count / MAX_PER_PAGE_I + 1, MAX_PAGES));
             if (page >= currentPagesNum)
                 return;
 
