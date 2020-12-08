@@ -452,14 +452,17 @@ namespace Comet.Game.States.Magics
                 MapY = m_pOwner.MapY
             };
 
+            int exp = 0;
             foreach (var target in setTarget)
             {
                 if (!target.IsAlive)
                     continue;
 
-                int power = magic.Power;
+                int power = (int) Math.Min(magic.Power, target.MaxLife - target.Life);
                 if (power == Calculations.ADJUST_FULL)
                     power = (int) (target.MaxLife - target.Life);
+
+                exp += power;
 
                 msg.Append(target.Identity, power, false);
 
@@ -470,8 +473,11 @@ namespace Comet.Game.States.Magics
                 }
             }
 
+            if (targetRole.Map.IsTrainingMap())
+                exp = Math.Max(exp, magic.Power);
+
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
-            await AwardExpOfLife(targetRole, AWARDEXP_BY_TIMES, true);
+            await AwardExpAsync(0, exp, true);
             return true;
         }
 
