@@ -1378,6 +1378,8 @@ namespace Comet.Game.States.Items
             return isNonSuchItem;
         }
 
+        public bool IsSuspicious() => false;
+
         public bool IsMonopoly()
         {
             return (m_dbItemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;

@@ -1324,6 +1324,12 @@ namespace Comet.Game.States
             if (item == null)
                 return false;
 
+            if (Booth?.QueryItem(idItem) != null)
+                return false;
+
+            if (Trade != null)
+                return false;
+
             await Log.GmLog("drop_item",
                 $"{Name}({Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.OriginalMaximumDurability}\r\n\t{item.ToJson()}");
 
@@ -1365,6 +1371,9 @@ namespace Comet.Game.States
         public async Task<bool> DropSilverAsync(uint amount)
         {
             if (amount > 10000000)
+                return false;
+
+            if (Trade != null)
                 return false;
 
             Point pos = new Point(MapX, MapY);

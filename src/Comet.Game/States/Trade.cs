@@ -89,6 +89,13 @@ namespace Comet.Game.States
                 return false;
             }
 
+            if (item.IsSuspicious())
+            {
+                await sender.SendAsync(Language.StrNotToTrade);
+                await sender.SendAsync(RemoveMsg(idItem));
+                return false;
+            }
+
             if (item.IsLocked() && !sender.IsValidTradePartner(target.Identity))
             {
                 await sender.SendAsync(Language.StrNotToTrade);
@@ -239,9 +246,9 @@ namespace Comet.Game.States
             DbTrade dbTrade = new DbTrade
             {
                 UserIpAddress = User1.Client.IPAddress,
-                UserMacAddress = "Unknown",
+                UserMacAddress = User1.Client.MacAddress,
                 TargetIpAddress = User2.Client.IPAddress,
-                TargetMacAddress = "Unknown",
+                TargetMacAddress = User1.Client.MacAddress,
                 MapIdentity = User1.MapIdentity,
                 TargetEmoney = m_emoney2,
                 TargetMoney = m_money2,

@@ -63,7 +63,8 @@ namespace Comet.Game.States
         public uint AccountIdentity { get; set; }
         public byte VipLevel { get; set; }
         public ushort AuthorityLevel { get; set; }
-        
+        public string MacAddress { get; set; } = "Unknown";
+
         public override Task<int> SendAsync(byte[] packet)
         {
             Kernel.NetworkMonitor.Send(packet.Length);
