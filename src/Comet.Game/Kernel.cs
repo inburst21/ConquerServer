@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
@@ -178,5 +179,42 @@ namespace Comet.Game
                 return false;
             }
         }
+
+        public static bool IsValidName(string szName)
+        {
+            foreach (var c in szName)
+            {
+                if (c < ' ')
+                    return false;
+                switch (c)
+                {
+                    case ' ':
+                    case ';':
+                    case ',':
+                    case '/':
+                    case '\\':
+                    case '=':
+                    case '%':
+                    case '@':
+                    case '\'':
+                    case '"':
+                    case '[':
+                    case ']':
+                    case '?':
+                    case '{':
+                    case '}':
+                        return false;
+                }
+            }
+
+            string lower = szName.ToLower();
+            return _invalidNameChar.All(part => !lower.Contains(part));
+        }
+
+        private static readonly string[] _invalidNameChar =
+        {
+            "{", "}", "[", "]", "(", ")", "\"", "[gm]", "[pm]", "'", "´", "`", "admin", "helpdesk", " ",
+            "bitch", "puta", "whore", "ass", "fuck", "cunt", "fdp", "porra", "poha", "caralho", "caraio"
+        };
     }
 }

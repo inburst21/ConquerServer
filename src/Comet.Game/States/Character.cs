@@ -3236,7 +3236,13 @@ namespace Comet.Game.States
                 return false;
             }
 
-            // todo check string and name
+            if (name.Length > 15)
+            {
+                return false;
+            }
+
+            if (!Kernel.IsValidName(name))
+                return false;
 
             if (Kernel.SyndicateManager.GetSyndicate(name) != null)
             {

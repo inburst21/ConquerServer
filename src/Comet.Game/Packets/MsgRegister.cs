@@ -54,6 +54,9 @@ namespace Comet.Game.Packets
             10, 11, 13, 14, 15, 24, 30, 35, 37, 38, 39, 40
         };
 
+        private static readonly ushort[] m_startX = {430, 423, 439, 428, 452, 464, 439};
+        private static readonly ushort[] m_startY = {378, 394, 384, 365, 365, 378, 396};
+
         // Packet Properties
         public string Username { get; set; }
         public string CharacterName { get; set; }
@@ -106,6 +109,12 @@ namespace Comet.Game.Packets
                 return;
             }
 
+            if (!Kernel.IsValidName(CharacterName))
+            {
+                await client.SendAsync(RegisterInvalid);
+                return;
+            }
+
             // Validate character creation input
             if (!Enum.IsDefined(typeof(BodyType), Mesh) ||
                 !Enum.IsDefined(typeof(BaseClassType), Class))
@@ -114,33 +123,13 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            DbPointAllot allot = Kernel.RoleManager.GetPointAllot((ushort) (Class/10), 1);
-            if (allot == null)
+            DbPointAllot allot = Kernel.RoleManager.GetPointAllot((ushort) (Class / 10), 1) ?? new DbPointAllot
             {
-                allot = new DbPointAllot
-                {
-                    Strength = 4,
-                    Agility = 6,
-                    Vitality = 12,
-                    Spirit = 0
-                };
-            }
-
-            switch(client.AuthorityLevel)
-            {
-                case 4:
-                case 5:
-                    const string PM_S = "[PM]";
-                    if (CharacterName.Length + PM_S.Length > 16)
-                    {
-                        CharacterName = CharacterName.Substring(0, 16 - (16 - CharacterName.Length + PM_S.Length)) + PM_S;
-                    }
-                    else
-                    {
-                        CharacterName += PM_S;
-                    }
-                    break;
-            }
+                Strength = 4,
+                Agility = 6,
+                Vitality = 12,
+                Spirit = 0
+            };
 
             // Create the character
             var character = new DbCharacter
@@ -152,25 +141,25 @@ namespace Comet.Game.Packets
                 Mesh = Mesh,
                 Silver = 1000,
                 Level = 1,
-                MapID = 1010,
-                X = 61,
-                Y = 109,
+                MapID = 1020,
+                X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
+                Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
                 Strength = allot.Strength,
                 Agility = allot.Agility,
                 Vitality = allot.Vitality,
-                Spirit = allot.Spirit
+                Spirit = allot.Spirit,
+                HealthPoints =
+                    (ushort) (allot.Strength * 3
+                              + allot.Agility * 3
+                              + allot.Spirit * 3
+                              + allot.Vitality * 24),
+                ManaPoints = (ushort) (allot.Spirit * 5),
+                Registered = DateTime.Now,
+                ExperienceMultiplier = 5,
+                ExperienceExpires = DateTime.Now.AddHours(12),
+                HeavenBlessing = DateTime.Now.AddDays(30),
+                AutoAllot = 1
             };
-            character.HealthPoints =
-                (ushort) (character.Strength * 3
-                          + character.Agility * 3
-                          + character.Spirit * 3
-                          + character.Vitality * 24);
-            character.ManaPoints = (ushort) (character.Spirit * 5);
-            character.Registered = DateTime.Now;
-            character.ExperienceMultiplier = 10;
-            character.ExperienceExpires = DateTime.Now.AddHours(12);
-            character.HeavenBlessing = DateTime.Now.AddDays(30);
-            character.AutoAllot = 1;
 
             // Generate a random look for the character
             BodyType body = (BodyType) Mesh;
@@ -196,7 +185,7 @@ namespace Comet.Game.Packets
                 Kernel.Registration.Remove(client.Creation.Token);
                 await client.SendAsync(RegisterOk);
 
-                await GenerateInitialEquipment(character);
+                await GenerateInitialEquipmentAsync(character);
             }
             catch
             {
@@ -204,22 +193,23 @@ namespace Comet.Game.Packets
             }
         }
 
-        private async Task GenerateInitialEquipment(DbCharacter user)
+        private async Task GenerateInitialEquipmentAsync(DbCharacter user)
         {
             await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
             await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
             await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
 
-            await CreateItemAsync((uint) await Kernel.NextAsync(132003, 132005), user.Identity, Item.ItemPosition.Armor);
+            await CreateItemAsync((uint) await Kernel.NextAsync(132003, 132005), user.Identity,
+                Item.ItemPosition.Armor);
             switch (user.Profession)
             {
                 case 10:
                 case 20:
-                    await CreateItemAsync((uint)await Kernel.NextAsync(150003, 150005), user.Identity, Item.ItemPosition.Ring);
-                    await CreateItemAsync(410301 + (uint) (await Kernel.NextAsync(0, 6) * 100), user.Identity, Item.ItemPosition.RightHand);
+                    await CreateItemAsync(150005, user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync(410301, user.Identity, Item.ItemPosition.RightHand);
                     break;
                 case 40:
-                    await CreateItemAsync((uint)await Kernel.NextAsync(150003, 150005), user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync(150005, user.Identity, Item.ItemPosition.Ring);
                     await CreateItemAsync(500301, user.Identity, Item.ItemPosition.RightHand);
                     await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.LeftHand);
 
@@ -232,7 +222,7 @@ namespace Comet.Game.Packets
                     await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
                     await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
                     await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
-                    await CreateItemAsync((uint)await Kernel.NextAsync(152013, 152015), user.Identity, Item.ItemPosition.Ring);
+                    await CreateItemAsync(152015, user.Identity, Item.ItemPosition.Ring);
                     await CreateItemAsync(421301, user.Identity, Item.ItemPosition.RightHand);
                     break;
             }
