@@ -193,13 +193,11 @@ namespace Comet.Game.States.Items
             }
 
             var type = item.GetItemtype()/10000;
-            if (item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && type != 8 && item.Itemtype.IdAction > 0 && !await SpendItemAsync(item))
-            {
-                return false;
-            }
 
             if (item.Itemtype.IdAction > 0)
-                return await GameAction.ExecuteActionAsync(item.Itemtype.IdAction, m_user, null, item, "");
+                return await GameAction.ExecuteActionAsync(item.Itemtype.IdAction, m_user, null, item, "") &&
+                       item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && type != 8 && item.Itemtype.IdAction > 0 &&
+                       !await SpendItemAsync(item);
 
             return false;
         }

@@ -156,9 +156,19 @@ namespace Comet.Game.Packets
             {
                 case ActionType.LoginSpawn: // 74
                     Identity = client.Character.Identity;
-                    Command = client.Character.MapIdentity;
-                    ArgumentX = client.Character.MapX;
-                    ArgumentY = client.Character.MapY;
+                    GameMap targetMap = Kernel.MapManager.GetMap(client.Character.MapIdentity);
+                    if (targetMap == null)
+                    {
+                        Command = 1002;
+                        ArgumentX = 430;
+                        ArgumentX = 378;
+                    }
+                    else
+                    {
+                        Command = targetMap.MapDoc;
+                        ArgumentX = client.Character.MapX;
+                        ArgumentY = client.Character.MapY;
+                    }
 
                     if (user.Life == 0)
                         await user.SetAttributesAsync(ClientUpdateType.Hitpoints, 1);

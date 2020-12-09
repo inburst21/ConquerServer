@@ -154,8 +154,8 @@ namespace Comet.Game.World.Maps
             }
         }
 
-        public int BlocksX => Width / GameBlock.BLOCK_SIZE;
-        public int BlocksY => Height / GameBlock.BLOCK_SIZE;
+        public int BlocksX => (int) Math.Ceiling(Width / (double) GameBlock.BLOCK_SIZE);
+        public int BlocksY => (int) Math.Ceiling(Height / (double) GameBlock.BLOCK_SIZE);
 
         public ulong Flag { get; set; }
         public int PlayerCount => m_users.Count;

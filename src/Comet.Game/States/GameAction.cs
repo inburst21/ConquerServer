@@ -3426,10 +3426,13 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (paramStrings.Length >= 4 && byte.TryParse(paramStrings[3], out var save) && save != 0 && !map.IsRecordDisable())
-                await user.SavePositionAsync(idMap, x, y);
+            if (!user.Map.IsTeleportDisable() ||
+                (paramStrings.Length >= 4 && byte.TryParse(paramStrings[3], out var save) && save != 0))
+            {
+                return await user.FlyMapAsync(idMap, x, y);
+            }
 
-            return await user.FlyMapAsync(idMap, x, y);
+            return false;
         }
 
         private static async Task<bool> ExecuteUserRecordpoint(DbAction action, string param, Character user, Role role, Item item, string input)

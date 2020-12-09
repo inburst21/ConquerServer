@@ -330,7 +330,7 @@ namespace Comet.Game.World.Managers
 
         public int GetLevelLimit()
         {
-            return m_dicLevExp.Count;
+            return m_dicLevExp.Count + 1;
         }
 
         public DbRebirth GetRebirth(int profNow, int profNext, int currMete)

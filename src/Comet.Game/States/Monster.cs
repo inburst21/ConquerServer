@@ -347,11 +347,11 @@ namespace Comet.Game.States
                 await DropItemAsync(Item.TYPE_DRAGONBALL, idDropOwner);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync(100, 15000))
+            else if (await Kernel.ChanceCalcAsync(80, 15000))
             {
                 await DropItemAsync(Item.TYPE_METEOR, idDropOwner);
             }
-            else if (await Kernel.ChanceCalcAsync(.1d))
+            else if (await Kernel.ChanceCalcAsync(100, 22500))
             {
                 uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
                 uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
@@ -367,21 +367,21 @@ namespace Comet.Game.States
             int chance = BattleSystem.AdjustDrop(500, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
             {
-                dropNum = 1 + await Kernel.NextAsync(5, 9); // drop 6-10 items
+                dropNum = 1 + await Kernel.NextAsync(4, 7); // drop 6-10 items
             }
             else
             {
                 chance += BattleSystem.AdjustDrop(750, attacker.Level, Level);
                 if (rate < Math.Min(10000, chance))
                 {
-                    dropNum = 1 + await Kernel.NextAsync(3, 6); // drop 4-7 items
+                    dropNum = 1 + await Kernel.NextAsync(2, 4); // drop 4-7 items
                 }
                 else
                 {
                     chance += BattleSystem.AdjustDrop(1000, attacker.Level, Level);
                     if (rate < Math.Min(10000, chance))
                     {
-                        dropNum = 1 + await Kernel.NextAsync(1, 4); // drop 4-7 items
+                        dropNum = 1 + await Kernel.NextAsync(1, 3); // drop 4-7 items
                     }
                     else
                     {

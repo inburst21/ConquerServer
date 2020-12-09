@@ -64,6 +64,7 @@ namespace Comet.Game.World.Managers
             foreach (var dbNpc in await NpcRepository.GetAsync())
             {
                 Npc npc = new Npc(dbNpc);
+
                 if (!await npc.InitializeAsync())
                 {
                     await Log.WriteLogAsync(LogLevel.Warning, $"Could not load NPC {dbNpc.Id} {dbNpc.Name}");
