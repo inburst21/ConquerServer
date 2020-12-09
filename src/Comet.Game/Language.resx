@@ -159,6 +159,9 @@
   <data name="StrBreakFriend" xml:space="preserve">
     <value>{0} broke up friendship with {1}.</value>
   </data>
+  <data name="StrCannotEnterTG" xml:space="preserve">
+    <value>You are not blessed and enter the Offline Training Ground.</value>
+  </data>
   <data name="StrCannotPickupOtherItems" xml:space="preserve">
     <value>Cannot pick up others items.</value>
   </data>
@@ -478,7 +481,7 @@
     <value>{0} has killed {1} monsters and is now rank {2} on KO Board.</value>
   </data>
   <data name="StrSynAbdicate" xml:space="preserve">
-    <value>Guild Leader {1} has abdicated the leadership to {2}.</value>
+    <value>Guild Leader {0} has abdicated the leadership to {1}.</value>
   </data>
   <data name="StrSynAddedEnemy" xml:space="preserve">
     <value>The Guild Leader {0} of the Guild {1} has added us to the enemies list.</value>

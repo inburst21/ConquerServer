@@ -81,5 +81,6 @@ namespace Comet.Game.Database.Models
         [Column("task_mask")] public virtual uint TaskMask { get; set; }
         [Column("home_id")] public virtual uint HomeIdentity { get; set; }
         [Column("lock_key")] public virtual ulong LockKey { get; set; }
+        [Column("auto_exercise")] public virtual DateTime? AutoExercise { get; set; }
     }
 }

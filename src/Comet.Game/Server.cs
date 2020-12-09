@@ -244,6 +244,10 @@ namespace Comet.Game
                         msg = new MsgDataArray();
                         break;
 
+                    case PacketType.MsgTraining:
+                        msg = new MsgTraining();
+                        break;
+
                     case PacketType.MsgTradeBuddy:
                         msg = new MsgTradeBuddy();
                         break;

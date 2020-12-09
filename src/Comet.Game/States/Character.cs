@@ -750,6 +750,22 @@ namespace Comet.Game.States
             return exp;
         }
 
+        public (int Level, ulong Experience) PreviewExpBallUsage(int amount = EXPBALL_AMOUNT)
+        {
+            long expBallExp = CalculateExpBall(amount);
+            byte newLevel = Level;
+            while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
+            {
+                DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(newLevel);
+                expBallExp -= (long)dbExp.Exp;
+                newLevel++;
+                if (newLevel < Kernel.RoleManager.GetLevelLimit()) continue;
+                expBallExp = 0;
+                break;
+            }
+            return (newLevel, (ulong) expBallExp);
+        }
+
         public void IncrementExpBall()
         {
             m_dbObject.ExpBallUsage = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
@@ -3648,6 +3664,41 @@ namespace Comet.Game.States
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region Offline TG
+
+        public int MaxTrainingMinutes => (int) (IsBlessed ? Math.Min(1440 + 60 * Client.VipLevel, (m_dbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes) : 0);
+
+        public ulong CurrentTrainingMinutes => (ulong) Math.Min(((DateTime.Now - m_dbObject.LoginTime).TotalMinutes / TimeSpan.TicksPerMinute * 10), MaxTrainingMinutes);
+
+        public ulong CurrentOfflineTraining => m_dbObject.AutoExercise == null
+            ? 0UL
+            : (ulong) ((DateTime.Now - m_dbObject.AutoExercise.Value).TotalMinutes / TimeSpan.TicksPerMinute * 10);
+
+        public bool IsOfflineTraining => m_dbObject.AutoExercise != null;
+
+        public Task EnterAutoExerciseAsync()
+        {
+            if (!IsBlessed)
+                return Task.CompletedTask;
+
+            m_dbObject.AutoExercise = DateTime.Now;
+            return SaveAsync();
+        }
+
+        public async Task LeaveAutoExerciseAsync()
+        {
+            
+        }
+
+        public (int Level, ulong Experience) GetCurrentOnlineTGExp()
+        {
+            const int MAX_REWARD = 6000;
+            
+            return PreviewExpBallUsage();
         }
 
         #endregion

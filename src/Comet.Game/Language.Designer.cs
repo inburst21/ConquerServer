@@ -187,6 +187,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You are not blessed and enter the Offline Training Ground..
+        /// </summary>
+        public static string StrCannotEnterTG {
+            get {
+                return ResourceManager.GetString("StrCannotEnterTG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Cannot pick up others items..
         /// </summary>
         public static string StrCannotPickupOtherItems {
@@ -1141,7 +1150,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {1} has abdicated the leadership to {2}..
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild Leader {0} has abdicated the leadership to {1}..
         /// </summary>
         public static string StrSynAbdicate {
             get {
