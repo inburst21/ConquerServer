@@ -1002,7 +1002,7 @@ namespace Comet.Game.States
         public override async Task<bool> CheckCrimeAsync(Role target)
         {
             if (target == null) return false;
-            if (!target.IsEvil() && !target.IsMonster())
+            if (!target.IsEvil() && !target.IsMonster() && !(target is DynamicNpc))
             {
                 if (!Map.IsTrainingMap() && !Map.IsDeadIsland() 
                                          && !Map.IsPrisionMap() 
@@ -4294,7 +4294,7 @@ namespace Comet.Game.States
 
                 if (m_idLuckyTarget == 0)
                 {
-                    if (QueryStatus(StatusSet.LUCKY_ABSORB) == null)
+                    if (QueryStatus(StatusSet.LUCKY_ABSORB) == null && QueryStatus(StatusSet.LUCKY_DIFFUSE) != null)
                     {
                         foreach (var user in Screen.Roles.Values.Where(x => x.IsPlayer()).Cast<Character>())
                         {

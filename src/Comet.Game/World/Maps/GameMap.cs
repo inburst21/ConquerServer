@@ -202,7 +202,11 @@ namespace Comet.Game.World.Maps
             }
 
             m_regions = await DbRegion.GetAsync(Identity);
+            return true;
+        }
 
+        public async Task LoadTrapsAsync()
+        {
             foreach (var dbTrap in (await DbTrap.GetAsync()).Where(x => x.MapId == Identity))
             {
                 MapTrap trap = new MapTrap(dbTrap);
@@ -212,8 +216,6 @@ namespace Comet.Game.World.Maps
                     continue;
                 }
             }
-
-            return true;
         }
 
         #region Query Role

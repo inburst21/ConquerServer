@@ -58,6 +58,7 @@ namespace Comet.Game.States.Events
         public virtual EventType Identity { get; } = EventType.None;
 
         public string Name { get; }
+
         public virtual GameMap Map { get; protected set; }
 
         public bool ToNextTime() => m_eventCheck.ToNextTime();
@@ -92,9 +93,9 @@ namespace Comet.Game.States.Events
             return Task.CompletedTask;
         }
 
-        public virtual Task OnReviveAsync(Character sender, bool selfRevive)
+        public virtual Task<bool> OnReviveAsync(Character sender, bool selfRevive)
         {
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
 
         public virtual Task OnTimerAsync()

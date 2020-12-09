@@ -30,11 +30,13 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
+using Comet.Game.World.Threading;
 using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -214,6 +216,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserStatusCheck: result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionGeneralLottery: result = await ExecuteGeneralLottery(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionChgMapSquare: result = await ExecuteActionChgMapSquare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionAchievements: result = true;  break;
 
                     case TaskActionType.ActionEventSetstatus: result = await ExecuteActionEventSetstatus(action, param, user, role, item, input); break;
@@ -229,6 +232,9 @@ namespace Comet.Game.States
                     case TaskActionType.ActionEventErase: result = await ExecuteActionEventErase(action, param, user, role, item, input); break;
                     case TaskActionType.ActionEventTeleport: result = await ExecuteActionEventTeleport(action, param, user, role, item, input); break;
                     case TaskActionType.ActionEventMassaction: result = await ExecuteActionEventMassaction(action, param, user, role, item, input); break;
+
+                    case TaskActionType.ActionEventRegister: result = await ExecuteActionEventRegister(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventExit: result = await ExecuteActionEventExit(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionTrapCreate: result = await ExecuteActionTrapCreate(action, param, user, role, item, input); break;
                     case TaskActionType.ActionTrapErase: result = await ExecuteActionTrapErase(action, param, user, role, item, input); break;
@@ -684,7 +690,7 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
+            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(user.InteractingNpc) ?? role as BaseNpc;
             if (npc == null)
                 return false;
 
@@ -860,10 +866,10 @@ namespace Comet.Game.States
             if (splitParam.Length < 4)
                 return false;
 
-            uint idMap = uint.Parse(splitParam[0]);
-            uint idItemtype = uint.Parse(splitParam[3]);
-            ushort x = ushort.Parse(splitParam[1]);
-            ushort y = ushort.Parse(splitParam[2]);
+            uint idMap = uint.Parse(splitParam[1]);
+            uint idItemtype = uint.Parse(splitParam[0]);
+            ushort x = ushort.Parse(splitParam[2]);
+            ushort y = ushort.Parse(splitParam[3]);
 
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map == null)
@@ -4914,6 +4920,41 @@ namespace Comet.Game.States
             return true;
         }
 
+        private static async Task<bool> ExecuteActionChgMapSquare(DbAction action, string param, Character user, Role role, Item item,
+            string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] splitParams = SplitParam(param, 5);
+
+            if (!uint.TryParse(splitParams[0], out var idMap)
+                || !ushort.TryParse(splitParams[1], out var x)
+                || !ushort.TryParse(splitParams[2], out var y)
+                || !ushort.TryParse(splitParams[3], out var cx)
+                || !ushort.TryParse(splitParams[4], out var cy))
+                return false;
+
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Warning, $"GameAction::ExecuteActionChgMapSquare invalid map {idMap}");
+                return false;
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                x = (ushort)(x + await Kernel.NextAsync(cx));
+                y = (ushort)(y + await Kernel.NextAsync(cy));
+
+                if (map.IsStandEnable(x, y))
+                    break;
+            }
+
+            await user.FlyMapAsync(idMap, x, y);
+            return true;
+        }
+
         #endregion
 
         #region Event
@@ -5346,6 +5387,41 @@ namespace Comet.Game.States
             return true;
         }
 
+        private static async Task<bool> ExecuteActionEventRegister(DbAction action, string param, Character user, Role role,
+            Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            GameEvent baseEvent;
+            switch (param.ToLower())
+            {
+                case "timedguildwar":
+                {
+                    baseEvent = Kernel.EventThread.GetEvent<TimedGuildWar>();
+                    break;
+                }
+                default:
+                    return false;
+            }
+
+            if (baseEvent == null)
+                return false;
+
+            await user.SignInEventAsync(baseEvent);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionEventExit(DbAction action, string param, Character user, Role role,
+            Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            await user.SignOutEventAsync();
+            return true;
+        }
+
         #endregion
 
         #region Trap
@@ -5691,16 +5767,7 @@ namespace Comet.Game.States
         ActionMstMagic = 802,
         ActionMstRefinery = 803,
         ActionMstLimit = 899,
-
-        //Family
-        ActionFamilyFirst = 900,
-        ActionFamilyCreate = 901,
-        ActionFamilyDestroy = 902,
-        ActionFamilyAttr = 917,
-        ActionFamilyUplev = 918,
-        ActionFamilyBpuplev = 919,
-        ActionFamilyLimit = 999,
-
+        
         //User
         ActionUserFirst = 1000,
         ActionUserAttr = 1001,
@@ -5781,8 +5848,26 @@ namespace Comet.Game.States
         ActionTeamChgmap = 1107,
         ActionTeamChkIsleader = 1501,
 
+        // User -> Events???
+        ActionElitePKInscribe = 1301,
+        ActionElitePKExit = 1302,
+        ActionElitePKCheck = 1303,
+
+        ActionTeamPKInscribe = 1311,
+        ActionTeamPKExit = 1312,
+        ActionTeamPKCheck = 1313,
+        ActionTeamPKUnknown1314 = 1314,
+        ActionTeamPKUnknown1315 = 1315,
+
+        ActionSkillTeamPKInscribe = 1321,
+        ActionSkillTeamPKExit = 1322,
+        ActionSkillTeamPKCheck = 1323,
+        ActionSkillTeamPKUnknown1324 = 1324,
+        ActionSkillTeamPKUnknown1325 = 1325,
+
         // User -> General
         ActionGeneralLottery = 1508,
+        ActionChgMapSquare = 1509,
         ActionAchievements = 1554,
 
         ActionUserLimit = 1999,
@@ -5802,6 +5887,9 @@ namespace Comet.Game.States
         ActionEventErase = 2011,
         ActionEventTeleport = 2012,
         ActionEventMassaction = 2013,
+
+        ActionEventRegister = 2050,
+        ActionEventExit = 2051,
         ActionEventLimit = 2099,
 
         //Traps

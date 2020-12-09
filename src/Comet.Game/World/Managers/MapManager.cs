@@ -87,6 +87,11 @@ namespace Comet.Game.World.Managers
                 if (await map.InitializeAsync())
                     GameMaps.TryAdd(map.Identity, map);
             }
+
+            foreach (var map in GameMaps.Values)
+            {
+                await map.LoadTrapsAsync();
+            }
         }
 
         public GameMap GetMap(uint idMap)

@@ -35,7 +35,7 @@ namespace Comet.Game.States
 {
     public sealed class MapTrap : Role
     {
-        private readonly TimeOut m_tFight;
+        private readonly TimeOutMS m_tFight;
         private readonly TimeOut m_tLifePeriod;
 
         private DbTrap m_dbTrap;
@@ -46,10 +46,13 @@ namespace Comet.Game.States
             m_dbTrap = trap;
 
             Identity = trap.Id;
+            MapIdentity = trap.MapId;
+            MapX = trap.PosX;
+            MapY = trap.PosY;
 
             m_tLifePeriod = new TimeOut();
             m_tLifePeriod.Clear();
-            m_tFight = new TimeOut();
+            m_tFight = new TimeOutMS();
             m_tFight.Clear();
         }
 

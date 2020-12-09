@@ -58,7 +58,14 @@ namespace Comet.Game.States.Events
 
         private readonly (ushort x, ushort y)[] m_revivePoints =
         {
-
+            (40, 147),
+            (55, 147),
+            (55, 128),
+            (40, 128),
+            (204, 107),
+            (220, 107),
+            (220, 127),
+            (204, 127)
         };
 
         private readonly uint[] m_poleIdentities = new uint[]
@@ -110,15 +117,15 @@ namespace Comet.Game.States.Events
             return true;
         }
 
-        public override Task OnReviveAsync(Character sender, bool selfRevive)
+        public override Task<bool> OnReviveAsync(Character sender, bool selfRevive)
         {
             if (sender == null || !selfRevive)
-                return Task.CompletedTask;
+                return Task.FromResult(false);
 
             UserData data = FindUser(sender.Identity) ?? CreateUserData(sender);
             data.Deaths += 1;
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         public override async Task<(uint id, ushort x, ushort y)> GetRevivePosition(Character sender)
