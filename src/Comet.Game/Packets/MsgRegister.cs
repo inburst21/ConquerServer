@@ -141,7 +141,7 @@ namespace Comet.Game.Packets
                 Mesh = Mesh,
                 Silver = 1000,
                 Level = 1,
-                MapID = 1020,
+                MapID = 1002,
                 X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
                 Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
                 Strength = allot.Strength,

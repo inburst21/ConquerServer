@@ -532,12 +532,6 @@ namespace Comet.Game.States.Magics
                     msg.ClearTargets();
                 }
 
-                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
-                {
-                    await user.SendEffectAsync("LuckyGuy", true);
-                    result.Damage *= 2;
-                }
-
                 msg.Append(target.Identity, result.Damage, true);
 
                 int lifeLost = (int)Math.Min(target.Life, result.Damage);
