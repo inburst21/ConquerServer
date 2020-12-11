@@ -495,6 +495,7 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.ClientPing:
                     await client.SendAsync(this);
+                    await client.SendAsync(new MsgData(DateTime.Now));
                     break;
 
                 case ItemActionType.EquipmentEnchant:

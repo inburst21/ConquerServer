@@ -384,6 +384,13 @@ namespace Comet.Game.States.Magics
             var result = await m_pOwner.BattleSystem.CalcPower(byMagic, m_pOwner, targetRole);
             int power = result.Damage;
 
+            Character user = m_pOwner as Character;
+            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+            {
+                await user.SendEffectAsync("LuckyGuy", true);
+                power *= 2;
+            }
+
             MsgMagicEffect msg = new MsgMagicEffect
             {
                 AttackerIdentity = m_pOwner.Identity,
@@ -397,7 +404,6 @@ namespace Comet.Game.States.Magics
 
             await CheckCrimeAsync(targetRole);
 
-            Character user = m_pOwner as Character;
             int totalExp = 0;
             if (power > 0)
             {
@@ -525,7 +531,13 @@ namespace Comet.Game.States.Magics
                     await m_pOwner.BroadcastRoomMsgAsync(msg, true);
                     msg.ClearTargets();
                 }
-                
+
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+                {
+                    await user.SendEffectAsync("LuckyGuy", true);
+                    result.Damage *= 2;
+                }
+
                 msg.Append(target.Identity, result.Damage, true);
 
                 int lifeLost = (int)Math.Min(target.Life, result.Damage);
@@ -590,6 +602,13 @@ namespace Comet.Game.States.Magics
             foreach (var target in result.Roles)
             {
                 var atkResult = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
+
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+                {
+                    await user.SendEffectAsync("LuckyGuy", true);
+                    atkResult.Damage *= 2;
+                }
+
                 int lifeLost = (int) Math.Min(atkResult.Damage, target.Life);
                 
                 await target.BeAttackAsync(HitByMagic(), m_pOwner, atkResult.Damage, true);
@@ -852,7 +871,7 @@ namespace Comet.Game.States.Magics
                 Tile targetTile = m_pOwner.Map[point.X, point.Y];
                 if (userTile.Elevation - targetTile.Elevation > 26)
                     continue;
-
+                
                 Role target = allTargets.FirstOrDefault(x => x.MapX == point.X && x.MapY == point.Y);
                 if (target == null || target.Identity == m_pOwner.Identity)
                     continue;
@@ -862,6 +881,13 @@ namespace Comet.Game.States.Magics
                     continue;
 
                 var result = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
+
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+                {
+                    await user.SendEffectAsync("LuckyGuy", true);
+                    result.Damage *= 2;
+                }
+
                 int lifeLost = (int)Math.Min(result.Damage, target.Life);
 
                 await target.BeAttackAsync(HitByMagic(), m_pOwner, result.Damage, true);
@@ -891,8 +917,7 @@ namespace Comet.Game.States.Magics
                 targets.Add(target);
             }
 
-            if (msg.Count > 0)
-                await m_pOwner.BroadcastRoomMsgAsync(msg, true);
+            await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
             await CheckCrimeAsync(targets.ToDictionary(x => x.Identity, x => x));
             await AwardExpAsync(0, battleExp, exp, magic);
@@ -931,6 +956,13 @@ namespace Comet.Game.States.Magics
                         break;
                 }
             }
+            
+            Character user = m_pOwner as Character;
+            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+            {
+                await user.SendEffectAsync("LuckyGuy", true);
+                power *= 2;
+            }
 
             MsgMagicEffect msg = new MsgMagicEffect
             {
@@ -945,7 +977,7 @@ namespace Comet.Game.States.Magics
 
             long battleExp = 0;
             int exp = 0;
-            Character user = m_pOwner as Character;
+            
             if (power > 0)
             {
                 int lifeLost = (int) Math.Max(0, Math.Min(target.Life, power));

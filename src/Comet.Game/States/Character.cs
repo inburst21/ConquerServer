@@ -69,9 +69,9 @@ namespace Comet.Game.States
         private TimeOut m_respawn = new TimeOut();
         private TimeOut m_mine = new TimeOut(2);
         private TimeOut m_teamLeaderPos = new TimeOut(3);
-        private TimeOut m_timeSync = new TimeOut(15);
         private TimeOut m_heavenBlessing = new TimeOut(60);
         private TimeOut m_luckyAbsorbStart = new TimeOut(2);
+        private TimeOut m_luckyStep = new TimeOut(1);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -109,6 +109,9 @@ namespace Comet.Game.States
             UserPackage = new UserPackage(this);
             Statistic = new UserStatistic(this);
             TaskDetail = new TaskDetail(this);
+
+            if (m_dbObject.LuckyTime != null)
+                m_luckyTimeCount = (int) (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds;
 
             m_energyTm.Update();
             m_autoHeal.Update();
@@ -2126,16 +2129,16 @@ namespace Comet.Game.States
                         return false;
                     case PkModeType.Team:
                         if (IsFriend(user.Identity))
-                            return false;
+                            return true;
                         if (IsMate(user.Identity))
-                            return false;
-                        if (Syndicate?.QueryMember(user.SyndicateIdentity) != null)
-                            return false;
+                            return true;
+                        if (Syndicate?.QueryMember(user.Identity) != null)
+                            return true;
                         if (Syndicate?.IsAlly(user.SyndicateIdentity) == true)
-                            return false;
+                            return true;
                         if (Team?.IsMember(user.Identity) == true)
-                            return false;
-                        return true;
+                            return true;
+                        return false;
                 }
             }
             else if (target is Monster monster)
@@ -2163,6 +2166,9 @@ namespace Comet.Game.States
 
         public override bool IsAttackable(Role attacker)
         {
+            if (attacker is Character && Map.IsPkDisable())
+                return false;
+
             return base.IsAttackable(attacker) && (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
@@ -2198,7 +2204,13 @@ namespace Comet.Game.States
 
                 if (targetUser.IsBlessed && !IsBlessed)
                 {
-
+                    if (QueryStatus(StatusSet.CURSED) == null)
+                        await AttachStatusAsync(this, StatusSet.CURSED, 0, 300, 0, 0, true);
+                    else
+                    {
+                        QueryStatus(StatusSet.CURSED).IncTime(300000, int.MaxValue);
+                        await QueryStatus(StatusSet.CURSED).ChangeDataAsync(0, QueryStatus(StatusSet.CURSED).RemainingTime, 0, 0);
+                    }
                 }
             }
             else if (target is Monster monster)
@@ -2221,6 +2233,12 @@ namespace Comet.Game.States
         {
             if (attacker == null)
                 return false;
+
+            if (IsLucky && await Kernel.ChanceCalcAsync(10, 100))
+            {
+                await SendEffectAsync("LuckyGuy", true);
+                power /= 10;
+            }
 
             if ((PreviousProfession == 25 || FirstProfession == 25) && bReflectEnable && await Kernel.ChanceCalcAsync(10d))
             {
@@ -2263,6 +2281,11 @@ namespace Comet.Game.States
             TransformationMesh = 0;
             Transformation = null;
             m_transformation.Clear();
+
+            if (QueryStatus(StatusSet.CYCLONE) != null || QueryStatus(StatusSet.SUPERMAN) != null)
+            {
+                await FinishXpAsync();
+            }
 
             await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
 
@@ -2473,8 +2496,16 @@ namespace Comet.Game.States
             if (CurrentEvent != null)
             {
                 await CurrentEvent.OnReviveAsync(this, !isSpell);
-                var revive = await CurrentEvent.GetRevivePosition(this);
-                await FlyMapAsync(revive.id, revive.x, revive.y);
+
+                if (isSpell)
+                {
+                    await FlyMapAsync(m_idMap, m_posX, m_posY);
+                }
+                else
+                {
+                    var revive = await CurrentEvent.GetRevivePosition(this);
+                    await FlyMapAsync(revive.id, revive.x, revive.y);
+                }
             }
             else if (chgMap || !IsBlessed && !isSpell)
             {
@@ -3799,6 +3830,18 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Lucky
+
+        public bool IsLucky => m_dbObject.LuckyTime.HasValue && m_dbObject.LuckyTime.Value > DateTime.Now;
+
+        public async Task SendLuckAsync()
+        {
+            if (IsLucky)
+                await SynchroAttributesAsync(ClientUpdateType.LuckyTimeTimer, (ulong) (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL);
+        }
+
+        #endregion
+
         #region XP and Stamina
 
         public byte Energy { get; private set; } = DEFAULT_USER_ENERGY;
@@ -3864,6 +3907,20 @@ namespace Comet.Game.States
         {
             XpPoints = 0;
             await StatusSet.DelObjAsync(StatusSet.START_XP);
+        }
+
+        public async Task FinishXpAsync()
+        {
+            int currentPoints = Kernel.RoleManager.GetSupermanPoints(Identity);
+            if (KoCount >= 25
+                && currentPoints < KoCount)
+            {
+                await Kernel.RoleManager.AddOrUpdateSupermanAsync(Identity, KoCount);
+                int rank = Kernel.RoleManager.GetSupermanRank(Identity);
+                if (rank < 100)
+                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), MsgTalk.TalkChannel.Talk);
+            }
+            KoCount = 0;
         }
 
         #endregion
@@ -4154,12 +4211,7 @@ namespace Comet.Game.States
         {
             if (Connection != ConnectionStage.Ready)
                 return;
-
-            if (m_timeSync.ToNextTime())
-            {
-                await SendAsync(new MsgData(DateTime.Now));
-            }
-
+            
             try
             {
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
@@ -4193,16 +4245,7 @@ namespace Comet.Game.States
                         if ((status.Identity == StatusSet.SUPERMAN || status.Identity == StatusSet.CYCLONE)
                             && (QueryStatus(StatusSet.SUPERMAN) == null && QueryRole(StatusSet.CYCLONE) == null))
                         {
-                            int currentPoints = Kernel.RoleManager.GetSupermanPoints(Identity);
-                            if (KoCount >= 25 
-                                && currentPoints < KoCount)
-                            {
-                                await Kernel.RoleManager.AddOrUpdateSupermanAsync(Identity, KoCount);
-                                int rank = Kernel.RoleManager.GetSupermanRank(Identity);
-                                if (rank < 100)
-                                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), MsgTalk.TalkChannel.Talk);
-                            }
-                            KoCount = 0;
+                            await FinishXpAsync();
                         }
                     }
                 }
@@ -4285,16 +4328,25 @@ namespace Comet.Game.States
             {
                 if (QueryStatus(StatusSet.LUCKY_DIFFUSE) != null) // user is caster
                 {
-
+                    if (!m_luckyStep.IsActive())
+                    {
+                        m_luckyStep.Startup(1);
+                    }
+                    else if (m_luckyStep.IsTimeOut())
+                    {
+                        m_luckyTimeCount += 3;
+                        m_dbObject.LuckyTime = DateTime.Now.AddSeconds(m_luckyTimeCount);
+                    }
                 }
-                else if (QueryStatus(StatusSet.LUCKY_ABSORB) != null) // user is receiving
+                else if (QueryStatus(StatusSet.LUCKY_ABSORB) != null && m_luckyStep.IsTimeOut()) // user is receiving
                 {
-
+                    m_luckyTimeCount += 1;
+                    m_dbObject.LuckyTime = DateTime.Now.AddSeconds(m_luckyTimeCount);
                 }
 
-                if (m_idLuckyTarget == 0)
+                if (m_idLuckyTarget == 0 && Metempsychosis < 2 && QueryStatus(StatusSet.LUCKY_DIFFUSE) == null)
                 {
-                    if (QueryStatus(StatusSet.LUCKY_ABSORB) == null && QueryStatus(StatusSet.LUCKY_DIFFUSE) != null)
+                    if (QueryStatus(StatusSet.LUCKY_ABSORB) == null)
                     {
                         foreach (var user in Screen.Roles.Values.Where(x => x.IsPlayer()).Cast<Character>())
                         {
@@ -4307,20 +4359,29 @@ namespace Comet.Game.States
                         }
                     }
                 }
-                else
+                else if (QueryStatus(StatusSet.LUCKY_DIFFUSE) == null)
                 {
                     Character role = QueryRole(m_idLuckyTarget) as Character;
                     if (role == null || GetDistance(role) > 3)
                     {
+                        await DetachStatusAsync(StatusSet.LUCKY_ABSORB);
                         m_idLuckyTarget = 0;
                         m_luckyAbsorbStart.Clear();
                     }
                     else if (m_luckyAbsorbStart.IsTimeOut())
                     {
-                        await AttachStatusAsync(role, StatusSet.LUCKY_ABSORB, 0, 1, 0, 0);
+                        await AttachStatusAsync(role, StatusSet.LUCKY_ABSORB, 0, 1000000, 0, 0);
                         m_idLuckyTarget = 0;
                         m_luckyAbsorbStart.Clear();
                     }
+                }
+
+                if (m_luckyStep.ToNextTime() && IsLucky)
+                {
+                    if (QueryStatus(StatusSet.LUCKY_DIFFUSE) == null && QueryStatus(StatusSet.LUCKY_ABSORB) == null)
+                        m_luckyTimeCount -= 1;
+
+                    await SynchroAttributesAsync(ClientUpdateType.LuckyTimeTimer, (ulong)(m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL);
                 }
             }
             catch (Exception ex)
@@ -4488,30 +4549,6 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Error on leave map");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
-
-            try
-            {
-                if (QueryStatus(StatusSet.CURSED) != null)
-                {
-                    var curse = QueryStatus(StatusSet.CURSED);
-                    await BaseRepository.SaveAsync(new DbStatus
-                    {
-                        EndTime = DateTime.Now.AddSeconds(curse.RemainingTime),
-                        IntervalTime = (uint) curse.Time,
-                        LeaveTimes = 0,
-                        OwnerId = Identity,
-                        Power = 0,
-                        RemainTime = (uint) curse.RemainingTime,
-                        Status = StatusSet.CURSED,
-                        Sort = 0
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, "Error on save curse");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 

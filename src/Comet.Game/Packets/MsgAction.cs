@@ -237,7 +237,7 @@ namespace Comet.Game.Packets
 
                 case ActionType.CharacterDirection: // 79
                     await client.Character.SetDirectionAsync((FacingDirection) (Direction % 8), false);
-                    await client.SendAsync(this);
+                    await client.Character.BroadcastRoomMsgAsync(this, true);
                     break;
 
                 case ActionType.CharacterEmote: // 81
@@ -424,6 +424,7 @@ namespace Comet.Game.Packets
                     await client.Character.SendMultipleExpAsync();
                     await client.Character.SendBlessAsync();
                     await client.Character.SendNobilityInfoAsync();
+                    await client.Character.SendLuckAsync();
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
 

@@ -36,7 +36,6 @@ using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
-using Comet.Game.World.Threading;
 using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -3269,7 +3268,7 @@ namespace Comet.Game.States
 
                 #endregion
 
-                #region Profession (>, >=, <, <=, =, +=, set)
+                #region Virtue (>, >=, <, <=, =, +=, set)
 
                 case "virtue":
                 case "vp":

@@ -97,6 +97,13 @@ namespace Comet.Game.States
             var result = await CalcPower(MagicType.None, m_owner, target);
             InteractionEffect effect = result.effect;
             int damage = result.Damage;
+
+            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+            {
+                await user.SendEffectAsync("LuckyGuy", true);
+                damage *= 2;
+            }
+
             int lifeLost = (int) Math.Min(target.MaxLife, Math.Max(1, damage));
             long nExp = Math.Min(Math.Max(0, lifeLost), target.MaxLife);
 
@@ -177,7 +184,7 @@ namespace Comet.Game.States
             {
                 result = await CalcMagicAttackPower(attacker, target);
             }
-
+            
             return result;
         }
 

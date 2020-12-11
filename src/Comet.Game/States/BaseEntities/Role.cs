@@ -289,7 +289,7 @@ namespace Comet.Game.States.BaseEntities
                     Direction = (ushort)direction,
                     ArgumentX = MapX,
                     ArgumentY = MapY
-                }, sync);
+                }, true);
             }
         }
 
@@ -306,7 +306,7 @@ namespace Comet.Game.States.BaseEntities
                     ArgumentX = MapX,
                     ArgumentY = MapY,
                     Direction = (ushort)Direction
-                }, sync);
+                }, true);
             }
         }
 
