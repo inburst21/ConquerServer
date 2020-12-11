@@ -2708,8 +2708,7 @@ namespace Comet.Game.States
 
             if (ope.Equals("dropitem"))
             {
-                uint idUser = user?.Identity ?? 0u;
-                await monster.DropItemAsync(data, idUser);
+                await monster.DropItemAsync(data, user);
                 return true;
             }
             if (ope.Equals("dropmoney"))
@@ -4019,7 +4018,7 @@ namespace Comet.Game.States
             switch ((OpenWindow) action.Data)
             {
                 case OpenWindow.VipWarehouse:
-                    if (user.Client.VipLevel == 0)
+                    if (user.BaseVipLevel == 0)
                         return false;
                     break;
             }

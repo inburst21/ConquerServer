@@ -310,7 +310,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.EquipmentRepairAll:
-                    if (user.Client.VipLevel < 2)
+                    if (user.VipLevel < 2)
                         return;
 
                     for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;

@@ -4207,6 +4207,8 @@ namespace Comet.Game.States
 
         #region VIP
 
+        public uint BaseVipLevel => m_dbObject.VipLevel;
+
         public uint VipLevel => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now ? m_dbObject.VipLevel : 0;
 
         public DateTime VipExpiration => m_dbObject.VipExpiration ?? DateTime.MinValue;
