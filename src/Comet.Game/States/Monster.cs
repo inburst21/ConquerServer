@@ -332,34 +332,61 @@ namespace Comet.Game.States
                 for (int i = 0; i < heapNum; i++)
                 {
                     uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
-                    await DropMoneyAsync(moneyTmp, idDropOwner);
+                    if (user?.VipLevel > 3)
+                    {
+                        await user.AwardMoney((int) moneyTmp);
+                    }
+                    else
+                    {
+                        await DropMoneyAsync(moneyTmp, idDropOwner);
+                    }
                 }
             }
 
-            if (await Kernel.ChanceCalcAsync(50, 10000))
+            float multiply = 1f;
+            switch (user?.VipLevel)
+            {
+                case 1:
+                case 2:
+                    multiply = 1.125f;
+                    break;
+                case 3:
+                case 4:
+                    multiply = 1.25f;
+                    break;
+                case 5:
+                case 6:
+                    multiply = 1.5f;
+                    break;
+                case 7:
+                    multiply = 1.725f;
+                    break;
+            }
+
+            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 12000))
             {
                 uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
-                await DropItemAsync(cpsBagType, idDropOwner);
-                await Log.GmLog("cps_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
+                await DropItemAsync(cpsBagType, user);
+                await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync(725, 2000000))
+            else if (await Kernel.ChanceCalcAsync((int) (725 * multiply), 2000000))
             {
-                await DropItemAsync(Item.TYPE_DRAGONBALL, idDropOwner);
+                await DropItemAsync(Item.TYPE_DRAGONBALL, user);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync(80, 15000))
+            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 15000))
             {
-                await DropItemAsync(Item.TYPE_METEOR, idDropOwner);
+                await DropItemAsync(Item.TYPE_METEOR, user);
             }
-            else if (await Kernel.ChanceCalcAsync(100, 22500))
+            else if (await Kernel.ChanceCalcAsync((int) (100 * multiply), 22500))
             {
                 uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
                 uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
-                await DropItemAsync(dGem, idDropOwner); // normal gems
+                await DropItemAsync(dGem, user); // normal gems
             }
             else if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
             {
-                await DropItemAsync(1080001, idDropOwner); // emerald
+                await DropItemAsync(1080001, user); // emerald
             }
 
             int dropNum = 0;
@@ -402,7 +429,7 @@ namespace Comet.Game.States
                 if (itemtype == null)
                     continue;
 
-                await DropItemAsync(itemtype, idDropOwner);
+                await DropItemAsync(itemtype, user);
             }
         }
 
@@ -410,22 +437,71 @@ namespace Comet.Game.States
 
         #region Drop Function
 
-        public async Task DropItemAsync(uint type, uint owner)
+        public async Task DropItemAsync(uint type, Character owner)
         {
             DbItemtype itemType = Kernel.ItemManager.GetItemtype(type);
             if (itemType != null) await DropItemAsync(itemType, owner);
         }
 
-        private async Task DropItemAsync(DbItemtype itemtype, uint idOwner)
+        private async Task DropItemAsync(DbItemtype itemtype, Character owner)
         {
             Point targetPos = new Point(MapX, MapY);
             if (Map.FindDropItemCell(4, ref targetPos))
             {
                 MapItem drop = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
-                if (drop.Create(Map, targetPos, itemtype, idOwner, 0, 0, 0))
+                if (drop.Create(Map, targetPos, itemtype, owner?.Identity ?? 0, 0, 0, 0))
                 {
                     await drop.GenerateRandomInfoAsync();
                     await drop.EnterMapAsync();
+
+                    if (owner?.VipLevel > 3)
+                    {
+                        bool send = false;
+                        string itemInfo = "";
+                        switch (drop.Itemtype%10)
+                        {
+                            case 9:
+                                itemInfo = $"Super{drop.Name}";
+                                send = true;
+                                break;
+                            case 8:
+                                itemInfo = $"Elite{drop.Name}";
+                                send = true;
+                                break;
+                            case 7:
+                                itemInfo = $"Unique{drop.Name}";
+                                send = true;
+                                break;
+                            case 6:
+                                itemInfo = $"Refined{drop.Name}";
+                                send = true;
+                                break;
+                            default:
+                                itemInfo = drop.Name;
+                                break;
+                        }
+
+                        if (drop.Info.Addition > 0)
+                        {
+                            itemInfo += $"(+{drop.Info.Addition})";
+                            send = true;
+                        }
+
+                        if (drop.Info.SocketNum > 0)
+                        {
+                            itemInfo += $" {drop.Info.SocketNum}-Socketed";
+                            send = true;
+                        }
+
+                        if (drop.Info.ReduceDamage > 0)
+                        {
+                            itemInfo += $" -{drop.Info.ReduceDamage}% Damage";
+                            send = true;
+                        }
+
+                        if (send)
+                            await owner.SendAsync(string.Format(Language.StrVipDropItem, itemInfo));
+                    }
                 }
                 else
                 {

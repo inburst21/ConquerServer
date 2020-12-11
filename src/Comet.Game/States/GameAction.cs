@@ -3305,15 +3305,15 @@ namespace Comet.Game.States
                 case "vip":
                     int vipValue = int.Parse(value);
                     if (opt.Equals(">"))
-                        return user.Client.VipLevel > vipValue;
+                        return user.VipLevel > vipValue;
                     if (opt.Equals(">="))
-                        return user.Client.VipLevel >= vipValue;
+                        return user.VipLevel >= vipValue;
                     if (opt.Equals("<"))
-                        return user.Client.VipLevel < vipValue;
+                        return user.VipLevel < vipValue;
                     if (opt.Equals("<="))
-                        return user.Client.VipLevel <= vipValue;
+                        return user.VipLevel <= vipValue;
                     if (opt.Equals("=") || opt.Equals("=="))
-                        return user.Client.VipLevel == vipValue;
+                        return user.VipLevel == vipValue;
                     break;
 
                 #endregion

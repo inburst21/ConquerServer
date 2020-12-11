@@ -83,5 +83,7 @@ namespace Comet.Game.Database.Models
         [Column("lock_key")] public virtual ulong LockKey { get; set; }
         [Column("auto_exercise")] public virtual DateTime? AutoExercise { get; set; }
         [Column("time_of_life")] public virtual DateTime? LuckyTime { get; set; }
+        [Column("vip_value")] public virtual uint VipLevel { get; set; }
+        [Column("vip_expire")] public virtual DateTime? VipExpiration { get; set; }
     }
 }

@@ -1468,18 +1468,18 @@ namespace Comet.Game.States
 
                     await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
 
-                    if (Client.VipLevel > 0 && mapItem.IsConquerPointsPack())
+                    if (VipLevel > 0 && mapItem.IsConquerPointsPack())
                     {
                         await UserPackage.UseItemAsync(item.Identity, Item.ItemPosition.Inventory);
                     }
 
-                    if (Client.VipLevel > 1 && UserPackage.MultiCheckItem(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true))
+                    if (VipLevel > 1 && UserPackage.MultiCheckItem(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true))
                     {
                         await UserPackage.MultiSpendItemAsync(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true);
                         await UserPackage.AwardItemAsync(Item.TYPE_METEOR_SCROLL);
                     }
 
-                    if (Client.VipLevel > 2 && UserPackage.MultiCheckItem(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
+                    if (VipLevel > 1 && UserPackage.MultiCheckItem(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
                     {
                         await UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true);
                         await UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
@@ -3716,7 +3716,7 @@ namespace Comet.Game.States
 
         #region Offline TG
 
-        public int MaxTrainingMinutes => (int) (IsBlessed ? Math.Min(1440 + 60 * Client.VipLevel, (m_dbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes) : 0);
+        public int MaxTrainingMinutes => (int) (IsBlessed ? Math.Min(1440 + 60 * VipLevel, (m_dbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes) : 0);
 
         public ulong CurrentTrainingMinutes => (ulong) Math.Min(((DateTime.Now - m_dbObject.LoginTime).TotalMinutes / TimeSpan.TicksPerMinute * 10), MaxTrainingMinutes);
 
@@ -4202,6 +4202,14 @@ namespace Comet.Game.States
                 await AttachStatusAsync(status);
             }
         }
+
+        #endregion
+
+        #region VIP
+
+        public uint VipLevel => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now ? m_dbObject.VipLevel : 0;
+
+        public DateTime VipExpiration => m_dbObject.VipExpiration ?? DateTime.MinValue;
 
         #endregion
 

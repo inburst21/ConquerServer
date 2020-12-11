@@ -220,11 +220,11 @@ namespace Comet.Game.Packets
             writer.Write(NobilityRank); // 68
             writer.Write(NobilityIdentity); // 72
             writer.Write(NobilityPosition); // 76
-            writer.Write(0);
-            writer.Write(HelmetColor);
-            writer.Write(ArmorColor);
-            writer.Write(LeftHandColor);
-            writer.Write(new List<string> // 80
+            writer.Write(0); // 80
+            writer.Write(HelmetColor); // 84
+            writer.Write(ArmorColor); // 86
+            writer.Write(LeftHandColor); // 88
+            writer.Write(new List<string> // 90
             {
                 Name,
                 Mate

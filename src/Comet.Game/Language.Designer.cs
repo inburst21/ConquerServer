@@ -1762,6 +1762,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You killed a monster and he dropped a {0}..
+        /// </summary>
+        public static string StrVipDropItem {
+            get {
+                return ResourceManager.GetString("StrVipDropItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You&apos;ve bound a VIP level {0} which will expire at {1} to your account..
+        /// </summary>
+        public static string StrVipNotify {
+            get {
+                return ResourceManager.GetString("StrVipNotify", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a War has ended!.
         /// </summary>
         public static string StrWarEnd {

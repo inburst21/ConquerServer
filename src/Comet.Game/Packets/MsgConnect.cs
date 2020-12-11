@@ -94,7 +94,6 @@ namespace Comet.Game.Packets
             //client.Cipher.GenerateKeys(new object[] {Token});
             var character = await CharactersRepository.FindAsync(auth.AccountID);
             client.AccountIdentity = auth.AccountID;
-            client.VipLevel = auth.VipLevel;
             client.AuthorityLevel = auth.AuthorityID;
 
             // temp code for pre-release

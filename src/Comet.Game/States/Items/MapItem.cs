@@ -221,6 +221,8 @@ namespace Comet.Game.States.Items
             return Itemtype == 729910 || Itemtype == 729911 || Itemtype == 729912;
         }
 
+        public MapItemInfo Info => m_info;
+
         #endregion
 
         #region Generation
@@ -433,7 +435,7 @@ namespace Comet.Game.States.Items
         #endregion
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 2, Size = 12)]
-        private struct MapItemInfo
+        public struct MapItemInfo
         {
             public uint Type { get; set; }
             public short MaximumDurability { get; set; }

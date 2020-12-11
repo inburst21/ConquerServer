@@ -684,6 +684,12 @@
   <data name="StrUseItem" xml:space="preserve">
     <value>You have used an item.</value>
   </data>
+  <data name="StrVipDropItem" xml:space="preserve">
+    <value>You killed a monster and he dropped a {0}.</value>
+  </data>
+  <data name="StrVipNotify" xml:space="preserve">
+    <value>You've bound a VIP level {0} which will expire at {1} to your account.</value>
+  </data>
   <data name="StrWarEnd" xml:space="preserve">
     <value>War has ended!</value>
   </data>

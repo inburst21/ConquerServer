@@ -178,6 +178,11 @@ namespace Comet.Game.Packets
 
                     await GameAction.ExecuteActionAsync(1000000, user, null, null, "");
 
+                    if (client.Character.VipLevel > 0)
+                        await client.Character.SendAsync(
+                            string.Format(Language.StrVipNotify, client.Character.VipLevel,
+                                client.Character.VipExpiration.ToString("U")), MsgTalk.TalkChannel.Talk);
+
                     user.Connection = Character.ConnectionStage.Ready; // set user ready to be processed.
                     break;
 

@@ -61,7 +61,6 @@ namespace Comet.Game.States
         // Client unique identifier
         public uint Identity => Character?.Identity ?? 0;
         public uint AccountIdentity { get; set; }
-        public byte VipLevel { get; set; }
         public ushort AuthorityLevel { get; set; }
         public string MacAddress { get; set; } = "Unknown";
 
