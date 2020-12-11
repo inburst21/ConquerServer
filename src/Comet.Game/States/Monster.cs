@@ -369,12 +369,12 @@ namespace Comet.Game.States
                 await DropItemAsync(cpsBagType, user);
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync((int) (725 * multiply), 2000000))
+            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2000000))
             {
                 await DropItemAsync(Item.TYPE_DRAGONBALL, user);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 15000))
+            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 17000))
             {
                 await DropItemAsync(Item.TYPE_METEOR, user);
             }
@@ -391,7 +391,7 @@ namespace Comet.Game.States
 
             int dropNum = 0;
             int rate = await Kernel.NextAsync(0, 10000);
-            int chance = BattleSystem.AdjustDrop(500, attacker.Level, Level);
+            int chance = BattleSystem.AdjustDrop(1000, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
             {
                 dropNum = 1 + await Kernel.NextAsync(4, 7); // drop 6-10 items

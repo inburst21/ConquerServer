@@ -92,6 +92,8 @@ namespace Comet.Game.States.Items
             m_itemtype = idType;
             m_info.Type = m_itemtype.Type;
 
+            Name = m_itemtype.Name;
+
             if (idOwner != 0)
             {
                 m_idOwner = idOwner;
@@ -121,6 +123,8 @@ namespace Comet.Game.States.Items
             Map = map;
             MapX = (ushort)pos.X;
             MapY = (ushort)pos.Y;
+
+            Name = pInfo.Itemtype?.Name ?? "";
 
             m_itemInfo = pInfo;
             m_info.Type = pInfo.Type;
@@ -272,7 +276,7 @@ namespace Comet.Game.States.Items
                     }
                 }
 
-                if (await Kernel.ChanceCalcAsync(1, 500))
+                if (await Kernel.ChanceCalcAsync(10, 1500))
                 {
                     message += "(Addition: +1)";
                     m_info.Addition = 1;
@@ -283,7 +287,7 @@ namespace Comet.Game.States.Items
                     message += "(ReduceDamage: -3%)";
                     m_info.ReduceDamage = 3;
                 }
-                else if (await Kernel.ChanceCalcAsync(20, 2250))
+                else if (await Kernel.ChanceCalcAsync(20, 2750))
                 {
                     message += "(ReduceDamage: -5%)";
                     m_info.ReduceDamage = 5;
