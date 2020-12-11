@@ -3418,8 +3418,12 @@ namespace Comet.Game.States
 
         public async Task<bool> SignInEventAsync(GameEvent e)
         {
-            CurrentEvent = e;
+            if (!e.IsAllowedToJoin(this))
+            {
+                return false;
+            }
 
+            CurrentEvent = e;
             await e.OnEnterAsync(this);
             return true;
         }

@@ -97,8 +97,11 @@ namespace Comet.Game.States.Events
             if (user.SyndicateIdentity == 0)
                 return false;
 
-            if ((DateTime.Now - user.SyndicateMember.JoinDate).TotalDays < MIN_TIME_IN_SYNDICATE)
-                return false;
+            if ((DateTime.Now - user.Syndicate.CreationDate).TotalDays > MIN_TIME_IN_SYNDICATE)
+            {
+                if ((DateTime.Now - user.SyndicateMember.JoinDate).TotalDays < MIN_TIME_IN_SYNDICATE)
+                    return false;
+            }
 
             UserData data = FindUser(user.Identity);
             if (data?.Deaths >= MAX_DEATHS_PER_PLAYER)

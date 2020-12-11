@@ -5406,8 +5406,7 @@ namespace Comet.Game.States
             if (baseEvent == null)
                 return false;
 
-            await user.SignInEventAsync(baseEvent);
-            return true;
+            return await user.SignInEventAsync(baseEvent);
         }
 
         private static async Task<bool> ExecuteActionEventExit(DbAction action, string param, Character user, Role role,
