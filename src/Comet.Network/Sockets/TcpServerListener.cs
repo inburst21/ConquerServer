@@ -120,21 +120,14 @@ namespace Comet.Network.Sockets
                 if (this.AcceptanceSemaphore.WaitOne(TimeSpan.FromSeconds(5)))
                 {
                     // Pop a preallocated buffer and accept a client
+                    if (BufferPool.IsEmpty)
+                        BufferPool.Push(new Memory<byte>(new byte[4096]));
+
                     this.BufferPool.TryPop(out var buffer);
                     var socket = await this.Socket.AcceptAsync();
                     var actor = await this.AcceptedAsync(socket, buffer);
 
-                    if (actor == null)
-                    {
-                        BufferPool.Push(buffer);
-                        await Log.WriteLogAsync(LogLevel.Warning, $"Actor was null and Buffer is back to pool.");
-                        try
-                        {
-                            socket.Disconnect(false);
-                        }
-                        catch { }
-                        continue;
-                    }
+                    await Log.WriteLogAsync(LogLevel.Debug, $"BufferPool remaining: {BufferPool.Count}");
 
                     // Start receiving data from the client connection
                     if (this.EnableKeyExchange)
