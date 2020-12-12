@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Network.Packets;
+using Comet.Shared;
 using Comet.Shared.Models;
 
 #endregion
@@ -85,10 +86,16 @@ namespace Comet.Game.Packets
             var auth = Kernel.Logins.Get(Token.ToString()) as TransferAuthArgs;
             if (auth == null || StrictAuthentication && auth.IPAddress == client.IPAddress)
             {
+                if (auth != null)
+                    Kernel.Logins.Remove(Token.ToString());
+                
                 await client.SendAsync(LoginInvalid);
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid Login Token: {Token} from {client.IPAddress}");
                 client.Socket.Disconnect(false);
                 return;
             }
+
+            Kernel.Logins.Remove(Token.ToString());
             
             // Generate new keys and check for an existing character
             //client.Cipher.GenerateKeys(new object[] {Token});
@@ -101,6 +108,7 @@ namespace Comet.Game.Packets
             if (client.AuthorityLevel < 2)
             {
                 await client.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.NonCooperatorAccount));
+                await Log.WriteLogAsync(LogLevel.Warning, $"{client.Identity} non cooperator account.");
                 client.Socket.Disconnect(false);
                 return;
             }

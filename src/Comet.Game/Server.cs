@@ -106,7 +106,7 @@ namespace Comet.Game
 
                 actor.Cipher.GenerateKeys(new object[] {
                     actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned() });
-                (actor.Cipher as BlowfishCipher).SetIVs(
+                (actor.Cipher as BlowfishCipher)?.SetIVs(
                     actor.DiffieHellman.DecryptionIV,
                     actor.DiffieHellman.EncryptionIV);
 

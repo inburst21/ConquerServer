@@ -134,6 +134,7 @@ namespace Comet.Game.World.Managers
                 !user.Character.IsGm())
             {
                 await user.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerFull));
+                await Log.WriteLogAsync(LogLevel.Warning, $"{user.Character.Name} tried to login and server is full.");
                 user.Disconnect();
                 return false;
             }
