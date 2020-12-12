@@ -53,7 +53,7 @@ namespace Comet.Game.World.Managers
         private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
         private readonly Dictionary<uint, List<DbMonsterMagic>> m_dicMonsterMagics = new Dictionary<uint, List<DbMonsterMagic>>();
-        private readonly Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
+        private Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
 
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
@@ -100,6 +100,8 @@ namespace Comet.Game.World.Managers
                     m_dicMonsterMagics.TryAdd(magic.OwnerIdentity, new List<DbMonsterMagic>());
                 m_dicMonsterMagics[magic.OwnerIdentity].Add(magic);
             }
+
+            m_superman = (await DbSuperman.GetAsync()).ToDictionary(superman => superman.UserIdentity);
         }
 
         public async Task<bool> LoginUserAsync(Client user)

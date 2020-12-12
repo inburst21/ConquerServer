@@ -282,12 +282,12 @@ namespace Comet.Game.States.Items
                     m_info.Addition = 1;
                 }
 
-                if (await Kernel.ChanceCalcAsync(15, 1500))
+                if (await Kernel.ChanceCalcAsync(15, 1700))
                 {
                     message += "(ReduceDamage: -3%)";
                     m_info.ReduceDamage = 3;
                 }
-                else if (await Kernel.ChanceCalcAsync(20, 2750))
+                else if (await Kernel.ChanceCalcAsync(20, 3250))
                 {
                     message += "(ReduceDamage: -5%)";
                     m_info.ReduceDamage = 5;

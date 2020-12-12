@@ -294,7 +294,6 @@ namespace Comet.Game.States
             if (m_dbMonster.Action > 0)
             {
                 await GameAction.ExecuteActionAsync(m_dbMonster.Action, user, this, null, "");
-                return;
             }
 
             if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc() || attacker == null)
@@ -332,8 +331,26 @@ namespace Comet.Game.States
                 for (int i = 0; i < heapNum; i++)
                 {
                     uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
-                    if (user?.VipLevel > 3)
+                    if (user?.VipLevel >= 2)
                     {
+                        double multiplier = 0.25;
+                        switch (user.VipLevel)
+                        {
+                            case 2:
+                                multiplier = 0.25;
+                                break;
+                            case 3:
+                            case 4:
+                                multiplier = 0.5;
+                                break;
+                            case 5:
+                            case 6:
+                                multiplier = 1;
+                                break;
+                            case 7:
+                                multiplier = 1.5;
+                                break;
+                        }
                         await user.AwardMoney((int) moneyTmp);
                     }
                     else
@@ -363,10 +380,21 @@ namespace Comet.Game.States
                     break;
             }
 
-            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 12000))
+            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 12500))
             {
                 uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
-                await DropItemAsync(cpsBagType, user);
+                if (user?.VipLevel >= 6)
+                {
+                    Item cpBag = new Item(user);
+                    if (await cpBag.CreateAsync(Kernel.ItemManager.GetItemtype(cpsBagType)) && await user.UserPackage.AddItemAsync(cpBag))
+                    {
+                        await user.UserPackage.UseItemAsync(cpBag.Identity, Item.ItemPosition.Inventory);
+                    }
+                }
+                else
+                {
+                    await DropItemAsync(cpsBagType, user);
+                }
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
             else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2000000))
@@ -374,7 +402,7 @@ namespace Comet.Game.States
                 await DropItemAsync(Item.TYPE_DRAGONBALL, user);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 18500))
+            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 18000))
             {
                 await DropItemAsync(Item.TYPE_METEOR, user);
             }

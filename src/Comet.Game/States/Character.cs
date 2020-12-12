@@ -525,6 +525,13 @@ namespace Comet.Game.States
             if (IsBlessed)
                 multiplier += .2;
 
+            if (VipLevel >= 6)
+                multiplier += 2d;
+            else if (VipLevel >= 4)
+                multiplier += 1d;
+            else if (VipLevel >= 2)
+                multiplier += .5;
+
             nExp = (long)(nExp * Math.Max(1, multiplier));
 
             if (nExp < 0)
