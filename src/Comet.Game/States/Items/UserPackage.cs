@@ -904,6 +904,8 @@ namespace Comet.Game.States.Items
             if (await m_user.DropItemAsync(item.Identity, m_user.MapX, m_user.MapY, true) && attacker != null)
             {
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
+                await Log.GmLog("detain",
+                    $"[{m_user.Identity}] {m_user.Name} has dropped {item.Identity} to [{attacker.Identity}] {attacker.Name} dying at {m_user.MapIdentity}[{m_user.MapX},{m_user.MapY}]");
             }
             return true;
         }
