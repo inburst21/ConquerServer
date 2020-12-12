@@ -615,6 +615,25 @@ namespace Comet.Game.Packets
 
                         await user.FlyMapAsync(findTarget.MapIdentity, findTarget.MapX, findTarget.MapY);
                         return true;
+                    case "/bot":
+                    {
+                        string[] myParams = param.Split(new [] {" "}, 2, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (myParams.Length < 2)
+                        {
+                            await user.SendAsync("/bot [target_name] [reason]", TalkChannel.Talk);
+                            return true;
+                        }
+
+                        Character target = Kernel.RoleManager.GetUser(myParams[0]);
+                        if (target != null)
+                        {
+                            await Log.GmLog("botjail", $"{user.Identity} {user.Name} botjailed {target.Identity} {target.Name} by: {myParams[1]}");
+                            await target.FlyMapAsync(6002, 28, 74);
+                            await target.SaveAsync();
+                        }
+                        return true;
+                    }
                 }
             }
 
