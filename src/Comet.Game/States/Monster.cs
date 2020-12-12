@@ -374,7 +374,7 @@ namespace Comet.Game.States
                 await DropItemAsync(Item.TYPE_DRAGONBALL, user);
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
             }
-            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 17000))
+            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 18500))
             {
                 await DropItemAsync(Item.TYPE_METEOR, user);
             }

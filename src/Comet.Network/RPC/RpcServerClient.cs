@@ -88,7 +88,7 @@ namespace Comet.Network.RPC
                     Console.WriteLine(e);
                 }
 
-                Thread.Sleep(5000);
+                Thread.Sleep(1000);
             }
         }
 

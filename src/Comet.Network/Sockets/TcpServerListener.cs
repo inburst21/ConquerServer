@@ -27,7 +27,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Comet.Shared;
 
 #endregion
 
@@ -53,17 +52,17 @@ namespace Comet.Network.Sockets
         private readonly Socket Socket;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="TcpServerListener"/> with a new server
-        /// socket for accepting remote or local client connections. Creates preallocated
-        /// buffers for receiving data from clients without expensive allocations per receive
-        /// operation.
+        ///     Instantiates a new instance of <see cref="TcpServerListener" /> with a new server
+        ///     socket for accepting remote or local client connections. Creates preallocated
+        ///     buffers for receiving data from clients without expensive allocations per receive
+        ///     operation.
         /// </summary>
         /// <param name="maxConn">Maximum number of clients connected</param>
         /// <param name="bufferSize">Preallocated buffer size in bytes</param>
         /// <param name="delay">Use Nagel's algorithm to delay sending smaller packets</param>
         /// <param name="exchange">Use a key exchange before receiving packets</param>
         /// <param name="footerLength">Length of the packet footer</param>
-        protected TcpServerListener(
+        public TcpServerListener(
             int maxConn = 500,
             int bufferSize = 4096,
             bool delay = false,
@@ -112,44 +111,37 @@ namespace Comet.Network.Sockets
         /// <returns>Returns task details for fault tolerance processing.</returns>
         private async Task AcceptingAsync()
         {
-            while (this.Socket.IsBound && !this.ShutdownToken.IsCancellationRequested)
-            {
+            while (Socket.IsBound && !ShutdownToken.IsCancellationRequested)
                 // Block if the maximum connections has been reached. Holds all connection
                 // attempts in the backlog of the server socket until a client disconnects
                 // and a new client can be accepted. Check shutdown every 5 seconds.
-                if (this.AcceptanceSemaphore.WaitOne(TimeSpan.FromSeconds(5)))
+                if (AcceptanceSemaphore.WaitOne(TimeSpan.FromSeconds(5)))
                 {
                     // Pop a preallocated buffer and accept a client
-                    if (BufferPool.IsEmpty)
-                        BufferPool.Push(new Memory<byte>(new byte[4096]));
-
-                    this.BufferPool.TryPop(out var buffer);
-                    var socket = await this.Socket.AcceptAsync();
-                    var actor = await this.AcceptedAsync(socket, buffer);
-
-                    await Log.WriteLogAsync(LogLevel.Debug, $"BufferPool remaining: {BufferPool.Count}");
+                    BufferPool.TryPop(out var buffer);
+                    var socket = await Socket.AcceptAsync();
+                    var actor = await AcceptedAsync(socket, buffer);
 
                     // Start receiving data from the client connection
-                    if (this.EnableKeyExchange)
+                    if (EnableKeyExchange)
                     {
-                        var task = this.ReceiveTasks
-                            .StartNew(this.ExchangingAsync, actor, this.ShutdownToken.Token)
+                        var task = ReceiveTasks
+                            .StartNew(ExchangingAsync, actor, ShutdownToken.Token)
                             .ConfigureAwait(false);
                     }
                     else
                     {
-                        var task = this.ReceiveTasks
-                            .StartNew(this.ReceivingAsync, actor, this.ShutdownToken.Token)
+                        var task = ReceiveTasks
+                            .StartNew(ReceivingAsync, actor, ShutdownToken.Token)
                             .ConfigureAwait(false);
                     }
                 }
-            }
         }
 
         /// <summary>
-        /// Exchanging receives bytes from the accepted client socket when bytes become
-        /// available as a raw buffer of bytes. This method is called once and then invokes
-        /// <see cref="ReceivingAsync"/>.
+        ///     Exchanging receives bytes from the accepted client socket when bytes become
+        ///     available as a raw buffer of bytes. This method is called once and then invokes
+        ///     <see cref="ReceivingAsync" />.
         /// </summary>
         /// <param name="state">Created actor around the accepted client socket</param>
         /// <returns>Returns task details for fault tolerance processing.</returns>
@@ -157,8 +149,8 @@ namespace Comet.Network.Sockets
         {
             // Initialize multiple receive variables
             var actor = state as TActor;
-            int examined = 0;
-            if (actor.Socket.Connected && !this.ShutdownToken.IsCancellationRequested)
+            int consumed = 0, examined = 0, remaining = 0;
+            if (actor.Socket.Connected && !ShutdownToken.IsCancellationRequested)
             {
                 try
                 {
@@ -166,8 +158,8 @@ namespace Comet.Network.Sockets
                     examined = await actor.Socket.ReceiveAsync(
                         actor.Buffer.Slice(0),
                         SocketFlags.None,
-                        this.ShutdownToken.Token);
-                    if (examined == 0) return;
+                        ShutdownToken.Token);
+                    if (examined < 9) throw new Exception("Invalid length");
                 }
                 catch (SocketException e)
                 {
@@ -176,39 +168,86 @@ namespace Comet.Network.Sockets
                         Console.WriteLine(e);
 
                     actor.Disconnect();
+                    Disconnecting(actor);
                     return;
                 }
 
-                // Decrypt traffic
+                // Decrypt traffic by first discarding the first 7 bytes, as per TQ Digital's
+                // exchange protocol, then decrypting only what is necessary for the exchange.
+                // This is to prevent the next packet from being decrypted with the wrong key.
                 actor.Cipher.Decrypt(
-                    actor.Buffer.Slice(0, examined).Span,
-                    actor.Buffer.Slice(0, examined).Span);
-
-                // Process the buffer
-                if (!Exchanged(actor, actor.Buffer.Slice(0, examined).Span))
+                    actor.Buffer.Slice(0, 9).Span,
+                    actor.Buffer.Slice(0, 9).Span);
+                consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(7, 2)) + 7;
+                if (consumed > examined)
                 {
                     actor.Disconnect();
+                    Disconnecting(actor);
                     return;
+                }
+
+                actor.Cipher.Decrypt(
+                    actor.Buffer.Slice(9, consumed - 9).Span,
+                    actor.Buffer.Slice(9, consumed - 9).Span);
+
+                // Process the exchange now that bytes are decrypted
+                if (!Exchanged(actor, actor.Buffer.Slice(0, consumed).Span))
+                {
+                    actor.Disconnect();
+                    Disconnecting(actor);
+                    return;
+                }
+
+                // Now that the key has changed, decrypt the rest of the bytes in the buffer
+                // and prepare to start receiving packets on a standard receive loop.
+                if (consumed < examined)
+                {
+                    actor.Cipher.Decrypt(
+                        actor.Buffer.Slice(consumed, examined - consumed).Span,
+                        actor.Buffer.Slice(consumed, examined - consumed).Span);
+
+                    if (!Splitting(actor, examined, ref consumed))
+                    {
+                        actor.Disconnect();
+                        Disconnecting(actor);
+                        return;
+                    }
+
+                    remaining = examined - consumed;
+                    actor.Buffer.Slice(consumed, examined - consumed).CopyTo(actor.Buffer);
                 }
             }
 
             // Start receiving packets
-            await ReceivingAsync(state);
+            await ReceivingAsync(state, remaining);
         }
 
         /// <summary>
-        /// Receiving receives bytes from the accepted client socket when bytes become
-        /// available. While the client is connected and the server hasn't issued the 
-        /// shutdown signal, bytes will be received in a loop.
+        ///     Receiving receives bytes from the accepted client socket when bytes become
+        ///     available. While the client is connected and the server hasn't issued the
+        ///     shutdown signal, bytes will be received in a loop.
         /// </summary>
         /// <param name="state">Created actor around the accepted client socket</param>
         /// <returns>Returns task details for fault tolerance processing.</returns>
-        private async Task ReceivingAsync(object state)
+        private Task ReceivingAsync(object state)
+        {
+            return ReceivingAsync(state, 0);
+        }
+
+        /// <summary>
+        ///     Receiving receives bytes from the accepted client socket when bytes become
+        ///     available. While the client is connected and the server hasn't issued the
+        ///     shutdown signal, bytes will be received in a loop.
+        /// </summary>
+        /// <param name="state">Created actor around the accepted client socket</param>
+        /// <param name="remaining">Starting offset to receive bytes to</param>
+        /// <returns>Returns task details for fault tolerance processing.</returns>
+        private async Task ReceivingAsync(object state, int remaining)
         {
             // Initialize multiple receive variables
             var actor = state as TActor;
-            int consumed = 0, examined = 0, remaining = 0;
-            while (actor.Socket.Connected && !this.ShutdownToken.IsCancellationRequested)
+            int examined = 0, consumed = 0;
+            while (actor.Socket.Connected && !ShutdownToken.IsCancellationRequested)
             {
                 try
                 {
@@ -216,7 +255,7 @@ namespace Comet.Network.Sockets
                     examined = await actor.Socket.ReceiveAsync(
                         actor.Buffer.Slice(remaining),
                         SocketFlags.None,
-                        this.ShutdownToken.Token);
+                        ShutdownToken.Token);
                     if (examined == 0) break;
                 }
                 catch (SocketException e)
@@ -233,7 +272,8 @@ namespace Comet.Network.Sockets
                     actor.Buffer.Slice(remaining, examined).Span);
 
                 // Handle splitting and processing of data
-                if (!this.Splitting(actor, examined + remaining, ref consumed))
+                consumed = 0;
+                if (!Splitting(actor, examined + remaining, ref consumed))
                 {
                     actor.Disconnect();
                     break;
@@ -244,33 +284,32 @@ namespace Comet.Network.Sockets
             }
 
             // Disconnect the client
-            this.Disconnecting(actor);
+            Disconnecting(actor);
         }
 
         /// <summary>
-        /// Splitting splits the actor's receive buffer into multiple packets that can
-        /// then be processed by Received individually. The default behavior of this method
-        /// unless otherwise overridden is to split packets from the buffer using an unsigned
-        /// short packet header for the length of each packet.
+        ///     Splitting splits the actor's receive buffer into multiple packets that can
+        ///     then be processed by Received individually. The default behavior of this method
+        ///     unless otherwise overridden is to split packets from the buffer using an unsigned
+        ///     short packet header for the length of each packet.
         /// </summary>
-        /// <param name="actor"></param>
+        /// <param name="buffer">Actor for consuming bytes from the buffer</param>
         /// <param name="examined">Number of examined bytes from the receive</param>
         /// <param name="consumed">Number of consumed bytes by the split reader</param>
         /// <returns>Returns true if the client should remain connected.</returns>
         protected virtual bool Splitting(TActor actor, int examined, ref int consumed)
         {
             // Consume packets from the socket buffer
-            consumed = 0;
             var buffer = actor.Buffer.Span;
             while (consumed + 2 < examined)
             {
                 var length = BitConverter.ToUInt16(buffer.Slice(consumed, 2));
-                var expected = consumed + length + this.FooterLength;
+                var expected = consumed + length + FooterLength;
                 if (expected > buffer.Length) return false;
                 if (expected > examined) break;
 
-                this.Received(actor, buffer.Slice(consumed, length + this.FooterLength));
-                consumed += length + this.FooterLength;
+                Received(actor, buffer.Slice(consumed, length + FooterLength));
+                consumed += length + FooterLength;
             }
 
             return true;
@@ -286,7 +325,6 @@ namespace Comet.Network.Sockets
         {
             // Reclaim resources and release back to server pools
             actor.Buffer.Span.Clear();
-
             BufferPool.Push(actor.Buffer);
             AcceptanceSemaphore.Release();
 

@@ -71,30 +71,22 @@ namespace Comet.Game
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            try
-            {
-                var partition = this.Processor.SelectPartition();
-                var client = new Client(socket, buffer, partition);
+            var partition = this.Processor.SelectPartition();
+            var client = new Client(socket, buffer, partition);
 
-                await client.DiffieHellman.ComputePublicKeyAsync();
+            await client.DiffieHellman.ComputePublicKeyAsync();
 
-                await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
-                await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
+            await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
+            await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
 
-                var handshakeRequest = new MsgHandshake(
-                    client.DiffieHellman,
-                    client.DiffieHellman.EncryptionIV,
-                    client.DiffieHellman.DecryptionIV);
+            var handshakeRequest = new MsgHandshake(
+                client.DiffieHellman,
+                client.DiffieHellman.EncryptionIV,
+                client.DiffieHellman.DecryptionIV);
 
-                await handshakeRequest.RandomizeAsync();
-                await client.SendAsync(handshakeRequest);
-                return client;
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, ex.ToString());
-                return null;
-            }
+            await handshakeRequest.RandomizeAsync();
+            await client.SendAsync(handshakeRequest);
+            return client;
         }
 
         /// <summary>
@@ -113,8 +105,10 @@ namespace Comet.Game
 
                 actor.DiffieHellman.ComputePrivateKey(msg.ClientKey);
 
-                actor.Cipher.GenerateKeys(new object[] {
-                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned() });
+                actor.Cipher.GenerateKeys(new object[]
+                {
+                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned()
+                });
                 (actor.Cipher as BlowfishCipher).SetIVs(
                     actor.DiffieHellman.DecryptionIV,
                     actor.DiffieHellman.EncryptionIV);
@@ -122,9 +116,9 @@ namespace Comet.Game
                 actor.DiffieHellman = null;
                 return true;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.WriteLogAsync("Exchange", LogLevel.Error, e.ToString()).ConfigureAwait(false);
+                Log.WriteLogAsync(LogLevel.Error, ex.ToString()).ConfigureAwait(false);
                 return false;
             }
         }
@@ -321,13 +315,13 @@ namespace Comet.Game
                 Console.WriteLine(@"Disconnected with actor null ???");
                 return;
             }
-            
+
+            Processor.DeselectPartition(actor.Partition);
+
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
             
             Kernel.RoleManager.LogoutUserAsync(actor.Identity).ConfigureAwait(false);
-
-            Processor.DeselectPartition(actor.Partition);            
         }
     }
 }
