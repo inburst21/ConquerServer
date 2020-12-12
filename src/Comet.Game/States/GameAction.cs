@@ -3092,7 +3092,7 @@ namespace Comet.Game.States
                         return user.Experience == expValue;
                     if (opt.Equals("+="))
                     {
-                        return await user.AwardExperience((long) expValue);
+                        return await user.AwardExperienceAsync((long) expValue);
                     }
                     if (opt.Equals("set"))
                     {

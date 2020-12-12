@@ -505,8 +505,15 @@ namespace Comet.Game.States
 
         public async Task AwardBattleExpAsync(long nExp, bool bGemEffect)
         {
-            if (nExp == 0 && QueryStatus(StatusSet.CURSED) != null)
+            if (nExp == 0 || QueryStatus(StatusSet.CURSED) != null)
                 return;
+
+            if (Level >= MAX_UPLEV)
+                return;
+
+            const int BATTLE_EXP_TAX = 5;
+
+            nExp *= BATTLE_EXP_TAX;
 
             double multiplier = 1;
             if (HasMultipleExp)
@@ -517,11 +524,6 @@ namespace Comet.Game.States
 
             if (IsBlessed)
                 multiplier += .2;
-
-            /*
-             * TODO: Attention, this is only for ALPHA!!! REMOVE
-             */
-            multiplier += 5;
 
             nExp = (long)(nExp * Math.Max(1, multiplier));
 
@@ -543,9 +545,6 @@ namespace Comet.Game.States
 #endif
             }
 
-            if (Level >= MAX_UPLEV)
-                return;
-
             if (Level >= 120)
                 nExp /= 2;
 
@@ -557,7 +556,7 @@ namespace Comet.Game.States
                 await SendAsync($"got battle exp: {nExp}");
 #endif
 
-            await AwardExperience(nExp);
+            await AwardExperienceAsync(nExp);
         }
 
         public long AdjustExperience(Role pTarget, long nRawExp, bool bNewbieBonusMsg)
@@ -568,7 +567,7 @@ namespace Comet.Game.States
             return nExp;
         }
 
-        public async Task<bool> AwardExperience(long amount)
+        public async Task<bool> AwardExperienceAsync(long amount)
         {
             if (Level > Kernel.RoleManager.GetLevelLimit())
                 return true;
@@ -4277,7 +4276,7 @@ namespace Comet.Game.States
                     m_blessPoints++;
                     if (m_blessPoints >= 10)
                     {
-                        await AwardExperience(CalculateExpBall(100));
+                        await AwardExperienceAsync(CalculateExpBall(100));
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 5);
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0);
                         m_blessPoints = 0;

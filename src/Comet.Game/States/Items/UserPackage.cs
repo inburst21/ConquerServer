@@ -154,7 +154,7 @@ namespace Comet.Game.States.Items
                     return false;
 
                 m_user.IncrementExpBall();
-                await m_user.AwardExperience(m_user.CalculateExpBall());
+                await m_user.AwardExperienceAsync(m_user.CalculateExpBall());
                 await SpendItemAsync(item);
                 return true;
             }
