@@ -795,7 +795,7 @@ namespace Comet.Game.States
                 {
                     int x = MapX + GameMap.WalkXCoords[(int)dir];
                     int y = MapY + GameMap.WalkYCoords[(int)dir];
-                    if (Map.IsMoveEnable(x, y))
+                    if (Map.IsMoveEnable(x, y) && !Map.IsSuperPosition(x, y))
                     {
                         int dist = GetDistance(x, y);
                         if (bestDist - dist * (m_bAheadPath ? 1 : -1) > 0)
@@ -956,10 +956,16 @@ namespace Comet.Game.States
                     return true;
             }
 
-            if (await MoveTowardAsync((int) m_nextDir, (int) mode, true))
-                return true;
+            int newX = MapX + GameMap.WalkXCoords[(int) m_nextDir];
+            int newY = MapY + GameMap.WalkYCoords[(int) m_nextDir];
 
-            if (DetectPath(m_nextDir))
+            if (!Map.IsSuperPosition(newX, newY))
+            {
+                if (await MoveTowardAsync((int) m_nextDir, (int) mode, true))
+                    return true;
+            }
+
+            if (DetectPath(m_nextDir) && !Map.IsSuperPosition(newX, newY))
                 return await MoveTowardAsync((int) m_nextDir, (int) mode, true);
 
             if (IsJumpEnable())
