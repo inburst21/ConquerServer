@@ -71,24 +71,30 @@ namespace Comet.Game
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            var partition = this.Processor.SelectPartition();
-            var client = new Client(socket, buffer, partition);
+            try
+            {
+                var partition = this.Processor.SelectPartition();
+                var client = new Client(socket, buffer, partition);
 
-            await Log.WriteLogAsync(LogLevel.Warning, $"{client.IPAddress} has been accepted...");
+                await client.DiffieHellman.ComputePublicKeyAsync();
 
-            await client.DiffieHellman.ComputePublicKeyAsync();
+                await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
+                await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
 
-            await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
-            await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
+                var handshakeRequest = new MsgHandshake(
+                    client.DiffieHellman,
+                    client.DiffieHellman.EncryptionIV,
+                    client.DiffieHellman.DecryptionIV);
 
-            var handshakeRequest = new MsgHandshake(
-                client.DiffieHellman,
-                client.DiffieHellman.EncryptionIV,
-                client.DiffieHellman.DecryptionIV);
-
-            await handshakeRequest.RandomizeAsync();
-            await client.SendAsync(handshakeRequest);
-            return client;
+                await handshakeRequest.RandomizeAsync();
+                await client.SendAsync(handshakeRequest);
+                return client;
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, ex.ToString());
+                return null;
+            }
         }
 
         /// <summary>
@@ -102,8 +108,6 @@ namespace Comet.Game
         {
             try
             {
-                Log.WriteLogAsync(LogLevel.Warning, $"{actor.IPAddress} ie exchanging...").ConfigureAwait(false);
-
                 MsgHandshake msg = new MsgHandshake();
                 msg.Decode(buffer.ToArray());
 
@@ -321,7 +325,7 @@ namespace Comet.Game
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
             
-            _ = Task.Run(() => Kernel.RoleManager.LogoutUserAsync(actor.Identity));
+            Kernel.RoleManager.LogoutUserAsync(actor.Identity).ConfigureAwait(false);
 
             Processor.DeselectPartition(actor.Partition);            
         }

@@ -27,6 +27,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.Shared;
 
 #endregion
 
@@ -122,6 +123,18 @@ namespace Comet.Network.Sockets
                     this.BufferPool.TryPop(out var buffer);
                     var socket = await this.Socket.AcceptAsync();
                     var actor = await this.AcceptedAsync(socket, buffer);
+
+                    if (actor == null)
+                    {
+                        BufferPool.Push(buffer);
+                        await Log.WriteLogAsync(LogLevel.Warning, $"Actor was null and Buffer is back to pool.");
+                        try
+                        {
+                            socket.Disconnect(false);
+                        }
+                        catch { }
+                        continue;
+                    }
 
                     // Start receiving data from the client connection
                     if (this.EnableKeyExchange)

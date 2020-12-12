@@ -69,7 +69,7 @@ namespace Comet.Game
             var timeoutPolicy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60)};
             Kernel.Logins.Set(token.ToString(), args, timeoutPolicy);
 
-            Log.WriteLogAsync(LogLevel.Debug, $"TransferAuth: {args.AccountID}, {args.IPAddress}").ConfigureAwait(false);
+            // Log.WriteLogAsync(LogLevel.Debug, $"TransferAuth: {args.AccountID}, {args.IPAddress}").ConfigureAwait(false);
             return token;
         }
     }
