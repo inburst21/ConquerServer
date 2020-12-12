@@ -47,7 +47,7 @@ namespace Comet.Game
         /// <param name="agentName">Name of the client connecting</param>
         public void Connected(string agentName)
         {
-            _ = Log.WriteLogAsync(LogLevel.Message, "{0} has connected", agentName);
+            Log.WriteLogAsync(LogLevel.Message, "{0} has connected", agentName).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -66,9 +66,10 @@ namespace Comet.Game
             var token = BitConverter.ToUInt64(bytes);
 
             // Store in the login cache with an absolute timeout
-            var timeoutPolicy = new CacheItemPolicy();
-            timeoutPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(10);
+            var timeoutPolicy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60)};
             Kernel.Logins.Set(token.ToString(), args, timeoutPolicy);
+
+            Log.WriteLogAsync(LogLevel.Debug, $"TransferAuth: {args.AccountID}, {args.IPAddress}").ConfigureAwait(false);
             return token;
         }
     }

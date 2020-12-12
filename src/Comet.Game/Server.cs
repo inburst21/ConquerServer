@@ -73,6 +73,9 @@ namespace Comet.Game
         {
             var partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
+
+            await Log.WriteLogAsync(LogLevel.Warning, $"{client.IPAddress} has been accepted...");
+
             await client.DiffieHellman.ComputePublicKeyAsync();
 
             await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
@@ -99,6 +102,8 @@ namespace Comet.Game
         {
             try
             {
+                Log.WriteLogAsync(LogLevel.Warning, $"{actor.IPAddress} ie exchanging...").ConfigureAwait(false);
+
                 MsgHandshake msg = new MsgHandshake();
                 msg.Decode(buffer.ToArray());
 
@@ -106,7 +111,7 @@ namespace Comet.Game
 
                 actor.Cipher.GenerateKeys(new object[] {
                     actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned() });
-                (actor.Cipher as BlowfishCipher)?.SetIVs(
+                (actor.Cipher as BlowfishCipher).SetIVs(
                     actor.DiffieHellman.DecryptionIV,
                     actor.DiffieHellman.EncryptionIV);
 
@@ -115,7 +120,7 @@ namespace Comet.Game
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Log.WriteLogAsync("Exchange", LogLevel.Error, e.ToString()).ConfigureAwait(false);
                 return false;
             }
         }
