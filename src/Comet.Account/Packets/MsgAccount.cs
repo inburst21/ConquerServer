@@ -74,6 +74,27 @@ namespace Comet.Account.Packets
                 return;
             }
 
+            if (client.Account.StatusID == 5) // Banned
+            {
+                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] has tried to login with a banned account.");
+                await client.SendAsync(new MsgConnectEx(RejectionCode.AccountBanned));
+                client.Socket.Disconnect(false);
+                return;
+            }
+
+            if (client.Account.StatusID == 4) // suspicious? temp lock
+            {
+                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] has tried to login with a locked account.");
+                await client.SendAsync(new MsgConnectEx(RejectionCode.AccountLocked));
+                client.Socket.Disconnect(false);
+                return;
+            }
+
+            if (client.Account.StatusID == 1)
+            {
+                // TODO  sync website and check if account is active
+            }
+
             // Connect to the game server
             if (!Kernel.Realms.TryGetValue(Realm, out var server) || !server.Rpc.Online)
             {
@@ -96,8 +117,6 @@ namespace Comet.Account.Packets
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
 
             string serverIpAddr = server.GameIPAddress;
-            //if (serverIpAddr == "localhost" || serverIpAddr.StartsWith("127."))
-            //    serverIpAddr = "192.168.0.23";
 
             await client.SendAsync(new MsgConnectEx(serverIpAddr, server.GamePort, token));
             await Log.WriteLogAsync("login", LogLevel.Message, $"[{Username}] has authenticated successfully on [{Realm}].");
