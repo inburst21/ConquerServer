@@ -231,11 +231,11 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.InventoryRemove:
-                    await user.DropItem(Identity, user.MapX, user.MapY);
+                    await user.DropItemAsync(Identity, user.MapX, user.MapY);
                     break;
 
                 case ItemActionType.InventoryDropSilver:
-                    await user.DropSilver(Identity);
+                    await user.DropSilverAsync(Identity);
                     break;
 
                 case ItemActionType.InventoryEquip:

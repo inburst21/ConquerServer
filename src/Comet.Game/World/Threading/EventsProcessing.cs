@@ -57,8 +57,7 @@ namespace Comet.Game.World.Threading
 
                 await dynaNpc.CheckFightTimeAsync();
 
-                if(ranking
-                    && dynaNpc.MapIdentity != 2058) 
+                if(ranking && m_events.All(x => x.Map.Identity != dynaNpc.MapIdentity)) 
                     await dynaNpc.BroadcastRankingAsync();
             }
 

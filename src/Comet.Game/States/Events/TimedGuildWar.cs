@@ -31,7 +31,6 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
-using Comet.Game.World.Maps;
 using Comet.Shared;
 
 namespace Comet.Game.States.Events
@@ -48,14 +47,19 @@ namespace Comet.Game.States.Events
         private const int MIN_LEVEL = 70;
         private const int MIN_TIME_IN_SYNDICATE = 7; // in days
 
-        private const int STARTUP_TIME = 1220000;
-        private const int END_TIME = 4103000;
+        private const int STARTUP_TIME = 6210000;
+        private const int END_TIME = 6220000;
 
         private const int MAX_MONEY_REWARD = 120000000;
-        private const int MAX_EMONEY_REWARD = 21500;
+        private const int MAX_EMONEY_REWARD = 3000;
 
         private const int MAX_MONEY_REWARD_PER_USER = MAX_MONEY_REWARD/15;
         private const int MAX_EMONEY_REWARD_PER_USER = MAX_EMONEY_REWARD/15;
+
+        private readonly (ushort x, ushort y)[] m_revivePoints =
+        {
+
+        };
 
         private readonly uint[] m_poleIdentities = new uint[]
         {
@@ -72,8 +76,6 @@ namespace Comet.Game.States.Events
         }
 
         public override EventType Identity { get; } = EventType.TimedGuildWar;
-
-        public GameMap Map { get; private set; }
 
         #region Override Base
 
@@ -116,10 +118,18 @@ namespace Comet.Game.States.Events
             UserData data = FindUser(sender.Identity) ?? CreateUserData(sender);
             data.Deaths += 1;
 
-            if (data.Deaths >= MAX_DEATHS_PER_PLAYER)
-                return sender.FlyMapAsync(1002, 430, 378);
-
             return Task.CompletedTask;
+        }
+
+        public override async Task<(uint id, ushort x, ushort y)> GetRevivePosition(Character sender)
+        {
+            UserData data = FindUser(sender.Identity) ?? CreateUserData(sender);
+            if (data.Deaths < MAX_DEATHS_PER_PLAYER)
+            {
+                var pos = m_revivePoints[await Kernel.NextAsync(m_revivePoints.Length)%m_revivePoints.Length];
+                return (MAP_ID, pos.x, pos.y);
+            }
+            return await base.GetRevivePosition(sender);
         }
 
         public override async Task OnTimerAsync()
@@ -182,7 +192,7 @@ namespace Comet.Game.States.Events
                         Character user = Kernel.RoleManager.GetUser(userData.Identity);
                         if (user != null)
                             await user.SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.GuildWarRight2, Color.Yellow,
-                                string.Format(Language.StrWarYourScore, userData.Points)));
+                                string.Format(Language.StrWarYourScore, userData.Points) + $" Lives: {(MAX_DEATHS_PER_PLAYER - userData.Deaths)}"));
                     }
                 }
             }

@@ -232,13 +232,23 @@ namespace Comet.Game.States.Syndicates
 
             if (m_dicMembers.TryRemove(user.Identity, out var member))
             {
-                await BaseRepository.DeleteAsync(member);
+                await member.DeleteAsync();
             }
 
             ExitFromEvents();
 
             // additional clean up
             await new ServerDbContext().Database.ExecuteSqlRawAsync($"DELETE FROM `cq_synattr` WHERE `syn_id`={Identity}");
+
+            foreach (var ally in m_dicAllies.Values)
+            {
+                await RemoveAllyAsync(ally.Identity);
+            }
+
+            foreach (var enemy in m_dicEnemies.Values)
+            {
+                await PeaceAsync(user, enemy);
+            }
 
             await user.SendAsync(new MsgSyndicate
             {

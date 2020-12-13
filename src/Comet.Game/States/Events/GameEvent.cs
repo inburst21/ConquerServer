@@ -24,6 +24,7 @@
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Maps;
 
 #endregion
 
@@ -57,6 +58,7 @@ namespace Comet.Game.States.Events
         public virtual EventType Identity { get; } = EventType.None;
 
         public string Name { get; }
+        public virtual GameMap Map { get; protected set; }
 
         public bool ToNextTime() => m_eventCheck.ToNextTime();
 
@@ -98,6 +100,11 @@ namespace Comet.Game.States.Events
         public virtual Task OnTimerAsync()
         {
             return Task.CompletedTask;
+        }
+
+        public virtual Task<(uint id, ushort x, ushort y)> GetRevivePosition(Character sender)
+        {
+            return Task.FromResult((1002u, (ushort) 430, (ushort)378));
         }
     }
 }

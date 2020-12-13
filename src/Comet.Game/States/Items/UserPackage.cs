@@ -903,7 +903,7 @@ namespace Comet.Game.States.Items
             if (!await UnequipAsync(item.Position))
                 return false;
 
-            if (await m_user.DropItem(item.Identity, m_user.MapX, m_user.MapY, true) && attacker != null)
+            if (await m_user.DropItemAsync(item.Identity, m_user.MapX, m_user.MapY, true) && attacker != null)
             {
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
             }

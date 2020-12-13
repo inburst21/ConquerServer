@@ -980,8 +980,13 @@ namespace Comet.Game.States
             if (target == null) return false;
             if (!target.IsEvil() && !target.IsMonster())
             {
-                if (!Map.IsTrainingMap() && !Map.IsDeadIsland() && !Map.IsDeadIsland() && !Map.IsPrisionMap() &&
-                    !Map.IsFamilyMap() && !Map.IsPkGameMap() && !Map.IsPkField())
+                if (!Map.IsTrainingMap() && !Map.IsDeadIsland() 
+                                         && !Map.IsPrisionMap() 
+                                         && !Map.IsFamilyMap() 
+                                         && !Map.IsPkGameMap() 
+                                         && !Map.IsPkField()
+                                         && !Map.IsSynMap()
+                                         && !Map.IsFamilyMap())
                 {
                     await SetCrimeStatusAsync(25);
                 }
@@ -1286,7 +1291,7 @@ namespace Comet.Game.States
 
         #region Map Item
 
-        public async Task<bool> DropItem(uint idItem, int x, int y, bool force = false)
+        public async Task<bool> DropItemAsync(uint idItem, int x, int y, bool force = false)
         {
             Point pos = new Point(x, y);
             if (!Map.FindDropItemCell(9, ref pos))
@@ -1334,7 +1339,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> DropSilver(uint amount)
+        public async Task<bool> DropSilverAsync(uint amount)
         {
             if (amount > 10000000)
                 return false;
@@ -2393,9 +2398,6 @@ namespace Comet.Game.States
 
         public async Task RebornAsync(bool chgMap, bool isSpell = false)
         {
-            if (CurrentEvent != null)
-                await CurrentEvent.OnReviveAsync(this, !isSpell);
-
             if (IsAlive || !CanRevive() && !isSpell)
             {
                 if (QueryStatus(StatusSet.GHOST) != null)
@@ -2425,7 +2427,13 @@ namespace Comet.Game.States
             await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
             await SetXp(0);
 
-            if (chgMap || !IsBlessed && !isSpell)
+            if (CurrentEvent != null)
+            {
+                await CurrentEvent.OnReviveAsync(this, !isSpell);
+                var revive = await CurrentEvent.GetRevivePosition(this);
+                await FlyMapAsync(revive.id, revive.x, revive.y);
+            }
+            else if (chgMap || !IsBlessed && !isSpell)
             {
                 await FlyMapAsync(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
             }

@@ -573,7 +573,7 @@ namespace Comet.Game.States
             string strData = splitParams[2];
 
             uint idNpc = role?.Identity ?? user?.InteractingNpc ?? 0;
-            if (idNpc == 0 && (user == null || user.InteractingNpc == 0 && splitParams.Length < 4 && !uint.TryParse(splitParams[3], out idNpc)))
+            if (idNpc == 0 && !(user == null && splitParams.Length < 4) && !uint.TryParse(splitParams[3], out idNpc))
                 return false;
 
             BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);

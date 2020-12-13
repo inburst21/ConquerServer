@@ -826,21 +826,21 @@ namespace Comet.Game.World.Maps
     public enum MapTypeFlags : ulong
     {
         Normal = 0,
-        PkField = 1, //0x1 1
-        ChangeMapDisable = 1 << 1, //0x2 2
-        RecordDisable = 1 << 2, //0x4 4 
-        PkDisable = 1 << 3, //0x8 8
-        BoothEnable = 1 << 4, //0x10 16
-        TeamDisable = 1 << 5, //0x20 32
-        TeleportDisable = 1 << 6, // 0x40 64
-        GuildMap = 1 << 7, // 0x80 128
-        PrisonMap = 1 << 8, // 0x100 256
-        WingDisable = 1 << 9, // 0x200 512
-        Family = 1 << 10, // 0x400 1024
-        MineField = 1 << 11, // 0x800 2048
-        PkGame = 1 << 12, // 0x1000 4098
-        NeverWound = 1 << 13, // 0x2000 8196
-        DeadIsland = 1 << 14, // 0x4000 16392
+        PkField = 0x1, //0x1 1
+        ChangeMapDisable = 0x2, //0x2 2
+        RecordDisable = 0x4, //0x4 4 
+        PkDisable = 0x8, //0x8 8
+        BoothEnable = 0x10, //0x10 16
+        TeamDisable = 0x20, //0x20 32
+        TeleportDisable = 0x40, // 0x40 64
+        GuildMap = 0x80, // 0x80 128
+        PrisonMap = 0x100, // 0x100 256
+        WingDisable = 0x200, // 0x200 512
+        Family = 0x400, // 0x400 1024
+        MineField = 0x800, // 0x800 2048
+        PkGame = 0x1000, // 0x1000 4098
+        NeverWound = 0x2000, // 0x2000 8196
+        DeadIsland = 0x4000, // 0x4000 16392
         SkillMap = 1UL << 62,
         LineSkillOnly = 1UL << 63
     }
