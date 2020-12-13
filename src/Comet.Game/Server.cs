@@ -74,6 +74,8 @@ namespace Comet.Game
             var partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
 
+            await Log.WriteLogAsync("accepted", LogLevel.Warning, $"{client.IPAddress} has been accepted.");
+
             await client.DiffieHellman.ComputePublicKeyAsync();
 
             await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
