@@ -73,6 +73,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbSyndicateAttr> SyndicatesAttr { get; set; }
         public virtual DbSet<DbSyndicateAllies> SyndicatesAlly { get; set; }
         public virtual DbSet<DbSyndicateEnemy> SyndicatesEnemy { get; set; }
+        public virtual DbSet<DbSyndicateMemberHistory> SyndicateMemberHistories { get; set; }
         public virtual DbSet<DbStatistic> Statistic { get; set; }
         public virtual DbSet<DbBonus> Bonus { get; set; }
         public virtual DbSet<DbMagictypeOp> MagictypeOps { get; set; }
