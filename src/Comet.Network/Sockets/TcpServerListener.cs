@@ -23,11 +23,14 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Shared;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 
 #endregion
 
@@ -51,6 +54,8 @@ namespace Comet.Network.Sockets
         private readonly TaskFactory ReceiveTasks;
         private readonly CancellationTokenSource ShutdownToken;
         private readonly Socket Socket;
+
+        private readonly List<TActor> m_clients = new List<TActor>();
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="TcpServerListener" /> with a new server
@@ -83,7 +88,7 @@ namespace Comet.Network.Sockets
             ShutdownToken = new CancellationTokenSource();
             ReceiveTasks = new TaskFactory(ShutdownToken.Token);
 
-            // Initialize preallocated buffer pool
+            // Initialize pre-allocated buffer pool
             for (int i = 0; i < maxConn; i++)
                 BufferPool.Push(new Memory<byte>(new byte[bufferSize]));
         }
@@ -126,8 +131,19 @@ namespace Comet.Network.Sockets
 
                     // Pop a preallocated buffer and accept a client
                     BufferPool.TryPop(out var buffer);
+
                     var socket = await Socket.AcceptAsync();
                     var actor = await AcceptedAsync(socket, buffer);
+
+                    if (!IsAllowed(actor))
+                    {
+                        await Log.WriteLogAsync(LogLevel.Warning, $"Client from {actor.IPAddress} has been disconnected. [MAX_CONNECTIONS]");
+                        Disconnecting(actor);
+                        actor.Disconnect();
+                        return;
+                    }
+
+                    m_clients.Add(actor);
 
                     // Start receiving data from the client connection
                     if (EnableKeyExchange)
@@ -143,6 +159,12 @@ namespace Comet.Network.Sockets
                             .ConfigureAwait(false);
                     }
                 }
+        }
+
+        private bool IsAllowed(TActor client)
+        {
+            const int maxPerIp = 5;
+            return m_clients.Count(x => x.IPAddress.Equals(client.IPAddress)) < maxPerIp;
         }
 
         /// <summary>
@@ -334,6 +356,9 @@ namespace Comet.Network.Sockets
             actor.Buffer.Span.Clear();
             BufferPool.Push(actor.Buffer);
             AcceptanceSemaphore.Release();
+
+            if (m_clients.Contains(actor))
+                m_clients.Remove(actor);
 
             // Complete processing for disconnect
             Disconnected(actor);

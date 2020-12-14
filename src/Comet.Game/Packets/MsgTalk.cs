@@ -683,6 +683,37 @@ namespace Comet.Game.Packets
                     await user.SendAsync($"You have been online on the current session for {user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds.", TalkChannel.Talk);
                     await user.SendAsync($"You have been online in the game for {user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds", TalkChannel.Talk);
                     return true;
+
+                case "/tp":
+                {
+                    if (user.Map.IsTeleportDisable())
+                        return true;
+
+                    switch (param)
+                    {
+                            case "tc":
+                                if (user.VipLevel >= 2 && user.IsVipTeleportEnable())
+                                    await user.FlyMapAsync(1002, 430, 378);
+                                break;
+                            case "pc":
+                                if (user.VipLevel >= 2 && user.IsVipTeleportEnable())
+                                    await user.FlyMapAsync(1011, 188, 264);
+                                break;
+                            case "ac":
+                                if (user.VipLevel >= 2 && user.IsVipTeleportEnable())
+                                    await user.FlyMapAsync(1020, 565, 562);
+                                break;
+                            case "dc":
+                                if (user.VipLevel >= 2 && user.IsVipTeleportEnable())
+                                    await user.FlyMapAsync(1000, 500, 650);
+                                break;
+                            case "bi":
+                                if (user.VipLevel >= 2 && user.IsVipTeleportEnable())
+                                    await user.FlyMapAsync(1015, 717, 571);
+                                break;
+                    }
+                    return true;
+                }
             }
 
             return false;

@@ -3770,8 +3770,7 @@ namespace Comet.Game.States
 
         public bool HasMultipleExp => m_dbObject.ExperienceMultiplier > 1 && m_dbObject.ExperienceExpires >= DateTime.Now;
 
-        public float ExperienceMultiplier =>
-            !HasMultipleExp || m_dbObject.ExperienceMultiplier <= 0 ? 1f : m_dbObject.ExperienceMultiplier;
+        public float ExperienceMultiplier => !HasMultipleExp || m_dbObject.ExperienceMultiplier <= 0 ? 1f : m_dbObject.ExperienceMultiplier;
 
         public async Task SendMultipleExpAsync()
         {
@@ -4285,6 +4284,13 @@ namespace Comet.Game.States
         #endregion
 
         #region VIP
+
+        private TimeOut m_vipCmdTp = new TimeOut(120);
+
+        public bool IsVipTeleportEnable()
+        {
+            return m_vipCmdTp.ToNextTime();
+        }
 
         public uint BaseVipLevel => m_dbObject.VipLevel;
 
