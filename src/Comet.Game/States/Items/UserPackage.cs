@@ -234,10 +234,10 @@ namespace Comet.Game.States.Items
                         {
                             await UnequipAsync(Item.ItemPosition.RightHand);
 
-                            if (this[Item.ItemPosition.LeftHand] != null &&
-                                !this[Item.ItemPosition.LeftHand].IsArrowSort() &&
-                                item.IsBow() &&
-                                this[Item.ItemPosition.LeftHand]?.IsShield() == true)
+                            if (this[Item.ItemPosition.LeftHand] != null 
+                                && !this[Item.ItemPosition.LeftHand].IsArrowSort() 
+                                && item.IsBow() 
+                                && this[Item.ItemPosition.LeftHand]?.IsShield() == true)
                                 await UnequipAsync(Item.ItemPosition.LeftHand);
                         }
                     }
@@ -266,6 +266,9 @@ namespace Comet.Game.States.Items
                         return false;
 
                     if (pRight.IsBackswordType() && item.IsShield())
+                        return false;
+
+                    if (!pRight.IsBow() && item.IsArrowSort())
                         return false;
 
                     if (pRight.IsWeaponOneHand() && !pRight.IsBackswordType() &&

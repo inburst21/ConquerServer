@@ -513,7 +513,8 @@ namespace Comet.Game.States
 
             const int BATTLE_EXP_TAX = 5;
 
-            nExp *= BATTLE_EXP_TAX;
+            if (Level < 130)
+                nExp *= BATTLE_EXP_TAX;
 
             double multiplier = 1;
             if (HasMultipleExp)
@@ -525,8 +526,10 @@ namespace Comet.Game.States
             if (IsBlessed)
                 multiplier += .2;
 
-            if (VipLevel >= 6)
+            if (VipLevel >= 7)
                 multiplier += 2d;
+            else if (VipLevel >= 6)
+                multiplier += 1.5d;
             else if (VipLevel >= 4)
                 multiplier += 1d;
             else if (VipLevel >= 2)
@@ -3559,6 +3562,8 @@ namespace Comet.Game.States
             m_luckyAbsorbStart.Clear();
             m_idLuckyTarget = 0;
 
+            m_respawn.Clear();
+
             await base.ProcessOnMoveAsync();
         }
 
@@ -3573,6 +3578,8 @@ namespace Comet.Game.States
 
             if (CurrentEvent != null)
                 await CurrentEvent.OnAttackAsync(this);
+
+            m_respawn.Clear();
 
             await base.ProcessOnAttackAsync();
         }
@@ -4026,7 +4033,7 @@ namespace Comet.Game.States
 
                 case ClientUpdateType.PkPoints:
                     value = PkPoints = (ushort) Math.Max(0, Math.Min(PkPoints + value, ushort.MaxValue));
-                    await CheckPkStatusAsync((int) value);
+                    await CheckPkStatusAsync();
                     break;
 
                 default:
@@ -4067,7 +4074,7 @@ namespace Comet.Game.States
 
                 case ClientUpdateType.PkPoints:
                     PkPoints = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, value));
-                    await CheckPkStatusAsync((int)value);
+                    await CheckPkStatusAsync();
                     break;
 
                 case ClientUpdateType.Mesh:
@@ -4114,22 +4121,21 @@ namespace Comet.Game.States
             return true;
         }
 
-        /// <param name="value">The old value.</param>
-        public async Task CheckPkStatusAsync(int value)
+        public async Task CheckPkStatusAsync()
         {
-            if (m_dbObject.KillPoints != value)
+            //if (m_dbObject.KillPoints != value)
             {
-                if (value > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
+                if (PkPoints > 99 && QueryStatus(StatusSet.BLACK_NAME) == null)
                 {
                     await DetachStatusAsync(StatusSet.RED_NAME);
                     await AttachStatusAsync(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
                 }
-                else if (value > 29 && QueryStatus(StatusSet.RED_NAME) == null)
+                else if (PkPoints > 29 && QueryStatus(StatusSet.RED_NAME) == null)
                 {
                     await DetachStatusAsync(StatusSet.BLACK_NAME);
                     await AttachStatusAsync(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
                 }
-                else
+                else if (PkPoints < 30)
                 {
                     await DetachStatusAsync(StatusSet.BLACK_NAME);
                     await DetachStatusAsync(StatusSet.RED_NAME);
@@ -4211,6 +4217,69 @@ namespace Comet.Game.States
             {
                 await AttachStatusAsync(status);
             }
+        }
+
+        #endregion
+
+        #region Merchant
+
+        public int Merchant => m_dbObject.Business == null ? 0 : (IsMerchant() ? 255 : 1);
+
+        public int BusinessManDays => (int) (m_dbObject.Business == null ? 0 : Math.Ceiling((m_dbObject.Business.Value - DateTime.Now).TotalDays));
+
+
+        public bool IsMerchant()
+        {
+            return m_dbObject.Business.HasValue && m_dbObject.Business.Value < DateTime.Now;
+        }
+
+        public bool IsAwaitingMerchantStatus()
+        {
+            return m_dbObject.Business.HasValue && m_dbObject.Business.Value > DateTime.Now;
+        }
+
+        public Task<bool> SetMerchantAsync()
+        {
+            if (IsMerchant())
+                return Task.FromResult(false);
+
+            if (Level <= 30 && Metempsychosis == 0)
+                m_dbObject.Business = DateTime.Now;
+            else
+                m_dbObject.Business = DateTime.Now.AddDays(5);
+            return SaveAsync();
+        }
+
+        public Task RemoveMerchantAsync()
+        {
+            m_dbObject.Business = null;
+            return SaveAsync();
+        }
+
+        public Task SendMerchantAsync()
+        {
+            if (IsMerchant())
+                return SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
+            if (IsAwaitingMerchantStatus())
+            {
+                return SynchroAttributesAsync(ClientUpdateType.Merchant, 1);
+                //return SendAsync(new MsgInteract
+                //{
+                //    Action = MsgInteractType.AcceptMerchant,
+                //    Data = 4,
+                //    SenderIdentity = 60,
+                //    TargetIdentity = 30
+                //});
+            }
+
+            if (Level <= 30 && Metempsychosis == 0)
+                return SendAsync(new MsgInteract
+                {
+                    Action = MsgInteractType.AcceptMerchant,
+                    Data = 3
+                });
+
+            return SynchroAttributesAsync(ClientUpdateType.Merchant, 0);
         }
 
         #endregion

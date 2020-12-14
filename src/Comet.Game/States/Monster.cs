@@ -52,7 +52,7 @@ namespace Comet.Game.States
         private TimeOutMS m_tAction = new TimeOutMS();
         private TimeOutMS m_tMoveMs = new TimeOutMS();
         private TimeOut m_tHealPeriod = new TimeOut(2);
-        private TimeOut m_disappear = new TimeOut(5);
+        private TimeOut m_disappear = new TimeOut(3);
         private TimeOut m_locked = new TimeOut();
 
         private AiStage m_stage;

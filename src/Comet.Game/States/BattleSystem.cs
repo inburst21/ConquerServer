@@ -177,6 +177,9 @@ namespace Comet.Game.States
             if (target.Defense2 == 0)
                 return (1, InteractionEffect.None);
 
+            if (target is Character user && user.IsGm() && user.TransformationMesh == 3321)
+                return (1, InteractionEffect.None);
+
             (int, InteractionEffect None) result;
             if (magic == MagicType.None)
                 result = await CalcAttackPower(attacker, target);
@@ -361,10 +364,7 @@ namespace Comet.Game.States
             if (m_owner is Character && target is Character && m_owner.Map.IsPkDisable())
                 return false;
 
-            if (m_owner.IsWing && !target.IsWing && !m_owner.IsBowman)
-                return false;
-
-            if (target.IsWing && target.IsBowman && !m_owner.IsWing)
+            if (target.IsWing && !m_owner.IsWing && !m_owner.IsBowman)
                 return false;
 
             if (m_owner.GetDistance(target) > m_owner.GetAttackRange(target.SizeAddition))

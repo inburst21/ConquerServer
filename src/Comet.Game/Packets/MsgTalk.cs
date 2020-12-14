@@ -517,6 +517,17 @@ namespace Comet.Game.Packets
                     case "/sp":
                         await user.SetAttributesAsync(ClientUpdateType.Stamina, user.MaxEnergy);
                         return true;
+
+                    case "/testmerc":
+                        IPacket msg = new MsgInteract
+                        {
+                            Action = MsgInteractType.AcceptMerchant,
+                            Data = 3,
+                            SenderIdentity = 1,
+                            TargetIdentity = 1
+                        };
+                        await user.SendAsync(msg);
+                        return true;
                 }
             }
 

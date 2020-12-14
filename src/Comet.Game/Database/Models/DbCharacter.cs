@@ -85,5 +85,6 @@ namespace Comet.Game.Database.Models
         [Column("time_of_life")] public virtual DateTime? LuckyTime { get; set; }
         [Column("vip_value")] public virtual uint VipLevel { get; set; }
         [Column("vip_expire")] public virtual DateTime? VipExpiration { get; set; }
+        [Column("business")] public virtual DateTime? Business { get; set; }
     }
 }

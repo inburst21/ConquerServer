@@ -425,6 +425,7 @@ namespace Comet.Game.Packets
                     if (bonusCount > 0)
                         await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
 
+                    await user.CheckPkStatusAsync();
                     await user.LoadStatusAsync();
                     await client.Character.SendMultipleExpAsync();
                     await client.Character.SendBlessAsync();
@@ -432,8 +433,8 @@ namespace Comet.Game.Packets
                     await client.Character.SendLuckAsync();
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
+                    await user.SendMerchantAsync();
 
-                    // await user.SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
                     await client.SendAsync(this);
                     break;
 

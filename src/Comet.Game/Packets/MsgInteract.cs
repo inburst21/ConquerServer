@@ -269,6 +269,11 @@ namespace Comet.Game.Packets
                     _ = Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), MsgTalk.TalkChannel.Center, Color.Red);
                     break;
                 }
+                case MsgInteractType.AcceptMerchant:
+                {
+                    // ON ACCEPT: Sender = 1 Target = 1
+                    break;
+                }
                 default:
                     await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
                         $"Missing packet {Type}, Action {Action}, Length {Length}"));

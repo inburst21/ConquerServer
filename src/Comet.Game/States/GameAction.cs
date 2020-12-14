@@ -46,7 +46,7 @@ namespace Comet.Game.States
     {
         public static async Task<bool> ExecuteActionAsync(uint idAction, Character user, Role role, Item item, string input)
         {
-            const int _MAX_ACTION_I = 64;
+            const int _MAX_ACTION_I = 128;
             const int _DEADLOCK_CHECK_I = 5;
 
             if (idAction == 0)
@@ -3372,6 +3372,30 @@ namespace Comet.Game.States
                     break;
 
                 #endregion
+
+                #region Merchant (==, set)
+
+                case "business":
+                    int merchantValue = int.Parse(value);
+                    if (opt.Equals("=="))
+                        return user.Merchant == merchantValue;
+                    if (opt.Equals("set") || opt == "=")
+                    {
+                        if (merchantValue == 0)
+                        {
+                            await user.RemoveMerchantAsync();
+                        }
+                        else
+                        {
+                            await user.SetMerchantAsync();
+                        }
+
+                        return true;
+                    }
+
+                    break;
+
+                    #endregion
             }
 
             return false;
@@ -4856,19 +4880,19 @@ namespace Comet.Game.States
 
             List<DbLottery> allItems = await DbLottery.GetAsync();
             int lottoChance = await Kernel.NextAsync(10000);
-            if (lottoChance > 150)
+            if (lottoChance > 75)
             {
                 allItems.RemoveAll(x => x.Rank == 1);
             }
-            if (lottoChance > 300)
+            if (lottoChance > 150)
             {
                 allItems.RemoveAll(x => x.Rank == 2);
             }
-            if (lottoChance > 500)
+            if (lottoChance > 300)
             {
                 allItems.RemoveAll(x => x.Rank == 3);
             }
-            if (lottoChance > 1000)
+            if (lottoChance > 800)
             {
                 allItems.RemoveAll(x => x.Rank == 4);
             }
@@ -4909,7 +4933,7 @@ namespace Comet.Game.States
 
             if (lottery.Rank < 5)
             {
-                await user.SendAsync(string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
+                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
             }
             else
             {
@@ -5515,7 +5539,8 @@ namespace Comet.Game.States
                 .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
                 .Replace("%last_add_item_id", user?.LastAddItemIdentity.ToString() ?? "0")
                 .Replace("%online_time", $"{user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds")
-                .Replace("%session_time", $"{user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds");
+                .Replace("%session_time", $"{user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds")
+                .Replace("%businessman_days", $"{user?.BusinessManDays}");
 
             if (result.Contains("%levelup_exp"))
             {
