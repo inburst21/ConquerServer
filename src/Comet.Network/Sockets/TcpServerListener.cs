@@ -55,8 +55,6 @@ namespace Comet.Network.Sockets
         private readonly CancellationTokenSource ShutdownToken;
         private readonly Socket Socket;
 
-        private readonly List<TActor> m_clients = new List<TActor>();
-
         /// <summary>
         ///     Instantiates a new instance of <see cref="TcpServerListener" /> with a new server
         ///     socket for accepting remote or local client connections. Creates preallocated
@@ -135,16 +133,6 @@ namespace Comet.Network.Sockets
                     var socket = await Socket.AcceptAsync();
                     var actor = await AcceptedAsync(socket, buffer);
 
-                    if (!IsAllowed(actor))
-                    {
-                        await Log.WriteLogAsync(LogLevel.Warning, $"Client from {actor.IPAddress} has been disconnected. [MAX_CONNECTIONS]");
-                        Disconnecting(actor);
-                        actor.Disconnect();
-                        return;
-                    }
-
-                    m_clients.Add(actor);
-
                     // Start receiving data from the client connection
                     if (EnableKeyExchange)
                     {
@@ -159,12 +147,6 @@ namespace Comet.Network.Sockets
                             .ConfigureAwait(false);
                     }
                 }
-        }
-
-        private bool IsAllowed(TActor client)
-        {
-            const int maxPerIp = 5;
-            return m_clients.Count(x => x.IPAddress.Equals(client.IPAddress)) < maxPerIp;
         }
 
         /// <summary>
@@ -356,9 +338,6 @@ namespace Comet.Network.Sockets
             actor.Buffer.Span.Clear();
             BufferPool.Push(actor.Buffer);
             AcceptanceSemaphore.Release();
-
-            if (m_clients.Contains(actor))
-                m_clients.Remove(actor);
 
             // Complete processing for disconnect
             Disconnected(actor);
