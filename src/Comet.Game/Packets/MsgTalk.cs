@@ -556,7 +556,7 @@ namespace Comet.Game.Packets
                                 case "player":
                                     if (subParam.Equals("all", StringComparison.InvariantCultureIgnoreCase))
                                     {
-                                        await user.SendAsync($"Players Online: {Kernel.RoleManager.OnlinePlayers} (max: {Kernel.RoleManager.MaxOnlinePlayers})", TalkChannel.TopLeft, Color.White);
+                                        await user.SendAsync($"Players Online: {Kernel.RoleManager.OnlinePlayers}, Distinct: {Kernel.RoleManager.OnlineUniquePlayers} (max: {Kernel.RoleManager.MaxOnlinePlayers})", TalkChannel.TopLeft, Color.White);
                                     }
                                     else if (subParam.Equals("map", StringComparison.InvariantCultureIgnoreCase))
                                     {
@@ -607,7 +607,39 @@ namespace Comet.Game.Packets
                             });
                         return true;
 
+                    case "/kickout":
+                    {
+                        Character findTarget;
+                        if (uint.TryParse(param, out uint idFindTarget))
+                        {
+                            findTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                        }
+                        else
+                        {
+                            findTarget = Kernel.RoleManager.GetUser(param);
+                        }
+
+                        if (findTarget == null)
+                        {
+                            await user.SendAsync("Target not found");
+                            return true;
+                        }
+
+                        try
+                        {
+                            findTarget.Client.Disconnect();
+                        }
+                        catch (Exception ex)
+                        {
+                            await Log.WriteLogAsync("kickout_ex", LogLevel.Exception, ex.ToString());
+                            Kernel.RoleManager.ForceLogoutUser(findTarget.Identity);
+                        }
+
+                        return true;
+                    }
+
                     case "/find":
+                    {
                         Character findTarget;
                         if (uint.TryParse(param, out uint idFindTarget))
                         {
@@ -626,6 +658,7 @@ namespace Comet.Game.Packets
 
                         await user.FlyMapAsync(findTarget.MapIdentity, findTarget.MapX, findTarget.MapY);
                         return true;
+                    }
                     case "/bot":
                     {
                         string[] myParams = param.Split(new [] {" "}, 2, StringSplitOptions.RemoveEmptyEntries);

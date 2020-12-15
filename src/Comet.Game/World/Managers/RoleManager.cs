@@ -65,6 +65,7 @@ namespace Comet.Game.World.Managers
 
         }
 
+        public int OnlineUniquePlayers => m_userSet.Values.Select(x => x.Client.IPAddress).Distinct().Count();
         public int OnlinePlayers => m_userSet.Count;
         public int RolesCount => m_roleSet.Count;
 
