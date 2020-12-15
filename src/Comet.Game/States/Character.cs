@@ -2272,7 +2272,7 @@ namespace Comet.Game.States
 
             if (!IsAlive)
             {
-                await BeKillAsync(this);
+                await BeKillAsync(attacker);
             } 
             else if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, (ulong) (Energy / 2));
@@ -4129,7 +4129,7 @@ namespace Comet.Game.States
                     await DetachStatusAsync(StatusSet.RED_NAME);
                     await AttachStatusAsync(this, StatusSet.BLACK_NAME, 0, int.MaxValue, 1, 0);
                 }
-                else if (PkPoints > 29 && QueryStatus(StatusSet.RED_NAME) == null)
+                else if (PkPoints > 29 && PkPoints < 100 && QueryStatus(StatusSet.RED_NAME) == null)
                 {
                     await DetachStatusAsync(StatusSet.BLACK_NAME);
                     await AttachStatusAsync(this, StatusSet.RED_NAME, 0, int.MaxValue, 1, 0);
