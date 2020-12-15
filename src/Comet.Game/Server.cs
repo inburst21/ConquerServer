@@ -322,8 +322,17 @@ namespace Comet.Game
 
             if (actor.Creation != null)
                 Kernel.Registration.Remove(actor.Creation.Token);
-            
-            Kernel.RoleManager.LogoutUserAsync(actor.Identity).ConfigureAwait(false);
+
+            if (actor.Character != null)
+            {
+                Log.WriteLogAsync(LogLevel.Message, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
+                Kernel.RoleManager.ForceLogoutUser(actor.Character.Identity);
+                actor.Character.OnDisconnectAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                Log.WriteLogAsync(LogLevel.Message, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
+            }
         }
     }
 }

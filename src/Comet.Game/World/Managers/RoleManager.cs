@@ -154,26 +154,6 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public async Task<bool> LogoutUserAsync(uint idUser)
-        {
-            if (m_userSet.TryGetValue(idUser, out var user))
-            {
-                try
-                {
-                    await user.OnDisconnectAsync();
-                }
-                catch
-                {
-                    // just in case the user is already disconnected and we receive an exception
-                }
-                
-                await Log.WriteLogAsync(LogLevel.Message, $"{user.Name} has logged out.");
-                return true;
-            }
-
-            return false;
-        }
-
         public void ForceLogoutUser(uint idUser)
         {
             m_userSet.TryRemove(idUser, out _);
