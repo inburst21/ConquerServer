@@ -85,6 +85,11 @@ namespace Comet.Game.States.Items
                     continue;
                 }
 
+                if (item.IsSuspicious()
+                    && item.Position >= Item.ItemPosition.EquipmentBegin &&
+                    item.Position <= Item.ItemPosition.EquipmentEnd)
+                    item.Position = Item.ItemPosition.Inventory;
+
                 if (item.Position >= Item.ItemPosition.EquipmentBegin &&
                     item.Position <= Item.ItemPosition.EquipmentEnd)
                 {
@@ -146,6 +151,9 @@ namespace Comet.Game.States.Items
 
             Item item = this[idItem];
             if (item == null)
+                return false;
+
+            if (item.IsSuspicious())
                 return false;
 
             if (item.Type == Item.TYPE_EXP_BALL)
@@ -895,7 +903,7 @@ namespace Comet.Game.States.Items
 
         public async Task<bool> RandDropEquipmentAsync(Character attacker)
         {
-            if (m_dicEquipment.Count == 0)
+            if (m_dicEquipment.Count == 0 || attacker == null)
                 return false;
 
             List<Item> items = m_dicEquipment.Values.Where(x => !x.IsArrowSort() && !x.IsGourd() && !x.IsGourd()).ToList();
@@ -904,11 +912,17 @@ namespace Comet.Game.States.Items
             if (!await UnequipAsync(item.Position))
                 return false;
 
-            if (await m_user.DropItemAsync(item.Identity, m_user.MapX, m_user.MapY, true) && attacker != null)
+            await item.DoUnlockAsync();
+
+            if (await m_user.DropItemAsync(item.Identity, m_user.MapX, m_user.MapY, true))
             {
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
                 await Log.GmLog("detain",
                     $"[{m_user.Identity}] {m_user.Name} has dropped {item.Identity} to [{attacker.Identity}] {attacker.Name} dying at {m_user.MapIdentity}[{m_user.MapX},{m_user.MapY}]");
+            }
+            else
+            {
+                await attacker.UserPackage.AddItemAsync(item);
             }
             return true;
         }
