@@ -156,8 +156,17 @@ namespace Comet.Game.World.Managers
 
         public void ForceLogoutUser(uint idUser)
         {
-            m_userSet.TryRemove(idUser, out _);
+            m_userSet.TryRemove(idUser, out var user);
             m_roleSet.TryRemove(idUser, out _);
+
+            try
+            {
+                user?.Map.RemoveAsync(idUser).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLogAsync(LogLevel.Exception, ex.Message).ConfigureAwait(false);
+            }
         }
 
         public async Task KickOutAsync(uint idUser, string reason = "")
