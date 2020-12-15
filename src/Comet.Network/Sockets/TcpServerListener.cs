@@ -23,14 +23,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Shared;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 
 #endregion
 
@@ -124,7 +121,7 @@ namespace Comet.Network.Sockets
                     if (BufferPool.IsEmpty)
                     {
                         BufferPool.Push(new Memory<byte>(new byte[4096]));
-                        await Log.WriteLogAsync("buffer", LogLevel.Error, $"new buffer has been created.");
+                        await Log.WriteLogAsync("buffer", LogLevel.Error, "new buffer has been created.");
                     }
 
                     // Pop a preallocated buffer and accept a client

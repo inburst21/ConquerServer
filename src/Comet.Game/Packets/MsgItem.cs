@@ -370,7 +370,7 @@ namespace Comet.Game.Packets
                         item.Durability = (ushort) (item.MaximumDurability / 2);
                     }
 
-                    if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(1))
+                    if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(5, 1000))
                     {
                         item.SocketOne = Item.SocketGem.EmptySocket;
                         await user.SendAsync(Language.StrUpgradeAwardSocket);
@@ -431,7 +431,7 @@ namespace Comet.Game.Packets
                         item.Durability = (ushort) (item.MaximumDurability / 2);
                     }
 
-                    if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(1))
+                    if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(5, 1000))
                     {
                         item.SocketOne = Item.SocketGem.EmptySocket;
                         await user.SendAsync(Language.StrUpgradeAwardSocket);

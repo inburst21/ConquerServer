@@ -192,7 +192,14 @@ namespace Comet.Game.World.Managers
         public async Task KickOutAllAsync(string reason = "", bool isShutdown = false)
         {
             if (isShutdown)
+            {
                 m_isShutdown = true;
+
+                Kernel.UserThread.CloseRequest = true;
+                Kernel.AiThread.CloseRequest = true;
+                Kernel.EventThread.CloseRequest = true;
+                Kernel.GeneratorThread.CloseRequest = true;
+            }
 
             foreach (var user in m_userSet.Values)
             {
@@ -253,6 +260,12 @@ namespace Comet.Game.World.Managers
             {
                 try
                 {
+                    if (!user.Client.Socket.Connected)
+                    {
+                        user.Connection = Character.ConnectionStage.Disconnected;
+                        continue;
+                    }
+
                     await user.OnTimerAsync();
                 }
                 catch (Exception ex)
@@ -266,8 +279,7 @@ namespace Comet.Game.World.Managers
                 uint[] disconnectRoles = m_userSet.Values.Where(x => x.Connection == Character.ConnectionStage.Disconnected).Select(x => x.Identity).ToArray();
                 foreach (var role in disconnectRoles)
                 {
-                    m_userSet.TryRemove(role, out _);
-                    m_roleSet.TryRemove(role, out _);
+                    ForceLogoutUser(role);
                 }
             }
             catch (Exception ex)
