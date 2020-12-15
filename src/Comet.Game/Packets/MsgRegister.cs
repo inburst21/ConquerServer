@@ -156,7 +156,7 @@ namespace Comet.Game.Packets
                 ManaPoints = (ushort) (allot.Spirit * 5),
                 Registered = DateTime.Now,
                 ExperienceMultiplier = 5,
-                ExperienceExpires = DateTime.Now.AddHours(12),
+                ExperienceExpires = DateTime.Now.AddHours(1),
                 HeavenBlessing = DateTime.Now.AddDays(30),
                 AutoAllot = 1
             };
