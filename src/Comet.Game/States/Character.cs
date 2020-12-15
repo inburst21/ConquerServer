@@ -1488,7 +1488,7 @@ namespace Comet.Game.States
                         await UserPackage.AwardItemAsync(Item.TYPE_METEOR_SCROLL);
                     }
 
-                    if (VipLevel > 1 && UserPackage.MultiCheckItem(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
+                    if (VipLevel > 3 && UserPackage.MultiCheckItem(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
                     {
                         await UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true);
                         await UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
@@ -4574,6 +4574,12 @@ namespace Comet.Game.States
 
         #region Socket
 
+        public async Task ForcedClosingAsync()
+        {
+            await OnDisconnectAsync();
+            Kernel.RoleManager.ForceLogoutUser(Identity);
+        }
+
         public async Task SetLoginAsync()
         {
             m_dbObject.LoginTime = m_dbObject.LogoutTime = DateTime.Now;
@@ -4699,7 +4705,7 @@ namespace Comet.Game.States
             if (m_socket != null)
             {
                 if (await m_socket.SendAsync(msg) < 0)
-                    await Kernel.RoleManager.KickOutAsync(Identity);
+                    Kernel.RoleManager.ForceLogoutUser(Identity);
             }
         }
 

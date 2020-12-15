@@ -276,7 +276,7 @@ namespace Comet.Game.States.Items
                     }
                 }
 
-                if (await Kernel.ChanceCalcAsync(10, 1500))
+                if (await Kernel.ChanceCalcAsync(625, 450000))
                 {
                     message += "(Addition: +1)";
                     m_info.Addition = 1;
@@ -295,7 +295,7 @@ namespace Comet.Game.States.Items
 
                 if (!string.IsNullOrEmpty(message) && !message.Equals(m_itemtype?.Name))
                 {
-                    await Log.WriteLogAsync("dropitem", LogLevel.Debug, $"MapItem[{Identity}; {MapIdentity}:{MapX},{MapY}][{Itemtype}]{message}");
+                    await Log.GmLog("drop_item", $"MapItem[{Identity}; {MapIdentity}:{MapX},{MapY}][{Itemtype}]{message}");
                 }
             }
         }

@@ -145,23 +145,40 @@ namespace Comet.Game.States
 
         public async Task SendShowAsync(Character target)
         {
+            await target.SendAsync(new MsgTeamMember
+            {
+                Action = MsgTeamMember.ADD_MEMBER_B,
+                Members = new List<MsgTeamMember.TeamMember>
+                {
+                    new MsgTeamMember.TeamMember
+                    {
+                        Identity = Leader.Identity,
+                        Name = Leader.Name,
+                        MaxLife = (ushort) Leader.MaxLife,
+                        Life = (ushort) Leader.Life,
+                        Lookface = Leader.Mesh
+                    }
+                }
+            });
+
+            await target.SendAsync(new MsgTeamMember
+            {
+                Action = MsgTeamMember.ADD_MEMBER_B,
+                Members = new List<MsgTeamMember.TeamMember>
+                {
+                    new MsgTeamMember.TeamMember
+                    {
+                        Identity = target.Identity,
+                        Name = target.Name,
+                        MaxLife = (ushort) target.MaxLife,
+                        Life = (ushort) target.Life,
+                        Lookface = target.Mesh
+                    }
+                }
+            });
+
             foreach (var member in m_dicPlayers.Values)
             {
-                await target.SendAsync(new MsgTeamMember
-                {
-                    Action = MsgTeamMember.ADD_MEMBER_B,
-                    Members = new List<MsgTeamMember.TeamMember>
-                    {
-                        new MsgTeamMember.TeamMember
-                        {
-                            Identity = member.Identity,
-                            Name = member.Name,
-                            MaxLife = (ushort) member.MaxLife,
-                            Life = (ushort) member.Life,
-                            Lookface = member.Mesh
-                        }
-                    }
-                });
                 await member.SendAsync(new MsgTeamMember
                 {
                     Action = MsgTeamMember.ADD_MEMBER_B,
@@ -177,6 +194,23 @@ namespace Comet.Game.States
                         }
                     }
                 });
+
+                if (target.Identity != member.Identity)
+                    await target.SendAsync(new MsgTeamMember
+                    {
+                        Action = MsgTeamMember.ADD_MEMBER_B,
+                        Members = new List<MsgTeamMember.TeamMember>
+                        {
+                            new MsgTeamMember.TeamMember
+                            {
+                                Identity = member.Identity,
+                                Name = member.Name,
+                                MaxLife = (ushort) member.MaxLife,
+                                Life = (ushort) member.Life,
+                                Lookface = member.Mesh
+                            }
+                        }
+                    });
             }
         }
 

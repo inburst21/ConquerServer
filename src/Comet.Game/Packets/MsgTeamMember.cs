@@ -45,7 +45,7 @@ namespace Comet.Game.Packets
         public MsgTeamMember()
         {
             Type = PacketType.MsgTeamMember;
-            Unknown1 = 1; // ?????
+            // Unknown1 = 0; // ?????
         }
 
         public byte Action { get; set; }

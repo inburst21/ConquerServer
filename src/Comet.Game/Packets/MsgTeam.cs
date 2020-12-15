@@ -208,6 +208,7 @@ namespace Comet.Game.Packets
                     if (application == user.Identity)
                     {
                         target.PopRequest(RequestType.TeamApply);
+                        await user.SendAsync(this);
                         await user.Team.EnterTeamAsync(target);
                     }
                     else
@@ -300,6 +301,7 @@ namespace Comet.Game.Packets
                     if (inviteApplication == user.Identity)
                     {
                         target.PopRequest(RequestType.TeamInvite);
+                        await target.SendAsync(this);
                         await target.Team.EnterTeamAsync(user);
                     }
                     else

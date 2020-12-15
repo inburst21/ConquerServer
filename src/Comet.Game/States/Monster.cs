@@ -345,10 +345,10 @@ namespace Comet.Game.States
                                 break;
                             case 5:
                             case 6:
-                                multiplier = 1;
+                                multiplier = .75;
                                 break;
                             case 7:
-                                multiplier = 1.5;
+                                multiplier = 1;
                                 break;
                         }
                         await user.AwardMoney((int) moneyTmp);
@@ -397,14 +397,38 @@ namespace Comet.Game.States
                 }
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2000000))
+            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2100000))
             {
-                await DropItemAsync(Item.TYPE_DRAGONBALL, user);
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone, attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
+                if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1))
+                {
+                    if (await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
+                    {
+                        if (await user.UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true)) 
+                            await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
+                    }
+                }
+                else
+                {
+                    await DropItemAsync(Item.TYPE_DRAGONBALL, user);
+                    await Kernel.RoleManager.BroadcastMsgAsync(
+                        string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone,
+                            attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
+                }
             }
-            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 18000))
+            else if (await Kernel.ChanceCalcAsync((int) (80 * multiply), 21000))
             {
-                await DropItemAsync(Item.TYPE_METEOR, user);
+                if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1))
+                {
+                    if (await user.UserPackage.AwardItemAsync(Item.TYPE_METEOR))
+                    {
+                        if (await user.UserPackage.MultiSpendItemAsync(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true))
+                            await user.UserPackage.AwardItemAsync(Item.TYPE_METEOR_SCROLL);
+                    }
+                }
+                else
+                {
+                    await DropItemAsync(Item.TYPE_METEOR, user);
+                }
             }
             else if (await Kernel.ChanceCalcAsync((int) (100 * multiply), 22500))
             {
@@ -525,6 +549,11 @@ namespace Comet.Game.States
                         {
                             itemInfo += $" -{drop.Info.ReduceDamage}% Damage";
                             send = true;
+                        }
+
+                        if (owner.VipLevel >= 7 && send)
+                        {
+                            itemInfo += $" at ({drop.MapX},{drop.MapY})";
                         }
 
                         if (send)
