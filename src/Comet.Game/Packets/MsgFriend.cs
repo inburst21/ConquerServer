@@ -111,7 +111,7 @@ namespace Comet.Game.Packets
                     if (request == user.Identity)
                     {
                         target.PopRequest(RequestType.Friend);
-                        await target.CreateFriend(user);
+                        await target.CreateFriendAsync(user);
                     }
                     else
                     {
@@ -127,7 +127,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case MsgFriendAction.RemoveFriend:
-                    await user.DeleteFriend(Identity, true);
+                    await user.DeleteFriendAsync(Identity, true);
                     break;
 
                 case MsgFriendAction.RemoveEnemy:

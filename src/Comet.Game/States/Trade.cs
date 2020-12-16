@@ -330,17 +330,23 @@ namespace Comet.Game.States
             User1.Trade = null;
             User2.Trade = null;
 
-            await User1.SendAsync(new MsgTrade
+            if (User1.Connection != Character.ConnectionStage.Disconnected)
             {
-                Action = MsgTrade.TradeAction.Fail,
-                Data = User2.Identity
-            });
+                await User1.SendAsync(new MsgTrade
+                {
+                    Action = MsgTrade.TradeAction.Fail,
+                    Data = User2.Identity
+                });
+            }
 
-            await User2.SendAsync(new MsgTrade
+            if (User2.Connection != Character.ConnectionStage.Disconnected)
             {
-                Action = MsgTrade.TradeAction.Fail,
-                Data = User1.Identity
-            });
+                await User2.SendAsync(new MsgTrade
+                {
+                    Action = MsgTrade.TradeAction.Fail,
+                    Data = User1.Identity
+                });
+            }
         }
 
         private MsgTrade RemoveMsg(uint id)

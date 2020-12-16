@@ -2978,7 +2978,7 @@ namespace Comet.Game.States
             return m_dicFriends.TryAdd(friend.Identity, friend);
         }
 
-        public async Task<bool> CreateFriend(Character target)
+        public async Task<bool> CreateFriendAsync(Character target)
         {
             if (IsFriend(target.Identity))
                 return false;
@@ -3013,14 +3013,14 @@ namespace Comet.Game.States
             return m_dicFriends.TryGetValue(idTarget, out var friend) ? friend : null;
         }
 
-        public async Task<bool> DeleteFriend(uint idTarget, bool notify = false)
+        public async Task<bool> DeleteFriendAsync(uint idTarget, bool notify = false)
         {
             if (!IsFriend(idTarget) || !m_dicFriends.TryRemove(idTarget, out var target))
                 return false;
             
             if (target.Online)
             {
-                await target.User.DeleteFriend(Identity);
+                await target.User.DeleteFriendAsync(Identity);
             }
             else
             {
@@ -4574,12 +4574,6 @@ namespace Comet.Game.States
 
         #region Socket
 
-        public async Task ForcedClosingAsync()
-        {
-            await OnDisconnectAsync();
-            Kernel.RoleManager.ForceLogoutUser(Identity);
-        }
-
         public async Task SetLoginAsync()
         {
             m_dbObject.LoginTime = m_dbObject.LogoutTime = DateTime.Now;
@@ -4622,7 +4616,7 @@ namespace Comet.Game.States
             try
             {
                 if (Team != null && Team.IsLeader(Identity))
-                    await Team.DismissAsync(this);
+                    await Team.DismissAsync(this, true);
                 else if (Team != null)
                     await Team.DismissMemberAsync(this);                
             }
@@ -4672,8 +4666,6 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
-            Connection = ConnectionStage.Disconnected;
-
             if (!m_IsDeleted)
                 await SaveAsync();
 
@@ -4700,13 +4692,9 @@ namespace Comet.Game.States
             }
         }
 
-        public override async Task SendAsync(IPacket msg)
+        public override Task SendAsync(IPacket msg)
         {
-            if (m_socket != null)
-            {
-                if (await m_socket.SendAsync(msg) < 0)
-                    Kernel.RoleManager.ForceLogoutUser(Identity);
-            }
+            return m_socket.SendAsync(msg);
         }
 
         public override async Task SendSpawnToAsync(Character player)

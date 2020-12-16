@@ -156,17 +156,8 @@ namespace Comet.Game.World.Managers
 
         public void ForceLogoutUser(uint idUser)
         {
-            m_userSet.TryRemove(idUser, out var user);
+            m_userSet.TryRemove(idUser, out _);
             m_roleSet.TryRemove(idUser, out _);
-
-            try
-            {
-                user?.Map.RemoveAsync(idUser).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLogAsync(LogLevel.Exception, ex.Message).ConfigureAwait(false);
-            }
         }
 
         public async Task KickOutAsync(uint idUser, string reason = "")
@@ -250,31 +241,12 @@ namespace Comet.Game.World.Managers
             {
                 try
                 {
-                    if (!user.Client.Socket.Connected)
-                    {
-                        user.Connection = Character.ConnectionStage.Disconnected;
-                        continue;
-                    }
-
                     await user.OnTimerAsync();
                 }
                 catch (Exception ex)
                 {
                     await Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
                 }
-            }
-
-            try
-            {
-                uint[] disconnectRoles = m_userSet.Values.Where(x => x.Connection == Character.ConnectionStage.Disconnected).Select(x => x.Identity).ToArray();
-                foreach (var role in disconnectRoles)
-                {
-                    ForceLogoutUser(role);
-                }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
             }
         }
 

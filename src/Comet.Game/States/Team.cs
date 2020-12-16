@@ -70,7 +70,7 @@ namespace Comet.Game.States
         /// <summary>
         /// Erase the team.
         /// </summary>
-        public async Task<bool> DismissAsync(Character request)
+        public async Task<bool> DismissAsync(Character request, bool disconnect = false)
         {
             if (request.Identity != m_leader.Identity)
             {
@@ -82,7 +82,8 @@ namespace Comet.Game.States
             {
                 Action = MsgTeam.TeamAction.Dismiss,
                 Identity = m_leader.Identity
-            });
+            }, disconnect ? request.Identity : 0);
+
             foreach (var member in m_dicPlayers.Values)
             {
                 member.Team = null;

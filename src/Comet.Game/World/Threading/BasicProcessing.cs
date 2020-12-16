@@ -33,7 +33,7 @@ namespace Comet.Game.World.Threading
 {
     public sealed class SystemProcessor : TimerBase
     {
-        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - Players: {3} (max:{4}) - {2}";
+        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server - {1} - Players: {3} (max:{4}) - {2} - Threads[S:{5:0000},G:{6:0000},U:{7:0000},A:{8:0000}]ms";
 
 #if !DEBUG
         private TimeOut m_analytics = new TimeOut(300);
@@ -62,7 +62,9 @@ namespace Comet.Game.World.Threading
         public override async Task<bool> OnElapseAsync()
         {
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
-                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers);
+                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers,
+                Kernel.SystemThread.ElapsedMilliseconds, Kernel.GeneratorThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
+                Kernel.AiThread.ElapsedMilliseconds);
 
             if (m_analytics.ToNextTime())
             {
@@ -101,7 +103,7 @@ namespace Comet.Game.World.Threading
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Server Start Time: {m_ServerStartTime:G}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Online Time: {(int)interval.TotalDays} days, {interval.Hours} hours, {interval.Minutes} minutes, {interval.Seconds} seconds");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Distinct Players[{Kernel.RoleManager.OnlineUniquePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");

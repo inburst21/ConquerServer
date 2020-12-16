@@ -266,11 +266,8 @@ namespace Comet.Network.Sockets
                         ShutdownToken.Token);
                     if (examined == 0) break;
                 }
-                catch (SocketException e)
+                catch
                 {
-                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
-                        e.SocketErrorCode > SocketError.Shutdown)
-                        Console.WriteLine(e);
                     break;
                 }
 

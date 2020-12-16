@@ -327,6 +327,7 @@ namespace Comet.Game
             {
                 Log.WriteLogAsync(LogLevel.Message, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
                 Kernel.RoleManager.ForceLogoutUser(actor.Character.Identity);
+                actor.Character.Connection = Character.ConnectionStage.Disconnected;
                 actor.Character.OnDisconnectAsync().ConfigureAwait(false);
             }
             else

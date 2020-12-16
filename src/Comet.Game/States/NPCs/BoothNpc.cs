@@ -123,7 +123,7 @@ namespace Comet.Game.States.NPCs
 
         public override async Task LeaveMapAsync()
         {
-            if (m_ownerNpc != null)
+            if (m_ownerNpc != null && m_owner.Connection != Character.ConnectionStage.Disconnected)
             {
                 await m_owner.SetActionAsync(EntityAction.Stand);
                 m_owner = null;
