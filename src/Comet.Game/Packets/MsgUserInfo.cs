@@ -47,7 +47,7 @@ namespace Comet.Game.Packets
         {
             Type = PacketType.MsgUserInfo;
             Identity = character.Identity;
-            Mesh = (uint) (character.Mesh + character.Avatar * 10000);
+            Mesh = character.Mesh;
             Hairstyle = character.Hairstyle;
             Silver = character.Silvers;
             Jewels = character.ConquerPoints;

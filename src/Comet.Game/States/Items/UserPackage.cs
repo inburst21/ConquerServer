@@ -612,6 +612,7 @@ namespace Comet.Game.States.Items
                         items.Remove(item);
                         taken++;
                         take--;
+                        amount--;
                     }
 
                     if (take == 0)
@@ -621,8 +622,8 @@ namespace Comet.Game.States.Items
 
             int amountMS = (int) Math.Ceiling(amount / 10f);
             int returnMeteor = 0;
-            if (amountMS * 10 > amount)
-                returnMeteor = amountMS * 10 - amount;
+            if (amount % 10 > 0)
+                returnMeteor = 10 - amount % 10;
 
             foreach (var item in items.Where(x => x.Type == Item.TYPE_METEOR_SCROLL).Reverse())
             {
@@ -691,6 +692,7 @@ namespace Comet.Game.States.Items
                         items.Remove(item);
                         taken++;
                         take--;
+                        amount--;
                     }
 
                     if (take == 0)
@@ -704,8 +706,8 @@ namespace Comet.Game.States.Items
                 return false;
 
             int returnDb = 0;
-            if (amountDbs * 10 > amount)
-                returnDb = amountDbs * 10 - amount;
+            if (amount % 10 > 0)
+                returnDb = 10 - amount % 10;
 
             foreach (var item in items.Where(x => x.Type == Item.TYPE_DRAGONBALL_SCROLL).Reverse())
             {
