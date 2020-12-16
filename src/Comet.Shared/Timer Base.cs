@@ -72,24 +72,24 @@ namespace Comet.Shared
             sw.Start();
             try
             {
-                if (await OnElapseAsync() && !CloseRequest)
-                {
-                    m_timer.Interval = m_interval;
-                    m_timer.Start();
-                }
+                await OnElapseAsync();
             }
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Error on thread {m_name}");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-                if (!StopOnException)
-                    m_timer.Start();
             }
             finally
             {
                 sw.Stop();
                 ElapsedMilliseconds = sw.ElapsedMilliseconds;
+
+                if (!CloseRequest)
+                    m_timer.Start();
             }
+
+            if (!m_timer.Enabled)
+                await Log.WriteLogAsync(LogLevel.Warning, $"Thread [{m_name}] is stopping.");
         }
 
         public virtual async Task OnStartAsync()
