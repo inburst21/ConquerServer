@@ -747,6 +747,13 @@ namespace Comet.Game.Packets
                     }
                     return true;
                 }
+
+                case "/clearinventory":
+                {
+                    await user.UserPackage.ClearInventoryAsync();
+                    await user.SendAsync("Your inventory has been cleaned! The usage of this command is of your own responsability.");
+                    return true;
+                }
             }
 
             return false;

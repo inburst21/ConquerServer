@@ -499,7 +499,7 @@ namespace Comet.Game.States
             if (nAtkLev > 120)
                 nAtkLev = 120;
 
-            int nDamage = nAtk; //(int) (nAtk - nDef*0.6);
+            int nDamage = nAtk; // (int) (nAtk - nDef*0.6);
 
             int nNameType = GetNameType(nDefLev, nAtkLev);
 

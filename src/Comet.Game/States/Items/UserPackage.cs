@@ -1112,6 +1112,16 @@ namespace Comet.Game.States.Items
             return m_dicEquipment.Values.FirstOrDefault(x => x.Identity == id) ?? m_dicInventory.Values.FirstOrDefault(x => x.Identity == id);
         }
 
+        public async Task ClearInventoryAsync()
+        {
+            foreach (var item in m_dicInventory.Values)
+            {
+                await RemoveFromInventoryAsync(item, RemovalType.RemoveAndDisappear);
+                await item.DeleteAsync(Item.ChangeOwnerType.ClearInventory);
+                await Log.GmLog("clear_inventory", $"User[{m_user.Identity}:{m_user.Name}] deleted item {item.Identity}.\r\n{item.ToJson()}");
+            }
+        }
+
         public enum RemovalType
         {
             /// <summary>
