@@ -415,7 +415,7 @@ namespace Comet.Game.States
                             attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
                 }
             }
-            else if (await Kernel.ChanceCalcAsync((int) (65 * multiply), 21000))
+            else if (await Kernel.ChanceCalcAsync((int) (55 * multiply), 21000))
             {
                 if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1))
                 {
