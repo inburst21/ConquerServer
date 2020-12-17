@@ -91,9 +91,6 @@ namespace Comet.Game.World.Threading
                 await Log.WriteLogAsync(LogLevel.Debug, "Failed to Write to the API.");
             }
 #endif
-
-            await Kernel.RoleManager.OnRoleTimerAsync();
-
             return true;
         }
 

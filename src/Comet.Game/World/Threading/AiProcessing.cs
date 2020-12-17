@@ -47,6 +47,8 @@ namespace Comet.Game.World.Threading
                 {
                     ProcessedMonsters += await map.OnTimerAsync();
                 }
+
+                await Kernel.RoleManager.OnRoleTimerAsync();
             }
             catch (Exception ex)
             {

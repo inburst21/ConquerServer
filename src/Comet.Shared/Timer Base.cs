@@ -21,13 +21,16 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace Comet.Shared
 {
     public abstract class TimerBase
     {
+        private CancellationTokenSource m_cancellationToken = new CancellationTokenSource();
         private Timer m_timer;
         private string m_name;
         protected int m_interval = 1000;
@@ -72,7 +75,16 @@ namespace Comet.Shared
             sw.Start();
             try
             {
-                await OnElapseAsync();
+                var task = OnElapseAsync();
+                if (await Task.WhenAny(task, Task.Delay(m_interval * 2)) == task)
+                {
+                    // task completed within timeout
+                }
+                else
+                {
+                    // timeout logic
+                    await Log.WriteLogAsync(LogLevel.Warning, $"User thread didn't respond for {m_interval * 2}ms... :((((");
+                }
             }
             catch (Exception ex)
             {
