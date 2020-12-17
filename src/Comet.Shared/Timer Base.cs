@@ -84,7 +84,6 @@ namespace Comet.Shared
                 {
                     // timeout logic
                     await Log.WriteLogAsync(LogLevel.Warning, $"User thread didn't respond for {m_interval * 2}ms... :((((");
-                    await MyStackTrace.DoStackTrace();
                 }
             }
             catch (Exception ex)
