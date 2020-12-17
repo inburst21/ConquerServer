@@ -399,13 +399,14 @@ namespace Comet.Game.States
             } 
             else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2100000))
             {
-                if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1))
+                if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1) && await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
                 {
-                    if (await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
-                    {
-                        if (await user.UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true)) 
-                            await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
-                    }
+                    if (await user.UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
+                        await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
+
+                    await Kernel.RoleManager.BroadcastMsgAsync(
+                        string.Format(Language.StrDragonBallDropped, $"[VIP] {attacker.Name}", attacker.Map.Name),
+                        MsgTalk.TalkChannel.TopLeft);
                 }
                 else
                 {
