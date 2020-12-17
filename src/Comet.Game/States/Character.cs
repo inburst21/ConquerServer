@@ -122,7 +122,7 @@ namespace Comet.Game.States
 
         public Client Client => m_socket;
 
-        public ConnectionStage Connection { get; set; }
+        public ConnectionStage Connection { get; set; } = ConnectionStage.Connected;
 
         #region Identity
 
@@ -4306,7 +4306,7 @@ namespace Comet.Game.States
         {
             if (Connection != ConnectionStage.Ready)
                 return;
-            
+
             try
             {
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
@@ -4401,7 +4401,7 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
-            try
+            /*try
             {
                 for (int i = m_queuedActions.Count-1; i >= 0; i--)
                 {
@@ -4417,7 +4417,7 @@ namespace Comet.Game.States
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Error in action queue for user {Identity}:{Name}");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
+            }*/
 
             try
             {

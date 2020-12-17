@@ -37,7 +37,6 @@ namespace Comet.Game.World.Threading
 
         public override async Task<bool> OnElapseAsync()
         {
-            var task = Kernel.RoleManager.OnUserTimerAsync();
             await Kernel.RoleManager.OnUserTimerAsync();
             return true;
         }

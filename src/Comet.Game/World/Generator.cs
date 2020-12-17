@@ -163,10 +163,7 @@ namespace Comet.Game.World
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanDisappear())
-                {
                     await monster.LeaveMapAsync();
-                    return;
-                }
             }
 
             if (!m_pTimer.ToNextTime())
