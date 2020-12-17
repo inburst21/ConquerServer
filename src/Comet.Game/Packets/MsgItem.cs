@@ -174,11 +174,17 @@ namespace Comet.Game.Packets
                             if ((Moneytype)goods.Moneytype != Moneytype.Silver)
                                 return;
 
+                            if (itemtype.Price == 0)
+                                return;
+
                             if (!await user.SpendMoney((int) (itemtype.Price * amount), true))
                                 return;
                             break;
                         case Moneytype.ConquerPoints:
                             if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
+                                return;
+
+                            if (itemtype.EmoneyPrice == 0)
                                 return;
 
                             if (!await user.SpendConquerPoints((int) (itemtype.EmoneyPrice * amount), true))

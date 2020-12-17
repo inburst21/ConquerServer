@@ -4310,7 +4310,6 @@ namespace Comet.Game.States
 
             try
             {
-                Log.GmLog("OnUserTimerAsync", $"Pk:{Identity},{Name}").Forget();
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
                 {
                     if (MapIdentity == 6001)
@@ -4331,7 +4330,6 @@ namespace Comet.Game.States
 
             try
             {
-                Log.GmLog("OnUserTimerAsync", $"Stts:{Identity},{Name}").Forget();
                 foreach (var status in StatusSet.Status.Values)
                 {
                     await status.OnTimerAsync();
@@ -4356,7 +4354,6 @@ namespace Comet.Game.States
 
             try
             {
-                Log.GmLog("OnUserTimerAsync", $"OTG:{Identity},{Name}").Forget();
                 if (IsBlessed && m_heavenBlessing.ToNextTime() && !Map.IsTrainingMap())
                 {
                     m_blessPoints++;
@@ -4382,7 +4379,6 @@ namespace Comet.Game.States
 
             try
             {
-                Log.GmLog("OnUserTimerAsync", $"BattleSystem:{Identity},{Name}").Forget();
                 if (BattleSystem != null
                     && BattleSystem.IsActive()
                     && BattleSystem.NextAttack(await GetInterAtkRateAsync()))
@@ -4398,7 +4394,6 @@ namespace Comet.Game.States
 
             try
             {
-                Log.GmLog("OnUserTimerAsync", $"MagicProcess:{Identity},{Name}").Forget();
                 await MagicData.OnTimerAsync();
             }
             catch (Exception ex)
@@ -4427,7 +4422,6 @@ namespace Comet.Game.States
 
             try
             {
-                Log.GmLog("OnUserTimerAsync", $"Luck:{Identity},{Name}").Forget();
                 if (QueryStatus(StatusSet.LUCKY_DIFFUSE) != null) // user is caster
                 {
                     if (!m_luckyStep.IsActive())
@@ -4500,7 +4494,6 @@ namespace Comet.Game.States
 
             if (Team != null && !Team.IsLeader(Identity) && Team.Leader.MapIdentity == MapIdentity && m_teamLeaderPos.ToNextTime())
             {
-                Log.GmLog("OnUserTimerAsync", $"Team:{Identity},{Name}").Forget();
                 await SendAsync(new MsgAction
                 {
                     Action = MsgAction.ActionType.MapTeamLeaderStar,
@@ -4512,8 +4505,6 @@ namespace Comet.Game.States
 
             if (!IsAlive)
                 return;
-
-            Log.GmLog("OnUserTimerAsync", $"IsAlive:{Identity},{Name}").Forget();
 
             if (Transformation != null && m_transformation.IsTimeOut())
                 await ClearTransformationAsync();

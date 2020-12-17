@@ -237,7 +237,6 @@ namespace Comet.Game.World.Managers
 
         public async Task OnUserTimerAsync()
         {
-            Log.GmLog($"OnUserTimerAsync", $"=============Running================").Forget();
             foreach (var user in m_userSet.Values)
             {
                 try
@@ -249,7 +248,6 @@ namespace Comet.Game.World.Managers
                     Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}").Forget();
                 }
             }
-            Log.GmLog($"OnUserTimerAsync", $"=============Gracefullly================").Forget();
         }
 
         public async Task OnRoleTimerAsync()
