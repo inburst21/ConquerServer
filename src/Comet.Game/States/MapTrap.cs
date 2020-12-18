@@ -176,7 +176,7 @@ namespace Comet.Game.States
             if ((AttackMode & (int) TargetType.Passive) == 0)
             {
                 BattleSystem.CreateBattle(target.Identity);
-                await BattleSystem.ProcessAttackAsync();
+                QueueAction(BattleSystem.ProcessAttackAsync);
             }
 
             if (IdAction > 0)
