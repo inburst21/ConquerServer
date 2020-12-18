@@ -21,6 +21,7 @@
 
 #region References
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Core;
@@ -33,7 +34,7 @@ namespace Comet.Game.World.Managers
 {
     public sealed class MineManager
     {
-        private Dictionary<uint, MineDictionary> m_mineDictionary = new Dictionary<uint, MineDictionary>();
+        private ConcurrentDictionary<uint, MineDictionary> m_mineDictionary = new ConcurrentDictionary<uint, MineDictionary>();
 
         public async Task<bool> InitializeAsync()
         {
@@ -43,7 +44,7 @@ namespace Comet.Game.World.Managers
                 MineDictionary dict;
                 if (m_mineDictionary.ContainsKey(db.MapIdentity))
                     dict = m_mineDictionary[db.MapIdentity];
-                else m_mineDictionary.Add(db.MapIdentity, dict = new MineDictionary());
+                else m_mineDictionary.TryAdd(db.MapIdentity, dict = new MineDictionary());
 
                 dict.Add(new MineObject(db));
             }
@@ -135,10 +136,11 @@ namespace Comet.Game.World.Managers
                     return m_rate.ItemtypeBegin;
                 List<uint> itemTypes = new List<uint>();
                 for (uint init = m_rate.ItemtypeBegin; init <= m_rate.ItemtypeEnd; init++) itemTypes.Add(init);
+                Update();
                 return itemTypes[await Kernel.NextAsync(0, itemTypes.Count) % itemTypes.Count];
             }
 
-            public void Update()
+            private void Update()
             {
                 m_timeOut.Update();
             }

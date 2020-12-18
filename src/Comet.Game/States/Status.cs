@@ -502,7 +502,6 @@ namespace Comet.Game.States
             AUTO_HUNTING = 149;
 
         private readonly Role m_pOwner;
-        private TimeOut m_pDeadMark = new TimeOut(8);
         public ConcurrentDictionary<int, IStatus> Status;
 
         public StatusSet(Role pRole)

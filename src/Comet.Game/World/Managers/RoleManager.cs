@@ -237,15 +237,16 @@ namespace Comet.Game.World.Managers
 
         public async Task OnUserTimerAsync()
         {
-            foreach (var user in m_userSet.Values)
+            foreach (var user in m_userSet)
             {
                 try
                 {
-                    await user.OnTimerAsync();
+                    if (user.Value != null)
+                        await user.Value.OnTimerAsync();
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}").Forget();
+                    await Log.WriteLogAsync("OnUserTimer", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
                 }
             }
         }

@@ -397,7 +397,7 @@ namespace Comet.Game.States
                 }
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2100000))
+            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 4200000))
             {
                 if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1) && await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
                 {
@@ -444,7 +444,7 @@ namespace Comet.Game.States
 
             int dropNum = 0;
             int rate = await Kernel.NextAsync(0, 10000);
-            int chance = BattleSystem.AdjustDrop(1000, attacker.Level, Level);
+            int chance = BattleSystem.AdjustDrop(700, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
             {
                 dropNum = 1 + await Kernel.NextAsync(4, 7); // drop 6-10 items

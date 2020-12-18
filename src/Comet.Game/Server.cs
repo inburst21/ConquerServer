@@ -57,7 +57,7 @@ namespace Comet.Game
         /// <param name="config">The server's read configuration file</param>
         public Server(ServerConfiguration config) : base(config.GameNetwork.MaxConn, 4096, false, true, 8)
         {
-            Processor = new PacketProcessor<Client>(ProcessAsync);
+            Processor = new PacketProcessor<Client>(ProcessAsync, 1);
             Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -73,8 +73,6 @@ namespace Comet.Game
         {
             var partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
-
-            await Log.WriteLogAsync("accepted", LogLevel.Warning, $"{client.IPAddress} has been accepted.");
 
             await client.DiffieHellman.ComputePublicKeyAsync();
 

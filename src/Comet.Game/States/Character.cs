@@ -3165,7 +3165,7 @@ namespace Comet.Game.States
 
         #region Trade Partner
 
-        private Dictionary<uint, TradePartner> m_tradePartners = new Dictionary<uint, TradePartner>();
+        private ConcurrentDictionary<uint, TradePartner> m_tradePartners = new ConcurrentDictionary<uint, TradePartner>();
 
         public void AddTradePartner(TradePartner partner)
         {
@@ -3175,7 +3175,7 @@ namespace Comet.Game.States
         public void RemoveTradePartner(uint idTarget)
         {
             if (m_tradePartners.ContainsKey(idTarget))
-                m_tradePartners.Remove(idTarget);
+                m_tradePartners.TryRemove(idTarget, out _);
         }
 
         public async Task<bool> CreateTradePartnerAsync(Character target)

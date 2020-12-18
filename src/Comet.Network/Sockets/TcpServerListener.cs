@@ -118,12 +118,6 @@ namespace Comet.Network.Sockets
                 // and a new client can be accepted. Check shutdown every 5 seconds.
                 if (AcceptanceSemaphore.WaitOne(TimeSpan.FromSeconds(5)))
                 {
-                    if (BufferPool.IsEmpty)
-                    {
-                        BufferPool.Push(new Memory<byte>(new byte[4096]));
-                        await Log.WriteLogAsync("buffer", LogLevel.Error, "new buffer has been created.");
-                    }
-
                     // Pop a preallocated buffer and accept a client
                     BufferPool.TryPop(out var buffer);
 
