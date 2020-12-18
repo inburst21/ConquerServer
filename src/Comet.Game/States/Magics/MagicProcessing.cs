@@ -1271,8 +1271,7 @@ namespace Comet.Game.States.Magics
                 return false;
             return m_pOwner.Level >= m_pMagic.NeedLevel
                    && m_pMagic.NeedExp > 0
-                   && m_pOwner.MapIdentity != 1005
-                /*&& CheckProfession(dwProf, m_pMagic.NeedProf)*/;
+                   && m_pOwner.MapIdentity != 1005;
         }
 
         #endregion

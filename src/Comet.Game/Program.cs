@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
+using Comet.Game.World;
 using Comet.Network.RPC;
 using Comet.Network.Security;
 using Comet.Shared;
@@ -83,12 +84,6 @@ namespace Comet.Game
                 return;
             }
 
-            if (!await Kernel.StartupAsync())
-            {
-                await Log.WriteLogAsync(LogLevel.Error, "Could not load database related stuff");
-                return;
-            }
-
             // Recover caches from the database
             var tasks = new List<Task>();
             Task.WaitAll(tasks.ToArray());
@@ -97,9 +92,16 @@ namespace Comet.Game
             tasks = new List<Task>
             {
                 Kernel.Services.Randomness.StartAsync(CancellationToken.None),
-                DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None)
+                DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None),
+                Kernel.Services.Processor.StartAsync(CancellationToken.None)
             };
             Task.WaitAll(tasks.ToArray());
+
+            if (!await Kernel.StartupAsync())
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Could not load database related stuff");
+                return;
+            }
 
             // await ConvertItemsAsync();
 

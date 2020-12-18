@@ -76,6 +76,8 @@ namespace Comet.Game.World.Maps
             m_dbDynamap = map;
         }
 
+        public int Partition { get; private set; }
+
         public uint Identity => m_dbMap?.Identity ?? m_dbDynamap?.Identity ?? 0;
         public string Name => m_dbMap?.Name ?? m_dbDynamap?.Name ?? "Invalid";
         public uint OwnerIdentity
@@ -202,6 +204,8 @@ namespace Comet.Game.World.Maps
             }
 
             m_regions = await DbRegion.GetAsync(Identity);
+
+            Partition = (int) Kernel.Services.Processor.SelectPartition();
             return true;
         }
 

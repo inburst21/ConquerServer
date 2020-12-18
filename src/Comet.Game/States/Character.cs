@@ -44,7 +44,6 @@ using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -4321,18 +4320,10 @@ namespace Comet.Game.States
                         await AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error pk decrease for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
                 foreach (var status in StatusSet.Status.Values)
                 {
-                    await status.OnTimerAsync();
+                    QueueAction(status.OnTimerAsync);
 
                     if (!status.IsValid && status.Identity != StatusSet.GHOST && status.Identity != StatusSet.DEAD)
                     {
@@ -4345,15 +4336,7 @@ namespace Comet.Game.States
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error in status check for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
                 if (IsBlessed && m_heavenBlessing.ToNextTime() && !Map.IsTrainingMap())
                 {
                     m_blessPoints++;
@@ -4370,40 +4353,16 @@ namespace Comet.Game.States
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 3);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error in heaven blessing for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
                 if (BattleSystem != null
                     && BattleSystem.IsActive()
                     && BattleSystem.NextAttack(await GetInterAtkRateAsync()))
                 {
-                    await BattleSystem.ProcessAttackAsync();
+                    QueueAction(BattleSystem.ProcessAttackAsync);
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error in battle processing for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
-                await MagicData.OnTimerAsync();
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error in battle magic processing for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
+                QueueAction(MagicData.OnTimerAsync);
 
-            try
-            {
                 if (QueryStatus(StatusSet.LUCKY_DIFFUSE) != null) // user is caster
                 {
                     if (!m_luckyStep.IsActive())
@@ -4459,40 +4418,34 @@ namespace Comet.Game.States
                     if (QueryStatus(StatusSet.LUCKY_DIFFUSE) == null && QueryStatus(StatusSet.LUCKY_ABSORB) == null)
                         m_luckyTimeCount -= 1;
 
-                    await SynchroAttributesAsync(ClientUpdateType.LuckyTimeTimer, (ulong)(m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL);
+                    await SynchroAttributesAsync(ClientUpdateType.LuckyTimeTimer,
+                        (ulong) (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL);
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error in lucky time for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
-            {
-                await SetGhostAsync();
-                m_ghost.Clear();
-            }
-
-            if (Team != null && !Team.IsLeader(Identity) && Team.Leader.MapIdentity == MapIdentity && m_teamLeaderPos.ToNextTime())
-            {
-                await SendAsync(new MsgAction
+                if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
                 {
-                    Action = MsgAction.ActionType.MapTeamLeaderStar,
-                    Command = Team.Leader.Identity,
-                    ArgumentX = Team.Leader.MapX,
-                    ArgumentY = Team.Leader.MapY
-                });
-            }
+                    await SetGhostAsync();
+                    m_ghost.Clear();
+                }
 
-            if (!IsAlive)
-                return;
+                if (Team != null && !Team.IsLeader(Identity) && Team.Leader.MapIdentity == MapIdentity &&
+                    m_teamLeaderPos.ToNextTime())
+                {
+                    await SendAsync(new MsgAction
+                    {
+                        Action = MsgAction.ActionType.MapTeamLeaderStar,
+                        Command = Team.Leader.Identity,
+                        ArgumentX = Team.Leader.MapX,
+                        ArgumentY = Team.Leader.MapY
+                    });
+                }
 
-            if (Transformation != null && m_transformation.IsTimeOut())
-                await ClearTransformationAsync();
-            
-            try
-            {
+                if (!IsAlive)
+                    return;
+
+                if (Transformation != null && m_transformation.IsTimeOut())
+                    await ClearTransformationAsync();
+
                 if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_SECS))
                 {
                     if (Action == EntityAction.Sit)
@@ -4508,48 +4461,25 @@ namespace Comet.Game.States
                         await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_STAND);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error updating energy for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
                 if (m_xpPoints.ToNextTime())
                 {
                     await ProcXpVal();
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error updating xp value for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
                 if (m_autoHeal.ToNextTime() && IsAlive)
                 {
                     await AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD);
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error heal life for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
 
-            try
-            {
                 if (m_mine.IsActive() && m_mine.ToNextTime())
                     await DoMineAsync();
             }
             catch (Exception ex)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error mine for user {Identity}:{Name}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Timer error for user {Identity}:{Name}");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+                m_socket.Disconnect();
             }
         }
 

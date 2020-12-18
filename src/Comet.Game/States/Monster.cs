@@ -1074,7 +1074,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        private async Task ChangeModeAsync(AiStage mode)
+        private Task ChangeModeAsync(AiStage mode)
         {
             switch (mode)
             {
@@ -1082,7 +1082,7 @@ namespace Comet.Game.States
                     Life = MaxLife;
                     break;
                 case AiStage.Attack:
-                    await DoAttackAsync();
+                    QueueAction(DoAttackAsync);
                     break;
             }
 
@@ -1092,6 +1092,7 @@ namespace Comet.Game.States
             }
 
             m_stage = mode;
+            return Task.CompletedTask;
         }
 
         public async Task<bool> FindNewTargetAsync()
@@ -1429,15 +1430,12 @@ namespace Comet.Game.States
 
             if (m_tStatusCheck.ToNextTime())
             {
-                if (StatusSet.Status.Values.Count > 0)
+                foreach (var stts in StatusSet.Status.Values)
                 {
-                    foreach (var stts in StatusSet.Status.Values)
+                    QueueAction(stts.OnTimerAsync);
+                    if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
                     {
-                        await stts.OnTimerAsync();
-                        if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
-                        {
-                            await StatusSet.DelObjAsync(stts.Identity);
-                        }
+                        await StatusSet.DelObjAsync(stts.Identity);
                     }
                 }
             }

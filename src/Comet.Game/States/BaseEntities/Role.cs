@@ -788,6 +788,18 @@ namespace Comet.Game.States.BaseEntities
 
         #endregion
 
+        #region Processor Queue
+
+        public void QueueAction(Func<Task> task)
+        {
+            if (Map == null)
+                return;
+
+            Kernel.Services.Processor.Queue(Map.Partition, task);
+        }
+
+        #endregion
+
         #region Socket
 
         public async Task SendEffectAsync(string effect, bool self)

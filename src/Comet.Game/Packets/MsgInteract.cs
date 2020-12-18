@@ -155,7 +155,7 @@ namespace Comet.Game.Packets
                     PosY = Convert.ToUInt16(yy);
 
                     if (client.Character.IsAlive)
-                        await client.Character.ProcessMagicAttackAsync(magicType, TargetIdentity, PosX, PosY);
+                        client.Character.QueueAction(() => client.Character.ProcessMagicAttackAsync(magicType, TargetIdentity, PosX, PosY));
 
                     break;
 

@@ -29,6 +29,7 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.World;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Threading;
 using Comet.Network.Services;
@@ -152,6 +153,7 @@ namespace Comet.Game
         public static class Services
         {
             public static RandomnessService Randomness = new RandomnessService();
+            public static ServerProcessor Processor = new ServerProcessor();
         }
 
         public static async Task<bool> ChanceCalcAsync(int chance, int outOf)
