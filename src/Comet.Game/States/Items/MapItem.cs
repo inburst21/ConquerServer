@@ -261,7 +261,7 @@ namespace Comet.Game.States.Items
                 message += $"{m_itemtype?.Name}";
 
                 if (Item.IsWeapon(Itemtype)
-                    && await Kernel.ChanceCalcAsync(30, 500)) // socketed item
+                    && await Kernel.ChanceCalcAsync(30, 1500)) // socketed item
                 {
                     m_info.SocketNum = 1;
 
