@@ -29,6 +29,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
 using Comet.Game.World;
@@ -178,6 +179,143 @@ namespace Comet.Game
                     case "/analytics":
                     {
                         await Kernel.SystemThread.DoAnalyticsAsync();
+                        break;
+                    }
+
+                    case "/createbots":
+                    {
+                        if (!int.TryParse(full[1], out int amount))
+                            break;
+
+                        if (!int.TryParse(full[2], out int initialId))
+                            break;
+
+                        for (int i = 0; i < amount; i++, initialId++)
+                        {
+                            int prof = 40;
+                            uint mesh = 11003;
+
+                            DbPointAllot allot = Kernel.RoleManager.GetPointAllot((ushort) (prof / 10), 1) ??
+                                                 new DbPointAllot
+                                                 {
+                                                     Strength = 4,
+                                                     Agility = 6,
+                                                     Vitality = 12,
+                                                     Spirit = 0
+                                                 };
+
+                            DbCharacter user = new DbCharacter
+                            {
+                                Name = $"ImmaBot{i:0000}",
+                                MapID = 1002,
+                                Mate = 0,
+                                Mesh = mesh,
+                                X = 430,
+                                Y = 478,
+                                Strength = allot.Strength,
+                                Agility = allot.Agility,
+                                Vitality = allot.Vitality,
+                                Spirit = allot.Spirit,
+                                HealthPoints =
+                                    (ushort)(allot.Strength * 3
+                                             + allot.Agility * 3
+                                             + allot.Spirit * 3
+                                             + allot.Vitality * 24),
+                                ManaPoints = (ushort)(allot.Spirit * 5),
+                                Registered = DateTime.Now,
+                                ExperienceMultiplier = 5,
+                                ExperienceExpires = DateTime.Now.AddHours(1),
+                                HeavenBlessing = DateTime.Now.AddDays(30),
+                                AutoAllot = 1,
+                                Silver = 1000,
+                                Level = 1,
+                                Profession = (byte) prof,
+                                AccountIdentity = (uint) initialId
+                            };
+
+                            if (!await BaseRepository.SaveAsync(user))
+                            {
+                                await Log.WriteLogAsync(LogLevel.Error, $"Error saving bot {i}");
+                                break;
+                            }
+
+                            await BaseRepository.SaveAsync(new DbMagic
+                            {
+                                OwnerId = user.Identity,
+                                Type = 8001,
+                                Level = 3
+                            });
+
+                            var items = new List<DbItem>
+                            {
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 500329, Position = 4, Magic3 = 6, Gem1 = 13,
+                                    Gem2 = 13, Amount = 7099, AmountLimit = 7099
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 1050002, Position = 5, Amount = 50000,
+                                    AmountLimit = 50000
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 1050002, Position = 0, Amount = 50000,
+                                    AmountLimit = 50000
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 1050002, Position = 0, Amount = 50000,
+                                    AmountLimit = 50000
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 1050002, Position = 0, Amount = 50000,
+                                    AmountLimit = 50000
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 1050002, Position = 0, Amount = 50000,
+                                    AmountLimit = 50000
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 113109, Position = 1, Magic3 = 6, Gem1 = 13,
+                                    Gem2 = 13, Amount = 7099, AmountLimit = 7099
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 133109, Position = 3, Magic3 = 6, Gem1 = 13,
+                                    Gem2 = 13, Amount = 7099, AmountLimit = 7099
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 120249, Position = 2, Magic3 = 6, Gem1 = 13,
+                                    Gem2 = 13, Amount = 7099, AmountLimit = 7099
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 150249, Position = 6, Magic3 = 6, Gem1 = 13,
+                                    Gem2 = 13, Amount = 7099, AmountLimit = 7099
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 160249, Position = 8, Magic3 = 6, Gem1 = 13,
+                                    Gem2 = 13, Amount = 7099, AmountLimit = 7099
+                                },
+                                new DbItem
+                                {
+                                    PlayerId = user.Identity, Type = 2100075, Position = 7, Amount = 65535,
+                                    AmountLimit = 65535
+                                },
+                            };
+
+                            await BaseRepository.SaveAsync(items);
+
+                            await Log.WriteLogAsync(LogLevel.Debug,
+                                $"Bot[{user.Name}:{user.Identity}] has been created");
+                        }
+
                         break;
                     }
                 }
