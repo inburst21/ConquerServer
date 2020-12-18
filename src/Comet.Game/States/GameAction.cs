@@ -3149,11 +3149,12 @@ namespace Comet.Game.States
                         return user.Life == lifeValue;
                     if (opt.Equals("+="))
                     {
-                        return await user.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeValue);
+                        user.QueueAction(() => user.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeValue));
+                        return true;
                     }
                     if (opt.Equals("set"))
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) lifeValue);
+                        user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) lifeValue));
                         return true;
                     }
                     break;
@@ -3408,12 +3409,12 @@ namespace Comet.Game.States
 
             if (param.Equals("life", StringComparison.InvariantCultureIgnoreCase))
             {
-                await user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife);
+                user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife));
                 return true;
             }
             if (param.Equals("mana", StringComparison.InvariantCultureIgnoreCase))
             {
-                await user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana);
+                user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana));
                 return true;
             }
             if (param.Equals("xp", StringComparison.InvariantCultureIgnoreCase))
