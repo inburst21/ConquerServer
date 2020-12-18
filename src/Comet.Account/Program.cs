@@ -149,6 +149,8 @@ namespace Comet.Account
                             await using var db = new ServerDbContext();
                             db.Accounts.Add(account);
                             await db.SaveChangesAsync();
+
+                            await Log.WriteLogAsync("bot", LogLevel.Debug, $"Bot {i} ({username}) has been created.");
                         }
 
                         continue;
