@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Comet.Account.Database;
 using Comet.Account.Database.Models;
@@ -115,7 +116,46 @@ namespace Comet.Account
 
                 switch (full[0].ToLower())
                 {
+                    case "createbots":
+                    {
+                        if (!int.TryParse(full[1], out int amount))
+                            continue;
+
+                        for (int i = 0; i < amount; i++)
+                        {
+                            string username = $"bot{i}";
+                            string salt = AccountsRepository.GenerateSalt();
+                            string password = AccountsRepository.HashPassword($"test", salt);
+                            int type = 1;
+                            int vip = 0;
+
+                            if (await AccountsRepository.FindAsync(username) != null)
+                            {
+                                Console.WriteLine($"The required username {username} is already in use.");
+                                continue;
+                            }
+
+                            DbAccount account = new DbAccount
+                            {
+                                AuthorityID = (ushort) type,
+                                Username = username,
+                                Password = password,
+                                IPAddress = "127.0.0.1",
+                                Salt = salt,
+                                StatusID = 1,
+                                VipLevel = (byte) vip
+                            };
+
+                            await using var db = new ServerDbContext();
+                            db.Accounts.Add(account);
+                            await db.SaveChangesAsync();
+                        }
+
+                        continue;
+                    }
+
                     case "newuser":
+                    {
                         if (full.Length < 3)
                         {
                             Console.WriteLine(@"newuser username password [type] [vip]");
@@ -150,13 +190,12 @@ namespace Comet.Account
                             VipLevel = (byte) vip
                         };
 
-                        await using (var db = new ServerDbContext())
-                        {
-                            db.Accounts.Add(account);
-                            await db.SaveChangesAsync();
-                        }
+                        await using var db = new ServerDbContext();
+                        db.Accounts.Add(account);
+                        await db.SaveChangesAsync();
 
                         continue;
+                    }
                 }
             }
         }
