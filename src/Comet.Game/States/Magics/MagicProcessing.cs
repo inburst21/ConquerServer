@@ -194,7 +194,7 @@ namespace Comet.Game.States.Magics
             if (!result.Success)
             {
                 if (magic.Sort == MagicSort.Collide)
-                    await ProcessCollideFail(x, y, (int) idTarget);
+                    await ProcessCollideFailAsync(x, y, (int) idTarget);
 
                 await AbortMagicAsync(true);
                 return false;
@@ -1069,7 +1069,7 @@ namespace Comet.Game.States.Magics
             return true;
         }
 
-        private async Task<bool> ProcessCollideFail(ushort x, ushort y, int nDir)
+        private async Task<bool> ProcessCollideFailAsync(ushort x, ushort y, int nDir)
         {
             ushort nTargetX = (ushort)(x + GameMap.WalkXCoords[nDir]);
             ushort nTargetY = (ushort)(y + GameMap.WalkYCoords[nDir]);

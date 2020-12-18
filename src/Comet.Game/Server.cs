@@ -57,7 +57,7 @@ namespace Comet.Game
         /// <param name="config">The server's read configuration file</param>
         public Server(ServerConfiguration config) : base(config.GameNetwork.MaxConn, 4096, false, true, 8)
         {
-            Processor = new PacketProcessor<Client>(ProcessAsync, 1);
+            Processor = new PacketProcessor<Client>(ProcessAsync);
             Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
