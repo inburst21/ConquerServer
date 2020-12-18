@@ -2342,7 +2342,7 @@ namespace Comet.Game.States
                     nChance = 100;
 
                 int nItems = UserPackage.InventoryCount;
-                int nDropItem = nItems * nChance / 100;
+                int nDropItem = Level < 15 ? 0 : nItems * nChance / 100;
 
                 await UserPackage.RandDropItemAsync(nDropItem);
 
@@ -4401,24 +4401,6 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Error, $"Error in battle magic processing for user {Identity}:{Name}");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
-
-            /*try
-            {
-                for (int i = m_queuedActions.Count-1; i >= 0; i--)
-                {
-                    var action = m_queuedActions[i];
-                    if (action.CanBeExecuted)
-                    {
-                        await GameAction.ExecuteActionAsync(action.Action, this, null, null, "");
-                        m_queuedActions.Remove(action);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error in action queue for user {Identity}:{Name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }*/
 
             try
             {

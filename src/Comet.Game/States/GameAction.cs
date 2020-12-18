@@ -4598,7 +4598,7 @@ namespace Comet.Game.States
 
             DbStatistic dbStc = user.Statistic.GetStc(idEvent, idType);
             if (dbStc?.Timestamp == null)
-                return false;
+                return true;
 
             switch (mode)
             {
