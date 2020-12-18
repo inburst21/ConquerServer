@@ -2269,14 +2269,9 @@ namespace Comet.Game.States
             {
                 await AddAttributesAsync(ClientUpdateType.Hitpoints, power * -1);
             }
-
-            if (!IsAlive)
-            {
-                await BeKillAsync(attacker);
-            } 
-            else if (Action == EntityAction.Sit)
+            
+            if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, (ulong) (Energy / 2));
-
             return true;
         }
 

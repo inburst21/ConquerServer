@@ -1002,7 +1002,7 @@ namespace Comet.Game.States.Magics
             await AwardExpAsync(0, battleExp, exp, magic);
 
             if (!target.IsAlive)
-                await target.BeKillAsync(m_pOwner);
+                await m_pOwner.KillAsync(target, GetDieMode());
 
             return true;
         }
