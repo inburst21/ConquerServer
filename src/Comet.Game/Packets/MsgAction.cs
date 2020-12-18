@@ -171,7 +171,7 @@ namespace Comet.Game.Packets
                     }
 
                     if (user.Life == 0)
-                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, 1);
+                        user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, 1));
 
                     await client.Character.EnterMapAsync();
                     await client.SendAsync(this);

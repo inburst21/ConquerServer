@@ -116,6 +116,9 @@ namespace Comet.Game.Packets
             {
                 case MsgInteractType.Attack:
                 case MsgInteractType.Shoot5065:
+                    if (!user.IsAlive)
+                        return;
+
                     if (SenderIdentity == client.Identity)
                     {
                         client.Character.BattleSystem.CreateBattle(TargetIdentity);
@@ -125,6 +128,9 @@ namespace Comet.Game.Packets
                     break;
 
                 case MsgInteractType.Unknown21:
+                    if (!user.IsAlive)
+                        return;
+
                     byte[] dataArray = BitConverter.GetBytes(Data);
                     ushort magicType = Convert.ToUInt16((dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8));
                     magicType ^= 0x915d;

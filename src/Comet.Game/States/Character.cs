@@ -3516,6 +3516,8 @@ namespace Comet.Game.States
                 await Map.AddAsync(this);
                 await Map.SendMapInfoAsync(this);
                 await Screen.SynchroScreenAsync();
+
+                m_respawn.Startup(10);
             }
             else
             {
@@ -4499,6 +4501,9 @@ namespace Comet.Game.States
 
             m_dbObject.LogoutTime = DateTime.Now;
             m_dbObject.OnlineSeconds += (int)(m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+
+            if (!IsAlive)
+                m_dbObject.HealthPoints = 1;
 
             try
             {

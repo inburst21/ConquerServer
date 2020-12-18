@@ -447,7 +447,7 @@ namespace Comet.Game.States.BaseEntities
                     Data = (int) dieWay
                 }, true);
 
-            return Task.CompletedTask;
+            return target.BeKillAsync(this);
         }
 
         public virtual Task BeKillAsync(Role attacker)
