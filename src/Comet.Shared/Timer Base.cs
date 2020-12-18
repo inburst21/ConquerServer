@@ -75,8 +75,9 @@ namespace Comet.Shared
             sw.Start();
             try
             {
-                var task = OnElapseAsync();
-                if (await Task.WhenAny(task, Task.Delay(m_interval * 2)) == task)
+                //var task = OnElapseAsync();
+                await OnElapseAsync();
+                /*if (await Task.WhenAny(task, Task.Delay(m_interval * 2)) == task)
                 {
                     // task completed within timeout
                 }
@@ -84,7 +85,7 @@ namespace Comet.Shared
                 {
                     // timeout logic
                     await Log.WriteLogAsync(LogLevel.Warning, $"User thread didn't respond for {m_interval * 2}ms... :((((");
-                }
+                }*/
             }
             catch (Exception ex)
             {
@@ -96,7 +97,7 @@ namespace Comet.Shared
                 sw.Stop();
                 ElapsedMilliseconds = sw.ElapsedMilliseconds;
 
-                if (!CloseRequest)
+                if (!m_cancellationToken.IsCancellationRequested)
                     m_timer.Start();
             }
 
