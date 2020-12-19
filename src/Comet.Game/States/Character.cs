@@ -4448,15 +4448,15 @@ namespace Comet.Game.States
                 {
                     if (Action == EntityAction.Sit)
                     {
-                        await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_SIT);
+                        QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_SIT));
                     }
                     else if (Action == EntityAction.Lie)
                     {
-                        await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_LIE);
+                        QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_LIE));
                     }
                     else
                     {
-                        await AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_STAND);
+                        QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_STAND));
                     }
                 }
 
