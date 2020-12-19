@@ -434,10 +434,10 @@ namespace Comet.Game.States.BaseEntities
             return Task.FromResult(false);
         }
 
-        public virtual Task KillAsync(Role target, uint dieWay)
+        public virtual async Task KillAsync(Role target, uint dieWay)
         {
             if (this is Monster guard && guard.IsGuard())
-                return BroadcastRoomMsgAsync(new MsgInteract
+                await BroadcastRoomMsgAsync(new MsgInteract
                 {
                     Action = MsgInteractType.Kill,
                     SenderIdentity = Identity,
@@ -447,7 +447,7 @@ namespace Comet.Game.States.BaseEntities
                     Data = (int) dieWay
                 }, true);
 
-            return target.BeKillAsync(this);
+            await target.BeKillAsync(this);
         }
 
         public virtual Task BeKillAsync(Role attacker)

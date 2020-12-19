@@ -3594,7 +3594,8 @@ namespace Comet.Game.States
 
         public async Task SavePositionAsync(uint idMap, ushort x, ushort y)
         {
-            if (!Map.IsRecordDisable())
+            GameMap map = Kernel.MapManager.GetMap(idMap);
+            if (map?.IsRecordDisable() == false)
             {
                 m_dbObject.X = x;
                 m_dbObject.Y = y;
@@ -4466,7 +4467,7 @@ namespace Comet.Game.States
 
                 if (m_autoHeal.ToNextTime() && IsAlive)
                 {
-                    await AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD);
+                    QueueAction(() => AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD));
                 }
 
                 if (m_mine.IsActive() && m_mine.ToNextTime())
@@ -4492,7 +4493,7 @@ namespace Comet.Game.States
 
         public async Task OnDisconnectAsync()
         {
-            if (Map?.IsRecordDisable() == false)
+            if (Map?.IsRecordDisable() == false && IsAlive)
             {
                 m_dbObject.MapID = m_idMap;
                 m_dbObject.X = m_posX;

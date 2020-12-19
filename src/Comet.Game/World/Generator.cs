@@ -38,8 +38,8 @@ namespace Comet.Game.World
 {
     public sealed class Generator
     {
-        private const int _MAX_PER_GEN = 50;
-        private const int _MIN_TIME_BETWEEN_GEN = 5;
+        private const int _MAX_PER_GEN = 25;
+        private const int _MIN_TIME_BETWEEN_GEN = 10;
         private static uint m_idGenerator = 2000000;
 
         private readonly DbGenerator m_dbGen;
@@ -163,7 +163,7 @@ namespace Comet.Game.World
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanDisappear())
-                    await monster.LeaveMapAsync();
+                    monster.QueueAction(monster.LeaveMapAsync);
             }
 
             if (!m_pTimer.ToNextTime())
@@ -178,7 +178,7 @@ namespace Comet.Game.World
                 Monster monster = await GenerateMonsterAsync();
                 if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
                     continue;
-                await monster.EnterMapAsync();
+                monster.QueueAction(monster.EnterMapAsync);
             }
         }
 
@@ -192,14 +192,15 @@ namespace Comet.Game.World
             m_dicMonsters.TryRemove(role, out _);
         }
 
-        public async Task ClearGeneratorAsync()
+        public Task ClearGeneratorAsync()
         {
             foreach (var monster in m_dicMonsters.Values)
             {
-                await monster.LeaveMapAsync();
+                monster.QueueAction(() => monster.LeaveMapAsync());
             }
 
             m_dicMonsters.Clear();
+            return Task.CompletedTask;
         }
 
         public Monster[] GetRoles()

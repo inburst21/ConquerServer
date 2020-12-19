@@ -170,9 +170,6 @@ namespace Comet.Game.Packets
                         ArgumentY = client.Character.MapY;
                     }
 
-                    if (user.Life == 0)
-                        user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, 1));
-
                     await client.Character.EnterMapAsync();
                     await client.SendAsync(this);
 
@@ -182,6 +179,9 @@ namespace Comet.Game.Packets
                         await client.Character.SendAsync(
                             string.Format(Language.StrVipNotify, client.Character.VipLevel,
                                 client.Character.VipExpiration.ToString("U")), MsgTalk.TalkChannel.Talk);
+
+                    if (user.Life == 0)
+                        user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, 10));
 
                     user.Connection = Character.ConnectionStage.Ready; // set user ready to be processed.
                     break;
@@ -286,7 +286,7 @@ namespace Comet.Game.Packets
                     {
                         client.Character.Map.GetRebornMap(ref idMap, ref tgtPos);
                     }
-                    await client.Character.FlyMapAsync(idMap, tgtPos.X, tgtPos.Y);
+                    client.Character.QueueAction(() => client.Character.FlyMapAsync(idMap, tgtPos.X, tgtPos.Y));
                     break;
 
                 case ActionType.SpellAbortXp: // 93
@@ -298,7 +298,7 @@ namespace Comet.Game.Packets
                     if (user.IsAlive || !user.CanRevive())
                         return;
 
-                    await user.RebornAsync(Command == 0);
+                    user.QueueAction(() => user.RebornAsync(Command == 0));
                     break;
 
                 case ActionType.CharacterDelete:
