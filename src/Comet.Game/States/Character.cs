@@ -2155,7 +2155,7 @@ namespace Comet.Game.States
                 switch (PkMode)
                 {
                     case PkModeType.Peace:
-                        return false;
+                        return true;
                     case PkModeType.Team:
                     case PkModeType.Capture:
                         if (monster.IsGuard() || monster.IsPkKiller())
