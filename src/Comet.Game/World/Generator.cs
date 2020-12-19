@@ -163,7 +163,7 @@ namespace Comet.Game.World
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanDisappear())
-                    monster.QueueAction(monster.LeaveMapAsync);
+                    await monster.LeaveMapAsync();
             }
 
             if (!m_pTimer.ToNextTime())
@@ -178,7 +178,7 @@ namespace Comet.Game.World
                 Monster monster = await GenerateMonsterAsync();
                 if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
                     continue;
-                monster.QueueAction(monster.EnterMapAsync);
+                await monster.EnterMapAsync();
             }
         }
 
