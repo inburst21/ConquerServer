@@ -1480,7 +1480,7 @@ namespace Comet.Game.States.Items
 
         public bool IsEquipment()
         {
-            return IsHelmet() || IsNeck() || IsRing() || IsWeapon() || IsArmor() || IsShoes() || IsShield();
+            return IsHelmet() || IsNeck() || IsRing() || IsBangle() || IsWeapon() || IsArmor() || IsShoes() || IsShield();
         }
 
         public int GetItemSubType()
