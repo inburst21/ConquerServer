@@ -385,7 +385,7 @@ namespace Comet.Game.States
                     break;
             }
 
-            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 12500))
+            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 13500))
             {
                 uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
                 if (user?.VipLevel >= 6)
@@ -402,7 +402,7 @@ namespace Comet.Game.States
                 }
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 3200000))
+            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 3500000))
             {
                 if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1) && await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
                 {
