@@ -527,11 +527,11 @@ namespace Comet.Game.States
                 multiplier += .2;
 
             if (VipLevel >= 7)
-                multiplier += 2d;
-            else if (VipLevel >= 6)
                 multiplier += 1.5d;
-            else if (VipLevel >= 4)
+            else if (VipLevel >= 6)
                 multiplier += 1d;
+            else if (VipLevel >= 4)
+                multiplier += .75d;
             else if (VipLevel >= 2)
                 multiplier += .5;
 
