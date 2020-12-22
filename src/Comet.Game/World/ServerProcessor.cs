@@ -79,7 +79,9 @@ namespace Comet.Game.World
             {
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
                 if (action != null)
+                {
                     await action.Invoke().ConfigureAwait(false);
+                }
             }
         }
 

@@ -98,7 +98,6 @@ namespace Comet.Game.Packets
             Kernel.Logins.Remove(Token.ToString());
             
             // Generate new keys and check for an existing character
-            //client.Cipher.GenerateKeys(new object[] {Token});
             var character = await CharactersRepository.FindAsync(auth.AccountID);
             client.AccountIdentity = auth.AccountID;
             client.AuthorityLevel = auth.AuthorityID;
