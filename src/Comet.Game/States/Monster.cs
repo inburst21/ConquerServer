@@ -331,10 +331,11 @@ namespace Comet.Game.States
                 for (int i = 0; i < heapNum; i++)
                 {
                     uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
-                    if (user?.VipLevel >= 2)
+
+                    if (user != null)
                     {
-                        double multiplier = 0.25;
-                        switch (user.VipLevel)
+                        double multiplier;
+                        switch (user?.VipLevel)
                         {
                             case 2:
                                 multiplier = 0.25;
@@ -350,12 +351,16 @@ namespace Comet.Game.States
                             case 7:
                                 multiplier = 1;
                                 break;
+                            default:
+                                multiplier = 0.1d;
+                                break;
                         }
-                        await user.AwardMoney((int) moneyTmp);
+
+                        await user.AwardMoney((int) Math.Max(1, moneyTmp * multiplier));
                     }
                     else
                     {
-                        await DropMoneyAsync(moneyTmp, idDropOwner);
+                        await DropMoneyAsync(moneyTmp, 0);
                     }
                 }
             }
