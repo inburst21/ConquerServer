@@ -42,9 +42,9 @@ namespace Comet.Game.World
 
         public readonly int Count;
 
-        public ServerProcessor()
+        public ServerProcessor(int processorCount)
         {
-            Count = Environment.ProcessorCount * 2;
+            Count = processorCount;
 
             m_BackgroundTasks = new Task[Count];
             m_Channels = new Channel<Func<Task>>[Count];

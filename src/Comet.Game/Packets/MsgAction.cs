@@ -286,7 +286,7 @@ namespace Comet.Game.Packets
                     {
                         client.Character.Map.GetRebornMap(ref idMap, ref tgtPos);
                     }
-                    client.Character.QueueAction(() => client.Character.FlyMapAsync(idMap, tgtPos.X, tgtPos.Y));
+                    await client.Character.FlyMapAsync(idMap, tgtPos.X, tgtPos.Y);
                     break;
 
                 case ActionType.SpellAbortXp: // 93
@@ -298,7 +298,7 @@ namespace Comet.Game.Packets
                     if (user.IsAlive || !user.CanRevive())
                         return;
 
-                    user.QueueAction(() => user.RebornAsync(Command == 0));
+                    await user.RebornAsync(Command == 0);
                     break;
 
                 case ActionType.CharacterDelete:

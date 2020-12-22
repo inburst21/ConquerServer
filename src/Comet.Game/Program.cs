@@ -146,7 +146,7 @@ namespace Comet.Game
 
             }, MyApi.SYNC_INFORMATION_URL);
 #endif
-
+            
             await Kernel.CloseAsync();
         }
 

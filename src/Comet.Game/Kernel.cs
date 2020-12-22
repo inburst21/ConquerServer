@@ -153,7 +153,7 @@ namespace Comet.Game
         public static class Services
         {
             public static RandomnessService Randomness = new RandomnessService();
-            public static ServerProcessor Processor = new ServerProcessor();
+            public static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount * 2);
         }
 
         public static async Task<bool> ChanceCalcAsync(int chance, int outOf)
