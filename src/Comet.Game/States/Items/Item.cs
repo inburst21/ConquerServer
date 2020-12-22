@@ -1045,7 +1045,7 @@ namespace Comet.Game.States.Items
             return (uint)(100 / nChance + 1) * 12 / 10;
         }
 
-        public async Task<bool> DegradeItem(bool bCheckDura = true)
+        public async Task<bool> DegradeItemAsync(bool bCheckDura = true)
         {
             if (!IsEquipment())
                 return false;

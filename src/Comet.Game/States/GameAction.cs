@@ -4013,7 +4013,7 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
             
-            return await user.UnlearnAllSkill();
+            return await user.UnlearnAllSkillAsync();
         }
 
         private static async Task<bool> ExecuteActionUserDropMagic(DbAction action, string param, Character user, Role role, Item item, string input)

@@ -2573,7 +2573,8 @@ namespace Comet.Game.States
 
             for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
             {
-                UserPackage[pos]?.DegradeItem(false);
+                if (UserPackage[pos] != null)
+                    await UserPackage[pos].DegradeItemAsync(false);
             }
 
             var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf / 10, prof / 10)?.Magics;
@@ -2730,7 +2731,7 @@ namespace Comet.Game.States
             return points;
         }
 
-        public async Task<bool> UnlearnAllSkill()
+        public async Task<bool> UnlearnAllSkillAsync()
         {
             return await WeaponSkill.UnearnAllAsync();
         }
