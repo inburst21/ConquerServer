@@ -1254,8 +1254,8 @@ namespace Comet.Game.States.Items
         {
             if (HasUnlocked())
             {
-                _ = m_user?.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.UnlockedItem, Identity = Identity });
-                _ = m_user?.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.RequestUnlock, Identity = Identity });
+                await m_user.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.UnlockedItem, Identity = Identity });
+                await m_user.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.RequestUnlock, Identity = Identity });
 
                 await DoUnlockAsync();
                 return true;
@@ -1263,7 +1263,7 @@ namespace Comet.Game.States.Items
 
             if (IsUnlocking())
             {
-                _ = m_user?.SendAsync(new MsgEquipLock
+                await m_user.SendAsync(new MsgEquipLock
                 {
                     Action = MsgEquipLock.LockMode.RequestUnlock, 
                     Identity = Identity,
