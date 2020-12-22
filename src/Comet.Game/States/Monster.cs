@@ -338,18 +338,18 @@ namespace Comet.Game.States
                         switch (user?.VipLevel)
                         {
                             case 2:
-                                multiplier = 0.25;
+                                multiplier = 0.25d;
                                 break;
                             case 3:
                             case 4:
-                                multiplier = 0.5;
+                                multiplier = 0.5d;
                                 break;
                             case 5:
                             case 6:
-                                multiplier = .75;
+                                multiplier = .75d;
                                 break;
                             case 7:
-                                multiplier = 1;
+                                multiplier = 1d;
                                 break;
                             default:
                                 multiplier = 0.1d;
