@@ -72,5 +72,10 @@ namespace Comet.Game
             // Log.WriteLogAsync(LogLevel.Debug, $"TransferAuth: {args.AccountID}, {args.IPAddress}").ConfigureAwait(false);
             return token;
         }
+
+        public void TransferMacAddress(TransferMacAddrArgs args)
+        {
+
+        }
     }
 }

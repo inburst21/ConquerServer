@@ -53,6 +53,7 @@ namespace Comet.Account.Database.Models
         public ushort AuthorityID { get; set; }
         public ushort StatusID { get; set; }
         public string IPAddress { get; set; }
+        public string MacAddress { get; set; }
         public DateTime Registered { get; set; }
         public byte VipLevel { get; set; }
 

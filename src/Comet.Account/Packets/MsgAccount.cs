@@ -104,6 +104,7 @@ namespace Comet.Account.Packets
                 return;
             }
 
+            client.Realm = server;
             // Get an access token from the server
             var args = new TransferAuthArgs
             {
@@ -134,7 +135,9 @@ namespace Comet.Account.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             Username = reader.ReadString(16);
+            reader.BaseStream.Position = 132;
             Password = DecryptPassword(reader.ReadBytes(16));
+            reader.BaseStream.Position = 260;
             Realm = reader.ReadString(16);
         }
 

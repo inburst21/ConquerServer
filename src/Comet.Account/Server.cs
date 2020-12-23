@@ -114,6 +114,10 @@ namespace Comet.Account
                         msg = new MsgConnect();
                         break;
 
+                    case PacketType.MsgPCNum:
+                        msg = new MsgPCNum();
+                        break;
+
                     default:
                         Console.WriteLine(
                             "Missing packet {0}, Length {1}\n{2}",

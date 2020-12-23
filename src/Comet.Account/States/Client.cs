@@ -54,5 +54,7 @@ namespace Comet.Account.States
         {
             Exchanged = true;
         }
+
+        public DbRealm Realm { get; set; }
     }
 }

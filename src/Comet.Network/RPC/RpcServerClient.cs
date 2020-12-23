@@ -92,6 +92,11 @@ namespace Comet.Network.RPC
             }
         }
 
+        public Task CallAsync(string method, object arg)
+        {
+            return Rpc.InvokeAsync(method, arg);
+        }
+
         /// <summary>
         ///     Invoke a method on the server and do not wait for a result.
         /// </summary>
