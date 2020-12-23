@@ -420,26 +420,6 @@ namespace Comet.Game.Packets
                         }
                         return true;
 
-                    case "/bring":
-                        Character bringTarget;
-                        if (uint.TryParse(param, out uint idFindTarget))
-                        {
-                            bringTarget = Kernel.RoleManager.GetUser(idFindTarget);
-                        }
-                        else
-                        {
-                            bringTarget = Kernel.RoleManager.GetUser(param);
-                        }
-
-                        if (bringTarget == null)
-                        {
-                            await user.SendAsync("Target not found");
-                            return true;
-                        }
-
-                        await bringTarget.FlyMapAsync(user.MapIdentity, user.MapX, user.MapY);
-                        return true;
-
                     case "/creategen":
                         await user.SendAsync("Attention, use this command only on localhost tests or the generator thread may crash.");
                         // mobid mapid mapx mapy boundcx boundcy maxnpc rest maxpergen
@@ -535,7 +515,29 @@ namespace Comet.Game.Packets
             {
                 switch (cmd.ToLower())
                 {
+                    case "/bring":
+                    {
+                        Character bringTarget;
+                        if (uint.TryParse(param, out uint idFindTarget))
+                        {
+                            bringTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                        }
+                        else
+                        {
+                            bringTarget = Kernel.RoleManager.GetUser(param);
+                        }
+
+                        if (bringTarget == null)
+                        {
+                            await user.SendAsync("Target not found");
+                            return true;
+                        }
+
+                        await bringTarget.FlyMapAsync(user.MapIdentity, user.MapX, user.MapY);
+                        return true;
+                    }
                     case "/cmd":
+                    {
                         string[] cmdParams = param.Split(new[] {' '}, 2, StringSplitOptions.RemoveEmptyEntries);
                         string subCmd = cmdParams[0];
 
@@ -546,22 +548,29 @@ namespace Comet.Game.Packets
                             switch (subCmd.ToLower())
                             {
                                 case "broadcast":
-                                    await Kernel.RoleManager.BroadcastMsgAsync(subParam, TalkChannel.Center, Color.White);
+                                    await Kernel.RoleManager.BroadcastMsgAsync(subParam, TalkChannel.Center,
+                                        Color.White);
                                     break;
 
                                 case "gmmsg":
-                                    await Kernel.RoleManager.BroadcastMsgAsync($"{user.Name} says: {subParam}", TalkChannel.Center, Color.White);
+                                    await Kernel.RoleManager.BroadcastMsgAsync($"{user.Name} says: {subParam}",
+                                        TalkChannel.Center, Color.White);
                                     break;
 
                                 case "player":
                                     if (subParam.Equals("all", StringComparison.InvariantCultureIgnoreCase))
                                     {
-                                        await user.SendAsync($"Players Online: {Kernel.RoleManager.OnlinePlayers}, Distinct: {Kernel.RoleManager.OnlineUniquePlayers} (max: {Kernel.RoleManager.MaxOnlinePlayers})", TalkChannel.TopLeft, Color.White);
+                                        await user.SendAsync(
+                                            $"Players Online: {Kernel.RoleManager.OnlinePlayers}, Distinct: {Kernel.RoleManager.OnlineUniquePlayers} (max: {Kernel.RoleManager.MaxOnlinePlayers})",
+                                            TalkChannel.TopLeft, Color.White);
                                     }
                                     else if (subParam.Equals("map", StringComparison.InvariantCultureIgnoreCase))
                                     {
-                                        await user.SendAsync($"Map Online Players: {user.Map.PlayerCount} ({user.Map.Name})", TalkChannel.TopLeft, Color.White);
+                                        await user.SendAsync(
+                                            $"Map Online Players: {user.Map.PlayerCount} ({user.Map.Name})",
+                                            TalkChannel.TopLeft, Color.White);
                                     }
+
                                     break;
                             }
 
@@ -569,7 +578,7 @@ namespace Comet.Game.Packets
                         }
 
                         return true;
-
+                    }
                     case "/chgmap":
                         string[] chgMapParams = param.Split(new []{ ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
                         if (chgMapParams.Length < 3)
