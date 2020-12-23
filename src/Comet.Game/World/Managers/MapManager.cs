@@ -79,7 +79,7 @@ namespace Comet.Game.World.Managers
                 if (await map.InitializeAsync())
                 {
                     GameMaps.TryAdd(map.Identity, map);
-                    await Log.GmLog("map_channel", $"{map.Identity}\t{map.Name}\tPartition: {map.Partition}");
+                    await Log.GmLog("map_channel", $"{map.Identity}\t{map.Name}\t\t\tPartition: {map.Partition}");
                 }
             }
 
@@ -90,7 +90,7 @@ namespace Comet.Game.World.Managers
                 if (await map.InitializeAsync())
                 {
                     GameMaps.TryAdd(map.Identity, map);
-                    await Log.GmLog("map_channel", $"{map.Identity}\t{map.Name}\tPartition: {map.Partition}");
+                    await Log.GmLog("map_channel", $"{map.Identity}\t{map.Name}\t\t\tPartition: {map.Partition}");
                 }
             }
 
