@@ -77,7 +77,10 @@ namespace Comet.Game.World.Managers
             {
                 GameMap map = new GameMap(dbmap);
                 if (await map.InitializeAsync())
+                {
                     GameMaps.TryAdd(map.Identity, map);
+                    await Log.GmLog("map_channel", $"{map.Identity}\t{map.Name}\tPartition: {map.Partition}");
+                }
             }
 
             List<DbDynamap> dynaMaps = await MapsRepository.GetDynaAsync();
@@ -85,7 +88,10 @@ namespace Comet.Game.World.Managers
             {
                 GameMap map = new GameMap(dbmap);
                 if (await map.InitializeAsync())
+                {
                     GameMaps.TryAdd(map.Identity, map);
+                    await Log.GmLog("map_channel", $"{map.Identity}\t{map.Name}\tPartition: {map.Partition}");
+                }
             }
 
             foreach (var map in GameMaps.Values)
