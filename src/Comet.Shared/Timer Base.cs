@@ -75,17 +75,7 @@ namespace Comet.Shared
             sw.Start();
             try
             {
-                //var task = OnElapseAsync();
                 await OnElapseAsync();
-                /*if (await Task.WhenAny(task, Task.Delay(m_interval * 2)) == task)
-                {
-                    // task completed within timeout
-                }
-                else
-                {
-                    // timeout logic
-                    await Log.WriteLogAsync(LogLevel.Warning, $"User thread didn't respond for {m_interval * 2}ms... :((((");
-                }*/
             }
             catch (Exception ex)
             {
