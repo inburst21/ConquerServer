@@ -526,6 +526,12 @@ namespace Comet.Game.States.Magics
             {
                 var result = await m_pOwner.BattleSystem.CalcPower(byMagic, m_pOwner, target);
 
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(2, 150))
+                {
+                    await user.SendEffectAsync("LuckyGuy", true);
+                    result.Damage *= 2;
+                }
+
                 if (msg.Count >= _MAX_TARGET_NUM)
                 {
                     await m_pOwner.BroadcastRoomMsgAsync(msg, true);
@@ -579,7 +585,7 @@ namespace Comet.Game.States.Magics
 
             List<Role> setTarget = new List<Role>();
 
-            var result = await CollectTargetBomb(0, (int) magic.Range);
+            var result = CollectTargetBomb(0, (int) magic.Range);
 
             MsgMagicEffect msg = new MsgMagicEffect
             {
@@ -597,7 +603,7 @@ namespace Comet.Game.States.Magics
             {
                 var atkResult = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
 
-                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(5, 100))
                 {
                     await user.SendEffectAsync("LuckyGuy", true);
                     atkResult.Damage *= 2;
@@ -1107,7 +1113,7 @@ namespace Comet.Game.States.Magics
 
         #region Collect Targets
 
-        private Task<(List<Role> Roles, Point Center)> CollectTargetBomb(int nLockType, int nRange)
+        private (List<Role> Roles, Point Center) CollectTargetBomb(int nLockType, int nRange)
         {
             List<Role> targets = new List<Role>();
 
@@ -1143,7 +1149,7 @@ namespace Comet.Game.States.Magics
                 targets.Add(target);
             }
 
-            return Task.FromResult((targets, center));
+            return (targets, center);
         }
 
         #endregion
