@@ -267,17 +267,17 @@ namespace Comet.Game.States.Magics
                 }
                 else
                 {
-                    //if (m_pOwner.Map.IsTrainingMap() && m_pMagic != null)
-                    //{
-                    //    SetAutoAttack();
-                    //    m_tDelay.Startup(Math.Max(1500, m_pMagic.DelayMs));
-                    //    m_state = MagicState.Delay;
-                    //    return true;
-                    //}
+                    if (m_pOwner.Map.IsTrainingMap() && m_pMagic != null)
+                    {
+                        SetAutoAttack();
+                        m_tDelay.Startup(Math.Max(1500, m_pMagic.DelayMs));
+                        m_state = MagicState.Delay;
+                        return true;
+                    }
 
-                    //m_tApply ??= new TimeOutMS();
-                    //m_tApply.Startup(0);
-                    //m_state = MagicState.Launch;
+                    m_tApply ??= new TimeOutMS();
+                    m_tApply.Startup(1);
+                    m_state = MagicState.Launch;
                 }
             }
             else
