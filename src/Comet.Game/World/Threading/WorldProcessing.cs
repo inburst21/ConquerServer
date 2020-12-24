@@ -37,7 +37,7 @@ namespace Comet.Game.World.Threading
         private List<Generator> m_generators = new List<Generator>();
 
         public WorldProcessing()
-            : base(500, "World Processing")
+            : base(1000, "World Processing")
         {
         }
 

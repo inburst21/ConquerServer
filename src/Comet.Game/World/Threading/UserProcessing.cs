@@ -31,7 +31,7 @@ namespace Comet.Game.World.Threading
     public sealed class UserProcessor : TimerBase
     {
         public UserProcessor()
-            : base(60, "User Thread")
+            : base(100, "User Thread")
         {
         }
 
