@@ -258,7 +258,7 @@ namespace Comet.Game.States
                 if (user.IsMate(killer))
                     addExp *= 2;
 
-                await user.AwardBattleExpAsync(addExp, false);
+                await user.AwardBattleExpAsync(addExp, true);
                 await user.SendAsync(string.Format(Language.StrTeamExperience, addExp));
             }
         }

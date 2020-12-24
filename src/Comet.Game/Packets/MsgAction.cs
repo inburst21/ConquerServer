@@ -386,8 +386,6 @@ namespace Comet.Game.Packets
                     if (targetUser == null)
                         return;
 
-                    await targetUser.SendWindowToAsync(user);
-
                     for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; 
                         pos <= Item.ItemPosition.EquipmentEnd;
                         pos++)
