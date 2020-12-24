@@ -763,6 +763,33 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Lucky! Your equipment durability didn&apos;t decrease after that fail..
+        /// </summary>
+        public static string StrLuckyGuyNoDuraDown {
+            get {
+                return ResourceManager.GetString("StrLuckyGuyNoDuraDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Lucky! Your equipment has been upgraded successfully..
+        /// </summary>
+        public static string StrLuckyGuySuccessUpgrade {
+            get {
+                return ResourceManager.GetString("StrLuckyGuySuccessUpgrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Lucky! Your equipment has been leveled successfully..
+        /// </summary>
+        public static string StrLuckyGuySuccessUplevel {
+            get {
+                return ResourceManager.GetString("StrLuckyGuySuccessUplevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1} are friends from now on..
         /// </summary>
         public static string StrMakeFriend {

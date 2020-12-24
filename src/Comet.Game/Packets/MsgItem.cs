@@ -368,13 +368,28 @@ namespace Comet.Game.Packets
                         return;
                     }
 
+                    if (user.IsLucky && await Kernel.ChanceCalcAsync(10, 2000))
+                    {
+                        await user.SendEffectAsync("LuckyGuy", true);
+                        await user.SendAsync(Language.StrLuckyGuySuccessUpgrade);
+                        nChance = 100.00;
+                    }
+
                     if (await Kernel.ChanceCalcAsync(nChance))
                     {
                         await item.ChangeTypeAsync(idNewType);
                     }
                     else
                     {
-                        item.Durability = (ushort) (item.MaximumDurability / 2);
+                        if (user.IsLucky && await Kernel.ChanceCalcAsync(2))
+                        {
+                            await user.SendEffectAsync("LuckyGuy", true);
+                            await user.SendAsync(Language.StrLuckyGuyNoDuraDown);
+                        }
+                        else
+                        {
+                            item.Durability = (ushort) (item.MaximumDurability / 2);
+                        }
                     }
 
                     if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(5, 1000))
@@ -429,13 +444,28 @@ namespace Comet.Game.Packets
                         return;
                     }
 
+                    if (user.IsLucky && await Kernel.ChanceCalcAsync(10, 2000))
+                    {
+                        await user.SendEffectAsync("LuckyGuy", true);
+                        await user.SendAsync(Language.StrLuckyGuySuccessUplevel);
+                        nChance = 100.00;
+                    }
+
                     if (await Kernel.ChanceCalcAsync(nChance))
                     {
                         await item.ChangeTypeAsync((uint) idNewType);
                     }
                     else
                     {
-                        item.Durability = (ushort) (item.MaximumDurability / 2);
+                        if (user.IsLucky && await Kernel.ChanceCalcAsync(2))
+                        {
+                            await user.SendEffectAsync("LuckyGuy", true);
+                            await user.SendAsync(Language.StrLuckyGuyNoDuraDown);
+                        }
+                        else
+                        {
+                            item.Durability = (ushort) (item.MaximumDurability / 2);
+                        }
                     }
 
                     if (item.SocketOne == Item.SocketGem.NoSocket && await Kernel.ChanceCalcAsync(5, 1000))

@@ -351,6 +351,15 @@
   <data name="StrLotteryLow" xml:space="preserve">
     <value>You won {0} from the Lottery.</value>
   </data>
+  <data name="StrLuckyGuyNoDuraDown" xml:space="preserve">
+    <value>Lucky! Your equipment durability didn't decrease after that fail.</value>
+  </data>
+  <data name="StrLuckyGuySuccessUpgrade" xml:space="preserve">
+    <value>Lucky! Your equipment has been upgraded successfully.</value>
+  </data>
+  <data name="StrLuckyGuySuccessUplevel" xml:space="preserve">
+    <value>Lucky! Your equipment has been leveled successfully.</value>
+  </data>
   <data name="StrMakeFriend" xml:space="preserve">
     <value>{0} and {1} are friends from now on.</value>
   </data>

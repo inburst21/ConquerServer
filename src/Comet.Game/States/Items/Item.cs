@@ -1104,6 +1104,14 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
+            if (await Kernel.ChanceCalcAsync(0.5d))
+            {
+                if (SocketOne == SocketGem.NoSocket)
+                    SocketOne = SocketGem.EmptySocket;
+                else if (SocketTwo == SocketGem.NoSocket)
+                    SocketTwo = SocketGem.EmptySocket;
+            }
+
             return await ChangeTypeAsync(newType.Type);
         }
 
@@ -1144,6 +1152,14 @@ namespace Comet.Game.States.Items
             {
                 await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
                 return false;
+            }
+
+            if (await Kernel.ChanceCalcAsync(0.5d))
+            {
+                if (SocketOne == SocketGem.NoSocket)
+                    SocketOne = SocketGem.EmptySocket;
+                else if (SocketTwo == SocketGem.NoSocket)
+                    SocketTwo = SocketGem.EmptySocket;
             }
 
             Durability = newType.AmountLimit;
