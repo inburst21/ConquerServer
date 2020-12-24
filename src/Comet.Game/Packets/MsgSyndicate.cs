@@ -142,7 +142,7 @@ namespace Comet.Game.Packets
                     if (user.Syndicate == null)
                         return;
 
-                    if (!await user.SpendMoney((int) Identity))
+                    if (!await user.SpendMoneyAsync((int) Identity))
                     {
                         await user.SendAsync(Language.StrNotEnoughMoney);
                         return;

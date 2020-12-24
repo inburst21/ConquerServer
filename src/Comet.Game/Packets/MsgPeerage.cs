@@ -151,7 +151,7 @@ namespace Comet.Game.Packets
 
                     if (Data <= user.Silvers)
                     {
-                        if (!await user.SpendMoney((int) Data, true))
+                        if (!await user.SpendMoneyAsync((int) Data, true))
                             return;
                     }
                     else

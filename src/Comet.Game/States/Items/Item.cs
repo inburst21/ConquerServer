@@ -1075,7 +1075,7 @@ namespace Comet.Game.States.Items
             return await ChangeTypeAsync(newType.Type);
         }
 
-        public async Task<bool> UpItemQuality()
+        public async Task<bool> UpItemQualityAsync()
         {
             if (Durability / 100 < MaximumDurability / 100)
             {
@@ -1111,7 +1111,7 @@ namespace Comet.Game.States.Items
         /// This method will upgrade an equipment level using meteors.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> UpEquipmentLevel()
+        public async Task<bool> UpEquipmentLevelAsync()
         {
             if (Durability / 100 < MaximumDurability / 100)
             {
@@ -1151,7 +1151,7 @@ namespace Comet.Game.States.Items
             return await ChangeTypeAsync(newType.Type);
         }
 
-        public async Task<bool> UpUltraEquipmentLevel()
+        public async Task<bool> UpUltraEquipmentLevelAsync()
         {
             if (Durability / 100 < MaximumDurability / 100)
             {
@@ -1208,7 +1208,7 @@ namespace Comet.Game.States.Items
             return 0;
         }
 
-        public async Task<bool> RecoverDurability()
+        public async Task<bool> RecoverDurabilityAsync()
         {
             MaximumDurability = OriginalMaximumDurability;
             await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
@@ -1249,7 +1249,7 @@ namespace Comet.Game.States.Items
 
             int nRepairCost = GetRecoverDurCost() - 1;
 
-            if (!await m_user.SpendMoney(Math.Max(1, nRepairCost), true))
+            if (!await m_user.SpendMoneyAsync(Math.Max(1, nRepairCost), true))
                 return;
 
             Durability = MaximumDurability;

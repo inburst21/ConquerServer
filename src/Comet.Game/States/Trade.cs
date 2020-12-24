@@ -266,10 +266,10 @@ namespace Comet.Game.States
 
             await SendCloseAsync();
 
-            await User1.SpendMoney((int) m_money1);
+            await User1.SpendMoneyAsync((int) m_money1);
             await User2.AwardMoney((int) m_money1);
 
-            await User2.SpendMoney((int) m_money2);
+            await User2.SpendMoneyAsync((int) m_money2);
             await User1.AwardMoney((int) m_money2);
 
             await User1.SpendConquerPoints((int) m_emoney1);

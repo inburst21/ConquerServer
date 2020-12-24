@@ -177,7 +177,7 @@ namespace Comet.Game.Packets
                             if (itemtype.Price == 0)
                                 return;
 
-                            if (!await user.SpendMoney((int) (itemtype.Price * amount), true))
+                            if (!await user.SpendMoneyAsync((int) (itemtype.Price * amount), true))
                                 return;
                             break;
                         case Moneytype.ConquerPoints:
@@ -279,7 +279,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (!await user.SpendMoney((int) Command, true))
+                    if (!await user.SpendMoneyAsync((int) Command, true))
                         return;
 
                     user.StorageMoney += Command;

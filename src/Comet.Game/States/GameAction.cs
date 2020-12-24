@@ -1782,24 +1782,24 @@ namespace Comet.Game.States
             {
                 case "up_lev":
                 {
-                    return await pItem.UpEquipmentLevel();
+                    return await pItem.UpEquipmentLevelAsync();
                 }
 
                 case "recover_dur":
                 {
                     var szPrice = (uint)pItem.GetRecoverDurCost();
-                    return await user.SpendMoney((int)szPrice) && await pItem.RecoverDurability();
+                    return await user.SpendMoneyAsync((int)szPrice) && await pItem.RecoverDurabilityAsync();
                 }
 
                 case "up_levultra":
                 case "up_levultra2":
                 {
-                    return await pItem.UpUltraEquipmentLevel();
+                    return await pItem.UpUltraEquipmentLevelAsync();
                 }
 
                 case "up_quality":
                 {
-                    return await pItem.UpItemQuality();
+                    return await pItem.UpItemQualityAsync();
                 }
 
                 default:

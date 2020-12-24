@@ -905,7 +905,7 @@ namespace Comet.Game.States
             }
             if (amount < 0)
             {
-                return await SpendMoney(amount * -1, notify);
+                return await SpendMoneyAsync(amount * -1, notify);
             }
             return false;
         }
@@ -917,7 +917,7 @@ namespace Comet.Game.States
             await SynchroAttributesAsync(ClientUpdateType.Money, Silvers);
         }
 
-        public async Task<bool> SpendMoney(int amount, bool notify = false)
+        public async Task<bool> SpendMoneyAsync(int amount, bool notify = false)
         {
             if (amount > Silvers)
             {
@@ -1298,7 +1298,7 @@ namespace Comet.Game.States
             string moneyType = item.IsSilver ? Language.StrSilvers : Language.StrConquerPoints;
             if (item.IsSilver)
             {
-                if (!await target.SpendMoney((int) item.Value, true))
+                if (!await target.SpendMoneyAsync((int) item.Value, true))
                     return false;
                 await AwardMoney(value);
             }
@@ -1392,7 +1392,7 @@ namespace Comet.Game.States
             if (!Map.FindDropItemCell(1, ref pos))
                 return false;
 
-            if (!await SpendMoney((int) amount, true))
+            if (!await SpendMoneyAsync((int) amount, true))
                 return false;
 
             await Log.GmLog("drop_money", $"drop money: {Identity} {Name} has dropped {amount} silvers");
@@ -3295,7 +3295,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (!await SpendMoney(price))
+            if (!await SpendMoneyAsync(price))
             {
                 await SendAsync(Language.StrNotEnoughMoney);
                 return false;
