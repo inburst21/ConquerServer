@@ -203,6 +203,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserTestPos: result = true;  break; // gotta investigate
                     case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
+                    case (TaskActionType)1075: result = true;  break;
                     case TaskActionType.ActionUserSelectToData: result = await ExecuteActionUserSelectToData(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserStcTimeCheck(action, param, user, role, item, input); break;
                     case TaskActionType.ActionUserStcTimeOperation: result = await ExecuteActionUserStcTimeOpe(action, param, user, role, item, input); break;
@@ -5232,7 +5233,7 @@ namespace Comet.Game.States
             switch (szField.ToLowerInvariant())
             {
                 case "name":
-                    nCount += Kernel.WorldThread.GetGenerators(idMap, szData).Sum(x => x.Generated);
+                    nCount += Kernel.WorldThread.GetGenerators(idMap, szData).Sum(x => x.GetRoles().Count(y => y.IsAlive));
                     //nCount += Kernel.GeneratorThread.GetGenerators(idMap, szData).Sum(x => x.Generated);
                     break;
                 case "gen_id":
@@ -5240,7 +5241,7 @@ namespace Comet.Game.States
                     //Generator gen = Kernel.GeneratorThread.GetGenerator(uint.Parse(szData));
                     if (gen == null)
                         return false;
-                    nCount += gen.Generated;
+                    nCount += gen.GetRoles().Count(x => x.IsAlive);
                     break;
             }
 
