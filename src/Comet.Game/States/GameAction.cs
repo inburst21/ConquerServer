@@ -4795,43 +4795,7 @@ namespace Comet.Game.States
             uint remainTime = uint.Parse(pszParam[2]);
             uint intervalTime = uint.Parse(pszParam[4]);
             bool save = pszParam[5] != "0"; // ??
-
-            //var status =  (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == action.Data);
-            //if (status != null)
-            //{
-            //    status.EndTime = DateTime.Now.AddSeconds(remainTime);
-            //    status.IntervalTime = intervalTime;
-            //    status.LeaveTimes = leaveTimes;
-            //    status.RemainTime = remainTime;
-            //    status.Sort = sort;
-            //    if (!await BaseRepository.SaveAsync(status))
-            //    {
-            //        await Log.WriteLogAsync(LogLevel.Error,
-            //            string.Format("ERROR: Could not update status {0}[{2}] to {1}", status.Id, action.Data,
-            //                status.Status));
-            //        return false;
-            //    }
-            //}
-            //else
-            //{
-            //    status = new DbStatus
-            //    {
-            //        EndTime = DateTime.Now.AddSeconds(remainTime),
-            //        IntervalTime = intervalTime,
-            //        LeaveTimes = leaveTimes,
-            //        OwnerId = user.Identity,
-            //        Power = 0,
-            //        RemainTime = remainTime,
-            //        Status = action.Data,
-            //        Sort = sort
-            //    };
-            //    if (!await BaseRepository.SaveAsync(status))
-            //    {
-            //        await Log.WriteLogAsync(LogLevel.Error, "ERROR: Could not save status");
-            //        return false;
-            //    }
-            //}
-
+            
             await user.AttachStatusAsync(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0, save);
             return true;
         }
@@ -4881,19 +4845,19 @@ namespace Comet.Game.States
 
             List<DbLottery> allItems = await DbLottery.GetAsync();
             int lottoChance = await Kernel.NextAsync(10000);
-            if (lottoChance > 75)
+            if (lottoChance > 20)
             {
                 allItems.RemoveAll(x => x.Rank == 1);
             }
-            if (lottoChance > 150)
+            if (lottoChance > 75)
             {
                 allItems.RemoveAll(x => x.Rank == 2);
             }
-            if (lottoChance > 300)
+            if (lottoChance > 200)
             {
                 allItems.RemoveAll(x => x.Rank == 3);
             }
-            if (lottoChance > 800)
+            if (lottoChance > 1000)
             {
                 allItems.RemoveAll(x => x.Rank == 4);
             }
@@ -4932,7 +4896,9 @@ namespace Comet.Game.States
 
             await user.UserPackage.AddItemAsync(newItem);
 
-            if (lottery.Rank < 5)
+            await Log.GmLog("lottery", $"{user.Identity},{user.Name},{lottery.Rank},{lottery.Color},{newItem.Type},{newItem.Plus},{newItem.SocketOne},{newItem.SocketTwo}");
+
+            if (lottery.Rank <= 5)
             {
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
             }
