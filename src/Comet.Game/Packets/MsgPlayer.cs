@@ -149,8 +149,9 @@ namespace Comet.Game.Packets
         public byte Pose { get; set; }
         public ushort Metempsychosis { get; set; }
         public ushort Level { get; set; }
-        public ushort WindowSpawn { get; set; }
-        public ushort Padding1 { get; set; }
+        public bool WindowSpawn { get; set; }
+        public uint SharedBattlePower { get; set; }
+        public uint FlowerRanking { get; set; }
 
         public uint NobilityRank { get; set; }
         public uint NobilityIdentity { get; set; }
@@ -161,6 +162,7 @@ namespace Comet.Game.Packets
         public ushort HelmetColor { get; set; }
         public ushort ArmorColor { get; set; }
         public ushort LeftHandColor { get; set; }
+        public uint QuizPoints { get; set; }
 
         public string Name { get; set; }
         public string Mate { get; set; }
@@ -175,29 +177,29 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(Identity); // 4
-            writer.Write(Mesh); // 8
+            writer.Write(Identity); // 8
+            writer.Write(Mesh); // 4
 
             if (StatuaryLife > 0)
             {
-                writer.Write(StatuaryLife);
-                writer.Write(StatuaryFrame);
-                writer.Write(0u);
+                writer.Write(StatuaryLife); // 16
+                writer.Write(StatuaryFrame); // 18
+                writer.Write(0u); // 20
             }
             else
             {
-                writer.Write(Status); // 12
+                writer.Write(Status); // 16
             }
 
             if (OwnerIdentity > 0)
             {
-                writer.Write(OwnerIdentity);
+                writer.Write(OwnerIdentity); // 12
             }
             else
             {
-                writer.Write(SyndicateIdentity); // 20
-                writer.Write((byte) 0); // 22
-                writer.Write(SyndicatePosition); // 23
+                writer.Write(SyndicateIdentity); // 12
+                writer.Write((byte)0); // 14
+                writer.Write(SyndicatePosition); // 15
             }
 
             writer.Write(Garment); // 24
@@ -216,15 +218,16 @@ namespace Comet.Game.Packets
             writer.Write(Metempsychosis); // 60
             writer.Write(Level); // 62
             writer.Write(WindowSpawn); // 64 
-            writer.Write(Padding1); // 66 
-            writer.Write(NobilityRank); // 68
-            writer.Write(NobilityIdentity); // 72
-            writer.Write(NobilityPosition); // 76
-            writer.Write(0); // 80
-            writer.Write(HelmetColor); // 84
-            writer.Write(ArmorColor); // 86
-            writer.Write(LeftHandColor); // 88
-            writer.Write(new List<string> // 90
+            writer.Write(SharedBattlePower); // 65 
+            writer.Write(FlowerRanking); // 69
+            writer.Write(NobilityRank); // 73
+            writer.Write(NobilityPosition); // 77
+            writer.Write(0); // 81
+            writer.Write(HelmetColor); // 85
+            writer.Write(ArmorColor); // 87
+            writer.Write(LeftHandColor); // 89
+            writer.Write(QuizPoints); // 91
+            writer.Write(new List<string> // 95
             {
                 Name,
                 Mate

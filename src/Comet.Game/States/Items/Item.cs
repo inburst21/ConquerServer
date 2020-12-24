@@ -254,6 +254,18 @@ namespace Comet.Game.States.Items
             set => m_dbItem.Magic3 = value;
         }
 
+        public uint SocketProgress
+        {
+            get => m_dbItem.Data;
+            set => m_dbItem.Data = value;
+        }
+
+        public uint CompositionProgress
+        {
+            get => m_dbItem.AddlevelExp;
+            set => m_dbItem.AddlevelExp = value;
+        }
+
         public ItemEffect Effect
         {
             get => (ItemEffect) m_dbItem.Magic1;
@@ -280,7 +292,7 @@ namespace Comet.Game.States.Items
 
         public bool IsBound
         {
-            get => IsMonopoly();
+            get => (m_dbItem.Monopoly & ITEM_MONOPOLY_MASK) != 0;
             set
             {
                 if (value)

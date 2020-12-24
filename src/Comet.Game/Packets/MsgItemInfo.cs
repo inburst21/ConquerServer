@@ -49,6 +49,7 @@ namespace Comet.Game.Packets
             AmountLimit = item.MaximumDurability;
             Mode = mode;
             Position = item.Position;
+            SocketProgress = item.SocketProgress;
             SocketOne = item.SocketOne;
             SocketTwo = item.SocketTwo;
             Effect = item.Effect;
@@ -66,6 +67,8 @@ namespace Comet.Game.Packets
             Enchantment = item.Enchantment;
             Color = item.Color;
             IsLocked = item.IsLocked() || item.IsUnlocking();
+            IsBound = item.IsBound;
+            CompositionProgress = item.CompositionProgress;
         }
 
         public uint Identity { get; set; }
@@ -74,6 +77,7 @@ namespace Comet.Game.Packets
         public ushort AmountLimit { get; set; }
         public ItemMode Mode { get; set; }
         public Item.ItemPosition Position { get; set; }
+        public uint SocketProgress { get; set; }
         public Item.SocketGem SocketOne { get; set; }
         public Item.SocketGem SocketTwo { get; set; }
         public Item.ItemEffect Effect { get; set; }
@@ -83,6 +87,8 @@ namespace Comet.Game.Packets
         public bool IsSuspicious { get; set; }
         public Item.ItemColor Color { get; set; }
         public bool IsLocked { get; set; }
+        public bool IsBound { get; set; }
+        public uint CompositionProgress { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -100,21 +106,22 @@ namespace Comet.Game.Packets
             writer.Write(AmountLimit); // 14
             writer.Write((ushort) Mode); // 16
             writer.Write((ushort) Position); // 18
-            writer.Write(0); // 20
+            writer.Write(SocketProgress); // 20
             writer.Write((byte) SocketOne); // 24
             writer.Write((byte) SocketTwo); // 25
             writer.Write((byte) Effect); // 26
             writer.Write((byte) 0); // 27
             writer.Write(Plus); // 28
             writer.Write(Bless); // 29
-            writer.Write(Enchantment); // 30
-            writer.Write(0);
-            writer.Write((byte)0);
-            writer.Write(IsSuspicious);
-            writer.Write((byte) 0);
-            writer.Write(IsLocked);
-            writer.Write((byte)0);
-            writer.Write((int) Color);
+            writer.Write(IsBound); // 30
+            writer.Write(Enchantment); // 31
+            writer.Write(0); // 31
+            writer.Write(IsSuspicious); // 36
+            writer.Write((byte) 0); // 37
+            writer.Write(IsLocked); // 38
+            writer.Write((byte)0); // 39
+            writer.Write((int) Color); // 40
+            writer.Write(CompositionProgress); // 44
             return writer.ToArray();
         }
 

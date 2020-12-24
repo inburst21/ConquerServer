@@ -86,5 +86,10 @@ namespace Comet.Game.Database.Models
         [Column("vip_value")] public virtual uint VipLevel { get; set; }
         [Column("vip_expire")] public virtual DateTime? VipExpiration { get; set; }
         [Column("business")] public virtual DateTime? Business { get; set; }
+        [Column("send_flower_date")] public DateTime? SendFlowerDate { get; set; }
+        [Column("flower_r")] public uint FlowerRed { get; set; }
+        [Column("flower_w")] public uint FlowerWhite { get; set; }
+        [Column("flower_lily")] public uint FlowerOrchid { get; set; }
+        [Column("flower_tulip")] public uint FlowerTulip { get; set; }
     }
 }

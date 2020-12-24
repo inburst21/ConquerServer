@@ -54,19 +54,6 @@ namespace Comet.Game.Packets
             Attributes.Add(new UserAttribute((uint) type, data));
         }
 
-        public override void Decode(byte[] bytes)
-        {
-            var reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16();
-            Type = (PacketType) reader.ReadUInt16();
-            Identity = reader.ReadUInt32();
-            Amount = reader.ReadInt32();
-            for (int i = 0; i < Amount; i++)
-            {
-                Attributes.Add(new UserAttribute(reader.ReadUInt32(), reader.ReadUInt64()));
-            }
-        }
-
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
@@ -111,27 +98,27 @@ namespace Comet.Game.Packets
         Experience = 5,
         PkPoints = 6,
         Class = 7,
-        SizeAdd = 8,
-        Stamina = 9,
-        Atributes = 11,
+        Stamina = 8,
+        Atributes = 10,
         Mesh,
         Level,
         Spirit,
         Vitality,
         Strength,
         Agility,
-        HeavensBlessing = 18,
-        DoubleExpTimer = 19,
-        CursedTimer = 21,
-        Reborn = 23,
-        StatusFlag = 26,
-        HairStyle = 27,
-        XpCircle = 28,
-        LuckyTimeTimer = 29,
-        ConquerPoints = 30,
-        OnlineTraining = 32,
-        ExtraBattlePower = 37,
-        Merchant = 39,
-        VipLevel = 40,
+        HeavensBlessing,
+        DoubleExpTimer,
+        CursedTimer = 20,
+        Reborn = 22,
+        StatusFlag = 25,
+        HairStyle = 26,
+        XpCircle = 27,
+        LuckyTimeTimer = 28,
+        ConquerPoints = 29,
+        OnlineTraining = 31,
+        ExtraBattlePower = 36,
+        Merchant = 38,
+        VipLevel = 39,
+        QuizPoints = 40
     }
 }

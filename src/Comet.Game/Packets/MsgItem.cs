@@ -236,6 +236,7 @@ namespace Comet.Game.Packets
                     await user.AwardMoney(price);
                     break;
 
+                case ItemActionType.InventoryDropItem:
                 case ItemActionType.InventoryRemove:
                     await user.DropItemAsync(Identity, user.MapX, user.MapY);
                     break;
@@ -636,7 +637,8 @@ namespace Comet.Game.Packets
             EquipmentAmount,
             ClientPing = 27,
             EquipmentEnchant,
-            BoothSellPoints
+            BoothSellPoints,
+            InventoryDropItem = 37
         }
     }
 }

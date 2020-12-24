@@ -253,33 +253,42 @@ namespace Comet.Game.Packets
 
                     user.MateIdentity = targetUser.Identity;
                     user.MateName = targetUser.Name;
-                    _ = user.SaveAsync();
+                    await user.SaveAsync();
                     targetUser.MateIdentity = user.Identity;
                     targetUser.MateName = user.Name;
-                    _ = targetUser.SaveAsync();
+                    await targetUser.SaveAsync();
 
-                    _ = user.SendAsync(new MsgName
+                    await user.SendAsync(new MsgName
                     {
                         Identity = targetUser.Identity,
                         Strings = new List<string> { targetUser.Name },
                         Action = StringAction.Mate
                     });
 
-                    _ = targetUser.SendAsync(new MsgName
+                    await targetUser.SendAsync(new MsgName
                     {
                         Identity = user.Identity,
                         Strings = new List<string> {user.Name},
                         Action = StringAction.Mate
                     });
 
-                    _ = Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), MsgTalk.TalkChannel.Center, Color.Red);
+                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), MsgTalk.TalkChannel.Center, Color.Red);
                     break;
                 }
+
                 case MsgInteractType.AcceptMerchant:
                 {
                     // ON ACCEPT: Sender = 1 Target = 1
                     break;
                 }
+
+                case MsgInteractType.PresentEmoney:
+                {
+
+
+                    break;
+                }
+
                 default:
                     await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
                         $"Missing packet {Type}, Action {Action}, Length {Length}"));

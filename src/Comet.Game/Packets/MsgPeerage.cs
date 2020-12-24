@@ -84,6 +84,10 @@ namespace Comet.Game.Packets
             get => (ushort)(DataLow >> 16);
             set => DataLow = ((uint)DataLow1 << 16 | value);
         }
+
+        public uint Data1 { get; set; }
+        public uint Data2 { get; set; }
+        public uint Data3 { get; set; }
         
         public List<string> Strings = new List<string>();
 
@@ -100,6 +104,9 @@ namespace Comet.Game.Packets
             Type = (PacketType)reader.ReadUInt16();
             Action = (NobilityAction) reader.ReadUInt32();
             Data = reader.ReadUInt64();
+            Data1 = reader.ReadUInt32();
+            Data2 = reader.ReadUInt32();
+            Data3 = reader.ReadUInt32();
             Strings = reader.ReadStrings();
         }
 
@@ -115,6 +122,9 @@ namespace Comet.Game.Packets
             writer.Write((ushort)Type);
             writer.Write((uint) Action);
             writer.Write(Data);
+            writer.Write(Data1);
+            writer.Write(Data2);
+            writer.Write(Data3);
             writer.Write(Strings);
             return writer.ToArray();
         }
@@ -156,7 +166,9 @@ namespace Comet.Game.Packets
                     await Kernel.PeerageManager.SendRankingAsync(user, DataLow1);
                     break;
                 case NobilityAction.QueryRemainingSilver:
-                    Data = Kernel.PeerageManager.GetNextRankSilver((NobilityRank) DataLow1, user.NobilityDonation);
+                    Data = (uint) Kernel.PeerageManager.GetNextRankSilver((NobilityRank) DataLow1, user.NobilityDonation);
+                    Data2 = 60;
+                    Data3 = (uint) user.NobilityPosition;
                     await user.SendAsync(this);
                     break;
             }

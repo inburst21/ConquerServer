@@ -230,9 +230,9 @@ namespace Comet.Game.World.Managers
                 case NobilityRank.Knight: return 30000000 - donation;
                 case NobilityRank.Baron: return 100000000 - donation;
                 case NobilityRank.Earl: return 200000000 - donation;
-                case NobilityRank.Duke: return GetDonation(50);
-                case NobilityRank.Prince: return GetDonation(15);
-                case NobilityRank.King: return GetDonation(3);
+                case NobilityRank.Duke: return GetDonation(50) - donation;
+                case NobilityRank.Prince: return GetDonation(15) - donation;
+                case NobilityRank.King: return GetDonation(3) - donation;
                 default: return 0;
             }
         }

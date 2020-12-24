@@ -19,7 +19,7 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define OLD_COMPOSE
+// #define OLD_COMPOSE
 
 #region References
 
@@ -83,9 +83,19 @@ namespace Comet.Game.Packets
         {
             Character user = client.Character;
 
+            if (Items.Count < 2)
+                return;
+
+            Item target = user.UserPackage[Items[0]];
+
+            if (target == null)
+                return;
+
+            int oldAddition = target.Plus;
             switch (Action)
             {
                 case DataArrayMode.Composition:
+                {
 #if OLD_COMPOSE
                     if (Items.Count < 5 || (Items[1] == 0 && Items[2] == 0))
                         return;
@@ -183,13 +193,123 @@ namespace Comet.Game.Packets
                         else
                             await user.SendAsync(string.Format(Language.StrComposeOverpowerFemale, user.Name, composeTarget.Name, composeTarget.Plus));
                     }
+#else
+                    if (target.Plus >= 12)
+                    {
+                        await user.SendAsync(Language.StrComposeItemMaxComposition);
+                        return;
+                    }
 
+                    for (int i = 1; i < Items.Count; i++)
+                    {
+                        Item source = user.UserPackage[Items[i]];
+                        if (source == null)
+                            continue;
+
+                        if (source.Type < Item.TYPE_STONE1 || source.Type > Item.TYPE_STONE8)
+                        {
+                            if (source.IsWeaponOneHand())
+                            {
+                                if (!target.IsWeaponOneHand() && !target.IsWeaponProBased())
+                                    continue;
+                            }
+                            else if (source.IsWeaponTwoHand())
+                            {
+                                if (source.IsBow() && !target.IsBow())
+                                    continue;
+                                if (!target.IsWeaponTwoHand())
+                                    continue;
+                            }
+
+                            if (target.GetItemSort() != source.GetItemSort())
+                                continue;
+
+                            if (source.Plus == 0 || source.Plus > 8)
+                                continue;
+                        }
+
+                        target.CompositionProgress += PlusAddLevelExp(source.Plus, false);
+                        while (target.CompositionProgress >= GetAddLevelExp(target.Plus, false) && target.Plus < 12)
+                        {
+                            if (target.Plus < 12)
+                            {
+                                target.CompositionProgress -= GetAddLevelExp(target.Plus, false);
+                                target.ChangeAddition();
+                            }
+                            else
+                            {
+                                target.CompositionProgress = 0;
+                                break;
+                            }
+                        }
+
+                        await user.UserPackage.SpendItemAsync(source);
+                    }
 #endif
                     break;
+                }
                 default:
                     await Log.WriteLogAsync(LogLevel.Error, $"Invalid MsgDataArray Action: {Action}." +
                                                        $"{user.Identity},{user.Name},{user.Level},{user.MapIdentity}[{user.Map.Name}],{user.MapX},{user.MapY}");
                     return;
+            }
+
+            if (oldAddition < target.Plus && target.Plus >= 6)
+            {
+                if (user.Gender == 1)
+                {
+                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerMale, user.Name,
+                        target.Itemtype.Name, target.Plus));
+                }
+                else
+                {
+                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerFemale, user.Name,
+                        target.Itemtype.Name, target.Plus));
+                }
+            }
+
+            await target.SaveAsync();
+            await user.SendAsync(new MsgItemInfo(target, MsgItemInfo.ItemMode.Update));
+        }
+
+        private static ushort PlusAddLevelExp(uint plus, bool steed)
+        {
+            switch (plus)
+            {
+                case 0:
+                    if (steed) return 1;
+                    return 0;
+                case 1: return 10;
+                case 2: return 40;
+                case 3: return 120;
+                case 4: return 360;
+                case 5: return 1080;
+                case 6: return 3240;
+                case 7: return 9720;
+                case 8: return 29160;
+                default: return 0;
+            }
+        }
+
+        private static ushort GetAddLevelExp(uint plus, bool steed)
+        {
+            switch (plus)
+            {
+                case 0: return 20;
+                case 1: return 20;
+                case 2:
+                    if (steed) return 90;
+                    return 80;
+                case 3: return 240;
+                case 4: return 720;
+                case 5: return 2160;
+                case 6: return 6480;
+                case 7: return 19440;
+                case 8: return 58320;
+                case 9: return 2700;
+                case 10: return 5500;
+                case 11: return 9000;
+                default: return 0;
             }
         }
     }

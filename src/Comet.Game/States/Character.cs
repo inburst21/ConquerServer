@@ -3817,8 +3817,7 @@ namespace Comet.Game.States
                 else
                     await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 1);
 
-                await SynchroAttributesAsync(ClientUpdateType.SizeAdd, 2);
-                //await AttachStatus(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
+                await AttachStatusAsync(this, StatusSet.HEAVEN_BLESS, 0, (int)(HeavenBlessingExpires - now).TotalSeconds, 0, 0);
             }
         }
 
@@ -4291,11 +4290,26 @@ namespace Comet.Game.States
             return m_vipCmdTp.ToNextTime();
         }
 
-        public uint BaseVipLevel => m_dbObject.VipLevel;
+        public uint BaseVipLevel => Math.Min(6, Math.Max(0, m_dbObject.VipLevel));
 
         public uint VipLevel => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now ? m_dbObject.VipLevel : 0;
 
         public DateTime VipExpiration => m_dbObject.VipExpiration ?? DateTime.MinValue;
+
+        #endregion
+
+        #region Flower
+
+        public DateTime? SendFlowerTime
+        {
+            get => m_dbObject.SendFlowerDate;
+            set => m_dbObject.SendFlowerDate = value;
+        }
+
+        public uint FlowerRed  {  get => m_dbObject.FlowerRed;  set => m_dbObject.FlowerRed = value;  }
+        public uint FlowerWhite {  get => m_dbObject.FlowerWhite;  set => m_dbObject.FlowerWhite = value;  }
+        public uint FlowerOrchid  {  get => m_dbObject.FlowerOrchid;  set => m_dbObject.FlowerOrchid = value;  }
+        public uint FlowerTulip  {  get => m_dbObject.FlowerTulip;  set => m_dbObject.FlowerTulip = value;  }
 
         #endregion
 
@@ -4626,7 +4640,7 @@ namespace Comet.Game.States
         {
             await player.SendAsync(new MsgPlayer(this)
             {
-                WindowSpawn = 1
+                WindowSpawn = true
             });
         }
 

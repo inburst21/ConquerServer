@@ -58,6 +58,8 @@ namespace Comet.Game.Packets
             Color = item.Item.Color;
             Mode = item.IsSilver ? ViewMode.Silvers : ViewMode.Emoney;
             Price = item.Value;
+            SocketProgress = item.Item.SocketProgress;
+            CompositionProgress = item.Item.CompositionProgress;
         }
 
         public uint Identity;
@@ -68,12 +70,14 @@ namespace Comet.Game.Packets
         public ushort AmountLimit;
         public ViewMode Mode;
         public Item.ItemPosition Position;
+        public uint SocketProgress;
         public Item.SocketGem SocketOne;
         public Item.SocketGem SocketTwo;
         public byte Addition;
         public byte Blessing;
         public byte Enchantment;
         public Item.ItemColor Color;
+        public uint CompositionProgress;
 
         public override byte[] Encode()
         {
@@ -87,7 +91,7 @@ namespace Comet.Game.Packets
             writer.Write(AmountLimit);
             writer.Write((ushort) Mode);
             writer.Write((ushort) Position);
-            writer.Write(0);
+            writer.Write(SocketProgress);
             writer.Write((byte) SocketOne);
             writer.Write((byte) SocketTwo);
             writer.Write((ushort) 0);
@@ -97,6 +101,7 @@ namespace Comet.Game.Packets
             writer.Write((byte) 0);
             writer.Write(0UL);
             writer.Write((ushort) Color);
+            writer.Write(CompositionProgress);
             return writer.ToArray();
         }
     }

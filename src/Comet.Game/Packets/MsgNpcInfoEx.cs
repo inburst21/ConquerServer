@@ -79,7 +79,7 @@ namespace Comet.Game.Packets
             PosX = reader.ReadUInt16();
             PosY = reader.ReadUInt16();
             Lookface = reader.ReadUInt16();
-            NpcType = reader.ReadUInt16();
+            NpcType = (ushort) reader.ReadUInt32();
             List<string> names = reader.ReadStrings();
             if (names.Count > 0)
                 Name = names[0];
@@ -94,15 +94,15 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)Type);
-            writer.Write(Identity);
-            writer.Write(MaxLife);
-            writer.Write(Life);
-            writer.Write(PosX);
-            writer.Write(PosY);
-            writer.Write(Lookface);
-            writer.Write(NpcType);
-            writer.Write(Sort);
+            writer.Write((ushort)Type); // 2
+            writer.Write(Identity); // 4
+            writer.Write(MaxLife); // 8
+            writer.Write(Life); // 12
+            writer.Write(PosX); // 16
+            writer.Write(PosY); // 18
+            writer.Write(Lookface); // 20
+            writer.Write(NpcType); // 22
+            writer.Write(Sort); // 24
             if (!string.IsNullOrEmpty(Name))
                 writer.Write(new List<string> { Name });
             else writer.Write(0);

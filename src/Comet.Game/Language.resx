@@ -168,6 +168,9 @@
   <data name="StrClose" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="StrComposeItemMaxComposition" xml:space="preserve">
+    <value>This item is already on it's maximum composition level.</value>
+  </data>
   <data name="StrComposeOverpowerFemale" xml:space="preserve">
     <value>Congratulations! {0} has upgraded her {1} to +{2}!</value>
   </data>
@@ -233,6 +236,42 @@
   </data>
   <data name="StrFemaleMateLogin" xml:space="preserve">
     <value>Your wife is online.</value>
+  </data>
+  <data name="StrFlowerGmPromptAll" xml:space="preserve">
+    <value>{0} has sent {1} {2} to {3}.</value>
+  </data>
+  <data name="StrFlowerHaveSentToday" xml:space="preserve">
+    <value>You already sent flowers today.</value>
+  </data>
+  <data name="StrFlowerLevelTooLow" xml:space="preserve">
+    <value>You haven't reached level 50!</value>
+  </data>
+  <data name="StrFlowerNameLily" xml:space="preserve">
+    <value>Orchid</value>
+  </data>
+  <data name="StrFlowerNameRed" xml:space="preserve">
+    <value>Red Rose</value>
+  </data>
+  <data name="StrFlowerNameTulip" xml:space="preserve">
+    <value>Tulip</value>
+  </data>
+  <data name="StrFlowerNameWhite" xml:space="preserve">
+    <value>Lily</value>
+  </data>
+  <data name="StrFlowerReceiverNotFemale" xml:space="preserve">
+    <value>You can only send flowers to female players.</value>
+  </data>
+  <data name="StrFlowerReceiverPrompt" xml:space="preserve">
+    <value>{0} send you some flowers.</value>
+  </data>
+  <data name="StrFlowerSenderNotAlive" xml:space="preserve">
+    <value>You can't send flowers when you're dead.</value>
+  </data>
+  <data name="StrFlowerSenderNotMale" xml:space="preserve">
+    <value>Only male players can send flowers!</value>
+  </data>
+  <data name="StrFlowerSendSuccess" xml:space="preserve">
+    <value>You have sent flowers.</value>
   </data>
   <data name="StrFriendListFull" xml:space="preserve">
     <value>Your friend list is full.</value>

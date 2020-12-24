@@ -214,6 +214,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This item is already on it&apos;s maximum composition level..
+        /// </summary>
+        public static string StrComposeItemMaxComposition {
+            get {
+                return ResourceManager.GetString("StrComposeItemMaxComposition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Congratulations! {0} has upgraded her {1} to +{2}!.
         /// </summary>
         public static string StrComposeOverpowerFemale {
@@ -408,6 +417,114 @@ namespace Comet.Game {
         public static string StrFemaleMateLogin {
             get {
                 return ResourceManager.GetString("StrFemaleMateLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has sent {1} {2} to {3}..
+        /// </summary>
+        public static string StrFlowerGmPromptAll {
+            get {
+                return ResourceManager.GetString("StrFlowerGmPromptAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You already sent flowers today..
+        /// </summary>
+        public static string StrFlowerHaveSentToday {
+            get {
+                return ResourceManager.GetString("StrFlowerHaveSentToday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You haven&apos;t reached level 50!.
+        /// </summary>
+        public static string StrFlowerLevelTooLow {
+            get {
+                return ResourceManager.GetString("StrFlowerLevelTooLow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Orchid.
+        /// </summary>
+        public static string StrFlowerNameLily {
+            get {
+                return ResourceManager.GetString("StrFlowerNameLily", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Red Rose.
+        /// </summary>
+        public static string StrFlowerNameRed {
+            get {
+                return ResourceManager.GetString("StrFlowerNameRed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Tulip.
+        /// </summary>
+        public static string StrFlowerNameTulip {
+            get {
+                return ResourceManager.GetString("StrFlowerNameTulip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Lily.
+        /// </summary>
+        public static string StrFlowerNameWhite {
+            get {
+                return ResourceManager.GetString("StrFlowerNameWhite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You can only send flowers to female players..
+        /// </summary>
+        public static string StrFlowerReceiverNotFemale {
+            get {
+                return ResourceManager.GetString("StrFlowerReceiverNotFemale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} send you some flowers..
+        /// </summary>
+        public static string StrFlowerReceiverPrompt {
+            get {
+                return ResourceManager.GetString("StrFlowerReceiverPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You can&apos;t send flowers when you&apos;re dead..
+        /// </summary>
+        public static string StrFlowerSenderNotAlive {
+            get {
+                return ResourceManager.GetString("StrFlowerSenderNotAlive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Only male players can send flowers!.
+        /// </summary>
+        public static string StrFlowerSenderNotMale {
+            get {
+                return ResourceManager.GetString("StrFlowerSenderNotMale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have sent flowers..
+        /// </summary>
+        public static string StrFlowerSendSuccess {
+            get {
+                return ResourceManager.GetString("StrFlowerSendSuccess", resourceCulture);
             }
         }
         

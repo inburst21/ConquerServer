@@ -89,6 +89,7 @@ namespace Comet.Game.Packets
         public byte PreviousClass { get; set; }
         public byte Rebirths { get; set; }
         public bool HasName { get; set; }
+        public uint QuizPoints { get; set; }
         public string CharacterName { get; set; }
         public string SpouseName { get; set; }
 
@@ -124,6 +125,7 @@ namespace Comet.Game.Packets
             writer.Write(PreviousClass); // 68
             writer.Write(Rebirths); // 69 
             writer.Write(HasName); // 70
+            writer.Write(QuizPoints); // 71
             writer.Write(new List<string>
             {
                 CharacterName,

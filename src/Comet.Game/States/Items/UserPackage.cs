@@ -1014,7 +1014,8 @@ namespace Comet.Game.States.Items
                             Magic1 = item.Effect,
                             Magic3 = item.Plus,
                             Color = item.Color,
-                            Locked = item.IsLocked()
+                            Locked = item.IsLocked(),
+                            Bound = item.IsBound
                         }
                     }
                 });

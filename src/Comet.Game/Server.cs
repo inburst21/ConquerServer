@@ -231,6 +231,14 @@ namespace Comet.Game
                         msg = new MsgSynMemberInfo();
                         break;
 
+                    case PacketType.MsgRank:
+                        msg = new MsgRank();
+                        break;
+
+                    case PacketType.MsgFlower:
+                        msg = new MsgFlower();
+                        break;
+
                     case PacketType.MsgNpc:
                         msg = new MsgNpc();
                         break;

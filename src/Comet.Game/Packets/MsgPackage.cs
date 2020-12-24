@@ -61,11 +61,14 @@ namespace Comet.Game.Packets
             public byte Magic2;
             public byte Magic3;
             public ushort Blessing;
+            public bool Bound;
             public ushort Enchantment;
             public ushort AntiMonster;
             public bool Suspicious;
             public bool Locked;
             public Item.ItemColor Color;
+            public uint SocketProgress;
+            public uint CompositionProgress;
         }
 
         public MsgPackage()
@@ -113,13 +116,16 @@ namespace Comet.Game.Packets
                     writer.Write((byte) item.Magic1); // 11
                     writer.Write(item.Magic2); // 12
                     writer.Write(item.Magic3); // 13
-                    writer.Write(item.Blessing); // 14
+                    writer.Write((byte) item.Blessing); // 14
+                    writer.Write(item.Bound); // 15
                     writer.Write(item.Enchantment); // 16
                     writer.Write(item.AntiMonster); // 18
-                    writer.Write(item.Suspicious);
-                    writer.Write((byte)0);
-                    writer.Write(item.Locked);
-                    writer.Write((byte)item.Color);
+                    writer.Write(item.Suspicious); // 20
+                    writer.Write((byte)0); // 21
+                    writer.Write(item.Locked); // 22
+                    writer.Write((byte)item.Color); // 23
+                    //writer.Write(item.SocketProgress); // 24
+                    //writer.Write(item.CompositionProgress); // 28
                 }
             }
             else
@@ -138,7 +144,7 @@ namespace Comet.Game.Packets
             if (Mode == StorageType.Storage || Mode == StorageType.Trunk)
             {
                 npc = Kernel.RoleManager.GetRole(Identity) as BaseNpc;
-
+                
                 if (npc == null)
                 {
                     if (user.IsPm())
@@ -146,12 +152,51 @@ namespace Comet.Game.Packets
                     return;
                 }
 
-                if (npc.MapIdentity != 5000 &&
-                    (npc.MapIdentity != user.MapIdentity || npc.GetDistance(user) > Screen.VIEW_SIZE))
+                BaseNpc interacting = Kernel.RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
+
+                if (interacting == null || interacting.Type != BaseNpc.STORAGE_NPC)
+                {
+                    return;
+                }
+
+                if (interacting.MapIdentity != 5000 &&
+                    (interacting.MapIdentity != user.MapIdentity || interacting.GetDistance(user) > Screen.VIEW_SIZE))
                 {
                     if (user.IsPm())
                         await user.SendAsync($"NPC not in range, {Identity}");
                     return;
+                }
+
+                if (interacting.MapIdentity == 5000)
+                {
+                    switch (npc.MapIdentity)
+                    {
+                        case 1002: // twin
+                        case 1036: // market
+                            if (user.BaseVipLevel < 1)
+                                return;
+                            break;
+                        case 1000: // desert
+                            if (user.BaseVipLevel < 2)
+                                return;
+                            break;
+                        case 1020: // canyon
+                            if (user.BaseVipLevel < 3)
+                                return;
+                            break;
+                        case 1015: // bird
+                            if (user.BaseVipLevel < 4)
+                                return;
+                            break;
+                        case 1011: // phoenix
+                            if (user.BaseVipLevel < 5)
+                                return;
+                            break;
+                        case 1213: // stone
+                            if (user.BaseVipLevel < 6)
+                                return;
+                            break;
+                    }
                 }
             }
             else if (Mode == StorageType.Chest)
@@ -163,60 +208,63 @@ namespace Comet.Game.Packets
                 }
             }
 
-            switch (Action)
+            if (Action == WarehouseMode.Query)
             {
-                case WarehouseMode.Query:
-                    foreach (var item in user.UserPackage.GetStorageItems(Identity, Mode))
+                foreach (var item in user.UserPackage.GetStorageItems(Identity, Mode))
+                {
+                    Items.Add(new WarehouseItem
                     {
-                        Items.Add(new WarehouseItem
-                        {
-                            Identity = item.Identity,
-                            Type = item.Type,
-                            SocketOne = item.SocketOne,
-                            SocketTwo = item.SocketTwo,
-                            Blessing = (byte) item.Blessing,
-                            Enchantment = item.Enchantment,
-                            Magic1 = item.Effect,
-                            Magic3 = item.Plus,
-                            Locked = item.IsLocked(),
-                            Color = item.Color,
-                            Suspicious = false
-                        });
-                    }
+                        Identity = item.Identity,
+                        Type = item.Type,
+                        SocketOne = item.SocketOne,
+                        SocketTwo = item.SocketTwo,
+                        Blessing = (byte) item.Blessing,
+                        Enchantment = item.Enchantment,
+                        Magic1 = item.Effect,
+                        Magic3 = item.Plus,
+                        Locked = item.IsLocked(),
+                        Color = item.Color,
+                        Suspicious = false,
+                        CompositionProgress = item.CompositionProgress,
+                        SocketProgress = item.SocketProgress,
+                        Bound = item.IsBound
+                    });
+                }
 
-                    if (Items.Count > 0)
-                        await user.SendAsync(this);
-                    break;
-                case WarehouseMode.CheckIn:
-                    Item storeItem = user.UserPackage[Param];
-                    if (storeItem == null)
-                    {
-                        await user.SendAsync(Language.StrItemNotFound);
-                        return;
-                    }
+                if (Items.Count > 0)
+                    await user.SendAsync(this);
+            }
+            else if (Action == WarehouseMode.CheckIn)
+            {
+                Item storeItem = user.UserPackage[Param];
+                if (storeItem == null)
+                {
+                    await user.SendAsync(Language.StrItemNotFound);
+                    return;
+                }
 
-                    if (!storeItem.CanBeStored())
-                    {
-                        await user.SendAsync(Language.StrItemCannotBeStored);
-                        return;
-                    }
+                if (!storeItem.CanBeStored())
+                {
+                    await user.SendAsync(Language.StrItemCannotBeStored);
+                    return;
+                }
 
-                    if (Mode == StorageType.Storage && npc?.IsStorageNpc() != true)
-                        return;
-                    else if (Mode == StorageType.Chest && storageItem?.GetItemSort() != (Item.ItemSort?) 11)
-                        return;
+                if (Mode == StorageType.Storage && npc?.IsStorageNpc() != true)
+                    return;
+                else if (Mode == StorageType.Chest && storageItem?.GetItemSort() != (Item.ItemSort?) 11)
+                    return;
 
-                    if (user.UserPackage.StorageSize(Identity, Mode) >= 40) // all warehouses 40 blocks
-                    {
-                        await user.SendAsync(Language.StrPackageFull);
-                        return;
-                    }
+                if (user.UserPackage.StorageSize(Identity, Mode) >= 40) // all warehouses 40 blocks
+                {
+                    await user.SendAsync(Language.StrPackageFull);
+                    return;
+                }
 
-                    await user.UserPackage.AddToStorageAsync(Identity, storeItem, Mode, true);
-                    break;
-                case WarehouseMode.CheckOut:
-                    await user.UserPackage.GetFromStorageAsync(Identity, Param, Mode, true);
-                    break;
+                await user.UserPackage.AddToStorageAsync(Identity, storeItem, Mode, true);
+            }
+            else if (Action == WarehouseMode.CheckOut)
+            {
+                await user.UserPackage.GetFromStorageAsync(Identity, Param, Mode, true);
             }
         }
     }

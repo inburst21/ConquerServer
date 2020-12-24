@@ -64,7 +64,7 @@ namespace Comet.Game.States
                 Name = Name,
                 Action = MsgTradeBuddy.TradeBuddyAction.AddPartner,
                 IsOnline = Target != null,
-                HoursLeft = (int) (!IsValid() ? (m_dbBusiness.Date - DateTime.Now).TotalHours : 0),
+                HoursLeft = (int) (!IsValid() ? (m_dbBusiness.Date - DateTime.Now).TotalMinutes : 0),
                 Identity = Identity
             });
         }

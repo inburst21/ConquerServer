@@ -386,6 +386,8 @@ namespace Comet.Game.Packets
                     if (targetUser == null)
                         return;
 
+                    await targetUser.SendWindowToAsync(user);
+
                     for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; 
                         pos <= Item.ItemPosition.EquipmentEnd;
                         pos++)
@@ -425,15 +427,27 @@ namespace Comet.Game.Packets
                     if (bonusCount > 0)
                         await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
 
+                    if (user.Gender == 1 && 
+                        (user.SendFlowerTime == null 
+                         || int.Parse(DateTime.Now.ToString("yyyyMMdd")) > int.Parse(user.SendFlowerTime.Value.ToString("yyyyMMdd"))))
+                    {
+                        await user.SendAsync(new MsgFlower
+                        {
+                            Mode = MsgFlower.RequestMode.QueryIcon
+                        });
+                    }
+
                     await user.CheckPkStatusAsync();
                     await user.LoadStatusAsync();
+                    await client.Character.SendNobilityInfoAsync();
                     await client.Character.SendMultipleExpAsync();
                     await client.Character.SendBlessAsync();
-                    await client.Character.SendNobilityInfoAsync();
                     await client.Character.SendLuckAsync();
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
                     await user.SendMerchantAsync();
+
+                    await client.Character.SynchroAttributesAsync(ClientUpdateType.VipLevel, client.Character.BaseVipLevel);
 
                     await client.SendAsync(this);
                     break;
