@@ -476,7 +476,8 @@ namespace Comet.Game.Packets
 
                         Generator pGen = new Generator(newGen);
                         await pGen.GenerateAsync();
-                        await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
+                        await Kernel.WorldThread.AddGeneratorAsync(pGen);
+                        //await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
 
                         return true;
 

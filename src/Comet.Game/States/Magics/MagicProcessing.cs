@@ -80,8 +80,6 @@ namespace Comet.Game.States.Magics
                     return (false, x, y);
             }
 
-            // todo handle region
-
             GameMap map = m_pOwner.Map;
             Character user = m_pOwner as Character;
             Role role = null;
@@ -258,6 +256,8 @@ namespace Comet.Game.States.Magics
                     await user.SendGemEffectAsync();
             }
 
+            await m_pOwner.ProcessOnAttackAsync();
+
             if (magic.IntoneSpeed <= 0)
             {
                 if (!await LaunchAsync(magic)) // pode ocorrer caso o monstro desapareça, morra antes da hora
@@ -267,17 +267,17 @@ namespace Comet.Game.States.Magics
                 }
                 else
                 {
-                    if (m_pOwner.Map.IsTrainingMap() && m_pMagic != null)
-                    {
-                        SetAutoAttack();
-                        m_tDelay.Startup(Math.Max(1500, m_pMagic.DelayMs));
-                        m_state = MagicState.Delay;
-                        return true;
-                    }
+                    //if (m_pOwner.Map.IsTrainingMap() && m_pMagic != null)
+                    //{
+                    //    SetAutoAttack();
+                    //    m_tDelay.Startup(Math.Max(1500, m_pMagic.DelayMs));
+                    //    m_state = MagicState.Delay;
+                    //    return true;
+                    //}
 
-                    m_tApply ??= new TimeOutMS();
-                    m_tApply.Startup(0);
-                    m_state = MagicState.Launch;
+                    //m_tApply ??= new TimeOutMS();
+                    //m_tApply.Startup(0);
+                    //m_state = MagicState.Launch;
                 }
             }
             else
@@ -1301,10 +1301,8 @@ namespace Comet.Game.States.Magics
 
                         m_state = MagicState.Launch;
 
-                        if (m_tApply == null)
-                            m_tApply = new TimeOutMS((int)m_pMagic.StepSeconds);
-
-                        m_tApply.Startup((int)m_pMagic.StepSeconds);
+                        m_tApply ??= new TimeOutMS(1);
+                        m_tApply.Startup(1);
                         break;
                     }
                 case MagicState.Launch: // launch{

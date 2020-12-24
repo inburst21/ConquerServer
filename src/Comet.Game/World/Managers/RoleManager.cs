@@ -177,9 +177,9 @@ namespace Comet.Game.World.Managers
                 m_isShutdown = true;
 
                 Kernel.UserThread.CloseRequest = true;
-                Kernel.AiThread.CloseRequest = true;
+                //Kernel.AiThread.CloseRequest = true;
                 Kernel.EventThread.CloseRequest = true;
-                Kernel.GeneratorThread.CloseRequest = true;
+                //Kernel.GeneratorThread.CloseRequest = true;
             }
 
             foreach (var user in m_userSet.Values)
