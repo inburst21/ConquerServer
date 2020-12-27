@@ -158,7 +158,11 @@ namespace Comet.Game.States.Magics
             if (m_pOwner.GetDistance(x, y) > m_pOwner.GetAttackRange(0) + magic.Distance + 1)
                 return (false, x, y);
 
-            // todo handle dynamic npc
+            if (role is DynamicNpc dyna)
+            {
+                if (dyna.IsGoal() && m_pOwner.Level < dyna.Level)
+                    return (false, x, y);
+            }
 
             return (true, x, y);
         }
@@ -526,7 +530,7 @@ namespace Comet.Game.States.Magics
             {
                 var result = await m_pOwner.BattleSystem.CalcPower(byMagic, m_pOwner, target);
 
-                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(2, 150))
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 150))
                 {
                     await user.SendEffectAsync("LuckyGuy", true);
                     result.Damage *= 2;
@@ -601,6 +605,9 @@ namespace Comet.Game.States.Magics
             Character user = m_pOwner as Character;
             foreach (var target in result.Roles)
             {
+                if (magic.Ground != 0 && target.IsWing)
+                    continue;
+
                 var atkResult = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
 
                 if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(5, 100))
@@ -685,6 +692,8 @@ namespace Comet.Game.States.Magics
                         return false;
                     if (target.Map.IsWingDisable())
                         return false;
+                    if (target.QueryStatus(StatusSet.SHIELD) != null)
+                        return false;
                     break;
 
                 case StatusSet.LUCKY_DIFFUSE:
@@ -745,7 +754,7 @@ namespace Comet.Game.States.Magics
                 }
             }
 
-            if (m_pOwner is Character player)
+            if (m_pOwner is Character)
                 await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }
@@ -880,6 +889,9 @@ namespace Comet.Game.States.Magics
                     || !target.IsAttackable(m_pOwner))
                     continue;
 
+                if (magic.Ground != 0 && target.IsWing)
+                    continue;
+
                 var result = await m_pOwner.BattleSystem.CalcPower(HitByMagic(), m_pOwner, target);
 
                 if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
@@ -938,6 +950,9 @@ namespace Comet.Game.States.Magics
                 return false;
 
             if (!target.IsAttackable(m_pOwner) || m_pOwner.IsImmunity(target))
+                return false;
+
+            if (magic.Ground != 0 && target.IsWing)
                 return false;
 
             int power = 0;
@@ -1144,6 +1159,9 @@ namespace Comet.Game.States.Magics
                     continue;
 
                 if (m_pOwner.IsImmunity(target) || !target.IsAttackable(m_pOwner))
+                    continue;
+
+                if (target.IsWing)
                     continue;
 
                 targets.Add(target);

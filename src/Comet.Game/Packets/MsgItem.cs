@@ -655,7 +655,7 @@ namespace Comet.Game.Packets
             BankQuery,
             BankDeposit,
             BankWithdraw,
-            InventoryDropSilver,
+            //InventoryDropSilver,
             EquipmentRepair = 14,
             EquipmentRepairAll,
             EquipmentImprove = 19,
@@ -668,7 +668,8 @@ namespace Comet.Game.Packets
             ClientPing = 27,
             EquipmentEnchant,
             BoothSellPoints,
-            InventoryDropItem = 37
+            InventoryDropItem = 37,
+            InventoryDropSilver = 38
         }
     }
 }

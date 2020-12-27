@@ -106,7 +106,7 @@ namespace Comet.Game.States.NPCs
 
         #region Position
 
-        public async Task<bool> ChangePosAsync(uint idMap, ushort x, ushort y)
+        public virtual async Task<bool> ChangePosAsync(uint idMap, ushort x, ushort y)
         {
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map != null)

@@ -172,15 +172,12 @@ namespace Comet.Game.States.Magics
                 }
                 return true;
             }
-            else
-            {
-                Magic pMagic = new Magic(m_pOwner);
-                if (await pMagic.CreateAsync(type, level))
-                {
-                    return Magics.TryAdd(type, pMagic);
-                }
-            }
 
+            Magic pMagic = new Magic(m_pOwner);
+            if (await pMagic.CreateAsync(type, level))
+            {
+                return Magics.TryAdd(type, pMagic);
+            }
             return false;
         }
 

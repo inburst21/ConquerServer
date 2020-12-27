@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
@@ -206,6 +207,11 @@ namespace Comet.Game.Packets
 
                     foreach (var dbEnemy in await EnemyRepository.GetAsync(user.Identity))
                     {
+                        if (dbEnemy.TargetIdentity == user.Identity)
+                        {
+                            await BaseRepository.DeleteAsync(dbEnemy);
+                            continue;
+                        }
                         Enemy enemy = new Enemy(user);
                         await enemy.CreateAsync(dbEnemy);
                         user.AddEnemy(enemy);
@@ -224,7 +230,6 @@ namespace Comet.Game.Packets
                     }
 
                     await user.LoadTradePartnerAsync();
-
                     await client.SendAsync(this);
                     break;
 

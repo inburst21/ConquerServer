@@ -24,14 +24,17 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Magics;
+using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -421,12 +424,15 @@ namespace Comet.Game.Packets
                         return true;
 
                     case "/creategen":
-                        await user.SendAsync("Attention, use this command only on localhost tests or the generator thread may crash.");
+                    {
+                        await user.SendAsync(
+                            "Attention, use this command only on localhost tests or the generator thread may crash.");
                         // mobid mapid mapx mapy boundcx boundcy maxnpc rest maxpergen
                         string[] szComs = param.Split(' ');
                         if (szComs.Length < 9)
                         {
-                            await user.SendAsync("/creategen mobid mapid mapx mapy boundcx boundcy maxnpc rest maxpergen");
+                            await user.SendAsync(
+                                "/creategen mobid mapid mapx mapy boundcx boundcy maxnpc rest maxpergen");
                             return true;
                         }
 
@@ -468,7 +474,7 @@ namespace Comet.Game.Packets
                             TimerEnd = 0
                         };
 
-                        if (! await BaseRepository.SaveAsync(newGen))
+                        if (!await BaseRepository.SaveAsync(newGen))
                         {
                             await user.SendAsync("Could not save generator.");
                             return true;
@@ -478,9 +484,8 @@ namespace Comet.Game.Packets
                         await pGen.GenerateAsync();
                         await Kernel.WorldThread.AddGeneratorAsync(pGen);
                         //await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
-
                         return true;
-
+                    }
                     case "/action":
                         if (uint.TryParse(param, out var idExecuteAction))
                             await GameAction.ExecuteActionAsync(idExecuteAction, user, null, null, string.Empty);
@@ -499,16 +504,49 @@ namespace Comet.Game.Packets
                         await user.SetAttributesAsync(ClientUpdateType.Stamina, user.MaxEnergy);
                         return true;
 
-                    case "/testmerc":
-                        IPacket msg = new MsgInteract
+                    case "/querynpcs":
+                    {
+                        foreach (var npc in user.Map.Query9BlocksByPos(user.MapX, user.MapY).Where(x => x is BaseNpc)
+                            .Cast<BaseNpc>())
                         {
-                            Action = MsgInteractType.AcceptMerchant,
-                            Data = 3,
-                            SenderIdentity = 1,
-                            TargetIdentity = 1
-                        };
-                        await user.SendAsync(msg);
+                            await user.SendAsync($"NPC[{npc.Identity}]:{npc.Name}({npc.MapX},{npc.MapY})", TalkChannel.Talk);
+                        }
                         return true;
+                    }
+
+                    case "/movenpc":
+                    {
+                        string[] moveNpcParams = param.Trim().Split(new[] {" "}, 4, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (moveNpcParams.Length < 4)
+                        {
+                            await user.SendAsync("Move NPC cmd must have: npcid mapid targetx targety");
+                            return true;
+                        }
+
+                        if (!uint.TryParse(moveNpcParams[0], out var idNpc)
+                            || !uint.TryParse(moveNpcParams[1], out var idMap)
+                            || !ushort.TryParse(moveNpcParams[2], out var mapX)
+                            || !ushort.TryParse(moveNpcParams[3], out var mapY))
+                            return true;
+
+                        BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
+                        if (npc == null)
+                        {
+                            await user.SendAsync($"Object {idNpc} is not of type npc");
+                            return true;
+                        }
+
+                        GameMap map = Kernel.MapManager.GetMap(idMap);
+                        if (map == null)
+                            return true;
+
+                        if (!map.IsValidPoint(mapX, mapY))
+                            return true;
+
+                        await npc.ChangePosAsync(idMap, mapX, mapY);
+                        return true;
+                    }
                 }
             }
 

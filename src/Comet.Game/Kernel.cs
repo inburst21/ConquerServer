@@ -72,6 +72,7 @@ namespace Comet.Game
 
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
+        public static UserBattleProcessing BattleThread = new UserBattleProcessing();
         //public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
         //public static AiProcessor AiThread = new AiProcessor();
         public static WorldProcessing WorldThread = new WorldProcessing();
@@ -123,6 +124,7 @@ namespace Comet.Game
 
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
+            await BattleThread.StartAsync();
             //await GeneratorThread.StartAsync();
             //await AiThread.StartAsync();
             await WorldThread.StartAsync();
@@ -135,6 +137,7 @@ namespace Comet.Game
         public static async Task<bool> CloseAsync()
         {
             UserThread.CloseRequest = true;
+            BattleThread.CloseRequest = true;
             //GeneratorThread.CloseRequest = true;
             //AiThread.CloseRequest = true;
             WorldThread.CloseRequest = true;

@@ -105,7 +105,7 @@ namespace Comet.Game.States
             try
             {
                 Power = nPower;
-                m_tKeep.SetInterval(nSecs * 1000);
+                m_tKeep.SetInterval((int) Math.Min(int.MaxValue, (long) nSecs * 1000));
                 m_tKeep.Update();
 
                 if (Model != null)
@@ -162,7 +162,7 @@ namespace Comet.Game.States
             CasterId = caster;
             Identity = nStatus;
             Power = nPower;
-            m_tKeep = new TimeOutMS(nSecs * 1000);
+            m_tKeep = new TimeOutMS(Math.Min(int.MaxValue, nSecs * 1000));
             m_tKeep.Startup((int) Math.Min((long) nSecs * 1000, int.MaxValue));
             m_tKeep.Update();
             m_tInterval = new TimeOutMS(1000);
@@ -182,6 +182,7 @@ namespace Comet.Game.States
                     OwnerId = m_pOwner.Identity,
                     Sort = 0
                 };
+                await BaseRepository.SaveAsync(Model);
             }
 
             return true;
@@ -606,7 +607,7 @@ namespace Comet.Game.States
             return !b64 ? ret : !b128 ? ret + 64 : ret + 128;
         }
 
-        public async Task SendAllStatus()
+        public async Task SendAllStatusAsync()
         {
             if (m_pOwner is Character pUsr)
                 await pUsr.SynchroAttributesAsync(ClientUpdateType.StatusFlag, StatusFlag, true);

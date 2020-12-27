@@ -2178,7 +2178,7 @@ namespace Comet.Game.States
             if (attacker is Character && Map.IsPkDisable())
                 return false;
 
-            return base.IsAttackable(attacker) && (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
+            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive && !(attacker is Character && Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
         public override async Task<(int Damage, InteractionEffect Effect)> AttackAsync(Role target)
@@ -2365,7 +2365,18 @@ namespace Comet.Game.States
 
                     if (!atkrUser.IsBlessed && IsBlessed)
                     {
-                        await atkrUser.AttachStatusAsync(this, StatusSet.CURSED, 0, 300, 0, 0);
+                        if (atkrUser.QueryStatus(StatusSet.CURSED) != null)
+                        {
+                            //var status = QueryStatus(StatusSet.CYCLONE) ?? QueryStatus(StatusSet.SUPERMAN);
+                            //status?.IncTime(700, 30000);
+                            var status = atkrUser.QueryStatus(StatusSet.CURSED);
+                            status.IncTime(300000, 60 * 5 * 12 * 1000);
+                            await atkrUser.SynchroAttributesAsync(ClientUpdateType.CursedTimer, (ulong) status.RemainingTime);
+                        }
+                        else
+                        {
+                            await atkrUser.AttachStatusAsync(this, StatusSet.CURSED, 0, 300, 0, 0);
+                        }
                     }
 
                     if (PkPoints >= 300)
@@ -4315,6 +4326,18 @@ namespace Comet.Game.States
 
         #region Timer
 
+        public async Task OnBattleTimerAsync()
+        {
+            if (BattleSystem != null
+                && BattleSystem.IsActive()
+                && BattleSystem.NextAttack(await GetInterAtkRateAsync()))
+            {
+                QueueAction(BattleSystem.ProcessAttackAsync);
+            }
+
+            QueueAction(MagicData.OnTimerAsync);
+        }
+
         public override async Task OnTimerAsync()
         {
             if (Connection != ConnectionStage.Ready)
@@ -4355,7 +4378,7 @@ namespace Comet.Game.States
                     m_blessPoints++;
                     if (m_blessPoints >= 10)
                     {
-                        await AwardExperienceAsync(CalculateExpBall(100));
+                        await AwardExperienceAsync(CalculateExpBall(60));
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 5);
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0);
                         m_blessPoints = 0;
@@ -4366,15 +4389,6 @@ namespace Comet.Game.States
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 3);
                     }
                 }
-
-                if (BattleSystem != null
-                    && BattleSystem.IsActive()
-                    && BattleSystem.NextAttack(await GetInterAtkRateAsync()))
-                {
-                    QueueAction(BattleSystem.ProcessAttackAsync);
-                }
-
-                QueueAction(MagicData.OnTimerAsync);
 
                 if (QueryStatus(StatusSet.LUCKY_DIFFUSE) != null) // user is caster
                 {
@@ -4390,6 +4404,7 @@ namespace Comet.Game.States
                 }
                 else if (QueryStatus(StatusSet.LUCKY_ABSORB) != null && m_luckyStep.IsTimeOut()) // user is receiving
                 {
+                    
                     m_luckyTimeCount += 1;
                     m_dbObject.LuckyTime = DateTime.Now.AddSeconds(m_luckyTimeCount);
                 }
@@ -4461,18 +4476,24 @@ namespace Comet.Game.States
 
                 if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_SECS))
                 {
-                    if (Action == EntityAction.Sit)
+                    byte energyAmount = ADD_ENERGY_STAND;
+                    if (IsWing)
                     {
-                        QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_SIT));
-                    }
-                    else if (Action == EntityAction.Lie)
-                    {
-                        QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_LIE));
+                        energyAmount = ADD_ENERGY_STAND / 2;
                     }
                     else
                     {
-                        QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, ADD_ENERGY_STAND));
+                        if (Action == EntityAction.Sit)
+                        {
+                            energyAmount = ADD_ENERGY_SIT;
+                        }
+                        else if (Action == EntityAction.Lie)
+                        {
+                            energyAmount = ADD_ENERGY_LIE;
+                        }
                     }
+
+                    QueueAction(() => AddAttributesAsync(ClientUpdateType.Stamina, energyAmount));
                 }
 
                 if (m_xpPoints.ToNextTime())

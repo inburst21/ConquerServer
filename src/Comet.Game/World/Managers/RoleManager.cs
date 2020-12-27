@@ -235,14 +235,30 @@ namespace Comet.Game.World.Managers
             return m_roleSet.TryRemove(idRole, out _);
         }
 
-        public async Task OnUserTimerAsync()
+        public async Task OnBattleTimerAsync()
         {
-            foreach (var user in m_userSet)
+            foreach (var (_, value) in m_userSet)
             {
                 try
                 {
-                    if (user.Value != null)
-                        await user.Value.OnTimerAsync();
+                    if (value != null)
+                        await value.OnBattleTimerAsync();
+                }
+                catch (Exception ex)
+                {
+                    await Log.WriteLogAsync("OnBattleTimerAsync", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
+                }
+            }
+        }
+
+        public async Task OnUserTimerAsync()
+        {
+            foreach (var (_, value) in m_userSet)
+            {
+                try
+                {
+                    if (value != null)
+                        await value.OnTimerAsync();
                 }
                 catch (Exception ex)
                 {

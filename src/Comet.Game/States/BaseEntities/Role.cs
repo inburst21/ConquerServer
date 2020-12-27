@@ -410,8 +410,6 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual bool IsAttackable(Role attacker)
         {
-            if (IsWing && !attacker.IsWing && !attacker.IsBowman)
-                return false;
             return true;
         }
 
@@ -893,7 +891,7 @@ namespace Comet.Game.States.BaseEntities
         public const int CHGMAP_LOCK_SECS = 10;
         public const int ADD_ENERGY_STAND_SECS = 2;
         public const int ADD_ENERGY_STAND = 3;
-        public const int ADD_ENERGY_SIT = 12;
+        public const int ADD_ENERGY_SIT = 15;
         public const int ADD_ENERGY_LIE = ADD_ENERGY_SIT / 2;
         public const int DEFAULT_USER_ENERGY = 70;
         public const int KEEP_STAND_MS = 1500;

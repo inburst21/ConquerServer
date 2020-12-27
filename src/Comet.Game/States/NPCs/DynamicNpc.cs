@@ -124,6 +124,23 @@ namespace Comet.Game.States.NPCs
 
         #endregion
 
+        #region Position
+
+        public override async Task<bool> ChangePosAsync(uint idMap, ushort x, ushort y)
+        {
+            if (await base.ChangePosAsync(idMap, x, y))
+            {
+                m_dbNpc.Mapid = idMap;
+                m_dbNpc.Celly = y;
+                m_dbNpc.Cellx = x;
+                await SaveAsync();
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
         #region Attributes
 
         public override async Task<bool> AddAttributesAsync(ClientUpdateType type, long value)

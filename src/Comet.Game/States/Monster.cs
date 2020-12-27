@@ -402,7 +402,7 @@ namespace Comet.Game.States
                 }
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 3500000))
+            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 3600000))
             {
                 if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1) && await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
                 {
@@ -421,7 +421,7 @@ namespace Comet.Game.States
                             attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
                 }
             }
-            else if (await Kernel.ChanceCalcAsync((int) (55 * multiply), 32000))
+            else if (await Kernel.ChanceCalcAsync((int) (55 * multiply), 42500))
             {
                 if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1))
                 {
@@ -445,6 +445,14 @@ namespace Comet.Game.States
             else if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
             {
                 await DropItemAsync(1080001, user); // emerald
+            }
+            else if (await Kernel.ChanceCalcAsync(43, 6500000)) // Fire Of Hell
+            {
+                await DropItemAsync(1060101, user);
+            }
+            else if (await Kernel.ChanceCalcAsync(43, 3500000)) // Bomb Scroll
+            {
+                await DropItemAsync(1060100, user);
             }
 
             int dropNum = 0;

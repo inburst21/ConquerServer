@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - User Processing.cs
+// Comet - Comet.Game - UserBattleProcessing.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -28,16 +28,16 @@ using Comet.Shared;
 
 namespace Comet.Game.World.Threading
 {
-    public sealed class UserProcessor : TimerBase
+    public sealed class UserBattleProcessing : TimerBase
     {
-        public UserProcessor()
-            : base(500, "User Thread")
+        public UserBattleProcessing()
+            : base(60, "Battle User Thread")
         {
         }
 
         public override async Task<bool> OnElapseAsync()
         {
-            await Kernel.RoleManager.OnUserTimerAsync();
+            await Kernel.RoleManager.OnBattleTimerAsync();
             return true;
         }
     }
