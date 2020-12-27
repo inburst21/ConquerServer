@@ -1,0 +1,2 @@
+Comet.Account.config
+Comet.Game.config
