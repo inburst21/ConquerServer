@@ -673,7 +673,7 @@ namespace Comet.Game.States
                     Identity = Identity
                 });
 
-                if (Level > 3)
+                if (Level > 3 && Metempsychosis == 0)
                 {
                     bool burstXp = false;
                     switch (ProfessionSort)
