@@ -117,7 +117,7 @@ namespace Comet.Game
             _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
                 .ConfigureAwait(false);
 
-#if !DEBUG && USE_API
+#if USE_API
             Kernel.Api = new MyApi(Kernel.Configuration.ServerName, config.ApiAuth.Username, config.ApiAuth.Password);
             await Kernel.Api.PostAsync(new ServerInformation
             {
@@ -136,7 +136,7 @@ namespace Comet.Game
             if (!result)
                 await Log.WriteLogAsync(LogLevel.Error, "Game server has exited without success.");
 
-#if !DEBUG && USE_API
+#if USE_API
             await Kernel.Api.PostAsync(new ServerInformation
             {
                 ServerName = Kernel.Configuration.ServerName,

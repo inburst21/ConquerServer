@@ -73,7 +73,7 @@ namespace Comet.Game.World.Threading
                 await DoAnalyticsAsync();
             }
 
-#if !DEBUG && USE_API
+#if USE_API
             try
             {
                 if (m_apiSync.ToNextTime())
