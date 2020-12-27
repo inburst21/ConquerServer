@@ -98,7 +98,7 @@ namespace Comet.Network.Sockets
 
             lock (SendLock)
             {
-                try 
+                try
                 {
                     Cipher.Encrypt(encrypted, encrypted);
                     return Socket?.SendAsync(encrypted, SocketFlags.None) ?? Task.FromResult(-1);
@@ -108,6 +108,11 @@ namespace Comet.Network.Sockets
                     if (e.SocketErrorCode < SocketError.ConnectionAborted ||
                         e.SocketErrorCode > SocketError.Shutdown)
                         Console.WriteLine(e);
+                    return Task.FromResult(-1);
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLogAsync("TcpServerActor-SendAsync", LogLevel.Exception, ex.ToString()).ConfigureAwait(false);
                     return Task.FromResult(-1);
                 }
             }
