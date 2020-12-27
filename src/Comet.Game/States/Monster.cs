@@ -385,10 +385,10 @@ namespace Comet.Game.States
                     break;
             }
 
-            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 13500))
+            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 11500))
             {
                 uint cpsBagType = (uint) await Kernel.NextAsync(729910, 729912);
-                if (user?.VipLevel >= 6)
+                //if (user?.VipLevel >= 6)
                 {
                     Item cpBag = new Item(user);
                     if (await cpBag.CreateAsync(Kernel.ItemManager.GetItemtype(cpsBagType)) && await user.UserPackage.AddItemAsync(cpBag))
@@ -396,10 +396,10 @@ namespace Comet.Game.States
                         await user.UserPackage.UseItemAsync(cpBag.Identity, Item.ItemPosition.Inventory);
                     }
                 }
-                else
-                {
-                    await DropItemAsync(cpsBagType, user);
-                }
+                //else
+                //{
+                //    await DropItemAsync(cpsBagType, user);
+                //}
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
             else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 3600000))

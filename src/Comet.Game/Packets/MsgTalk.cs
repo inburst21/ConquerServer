@@ -726,6 +726,12 @@ namespace Comet.Game.Packets
                         }
                         return true;
                     }
+
+                    case "/resetchannel":
+                    {
+                        Kernel.Services.Processor.Queue();
+                        return true;
+                    }
                 }
             }
 

@@ -73,6 +73,14 @@ namespace Comet.Game.World
             }
         }
 
+        public void Clear(int partition)
+        {
+            if (!m_CancelWrites.IsCancellationRequested)
+            {
+                
+            }
+        }
+
         private async Task DequeueAsync(Channel<Func<Task>> channel)
         {
             while (!m_CancelReads.IsCancellationRequested)
