@@ -217,23 +217,24 @@ namespace Comet.Game.States
             return false;
         }
 
-        public async Task DoAttackAsync()
+        public Task DoAttackAsync()
         {
             if (m_actTarget == null)
-                return;
+                return Task.CompletedTask;
 
             if (!m_tAttackMs.ToNextTime(AttackSpeed))
-                return;
+                return Task.CompletedTask;
 
             if (m_idUseMagic != 0)
             {
-                await ProcessMagicAttackAsync((ushort) m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY);
+                QueueAction(() => ProcessMagicAttackAsync((ushort) m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY));
             }
             else
             {
                 BattleSystem.CreateBattle(m_actTarget.Identity);
-                await BattleSystem.ProcessAttackAsync();
+                QueueAction(BattleSystem.ProcessAttackAsync);
             }
+            return Task.CompletedTask;
         }
 
         public override bool IsAttackable(Role attacker)
@@ -1087,7 +1088,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        private Task ChangeModeAsync(AiStage mode)
+        private async Task ChangeModeAsync(AiStage mode)
         {
             switch (mode)
             {
@@ -1095,7 +1096,7 @@ namespace Comet.Game.States
                     Life = MaxLife;
                     break;
                 case AiStage.Attack:
-                    QueueAction(DoAttackAsync);
+                    await DoAttackAsync();
                     break;
             }
 
@@ -1105,7 +1106,6 @@ namespace Comet.Game.States
             }
 
             m_stage = mode;
-            return Task.CompletedTask;
         }
 
         public async Task<bool> FindNewTargetAsync()
@@ -1150,7 +1150,9 @@ namespace Comet.Game.States
                         || (evilKill)
                         || (IsEvil() && !(IsPkKiller() || IsEvilKiller())))
                     {
-                        // todo IsBeAttackable()
+                        if (targetUser.IsWing && !IsWing && !IsBowman && m_monsterMagics.Count == 0)
+                            continue;
+
                         if (!targetUser.IsAttackable(this))
                             continue;
 
