@@ -295,6 +295,9 @@ namespace Comet.Game.States.BaseEntities
 
         public async Task SetActionAsync(EntityAction action, bool sync = true)
         {
+            if (action != EntityAction.Cool && IsWing)
+                return;
+
             Action = action;
             if (sync)
             {
