@@ -2388,7 +2388,7 @@ namespace Comet.Game.States
                     {
                         await UserPackage.RandDropEquipmentAsync(atkrUser);
                     }
-                    else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(30))
+                    else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(40, 100))
                     {
                         await UserPackage.RandDropEquipmentAsync(atkrUser);
                     }
