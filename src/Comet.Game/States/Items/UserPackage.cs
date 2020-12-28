@@ -396,6 +396,9 @@ namespace Comet.Game.States.Items
             if (item == null)
                 return false;
 
+            if (item.IsSuspicious())
+                return false;
+
             if (item.RequiredLevel > m_user.Level)
                 return false;
 
