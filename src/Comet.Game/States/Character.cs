@@ -2078,22 +2078,8 @@ namespace Comet.Game.States
 
         public override int AdjustWeaponDamage(int damage)
         {
-            //int type1 = 0, type2 = 0;
-            //if (UserPackage[Item.ItemPosition.RightHand] != null)
-            //    type1 = UserPackage[Item.ItemPosition.RightHand].GetItemSubType();
-            //if (UserPackage[Item.ItemPosition.LeftHand] != null)
-            //    type2 = UserPackage[Item.ItemPosition.LeftHand].GetItemSubType();
-
-            //if (type1 > 0 && WeaponSkill[(ushort)type1] != null &&
-            //    WeaponSkill[(ushort)type1].Level > 12)
-            //{
-            //    damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type1].Level) / 100f));
-            //}
-            //else if (type2 > 0 && WeaponSkill[(ushort)type2] != null &&
-            //         WeaponSkill[(ushort)type2].Level > 12)
-            //{
-            //    damage = (int)(damage * (1 + (20 - WeaponSkill[(ushort)type2].Level) / 100f));
-            //}
+            if (Level >= 70 && Metempsychosis >= 2)
+                return Calculations.MulDiv(damage, Defense2, 7000);
 
             return base.AdjustWeaponDamage(damage);
         }
@@ -2189,7 +2175,7 @@ namespace Comet.Game.States
             if (!target.IsEvil() && Map.IsDeadIsland() || (target is Monster mob && mob.IsGuard()))
                 await SetCrimeStatusAsync(15);
 
-            return await BattleSystem.CalcPower(BattleSystem.MagicType.None, this, target);
+            return await BattleSystem.CalcPowerAsync(BattleSystem.MagicType.None, this, target);
         }
 
         public override async Task KillAsync(Role target, uint dieWay)

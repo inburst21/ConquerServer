@@ -213,22 +213,22 @@ namespace Comet.Game.States.Magics
             return type >= 10000 && type < 10256;
         }
 
-        private BattleSystem.MagicType HitByMagic()
+        private BattleSystem.MagicType HitByMagic(Magic magic)
         {
             // 0 none, 1 normal, 2 xp
-            if (m_pMagic == null) return 0;
+            if (magic == null) return 0;
 
-            if (m_pMagic.WeaponHit == 0)
+            if (magic.WeaponHit == 0)
             {
-                return m_pMagic.UseXp == BattleSystem.MagicType.XpSkill ? BattleSystem.MagicType.XpSkill : BattleSystem.MagicType.Normal;
+                return magic.UseXp == BattleSystem.MagicType.XpSkill ? BattleSystem.MagicType.XpSkill : BattleSystem.MagicType.Normal;
             }
 
             if (m_pOwner is Character pRole)
             {
-                if (pRole.UserPackage[Item.ItemPosition.RightHand] != null && m_pMagic.WeaponHit == 2 &&
+                if (pRole.UserPackage[Item.ItemPosition.RightHand] != null && magic.WeaponHit == 2 &&
                     pRole.UserPackage[Item.ItemPosition.RightHand].Itemtype.MagicAtk > 0)
                 {
-                    return m_pMagic.UseXp == BattleSystem.MagicType.XpSkill ? BattleSystem.MagicType.XpSkill : BattleSystem.MagicType.Normal;
+                    return magic.UseXp == BattleSystem.MagicType.XpSkill ? BattleSystem.MagicType.XpSkill : BattleSystem.MagicType.Normal;
                 }
             }
 
@@ -237,15 +237,16 @@ namespace Comet.Game.States.Magics
 
         private uint GetDieMode()
         {
-            return (uint)(HitByMagic() > 0 ? 3 : m_pOwner.IsBowman ? 5 : 1);
+            return (uint)(HitByMagic(QueryMagic) > 0 ? 3 : m_pOwner.IsBowman ? 5 : 1);
         }
 
         public bool HitByWeapon()
         {
-            if (m_pMagic == null)
+            Magic magic = QueryMagic;
+            if (magic == null)
                 return true;
 
-            if (m_pMagic.WeaponHit == 1)
+            if (magic.WeaponHit == 1)
                 return true;
 
             Item pItem;
@@ -304,21 +305,21 @@ namespace Comet.Game.States.Magics
 
         #region Crime
 
-        public async Task<bool> CheckCrimeAsync(Role pRole)
+        public async Task<bool> CheckCrimeAsync(Role pRole, Magic magic)
         {
-            if (pRole == null || m_pMagic == null) return false;
+            if (pRole == null || magic == null) return false;
 
-            if (m_pMagic.Crime <= 0)
+            if (magic.Crime <= 0)
                 return false;
 
             return await m_pOwner.CheckCrimeAsync(pRole);
         }
 
-        public async Task<bool> CheckCrimeAsync(Dictionary<uint, Role> pRoleSet)
+        public async Task<bool> CheckCrimeAsync(Dictionary<uint, Role> pRoleSet, Magic magic)
         {
-            if (pRoleSet == null || m_pMagic == null) return false;
+            if (pRoleSet == null || magic == null) return false;
 
-            if (m_pMagic.Crime <= 0)
+            if (magic.Crime <= 0)
                 return false;
 
             foreach (var pRole in pRoleSet.Values)
@@ -341,7 +342,7 @@ namespace Comet.Game.States.Magics
 
         #endregion
 
-        public Magic QueryMagic => m_pMagic;
+        public Magic QueryMagic => Magics.TryGetValue(m_typeMagic, out var magic) ? magic : null;
 
         public Magic this[ushort nType] => Magics.TryGetValue(nType, out var ret) ? ret : null;
     }

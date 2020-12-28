@@ -94,7 +94,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            var result = await CalcPower(MagicType.None, m_owner, target);
+            var result = await CalcPowerAsync(MagicType.None, m_owner, target);
             InteractionEffect effect = result.effect;
             int damage = result.Damage;
 
@@ -172,7 +172,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcPower(MagicType magic, Role attacker, Role target)
+        public async Task<(int Damage, InteractionEffect effect)> CalcPowerAsync(MagicType magic, Role attacker, Role target)
         {
             if (target.Defense2 == 0)
                 return (1, InteractionEffect.None);
@@ -182,16 +182,16 @@ namespace Comet.Game.States
 
             (int, InteractionEffect None) result;
             if (magic == MagicType.None)
-                result = await CalcAttackPower(attacker, target);
+                result = await CalcAttackPowerAsync(attacker, target);
             else
             {
-                result = await CalcMagicAttackPower(attacker, target);
+                result = await CalcMagicAttackPowerAsync(attacker, target);
             }
             
             return result;
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPower(Role attacker, Role target)
+        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPowerAsync(Role attacker, Role target)
         {
             InteractionEffect effect = InteractionEffect.None;
             int attack = 0;
@@ -262,12 +262,12 @@ namespace Comet.Game.States
             return (damage, effect);
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPower(Role attacker, Role target)
+        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPowerAsync(Role attacker, Role target)
         {
             InteractionEffect effect = InteractionEffect.None;
             int attack = attacker.MagicAttack;
 
-            int damage = (int) (attack * 0.75);
+            int damage = attack;//(int) (attack * 0.75);
             damage = (int) (damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
 
             if (attacker.MagicData.QueryMagic != null)

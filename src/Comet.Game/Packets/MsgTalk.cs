@@ -729,7 +729,7 @@ namespace Comet.Game.Packets
 
                     case "/resetchannel":
                     {
-                        Kernel.Services.Processor.Queue();
+                        //Kernel.Services.Processor.Queue();
                         return true;
                     }
                 }

@@ -143,7 +143,8 @@ namespace Comet.Account
                                 IPAddress = "127.0.0.1",
                                 Salt = salt,
                                 StatusID = 1,
-                                VipLevel = (byte) vip
+                                VipLevel = (byte) vip,
+                                MacAddress = ""
                             };
 
                             await using var db = new ServerDbContext();
@@ -189,7 +190,8 @@ namespace Comet.Account
                             IPAddress = "127.0.0.1",
                             Salt = salt,
                             StatusID = 1,
-                            VipLevel = (byte) vip
+                            VipLevel = (byte) vip,
+                            MacAddress = ""
                         };
 
                         await using var db = new ServerDbContext();
