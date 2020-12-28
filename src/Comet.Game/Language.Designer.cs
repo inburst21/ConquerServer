@@ -772,6 +772,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Lucky! Your experience has been multiplied by 5 times..
+        /// </summary>
+        public static string StrLuckyGuyQuintuple {
+            get {
+                return ResourceManager.GetString("StrLuckyGuyQuintuple", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Lucky! Your equipment has been upgraded successfully..
         /// </summary>
         public static string StrLuckyGuySuccessUpgrade {

@@ -555,6 +555,13 @@ namespace Comet.Game.States
 #endif
             }
 
+            if (IsLucky && await Kernel.ChanceCalcAsync(10, 10000))
+            {
+                await SendEffectAsync("LuckyGuy", true);
+                nExp *= 5;
+                await SendAsync(Language.StrLuckyGuyQuintuple);
+            }
+
             if (Level >= 120)
                 nExp /= 2;
 

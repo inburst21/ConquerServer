@@ -354,6 +354,9 @@
   <data name="StrLuckyGuyNoDuraDown" xml:space="preserve">
     <value>Lucky! Your equipment durability didn't decrease after that fail.</value>
   </data>
+  <data name="StrLuckyGuyQuintuple" xml:space="preserve">
+    <value>Lucky! Your experience has been multiplied by 5 times.</value>
+  </data>
   <data name="StrLuckyGuySuccessUpgrade" xml:space="preserve">
     <value>Lucky! Your equipment has been upgraded successfully.</value>
   </data>
