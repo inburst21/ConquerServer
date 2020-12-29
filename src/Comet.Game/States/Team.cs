@@ -108,7 +108,7 @@ namespace Comet.Game.States
 
         public async Task<bool> KickMemberAsync(Character leader, uint idTarget)
         {
-            if (!IsLeader(leader.Identity) || !m_dicPlayers.TryRemove(idTarget, out var target))
+            if (!IsLeader(leader.Identity) || !m_dicPlayers.TryGetValue(idTarget, out var target))
                 return false;
 
             await SendAsync(new MsgTeam
@@ -116,6 +116,8 @@ namespace Comet.Game.States
                 Identity = idTarget,
                 Action = MsgTeam.TeamAction.Kick
             });
+
+            m_dicPlayers.TryRemove(idTarget, out _);
             target.Team = null;
             return true;
         }

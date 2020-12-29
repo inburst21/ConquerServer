@@ -163,7 +163,7 @@ namespace Comet.Game.World
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanDisappear())
-                    await monster.LeaveMapAsync();
+                    await monster.LeaveMapAsync().ConfigureAwait(true);
             }
 
             if (!m_pTimer.ToNextTime())
@@ -178,7 +178,7 @@ namespace Comet.Game.World
                 Monster monster = await GenerateMonsterAsync();
                 if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
                     continue;
-                await monster.EnterMapAsync();
+                await monster.EnterMapAsync().ConfigureAwait(true);
             }
         }
 
@@ -192,15 +192,14 @@ namespace Comet.Game.World
             m_dicMonsters.TryRemove(role, out _);
         }
 
-        public Task ClearGeneratorAsync()
+        public async Task ClearGeneratorAsync()
         {
             foreach (var monster in m_dicMonsters.Values)
             {
-                monster.QueueAction(() => monster.LeaveMapAsync());
+                await monster.LeaveMapAsync();
             }
 
             m_dicMonsters.Clear();
-            return Task.CompletedTask;
         }
 
         public Monster[] GetRoles()

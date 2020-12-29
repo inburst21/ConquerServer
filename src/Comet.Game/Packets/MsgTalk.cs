@@ -547,6 +547,18 @@ namespace Comet.Game.Packets
                         await npc.ChangePosAsync(idMap, mapX, mapY);
                         return true;
                     }
+
+                    case "/refreshgens":
+                    {
+                        await Kernel.WorldThread.RefreshGeneratorsFromChannelAsync(user.Map.Partition);
+                        return true;
+                    }
+
+                    case "/refreshallgens":
+                    {
+                        await Kernel.WorldThread.RefreshGeneratorsAsync();
+                        return true;
+                    }
                 }
             }
 
