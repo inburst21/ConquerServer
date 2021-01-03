@@ -4658,8 +4658,15 @@ namespace Comet.Game.States
 
         public override Task SendAsync(IPacket msg)
         {
-            if (Connection != ConnectionStage.Disconnected)
-                return m_socket.SendAsync(msg);
+            try
+            {
+                if (Connection != ConnectionStage.Disconnected)
+                    return m_socket.SendAsync(msg);
+            }
+            catch (Exception ex)
+            {
+                return Log.WriteLogAsync(LogLevel.Error, ex.Message);
+            }
             return Task.CompletedTask;
         }
 

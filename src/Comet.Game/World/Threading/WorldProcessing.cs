@@ -66,7 +66,7 @@ namespace Comet.Game.World.Threading
                     ProcessedMonsters += await map.OnTimerAsync();
                 }
 
-                await Kernel.RoleManager.OnRoleTimerAsync().ConfigureAwait(true);
+                await Kernel.RoleManager.OnRoleTimerAsync();
 
                 foreach (var gen in m_generators) await gen.GenerateAsync();
             }
