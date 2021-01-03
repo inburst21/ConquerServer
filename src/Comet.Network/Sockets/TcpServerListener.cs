@@ -156,12 +156,16 @@ namespace Comet.Network.Sockets
             {
                 try
                 {
+                    actor.Socket.ReceiveTimeout = 5000;
+
                     // Receive data from the client socket
                     examined = await actor.Socket.ReceiveAsync(
                         actor.Buffer.Slice(0),
                         SocketFlags.None,
                         ShutdownToken.Token);
                     if (examined < 9) throw new Exception("Invalid length");
+
+                    actor.Socket.ReceiveTimeout = -1;
                 }
                 catch (SocketException e)
                 {
@@ -169,6 +173,7 @@ namespace Comet.Network.Sockets
                         e.SocketErrorCode > SocketError.Shutdown)
                         Console.WriteLine(e);
 
+                    await Log.WriteLogAsync(LogLevel.Cheat, $"Actor didn't respond for Exchange [{actor.IPAddress}].");
                     actor.Disconnect();
                     Disconnecting(actor);
                     return;

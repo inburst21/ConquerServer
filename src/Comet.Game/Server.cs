@@ -75,7 +75,6 @@ namespace Comet.Game
             var client = new Client(socket, buffer, partition);
 
             await Log.WriteLogAsync(LogLevel.Message, $"Client[{client.GUID}] {client.IPAddress} has connected");
-            Kernel.Exchange.TryAdd(client.GUID, new ExchangeModel(client));
 
             await client.DiffieHellman.ComputePublicKeyAsync();
 
@@ -103,9 +102,6 @@ namespace Comet.Game
         {
             try
             {
-                if (!Kernel.Exchange.TryRemove(actor.GUID, out _))
-                    return false;
-
                 MsgHandshake msg = new MsgHandshake();
                 msg.Decode(buffer.ToArray());
 
