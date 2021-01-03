@@ -641,6 +641,7 @@ namespace Comet.Game.States
                         break;
                     case 2:
                         drops.RemoveAll(x => !Item.IsArmor(x.Type));
+                        drops.RemoveAll(x => Item.GetItemSubType(x.Type) == 137);
                         break;
                     case 3:
                         drops.RemoveAll(x => !Item.IsRing(x.Type) && !Item.IsBangle(x.Type));
