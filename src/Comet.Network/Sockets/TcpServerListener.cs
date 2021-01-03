@@ -184,6 +184,13 @@ namespace Comet.Network.Sockets
                     Disconnecting(actor);
                     return;
                 }
+                catch
+                {
+                    await Log.WriteLogAsync(LogLevel.Cheat, $"Actor didn't respond for Exchange [{actor.IPAddress}].");
+                    actor.Disconnect();
+                    Disconnecting(actor);
+                    return;
+                }
 
                 // Decrypt traffic by first discarding the first 7 bytes, as per TQ Digital's
                 // exchange protocol, then decrypting only what is necessary for the exchange.

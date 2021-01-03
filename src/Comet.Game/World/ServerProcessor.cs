@@ -34,6 +34,7 @@ namespace Comet.Game.World
 {
     public class ServerProcessor : BackgroundService
     {
+        protected readonly Thread[] m_Thread;
         protected readonly Task[] m_BackgroundTasks;
         protected readonly Channel<Func<Task>>[] m_Channels;
         protected readonly Partition[] m_Partitions;
@@ -46,6 +47,7 @@ namespace Comet.Game.World
         {
             Count = processorCount;
 
+            m_Thread = new Thread[Count];
             m_BackgroundTasks = new Task[Count];
             m_Channels = new Channel<Func<Task>>[Count];
             m_Partitions = new Partition[Count];
@@ -59,7 +61,7 @@ namespace Comet.Game.World
             {
                 m_Partitions[i] = new Partition { ID = (uint)i, Weight = 0 };
                 m_Channels[i] = Channel.CreateUnbounded<Func<Task>>();
-                m_BackgroundTasks[i] = DequeueAsync(m_Channels[i]);
+                m_BackgroundTasks[i] = DequeueAsync(i, m_Channels[i]);
             }
 
             return Task.WhenAll(m_BackgroundTasks);
@@ -81,8 +83,9 @@ namespace Comet.Game.World
             }
         }
 
-        private async Task DequeueAsync(Channel<Func<Task>> channel)
+        private async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
+            m_Thread[partition] = Thread.CurrentThread;
             while (!m_CancelReads.IsCancellationRequested)
             {
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
