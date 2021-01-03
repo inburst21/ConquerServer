@@ -121,14 +121,14 @@ namespace Comet.Game.States
                 await user.CheckCrimeAsync(target);
 
             DynamicNpc npc = target as DynamicNpc;
-            if (npc?.IsAwardScore() == true)
+            if (npc?.IsAwardScore() == true && user != null)
             {
-                user?.AddSynWarScoreAsync(npc, lifeLost);
+                await user.AddSynWarScoreAsync(npc, lifeLost);
             }
 
             if (user != null && (target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true))
             {
-                int nWeaponExp = (int)nExp / 2; //(int) (nExp / 10);
+                int nWeaponExp = (int)nExp / 3; //(int) (nExp / 10);
                 nExp = user.AdjustExperience(target, nExp, false);
                 int nAdditionExp = 0;
                 if (!target.IsAlive && npc?.IsGoal() != true)
@@ -178,8 +178,8 @@ namespace Comet.Game.States
             if (target.Defense2 == 0)
                 return (1, InteractionEffect.None);
 
-            if (target is Character user && user.IsGm() && user.TransformationMesh == 3321)
-                return (1, InteractionEffect.None);
+            if (target is Character user && user.IsGm() && user.Transformation?.Lookface == 3321)
+                return (0, InteractionEffect.None);
 
             (int, InteractionEffect None) result;
             if (magic == MagicType.None)
@@ -210,10 +210,17 @@ namespace Comet.Game.States
             else
                 attack = attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
 
+            if (attacker is Character && target is Character && attacker.IsBowman)
+                attack = (int)(attack * 0.125f);
+
             Character targetUser = target as Character;
             int defense = target.Defense;
-            if (targetUser != null && targetUser.Level >= 70 && targetUser.Metempsychosis > 0)
-                defense =  (int) (defense * 1.3d);
+
+            if (targetUser != null)
+            {
+                if (targetUser.Metempsychosis > 0 && targetUser.Level >= 70)
+                    defense = (int)(defense * 1.3d);
+            }
 
             if (target.QueryStatus(StatusSet.SHIELD) != null)
                 defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
@@ -254,8 +261,6 @@ namespace Comet.Game.States
             else
             {
                 damage = target.AdjustWeaponDamage(damage);
-                if (attacker is Character && target is Character && attacker.IsBowman)
-                    damage = (int) (damage * 0.125f);
             }
 
             if (attacker is Character && targetUser != null && attacker.BattlePower < target.BattlePower)
@@ -276,7 +281,6 @@ namespace Comet.Game.States
             int attack = attacker.MagicAttack;
 
             int damage = attack;//(int) (attack * 0.75);
-            damage = (int) (damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
 
             if (attacker.MagicData.QueryMagic != null)
                 damage = Calculations.AdjustData(damage, attacker.MagicData.QueryMagic.Power);
@@ -284,15 +288,15 @@ namespace Comet.Game.States
             int defense = target.MagicDefense;
             damage -= defense;
 
+            damage = (int)(damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
+
             Character targetUser = target as Character;
             if (targetUser != null)
             {
                 damage = (int)(damage * (1 - targetUser.Blessing / 100d));
                 damage = (int)(damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
-
-            damage = Calculations.MulDiv(damage, target.Defense2, Calculations.DEFAULT_DEFENCE2);
-
+            
             if (attacker is Character && target.IsMonster())
             {
                 damage = CalcDamageUser2Monster(damage, defense, attacker.Level, target.Level);

@@ -54,8 +54,7 @@ namespace Comet.Game.World.Maps
 
         public async Task RemoveAsync(uint idRole, bool force = false)
         {
-            if (!Roles.TryRemove(idRole, out _))
-                return;
+            Roles.TryRemove(idRole, out _);
 
             if (force)
             {
@@ -106,11 +105,12 @@ namespace Comet.Game.World.Maps
                 else
                 {
                     await RemoveAsync(target.Identity);
-                    targetUser?.Screen.RemoveAsync(m_user.Identity);
+                    if (targetUser != null)
+                     await targetUser.Screen.RemoveAsync(m_user.Identity);
                 }
 
-                if (msg != null)
-                    targetUser?.SendAsync(msg);
+                if (msg != null && targetUser != null)
+                    await targetUser.SendAsync(msg);
             }
         }
 

@@ -244,7 +244,7 @@ namespace Comet.Game.World.Managers
                 try
                 {
                     if (value != null)
-                        await value.OnBattleTimerAsync();
+                        await value.OnBattleTimerAsync().ConfigureAwait(true);
                 }
                 catch (Exception ex)
                 {

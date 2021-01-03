@@ -1599,10 +1599,10 @@ namespace Comet.Game.States
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
-                    //if (pos == Item.ItemPosition.LeftHand && UserPackage[pos]?.IsShield() != true)
-                    //    result += (UserPackage[pos]?.MaxAttack ?? 0) / 2;
-                    //else
-                    result += UserPackage[pos]?.MaxAttack ?? 0;
+                    if (pos == Item.ItemPosition.LeftHand)
+                        result += (UserPackage[pos]?.MaxAttack ?? 0) / 2;
+                    else
+                        result += UserPackage[pos]?.MaxAttack ?? 0;
                 }
 
                 result = (int)(result * (1 + (DragonGemBonus / 100d)));
@@ -1634,9 +1634,12 @@ namespace Comet.Game.States
                 {
                     result += UserPackage[pos]?.Defense ?? 0;
                 }
+
                 return result;
             }
         }
+
+        public override int Defense2 => Metempsychosis >= 1 && ProfessionLevel >= 3 ? 7000 : Calculations.DEFAULT_DEFENCE2;
 
         public override int MagicDefense
         {
@@ -1647,9 +1650,6 @@ namespace Comet.Game.States
                 {
                     result += UserPackage[pos]?.MagicDefense ?? 0;
                 }
-
-                if (Metempsychosis > 0 && Level >= 70)
-                    result = (int)(result * 1.3d);
 
                 return result;
             }
@@ -2038,18 +2038,7 @@ namespace Comet.Game.States
 
             if (Syndicate == null || npc.OwnerIdentity == SyndicateIdentity)
                 return;
-
-            //Syndicate target = Kernel.SyndicateManager.GetSyndicate((int) npc.OwnerIdentity);
-            //if (target != null && target.Money > 0)
-            //{
-            //    int addProffer = (int) Math.Min(target.Money, Calculations.MulDiv(score, 1, 100));
-            //    target.Money = Math.Max(0, target.Money - addProffer);
-            //    await target.SaveAsync();
-            //    await AwardMoney(addProffer);
-            //    Syndicate.Money += addProffer;
-            //    await Syndicate.SaveAsync();
-            //}
-
+            
             npc.AddSynWarScore(Syndicate, score);
         }
 
@@ -2082,15 +2071,7 @@ namespace Comet.Game.States
 
             return Math.Max(400, nRate);
         }
-
-        public override int AdjustWeaponDamage(int damage)
-        {
-            if (Level >= 70 && Metempsychosis >= 2)
-                return Calculations.MulDiv(damage, Defense2, 7000);
-
-            return base.AdjustWeaponDamage(damage);
-        }
-
+        
         public override int GetAttackRange(int sizeAdd)
         {
             int nRange = 1, nRangeL = 0, nRangeR = 0;

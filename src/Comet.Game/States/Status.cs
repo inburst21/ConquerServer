@@ -169,7 +169,7 @@ namespace Comet.Game.States
             m_tInterval.Update();
             Level = level;
 
-            if (save)
+            if (save && m_pOwner is Character)
             {
                 Model = new DbStatus
                 {
@@ -346,7 +346,7 @@ namespace Comet.Game.States
             CasterId = wCaster;
             Level = level;
 
-            if (save)
+            if (save && m_pOwner is Character)
             {
                 Model = new DbStatus
                 {

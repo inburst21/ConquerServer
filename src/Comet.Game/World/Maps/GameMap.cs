@@ -279,10 +279,12 @@ namespace Comet.Game.World.Maps
 
                 if (!(role is Character))
                     Kernel.RoleManager.RemoveRole(idRole);
-                
-                foreach (var user in Query9BlocksByPos(role.MapX, role.MapY).Where(x => x is Character)
-                    .Cast<Character>())
+
+                foreach (var user in m_users.Values)
                 {
+                    if (ScreenCalculations.GetDistance(role.MapX, role.MapY, user.MapX, user.MapY) > Screen.VIEW_SIZE)
+                        continue;
+
                     await user.Screen.RemoveAsync(idRole, true);
                 }
             }

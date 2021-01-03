@@ -53,8 +53,7 @@ namespace Comet.Game.States
         private TimeOutMS m_tMoveMs = new TimeOutMS();
         private TimeOut m_tHealPeriod = new TimeOut(2);
         private TimeOut m_disappear = new TimeOut(5);
-        private TimeOut m_tDie = new TimeOut();
-        private TimeOut m_locked = new TimeOut();
+        private TimeOut m_leaveMap = new TimeOut(10);
 
         private AiStage m_stage;
         private FacingDirection m_nextDir = FacingDirection.Invalid;
@@ -276,7 +275,7 @@ namespace Comet.Game.States
             await DetachAllStatusAsync();
             await AttachStatusAsync(attacker, StatusSet.DEAD, 0, 20, 0, 0);
             await AttachStatusAsync(attacker, StatusSet.GHOST, 0, 20, 0, 0);
-            await AttachStatusAsync(attacker, StatusSet.FADE, 0, 20, 0, 0);
+            await AttachStatusAsync(attacker, StatusSet.FADE, 0, 5, 0, 0);
 
             Character user = attacker as Character;
             int dieType = user?.KoCount * 65541 ?? 1;
@@ -292,6 +291,7 @@ namespace Comet.Game.States
             }, false);
 
             m_disappear.Startup(5);
+            m_leaveMap.Startup(10);
 
             if (m_dbMonster.Action > 0)
             {
@@ -709,9 +709,9 @@ namespace Comet.Game.States
 
         #region Checks
 
-        public bool CanDisappear()
+        public bool CanLeaveMap()
         {
-            return m_disappear.IsTimeOut();
+            return m_leaveMap.IsTimeOut();
         }
 
         public bool IsLockUser()
@@ -1441,12 +1441,15 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
-            if (!IsAlive)
+            if (!IsAlive
+                && m_disappear.IsActive()
+                && m_disappear.IsTimeOut())
             {
-
+                if (QueryStatus(StatusSet.FADE) == null)
+                    await AttachStatusAsync(this, StatusSet.FADE, 0, int.MaxValue, 0, 0);
             }
 
-            if (m_disappear.IsActive())
+            if (m_leaveMap.IsActive())
                 return;
 
             if (m_tStatusCheck.ToNextTime())

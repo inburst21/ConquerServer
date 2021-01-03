@@ -81,10 +81,10 @@ namespace Comet.Game.World.Managers
             {
                 key = type / 100000 * 100000 + type % 1000 + 55000 - type % 10;
             }
-            else if (Item.GetItemSubType(type) >= 130 && Item.GetItemSubType(type) < 140)
-            {
-                key = type / 1000 * 1000 + (type % 100 / 10 * 10);
-            }
+            //else if (Item.GetItemSubType(type) >= 130 && Item.GetItemSubType(type) < 140)
+            //{
+            //    key = type / 1000 * 1000 + (type % 100 / 10 * 10);
+            //}
             else
             {
                 key = type / 1000 * 1000 + (type % 1000 - type % 10);

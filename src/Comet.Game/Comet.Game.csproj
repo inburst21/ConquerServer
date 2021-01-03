@@ -52,7 +52,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2021.0103.61</AssemblyVersion>
-    <FileVersion>1.2021.0103.65</FileVersion>
+    <FileVersion>1.2021.0103.72</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

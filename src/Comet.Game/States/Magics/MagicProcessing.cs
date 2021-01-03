@@ -424,7 +424,8 @@ namespace Comet.Game.States.Magics
                 await m_pOwner.BattleSystem.OtherMemberAwardExp(targetRole, nBonusExp);
                 await m_pOwner.KillAsync(targetRole, GetDieMode());
             }
-            else if (user != null)
+            
+            if (user != null)
                 await user.SendWeaponMagic2Async(targetRole);
 
             return true;

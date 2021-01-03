@@ -425,6 +425,8 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = m_dbItemtype?.Defense ?? 0;
+                if (IsArrowSort())
+                    return result;
                 result += m_dbItemAddition?.Defense ?? 0;
                 return result;
             }
@@ -434,7 +436,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear)
+                if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear || Position == ItemPosition.Necklace)
                 {
                     return m_dbItemAddition?.MagicDef ?? 0;
                 }
@@ -449,7 +451,7 @@ namespace Comet.Game.States.Items
             {
                 if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear)
                 {
-                    return m_dbItemAddition?.MagicDef ?? 0;
+                    return m_dbItemtype?.MagicDef ?? 0;
                 }
 
                 return 0;
