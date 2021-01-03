@@ -5,6 +5,7 @@
     <AssemblyVersion>1.2021.0103.16</AssemblyVersion>
     <FileVersion>1.2021.0103.19</FileVersion>
     <LangVersion>latest</LangVersion>
+    <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -13,6 +14,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>../Debug</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProduction|AnyCPU'">
     <OutputPath>../Debug</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>

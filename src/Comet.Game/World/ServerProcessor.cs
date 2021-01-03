@@ -22,7 +22,10 @@
 #region References
 
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -34,7 +37,10 @@ namespace Comet.Game.World
 {
     public class ServerProcessor : BackgroundService
     {
-        protected readonly Thread[] m_Thread;
+        [DllImport("Kernel32", EntryPoint = "GetCurrentThreadId", ExactSpelling = true)]
+        private static extern Int32 GetCurrentWin32ThreadId();
+
+        protected readonly ProcessThread[] m_Thread;
         protected readonly Task[] m_BackgroundTasks;
         protected readonly Channel<Func<Task>>[] m_Channels;
         protected readonly Partition[] m_Partitions;
@@ -47,7 +53,7 @@ namespace Comet.Game.World
         {
             Count = processorCount;
 
-            m_Thread = new Thread[Count];
+            m_Thread = new ProcessThread[Count];
             m_BackgroundTasks = new Task[Count];
             m_Channels = new Channel<Func<Task>>[Count];
             m_Partitions = new Partition[Count];
@@ -85,13 +91,15 @@ namespace Comet.Game.World
 
         private async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
-            m_Thread[partition] = Thread.CurrentThread;
+            m_Thread[partition] = (from ProcessThread entry in Process.GetCurrentProcess().Threads
+                                   where entry.Id == GetCurrentWin32ThreadId()
+                                   select entry).First();
             while (!m_CancelReads.IsCancellationRequested)
             {
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
                 if (action != null)
                 {
-                    await action.Invoke().ConfigureAwait(true);
+                    await action.Invoke();
                 }
             }
         }

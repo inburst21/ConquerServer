@@ -8,6 +8,8 @@
     <AssemblyVersion>1.2021.0103.4</AssemblyVersion>
 
     <FileVersion>1.2021.0103.5</FileVersion>
+
+    <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,6 +10,8 @@
     <FileVersion>1.2021.0103.6</FileVersion>
 
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+
+    <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

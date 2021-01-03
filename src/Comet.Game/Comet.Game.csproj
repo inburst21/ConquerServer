@@ -53,10 +53,18 @@
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2021.0103.62</AssemblyVersion>
     <FileVersion>1.2021.0103.78</FileVersion>
+    <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;BATTLE_POWER;NOBILITY</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <OutputPath>../Debug</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProduction|AnyCPU'">
+    <DefineConstants>TRACE;BATTLE_POWER;NOBILITY,USE_API</DefineConstants>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <OutputPath>../Debug</OutputPath>
     <PlatformTarget>x64</PlatformTarget>

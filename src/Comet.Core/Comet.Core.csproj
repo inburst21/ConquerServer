@@ -5,9 +5,16 @@
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2021.0103.11</AssemblyVersion>
     <FileVersion>1.2021.0103.14</FileVersion>
+    <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>../Debug</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProduction|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>../Debug</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
