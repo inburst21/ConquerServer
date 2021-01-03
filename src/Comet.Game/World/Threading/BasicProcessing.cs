@@ -73,6 +73,15 @@ namespace Comet.Game.World.Threading
                 await DoAnalyticsAsync();
             }
 
+            foreach (var exchange in Kernel.Exchange.Values)
+            {
+                if (exchange.RequestExpire < DateTime.Now)
+                {
+                    Kernel.Exchange.TryRemove(exchange.GUID, out _);
+                    exchange.Client.Disconnect();
+                }
+            }
+
 #if USE_API
             try
             {

@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -53,6 +54,7 @@ namespace Comet.Game
         // State caches
         public static MemoryCache Logins = MemoryCache.Default;
         public static List<uint> Registration = new List<uint>();
+        public static ConcurrentDictionary<string, ExchangeModel> Exchange = new ConcurrentDictionary<string, ExchangeModel>();
 
         public static MyApi Api;
 

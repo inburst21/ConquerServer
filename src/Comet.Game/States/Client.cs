@@ -56,6 +56,8 @@ namespace Comet.Game.States
             : base(socket, buffer, new BlowfishCipher(BlowfishCipher.Default), partition, "TQServer")
         {
             DiffieHellman = new DiffieHellman();
+
+            GUID = Guid.NewGuid().ToString();
         }
 
         // Client unique identifier
@@ -63,6 +65,8 @@ namespace Comet.Game.States
         public uint AccountIdentity { get; set; }
         public ushort AuthorityLevel { get; set; }
         public string MacAddress { get; set; } = "Unknown";
+
+        public string GUID { get; }
 
         public override Task<int> SendAsync(byte[] packet)
         {

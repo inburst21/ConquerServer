@@ -197,6 +197,8 @@ namespace Comet.Network.Sockets
                 {
                     actor.Disconnect();
                     Disconnecting(actor);
+
+                    await Log.WriteLogAsync(LogLevel.Cheat, $"Could not Exchange actor from [{actor.IPAddress}].");
                     return;
                 }
 

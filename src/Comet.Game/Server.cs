@@ -74,6 +74,9 @@ namespace Comet.Game
             var partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
 
+            await Log.WriteLogAsync(LogLevel.Message, $"Client[{client.GUID}] {client.IPAddress} has connected");
+            Kernel.Exchange.TryAdd(client.GUID, new ExchangeModel(client));
+
             await client.DiffieHellman.ComputePublicKeyAsync();
 
             await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
@@ -100,6 +103,9 @@ namespace Comet.Game
         {
             try
             {
+                if (!Kernel.Exchange.TryRemove(actor.GUID, out _))
+                    return false;
+
                 MsgHandshake msg = new MsgHandshake();
                 msg.Decode(buffer.ToArray());
 
@@ -340,6 +346,20 @@ namespace Comet.Game
             {
                 Log.WriteLogAsync(LogLevel.Message, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
             }
+        }        
+    }
+
+    public class ExchangeModel
+    {
+        public ExchangeModel(Client client)
+        {
+            Client = client;
+            GUID = client.GUID;
+            RequestExpire = DateTime.Now.AddSeconds(10);
         }
+
+        public Client Client { get; }
+        public string GUID { get; }
+        public DateTime RequestExpire { get; set; }
     }
 }
