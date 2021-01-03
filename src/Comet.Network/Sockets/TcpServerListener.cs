@@ -163,7 +163,13 @@ namespace Comet.Network.Sockets
                         actor.Buffer.Slice(0),
                         SocketFlags.None,
                         ShutdownToken.Token);
-                    if (examined < 9) throw new Exception("Invalid length");
+                    if (examined < 9)
+                    {
+                        await Log.WriteLogAsync(LogLevel.Cheat, $"Actor didn't respond for Exchange [{actor.IPAddress}].");
+                        actor.Disconnect();
+                        Disconnecting(actor);
+                        return;
+                    }
 
                     actor.Socket.ReceiveTimeout = -1;
                 }
