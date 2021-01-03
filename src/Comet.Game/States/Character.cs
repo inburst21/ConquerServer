@@ -2031,15 +2031,16 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task AddSynWarScoreAsync(DynamicNpc npc, int score)
+        public Task AddSynWarScoreAsync(DynamicNpc npc, int score)
         {
             if (npc == null || score == 0)
-                return;
+                return Task.CompletedTask;
 
             if (Syndicate == null || npc.OwnerIdentity == SyndicateIdentity)
-                return;
-            
+                return Task.CompletedTask;
+
             npc.AddSynWarScore(Syndicate, score);
+            return Task.CompletedTask;
         }
 
         public async Task<int> GetInterAtkRateAsync()
@@ -2206,6 +2207,8 @@ namespace Comet.Game.States
                     var status = QueryStatus(StatusSet.CYCLONE) ?? QueryStatus(StatusSet.SUPERMAN);
                     status?.IncTime(700, 30000);
                 }
+
+                await KillMonsterAsync(monster.Type);
             }
 
             await target.BeKillAsync(this);
@@ -2756,6 +2759,33 @@ namespace Comet.Game.States
         public async Task<int> BonusCountAsync()
         {
             return await BonusRepository.CountAsync(m_dbObject.AccountIdentity);
+        }
+
+        #endregion
+
+        #region Monster Kills
+
+        private ConcurrentDictionary<uint, DbMonsterKill> m_monsterKills = new ConcurrentDictionary<uint, DbMonsterKill>();
+
+        public async Task LoadMonsterKillsAsync()
+        {
+            m_monsterKills = new ConcurrentDictionary<uint, DbMonsterKill>((await DbMonsterKill.GetAsync(Identity)).ToDictionary(x => x.Monster));
+        }
+
+        public Task KillMonsterAsync(uint type)
+        {
+            if (!m_monsterKills.TryGetValue(type, out var value))
+            {
+                m_monsterKills.TryAdd(type, value = new DbMonsterKill
+                {
+                    CreatedAt = DateTime.Now,
+                    UserIdentity = Identity,
+                    Monster = type
+                });
+            }
+
+            value.Amount += 1;
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -4587,6 +4617,16 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Error on save status");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                await BaseRepository.SaveAsync(m_monsterKills.Values.ToList());
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on save monster kills");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 

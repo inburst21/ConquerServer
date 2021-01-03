@@ -230,6 +230,9 @@ namespace Comet.Game.Packets
                     }
 
                     await user.LoadTradePartnerAsync();
+
+                    await user.LoadMonsterKillsAsync();
+
                     await client.SendAsync(this);
                     break;
 
