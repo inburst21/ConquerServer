@@ -310,6 +310,15 @@ namespace Comet.Game.States.NPCs
             return IsSynFlag() || IsCtfFlag();
         }
 
+        public bool IsSynMoneyEmpty()
+        {
+            if (!IsSynFlag())
+                return false;
+
+            Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+            return syn != null && syn.Money <= 0;
+        }
+
         #endregion
 
         #region Management

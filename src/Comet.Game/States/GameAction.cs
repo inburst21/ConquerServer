@@ -2664,11 +2664,11 @@ namespace Comet.Game.States
                     if (target.Money + value < 0)
                         return false;
 
-                    target.Money = (uint) Math.Max(0, target.Money + value);
+                    target.Money = (int) Math.Max(0, target.Money + value);
                     return await target.SaveAsync();
                 }
 
-                data = (int) target.Money;
+                data = target.Money;
             }
             else if (field.Equals("membernum", StringComparison.InvariantCultureIgnoreCase))
             {

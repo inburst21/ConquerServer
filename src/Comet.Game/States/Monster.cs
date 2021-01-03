@@ -53,6 +53,7 @@ namespace Comet.Game.States
         private TimeOutMS m_tMoveMs = new TimeOutMS();
         private TimeOut m_tHealPeriod = new TimeOut(2);
         private TimeOut m_disappear = new TimeOut(5);
+        private TimeOut m_tDie = new TimeOut();
         private TimeOut m_locked = new TimeOut();
 
         private AiStage m_stage;
@@ -1441,6 +1442,11 @@ namespace Comet.Game.States
         public override async Task OnTimerAsync()
         {
             if (!IsAlive)
+            {
+
+            }
+
+            if (m_disappear.IsActive())
                 return;
 
             if (m_tStatusCheck.ToNextTime())

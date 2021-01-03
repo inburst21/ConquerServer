@@ -39,7 +39,7 @@ namespace Comet.Game.Packets
 
         public uint Identity { get; set; }
         public int PlayerDonation { get; set; }
-        public uint Funds { get; set; }
+        public int Funds { get; set; }
         public int MemberAmount { get; set; }
         public SyndicateMember.SyndicateRank Rank { get; set; }
         public string LeaderName { get; set; }

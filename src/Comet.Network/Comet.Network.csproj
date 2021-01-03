@@ -15,8 +15,8 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
-    <AssemblyVersion>1.2020.314.23</AssemblyVersion>
-    <FileVersion>1.2020.314.23</FileVersion>
+    <AssemblyVersion>1.2021.0103.23</AssemblyVersion>
+    <FileVersion>1.2021.0103.24</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

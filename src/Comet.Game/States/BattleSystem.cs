@@ -27,6 +27,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.States.Syndicates;
 using Comet.Game.World.Maps;
 
 namespace Comet.Game.States
@@ -187,7 +188,14 @@ namespace Comet.Game.States
             {
                 result = await CalcMagicAttackPowerAsync(attacker, target);
             }
-            
+
+            if (target is DynamicNpc dynamicNpc
+                && dynamicNpc.IsSynFlag()
+                && dynamicNpc.IsSynMoneyEmpty())
+            {
+                result.Item1 *= Role.SYNWAR_NOMONEY_DAMAGETIMES;
+            }
+
             return result;
         }
 

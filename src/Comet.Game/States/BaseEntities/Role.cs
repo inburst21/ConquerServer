@@ -427,7 +427,7 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual Task<(int Damage, InteractionEffect Effect)> AttackAsync(Role target)
         {
-            return Task.FromResult((1, InteractionEffect.None));
+            return BattleSystem.CalcPowerAsync(BattleSystem.MagicType.None, this, target);
         }
 
         public virtual Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
@@ -920,6 +920,12 @@ namespace Comet.Game.States.BaseEntities
 
         public const int MAX_MENUTASKSIZE = 8;
         public const int MAX_VAR_AMOUNT = 16;
+
+        public const int SYNWAR_PROFFER_PERCENT = 1;
+        public const int SYNWAR_MONEY_PERCENT = 2;
+        public const int SYNWAR_NOMONEY_DAMAGETIMES = 10;
+
+        public const int NPCDIEDELAY_SECS = 10;
 
         #endregion
     }

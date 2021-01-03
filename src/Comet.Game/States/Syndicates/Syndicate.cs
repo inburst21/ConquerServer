@@ -61,9 +61,9 @@ namespace Comet.Game.States.Syndicates
         public string Name => m_syndicate.Name;
         public int MemberCount => m_dicMembers.Count;
 
-        public uint Money
+        public int Money
         {
-            get => (uint)m_syndicate.Money;
+            get => (int) Math.Min(int.MaxValue, Math.Max(int.MinValue, m_syndicate.Money));
             set => m_syndicate.Money = value;
         }
 
@@ -150,7 +150,7 @@ namespace Comet.Game.States.Syndicates
                 EmoneyPrize = 0,
                 LeaderIdentity = leader.Identity,
                 LeaderName = leader.Name,
-                Money = (ulong) (investment/2),
+                Money = investment/2,
                 MoneyPrize = 0,
                 Name = name,
                 ReqClass = 0,

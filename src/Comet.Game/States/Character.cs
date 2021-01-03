@@ -2039,16 +2039,16 @@ namespace Comet.Game.States
             if (Syndicate == null || npc.OwnerIdentity == SyndicateIdentity)
                 return;
 
-            Syndicate target = Kernel.SyndicateManager.GetSyndicate((int) npc.OwnerIdentity);
-            if (target != null && target.Money > 0)
-            {
-                int addProffer = (int) Math.Min(target.Money, Calculations.MulDiv(score, 1, 100));
-                target.Money = (uint) Math.Max(0, target.Money - addProffer);
-                await target.SaveAsync();
-                await AwardMoney(addProffer);
-                Syndicate.Money += (uint) addProffer;
-                await Syndicate.SaveAsync();
-            }
+            //Syndicate target = Kernel.SyndicateManager.GetSyndicate((int) npc.OwnerIdentity);
+            //if (target != null && target.Money > 0)
+            //{
+            //    int addProffer = (int) Math.Min(target.Money, Calculations.MulDiv(score, 1, 100));
+            //    target.Money = Math.Max(0, target.Money - addProffer);
+            //    await target.SaveAsync();
+            //    await AwardMoney(addProffer);
+            //    Syndicate.Money += addProffer;
+            //    await Syndicate.SaveAsync();
+            //}
 
             npc.AddSynWarScore(Syndicate, score);
         }
@@ -2148,7 +2148,7 @@ namespace Comet.Game.States
                 switch (PkMode)
                 {
                     case PkModeType.Peace:
-                        return true;
+                        return false;
                     case PkModeType.Team:
                     case PkModeType.Capture:
                         if (monster.IsGuard() || monster.IsPkKiller())

@@ -27,6 +27,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
@@ -290,16 +291,30 @@ namespace Comet.Game.States.NPCs
             if (IsSynFlag() && user != null)
             {
                 Syndicate owner = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
-                int money = nPower / 20;
+                int money = Calculations.MulDiv(nPower, SYNWAR_MONEY_PERCENT, 100);
+                int proffer = Calculations.MulDiv(nPower, SYNWAR_PROFFER_PERCENT, 100);
                 if (money > 0
-                    && user.Syndicate != null
                     && owner != null
                     && user.SyndicateIdentity != owner.Identity
                     && owner.Money > 0)
                 {
-                    owner.Money = (uint) Math.Max(0, owner.Money - money);
+                    owner.Money -= money;
                     await owner.SaveAsync();
-                    await user.AwardMoney(money / 2);
+                    await user.AwardMoney(money);
+
+                    if (user.SyndicateIdentity > 0)
+                    {
+                        user.Syndicate.Money += proffer;
+                        await user.Syndicate.SaveAsync();
+                    }
+                }
+                else if (money > 0
+                         && owner != null
+                         && user.SyndicateIdentity != owner.Identity
+                         && owner.Money <= 0)
+                {
+                    owner.Money -= money;
+                    await owner.SaveAsync();
                 }
             }
 

@@ -142,13 +142,14 @@ namespace Comet.Game.Packets
                     if (user.Syndicate == null)
                         return;
 
-                    if (!await user.SpendMoneyAsync((int) Identity))
+                    int amount = (int) Identity;
+                    if (!await user.SpendMoneyAsync(amount))
                     {
                         await user.SendAsync(Language.StrNotEnoughMoney);
                         return;
                     }
 
-                    user.Syndicate.Money += Identity;
+                    user.Syndicate.Money += amount;
                     await user.Syndicate.SaveAsync();
                     user.SyndicateMember.Donation += (int) Identity;
                     await user.Syndicate.SaveAsync();
