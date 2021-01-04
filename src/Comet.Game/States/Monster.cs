@@ -273,9 +273,9 @@ namespace Comet.Game.States
                 attacker.BattleSystem.ResetBattle();
 
             await DetachAllStatusAsync();
-            await AttachStatusAsync(attacker, StatusSet.DEAD, 0, 20, 0, 0);
-            await AttachStatusAsync(attacker, StatusSet.GHOST, 0, 20, 0, 0);
-            await AttachStatusAsync(attacker, StatusSet.FADE, 0, 5, 0, 0);
+            await AttachStatusAsync(attacker, StatusSet.FADE, 0, int.MaxValue, 0, 0);
+            await AttachStatusAsync(attacker, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
+            await AttachStatusAsync(attacker, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
             Character user = attacker as Character;
             int dieType = user?.KoCount * 65541 ?? 1;
@@ -291,7 +291,7 @@ namespace Comet.Game.States
             }, false);
 
             m_disappear.Startup(5);
-            m_leaveMap.Startup(10);
+            m_leaveMap.Startup(m_generator.RestSeconds);
 
             if (m_dbMonster.Action > 0)
             {
@@ -1446,8 +1446,10 @@ namespace Comet.Game.States
                 && m_disappear.IsActive()
                 && m_disappear.IsTimeOut())
             {
-                if (QueryStatus(StatusSet.FADE) == null)
-                    await AttachStatusAsync(this, StatusSet.FADE, 0, int.MaxValue, 0, 0);
+                //if (QueryStatus(StatusSet.FADE) == null)
+                {
+                    await AttachStatusAsync(this, StatusSet.INVISIBLE, 0, int.MaxValue, 0, 0);
+                }
             }
 
             if (m_leaveMap.IsActive())

@@ -38,7 +38,7 @@ namespace Comet.Game.World
     public class ServerProcessor : BackgroundService
     {
         [DllImport("Kernel32", EntryPoint = "GetCurrentThreadId", ExactSpelling = true)]
-        private static extern Int32 GetCurrentWin32ThreadId();
+        protected static extern Int32 GetCurrentWin32ThreadId();
 
         protected readonly ProcessThread[] m_Thread;
         protected readonly Task[] m_BackgroundTasks;
@@ -80,16 +80,8 @@ namespace Comet.Game.World
                 m_Channels[partition].Writer.TryWrite(task);
             }
         }
-
-        public void Clear(int partition)
-        {
-            if (!m_CancelWrites.IsCancellationRequested)
-            {
-                
-            }
-        }
-
-        private async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
+        
+        protected virtual async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
             m_Thread[partition] = (from ProcessThread entry in Process.GetCurrentProcess().Threads
                                    where entry.Id == GetCurrentWin32ThreadId()

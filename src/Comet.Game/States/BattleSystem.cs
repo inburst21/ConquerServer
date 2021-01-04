@@ -175,12 +175,6 @@ namespace Comet.Game.States
 
         public async Task<(int Damage, InteractionEffect effect)> CalcPowerAsync(MagicType magic, Role attacker, Role target)
         {
-            if (target.Defense2 == 0)
-                return (1, InteractionEffect.None);
-
-            if (target is Character user && user.IsGm() && user.Transformation?.Lookface == 3321)
-                return (0, InteractionEffect.None);
-
             (int, InteractionEffect None) result;
             if (magic == MagicType.None)
                 result = await CalcAttackPowerAsync(attacker, target);

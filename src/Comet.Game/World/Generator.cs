@@ -118,7 +118,7 @@ namespace Comet.Game.World
 
         public uint RoleType => m_dbGen.Npctype;
 
-        public int RestSeconds => m_dbGen.RestSecs;
+        public int RestSeconds => Math.Max(m_dbGen.RestSecs, _MIN_TIME_BETWEEN_GEN);
 
         public uint MapIdentity => m_dbGen.Mapid;
 
@@ -167,25 +167,22 @@ namespace Comet.Game.World
             if (!IsActive)
                 return;
 
+            int generate = Math.Min(m_dbGen.MaxPerGen - Generated, _MAX_PER_GEN);
+            if (generate > 0)
+            {
+                while (generate-- > 0)
+                {
+                    Monster monster = await GenerateMonsterAsync();
+                    if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
+                        continue;
+                    await monster.EnterMapAsync();
+                }
+            }
+
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanLeaveMap())
                     await monster.LeaveMapAsync();
-            }
-
-            if (!m_pTimer.ToNextTime())
-                return;
-
-            int generate = Math.Min(m_dbGen.MaxPerGen - Generated, _MAX_PER_GEN);
-            if (generate <= 0)
-                return;
-
-            while (generate-- > 0)
-            {
-                Monster monster = await GenerateMonsterAsync();
-                if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
-                    continue;
-                await monster.EnterMapAsync();
             }
         }
 

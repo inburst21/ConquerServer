@@ -74,9 +74,8 @@ namespace Comet.Game
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
         public static UserBattleProcessing BattleThread = new UserBattleProcessing();
-        public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
+        public static GeneratorManager GeneratorManager = new GeneratorManager();
         public static AiProcessor AiThread = new AiProcessor();
-        //public static WorldProcessing WorldThread = new WorldProcessing();
         public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
         public static EventsProcessing EventThread = new EventsProcessing();
 
@@ -123,12 +122,12 @@ namespace Comet.Game
             await MineManager.InitializeAsync();
             await PigeonManager.InitializeAsync();
 
+            await GeneratorManager.InitializeAsync();
+
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
             await BattleThread.StartAsync();
-            await GeneratorThread.StartAsync();
             await AiThread.StartAsync();
-            //await WorldThread.StartAsync();
             await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
 
@@ -137,15 +136,16 @@ namespace Comet.Game
 
         public static async Task<bool> CloseAsync()
         {
-            UserThread.CloseRequest = true;
-            BattleThread.CloseRequest = true;
-            GeneratorThread.CloseRequest = true;
-            AiThread.CloseRequest = true;
-            //WorldThread.CloseRequest = true;
-            AutomaticActions.CloseRequest = true;
-            EventThread.CloseRequest = true;
+            await UserThread.CloseAsync();
+            await BattleThread.CloseAsync();
+            await AiThread.CloseAsync();
+            await AutomaticActions.CloseAsync();
+            await EventThread.CloseAsync();
 
-            await RoleManager.KickOutAllAsync("Server is now closing", true);
+            await Services.Processor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);
+            await Services.WorldProcessor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);
+
+            await RoleManager.KickOutAllAsync("Server is now closing", true).ConfigureAwait(true);
 
             SystemThread.CloseRequest = true;
             for (int i = 0; i < 5; i++)
@@ -160,7 +160,8 @@ namespace Comet.Game
         public static class Services
         {
             public static RandomnessService Randomness = new RandomnessService();
-            public static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount * 2);
+            public static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount);
+            public static WorldProcessor WorldProcessor = new WorldProcessor(Environment.ProcessorCount);
         }
 
         public static async Task<bool> ChanceCalcAsync(int chance, int outOf)

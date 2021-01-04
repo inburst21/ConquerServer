@@ -64,7 +64,7 @@ namespace Comet.Game.World.Threading
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
                 Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers,
                 //Kernel.SystemThread.ElapsedMilliseconds, Kernel.WorldThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
-                Kernel.SystemThread.ElapsedMilliseconds, Kernel.GeneratorThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
+                Kernel.SystemThread.ElapsedMilliseconds, Kernel.GeneratorManager.ElapsedStatus, Kernel.UserThread.ElapsedMilliseconds,
                 //Kernel.WorldThread.ElapsedMilliseconds, Kernel.Version);
                 Kernel.AiThread.ElapsedMilliseconds, Kernel.Version);
 
@@ -107,7 +107,7 @@ namespace Comet.Game.World.Threading
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
             //await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.WorldThread.ElapsedMilliseconds:N0}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorThread.ElapsedMilliseconds:N0}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorManager.ElapsedStatus}ms");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
             //await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.WorldThread.ElapsedMilliseconds:N0}ms ({Kernel.WorldThread.ProcessedMonsters} AI Agents)");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms ({Kernel.AiThread.ProcessedMonsters} AI Agents)");

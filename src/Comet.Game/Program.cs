@@ -85,12 +85,8 @@ namespace Comet.Game
                 return;
             }
 
-            // Recover caches from the database
-            var tasks = new List<Task>();
-            Task.WaitAll(tasks.ToArray());
-
-            // Start background services
-            tasks = new List<Task>
+            // Start background services (needed before init)
+            var tasks = new List<Task>
             {
                 Kernel.Services.Randomness.StartAsync(CancellationToken.None),
                 DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None),
@@ -98,11 +94,18 @@ namespace Comet.Game
             };
             Task.WaitAll(tasks.ToArray());
 
-            if (!await Kernel.StartupAsync())
+            if (!await Kernel.StartupAsync().ConfigureAwait(true))
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Could not load database related stuff");
                 return;
             }
+
+            // start remaining background services
+            tasks = new List<Task>
+            {
+                Kernel.Services.WorldProcessor.StartAsync(CancellationToken.None)
+            };
+            Task.WaitAll(tasks.ToArray());
 
             // await ConvertItemsAsync();
 
@@ -146,7 +149,7 @@ namespace Comet.Game
 
             }, MyApi.SYNC_INFORMATION_URL);
 #endif
-            
+
             await Kernel.CloseAsync();
         }
 

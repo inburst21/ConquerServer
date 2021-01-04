@@ -4973,7 +4973,7 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionEventDelnpcGenid(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             //Generator generator = Kernel.WorldThread.GetGenerator(action.Data);
-            Generator generator = Kernel.GeneratorThread.GetGenerator(action.Data);
+            Generator generator = Kernel.GeneratorManager.GetGenerator(action.Data);
             if (generator == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Invalid generator {action.Data} for action {action.Identity}");
@@ -4982,7 +4982,8 @@ namespace Comet.Game.States
 
             foreach (var monster in generator.GetRoles())
             {
-                await monster.LeaveMapAsync();
+                if (monster.Map != null)
+                    await monster.LeaveMapAsync();
             }
             return true;
         }
@@ -5079,7 +5080,7 @@ namespace Comet.Game.States
             }
 
             //Generator generator = Kernel.WorldThread.GetGenerator(idGen);
-            Generator generator = Kernel.GeneratorThread.GetGenerator(idGen);
+            Generator generator = Kernel.GeneratorManager.GetGenerator(idGen);
             if (generator == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] unexistent generator: {param}");
@@ -5233,12 +5234,10 @@ namespace Comet.Game.States
             switch (szField.ToLowerInvariant())
             {
                 case "name":
-                    //nCount += Kernel.WorldThread.GetGenerators(idMap, szData).Sum(x => x.GetRoles().Count(y => y.IsAlive));
-                    nCount += Kernel.GeneratorThread.GetGenerators(idMap, szData).Sum(x => x.GetRoles().Count(y => y.IsAlive));
+                    nCount += Kernel.GeneratorManager.GetGenerators(idMap, szData).Sum(x => x.GetRoles().Count(y => y.IsAlive));
                     break;
                 case "gen_id":
-                    //Generator gen = Kernel.WorldThread.GetGenerator(uint.Parse(szData));
-                    Generator gen = Kernel.GeneratorThread.GetGenerator(uint.Parse(szData));
+                    Generator gen = Kernel.GeneratorManager.GetGenerator(uint.Parse(szData));
                     if (gen == null)
                         return false;
                     nCount += gen.GetRoles().Count(x => x.IsAlive);
@@ -5279,8 +5278,7 @@ namespace Comet.Game.States
 
             if (!string.IsNullOrEmpty(szName))
             {
-                //foreach (var gen in Kernel.WorldThread.GetGenerators(idMap, szName))
-                foreach (var gen in Kernel.GeneratorThread.GetGenerators(idMap, szName))
+                foreach (var gen in Kernel.GeneratorManager.GetGenerators(idMap, szName))
                 {
                     await gen.ClearGeneratorAsync();
                     ret = true;
@@ -5289,8 +5287,7 @@ namespace Comet.Game.States
 
             if (idType != 0)
             {
-                //foreach (var gen in Kernel.WorldThread.GetByMonsterType(idType))
-                foreach (var gen in Kernel.GeneratorThread.GetByMonsterType(idType))
+                foreach (var gen in Kernel.GeneratorManager.GetByMonsterType(idType))
                 {
                     if (gen.MapIdentity == idMap)
                     {

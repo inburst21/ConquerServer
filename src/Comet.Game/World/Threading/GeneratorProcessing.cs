@@ -33,6 +33,7 @@ using Comet.Shared;
 
 namespace Comet.Game.World.Threading
 {
+    [Obsolete("Use the World Processor for generator actions", true)]
     public sealed class GeneratorProcessor : TimerBase
     {
         private List<Generator> m_generators = new List<Generator>();

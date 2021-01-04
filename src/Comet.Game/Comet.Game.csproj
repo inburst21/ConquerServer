@@ -51,8 +51,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
-    <AssemblyVersion>1.2021.0104.64</AssemblyVersion>
-    <FileVersion>1.2021.0104.81</FileVersion>
+    <AssemblyVersion>1.2021.0104.66</AssemblyVersion>
+    <FileVersion>1.2021.0104.100</FileVersion>
     <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 
@@ -61,6 +61,15 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <OutputPath>../Debug</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
+    <ShouldCreateLogs>True</ShouldCreateLogs>
+    <AdvancedSettingsExpanded>False</AdvancedSettingsExpanded>
+    <UpdateAssemblyVersion>True</UpdateAssemblyVersion>
+    <UpdateAssemblyFileVersion>False</UpdateAssemblyFileVersion>
+    <UpdateAssemblyInfoVersion>False</UpdateAssemblyInfoVersion>
+    <AssemblyVersionSettings>None.YearStamp.MMddStamp.Increment</AssemblyVersionSettings>
+    <UpdatePackageVersion>False</UpdatePackageVersion>
+    <AssemblyInfoVersionType>SettingsVersion</AssemblyInfoVersionType>
+    <InheritWinAppVersionFrom>None</InheritWinAppVersionFrom>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProduction|AnyCPU'">
@@ -74,6 +83,15 @@
     <OutputPath>../Release</OutputPath>
     <DefineConstants>TRACE;BATTLE_POWER;NOBILITY;USE_API</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
+    <ShouldCreateLogs>True</ShouldCreateLogs>
+    <AdvancedSettingsExpanded>False</AdvancedSettingsExpanded>
+    <UpdateAssemblyVersion>True</UpdateAssemblyVersion>
+    <UpdateAssemblyFileVersion>False</UpdateAssemblyFileVersion>
+    <UpdateAssemblyInfoVersion>False</UpdateAssemblyInfoVersion>
+    <AssemblyVersionSettings>None.YearStamp.MMddStamp.Increment</AssemblyVersionSettings>
+    <UpdatePackageVersion>False</UpdatePackageVersion>
+    <AssemblyInfoVersionType>SettingsVersion</AssemblyInfoVersionType>
+    <InheritWinAppVersionFrom>None</InheritWinAppVersionFrom>
   </PropertyGroup>
 
 </Project>

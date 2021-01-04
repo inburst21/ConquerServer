@@ -773,8 +773,8 @@ namespace Comet.Game.States.BaseEntities
             {
                 if (this is Character user)
                     await user.BroadcastRoomMsgAsync(msg, true);
-                else
-                    Map?.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
+                else if (Map != null)
+                    await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
             }
         }
 

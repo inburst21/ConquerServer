@@ -1639,7 +1639,15 @@ namespace Comet.Game.States
             }
         }
 
-        public override int Defense2 => Metempsychosis >= 1 && ProfessionLevel >= 3 ? 7000 : Calculations.DEFAULT_DEFENCE2;
+        public override int Defense2
+        {
+            get
+            {
+                if (Transformation != null)
+                    return (int) Transformation.Defense2;
+                return Metempsychosis >= 1 && ProfessionLevel >= 3 ? 7000 : Calculations.DEFAULT_DEFENCE2;
+            }
+        }
 
         public override int MagicDefense
         {

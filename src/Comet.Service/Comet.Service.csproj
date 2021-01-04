@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>dotnet-Comet.Service-6E118029-5C07-48FA-B6C0-4468671784E0</UserSecretsId>
     <AssemblyVersion>1.2021.0104.9</AssemblyVersion>
-    <FileVersion>1.2021.0104.11</FileVersion>
+    <FileVersion>1.2021.0104.12</FileVersion>
     <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 

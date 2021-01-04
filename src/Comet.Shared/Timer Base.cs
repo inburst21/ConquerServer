@@ -30,7 +30,7 @@ namespace Comet.Shared
 {
     public abstract class TimerBase
     {
-        private CancellationTokenSource m_cancellationToken = new CancellationTokenSource();
+        private CancellationToken m_cancellationToken = CancellationToken.None;
         private Timer m_timer;
         private string m_name;
         protected int m_interval = 1000;
@@ -64,6 +64,12 @@ namespace Comet.Shared
             m_timer.Start();
         }
 
+        public Task CloseAsync()
+        {
+            m_cancellationToken = new CancellationToken(true);
+            return Task.CompletedTask;
+        }
+
         private async void TimerOnDisposed(object sender, EventArgs e)
         {
             await OnCloseAsync();
@@ -73,9 +79,14 @@ namespace Comet.Shared
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
+            
             try
             {
-                await OnElapseAsync();
+                while (!m_cancellationToken.IsCancellationRequested)
+                {
+                    await OnElapseAsync();
+                    await Task.Delay(m_interval, m_cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -86,13 +97,9 @@ namespace Comet.Shared
             {
                 sw.Stop();
                 ElapsedMilliseconds = sw.ElapsedMilliseconds;
-
-                if (!m_cancellationToken.IsCancellationRequested)
-                    m_timer.Start();
             }
 
-            if (!m_timer.Enabled)
-                await Log.WriteLogAsync(LogLevel.Warning, $"Thread [{m_name}] is stopping.");
+            await Log.WriteLogAsync(LogLevel.Warning, $"Thread [{m_name}] is stopping.");
         }
 
         public virtual async Task OnStartAsync()
