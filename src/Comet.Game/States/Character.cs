@@ -4329,7 +4329,7 @@ namespace Comet.Game.States
             return m_vipCmdTp.ToNextTime();
         }
 
-        public uint BaseVipLevel => Math.Min(6, Math.Max(0, m_dbObject.VipLevel));
+        public uint BaseVipLevel => Math.Min(6, Math.Max(0, VipLevel));
 
         public uint VipLevel => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now ? m_dbObject.VipLevel : 0;
 
