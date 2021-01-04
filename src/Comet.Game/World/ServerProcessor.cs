@@ -105,7 +105,10 @@ namespace Comet.Game.World
         {
             m_CancelWrites = new CancellationToken(true);
             foreach (var channel in m_Channels)
-                await channel.Reader.Completion;
+            {
+                if (channel.Reader.Count > 0)
+                    await channel.Reader.Completion;
+            }
             m_CancelReads = new CancellationToken(true);
         }
 

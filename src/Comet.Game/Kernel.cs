@@ -147,7 +147,7 @@ namespace Comet.Game
 
             await RoleManager.KickOutAllAsync("Server is now closing", true).ConfigureAwait(true);
 
-            SystemThread.CloseRequest = true;
+            await SystemThread.CloseAsync();
             for (int i = 0; i < 5; i++)
             {
                 await Log.WriteLogAsync(LogLevel.Message, $"Server will shutdown in {5-i} seconds...");

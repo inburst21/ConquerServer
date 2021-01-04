@@ -66,6 +66,7 @@ namespace Comet.Shared
 
         public Task CloseAsync()
         {
+            m_timer.Stop();
             m_cancellationToken = new CancellationToken(true);
             return Task.CompletedTask;
         }
