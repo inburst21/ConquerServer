@@ -42,6 +42,9 @@ namespace Comet.Game.World
         protected static extern Int32 GetCurrentWin32ThreadId();
 
         protected readonly ProcessThread[] m_Thread;
+#if DEBUG
+        protected readonly Func<Task>[] m_LastExecuted;
+#endif
         protected readonly Task[] m_BackgroundTasks;
         protected readonly Channel<Func<Task>>[] m_Channels;
         protected readonly Partition[] m_Partitions;
@@ -55,6 +58,9 @@ namespace Comet.Game.World
             Count = processorCount;
 
             m_Thread = new ProcessThread[Count];
+#if DEBUG
+            m_LastExecuted = new Func<Task>[Count];
+#endif
             m_BackgroundTasks = new Task[Count];
             m_Channels = new Channel<Func<Task>>[Count];
             m_Partitions = new Partition[Count];
@@ -92,6 +98,10 @@ namespace Comet.Game.World
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
                 if (action != null)
                 {
+#if DEBUG
+                    m_LastExecuted[partition] = action;
+#endif
+
                     try
                     {
                         await action.Invoke();
