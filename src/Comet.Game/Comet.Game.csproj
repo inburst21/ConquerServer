@@ -51,8 +51,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
-    <AssemblyVersion>1.2021.0103.62</AssemblyVersion>
-    <FileVersion>1.2021.0103.78</FileVersion>
+    <AssemblyVersion>1.2021.0104.64</AssemblyVersion>
+    <FileVersion>1.2021.0104.81</FileVersion>
     <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
 

@@ -124,11 +124,15 @@ namespace Comet.Game.World
 
         public string MonsterName => m_dbMonster.Name;
 
+        public bool IsActive => m_pMap.PlayerCount > 0 || m_dicMonsters.Values.Any(x => !x.IsAlive);
+
         public async Task<Point> FindGenPosAsync()
         {
-            Point result = new Point();
-            result.X = m_dbGen.BoundX + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCx);
-            result.Y = m_dbGen.BoundY + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCy);
+            Point result = new Point
+            {
+                X = m_dbGen.BoundX + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCx),
+                Y = m_dbGen.BoundY + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCy)
+            };
 
             if (!m_pMap.IsValidPoint(result.X, result.Y) || !m_pMap.IsStandEnable(result.X, result.Y) ||
                 m_pMap.IsSuperPosition(result.X, result.Y))
@@ -160,6 +164,9 @@ namespace Comet.Game.World
 
         public async Task GenerateAsync()
         {
+            if (!IsActive)
+                return;
+
             foreach (var monster in m_dicMonsters.Values)
             {
                 if (!monster.IsAlive && monster.CanLeaveMap())
