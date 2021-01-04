@@ -29,6 +29,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Comet.Shared;
 using Microsoft.Extensions.Hosting;
 
 #endregion
@@ -91,7 +92,14 @@ namespace Comet.Game.World
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
                 if (action != null)
                 {
-                    await action.Invoke();
+                    try
+                    {
+                        await action.Invoke();
+                    }
+                    catch (Exception ex) 
+                    {
+                        await Log.WriteLogAsync(LogLevel.Exception, $"{ex.Message}\r\n\t{ex}");
+                    }
                 }
             }
         }
