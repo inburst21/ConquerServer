@@ -151,7 +151,7 @@ namespace Comet.Game
             for (int i = 0; i < 5; i++)
             {
                 await Log.WriteLogAsync(LogLevel.Message, $"Server will shutdown in {5-i} seconds...");
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
             return true;
         }
