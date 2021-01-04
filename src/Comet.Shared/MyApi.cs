@@ -38,11 +38,7 @@ namespace Comet.Shared
     {
         public const string SYNC_INFORMATION_URL = "/api/GameServerStatus";
 
-#if !DEBUG || USE_API
         private const string BASE_URL = "https://api.worldconquer.online";
-#else
-        private const string BASE_URL = "https://localhost:44335";
-#endif
 
         private DateTime m_ExpireTime;
         private bool m_isAuthenticated;
