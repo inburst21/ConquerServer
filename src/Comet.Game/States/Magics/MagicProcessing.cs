@@ -268,7 +268,7 @@ namespace Comet.Game.States.Magics
                     if (m_pOwner.Map.IsTrainingMap()/* || (magic.Sort == MagicSort.Attack && HitByMagic(magic) == BattleSystem.MagicType.Normal)*/)
                     {
                         SetAutoAttack(magic.Type);
-                        m_tDelay.Startup(1500);
+                        m_tDelay.Startup(1000);
                         m_state = MagicState.Delay;
                         return true;
                     }

@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
+using Comet.Game.World.Maps;
 using Comet.Shared;
 
 #endregion
@@ -96,6 +97,25 @@ namespace Comet.Game.World.Threading
         public List<Generator> GetByMonsterType(uint idType)
         {
             return m_generators.Where(x => x.RoleType == idType).ToList();
+        }
+
+        public async Task RefreshGeneratorsFromChannelAsync(int channel)
+        {
+            foreach (var gen in m_generators.Where(x => x.CanBeProcessed))
+            {
+                GameMap map = Kernel.MapManager.GetMap(gen.MapIdentity);
+                if (map.Partition != channel)
+                    break;
+                await gen.ClearGeneratorAsync().ConfigureAwait(true);
+            }
+        }
+
+        public async Task RefreshGeneratorsAsync()
+        {
+            foreach (var gen in m_generators.Where(x => x.CanBeProcessed))
+            {
+                await gen.ClearGeneratorAsync().ConfigureAwait(true);
+            }
         }
     }
 }

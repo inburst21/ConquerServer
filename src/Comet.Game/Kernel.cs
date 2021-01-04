@@ -74,9 +74,9 @@ namespace Comet.Game
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
         public static UserBattleProcessing BattleThread = new UserBattleProcessing();
-        //public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
-        //public static AiProcessor AiThread = new AiProcessor();
-        public static WorldProcessing WorldThread = new WorldProcessing();
+        public static GeneratorProcessor GeneratorThread = new GeneratorProcessor();
+        public static AiProcessor AiThread = new AiProcessor();
+        //public static WorldProcessing WorldThread = new WorldProcessing();
         public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
         public static EventsProcessing EventThread = new EventsProcessing();
 
@@ -126,9 +126,9 @@ namespace Comet.Game
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
             await BattleThread.StartAsync();
-            //await GeneratorThread.StartAsync();
-            //await AiThread.StartAsync();
-            await WorldThread.StartAsync();
+            await GeneratorThread.StartAsync();
+            await AiThread.StartAsync();
+            //await WorldThread.StartAsync();
             await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
 
@@ -139,9 +139,9 @@ namespace Comet.Game
         {
             UserThread.CloseRequest = true;
             BattleThread.CloseRequest = true;
-            //GeneratorThread.CloseRequest = true;
-            //AiThread.CloseRequest = true;
-            WorldThread.CloseRequest = true;
+            GeneratorThread.CloseRequest = true;
+            AiThread.CloseRequest = true;
+            //WorldThread.CloseRequest = true;
             AutomaticActions.CloseRequest = true;
             EventThread.CloseRequest = true;
 

@@ -482,8 +482,8 @@ namespace Comet.Game.Packets
 
                         Generator pGen = new Generator(newGen);
                         await pGen.GenerateAsync();
-                        await Kernel.WorldThread.AddGeneratorAsync(pGen);
-                        //await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
+                        //await Kernel.WorldThread.AddGeneratorAsync(pGen);
+                        await Kernel.GeneratorThread.AddGeneratorAsync(pGen);
                         return true;
                     }
                     case "/action":
@@ -550,14 +550,16 @@ namespace Comet.Game.Packets
 
                     case "/refreshgens":
                     {
-                        await Kernel.WorldThread.RefreshGeneratorsFromChannelAsync(user.Map.Partition);
-                        return true;
+                            //await Kernel.WorldThread.RefreshGeneratorsFromChannelAsync(user.Map.Partition);
+                            await Kernel.GeneratorThread.RefreshGeneratorsFromChannelAsync(user.Map.Partition);
+                            return true;
                     }
 
                     case "/refreshallgens":
                     {
-                        await Kernel.WorldThread.RefreshGeneratorsAsync();
-                        return true;
+                            //await Kernel.WorldThread.RefreshGeneratorsAsync();
+                            await Kernel.GeneratorThread.RefreshGeneratorsAsync();
+                            return true;
                     }
                 }
             }
