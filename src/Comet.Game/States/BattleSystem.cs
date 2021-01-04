@@ -367,7 +367,7 @@ namespace Comet.Game.States
             if (target.MapIdentity != m_owner.MapIdentity)
                 return false;
 
-            if (m_owner is Character && target is Character && m_owner.Map.IsPkDisable())
+            if (m_owner is Character && target is Character && m_owner.Map?.IsPkDisable() != false)
                 return false;
 
             if (target.IsWing && !m_owner.IsWing && !m_owner.IsBowman)
@@ -379,7 +379,7 @@ namespace Comet.Game.States
             if (!target.IsAttackable(m_owner))
                 return false;
 
-            if (m_owner.Map.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY))
+            if (m_owner.Map?.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY) != false)
                 return false;
 
             return true;

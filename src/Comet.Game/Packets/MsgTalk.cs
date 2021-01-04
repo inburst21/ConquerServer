@@ -561,6 +561,17 @@ namespace Comet.Game.Packets
                             await Kernel.GeneratorManager.RefreshGeneratorsAsync();
                             return true;
                     }
+
+                    case "/msgbox":
+                    {
+                        await user.SendAsync(new MsgTaskDialog
+                        {
+                            InteractionType = MsgTaskDialog.TaskInteraction.MessageBox,
+                            OptionIndex = 255,
+                            Text = param
+                        });
+                        return true;
+                    }
                 }
             }
 

@@ -551,7 +551,7 @@ namespace Comet.Game.States
                     }
                 }
 
-                new ServerDbContext().Database.ExecuteSqlRaw(param);
+                await new ServerDbContext().Database.ExecuteSqlRawAsync(param);
             }
             catch (Exception ex)
             {

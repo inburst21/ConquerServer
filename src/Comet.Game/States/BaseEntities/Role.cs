@@ -642,7 +642,7 @@ namespace Comet.Game.States.BaseEntities
                 if (nTimes > 1)
                 {
                     var pNewStatus = new StatusMore();
-                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, nTimes, pSender.Identity, pLevel, save))
+                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, nTimes, pSender?.Identity ?? 0, pLevel, save))
                     {
                         await StatusSet.AddObjAsync(pNewStatus);
                         return true;
@@ -651,7 +651,7 @@ namespace Comet.Game.States.BaseEntities
                 else
                 {
                     var pNewStatus = new StatusOnce();
-                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, 0, pSender.Identity, pLevel, save))
+                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, 0, pSender?.Identity ?? 0, pLevel, save))
                     {
                         await StatusSet.AddObjAsync(pNewStatus);
                         return true;

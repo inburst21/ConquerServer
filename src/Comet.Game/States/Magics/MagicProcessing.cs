@@ -265,10 +265,10 @@ namespace Comet.Game.States.Magics
                 }
                 else
                 {
-                    if (m_pOwner.Map.IsTrainingMap()/* || (magic.Sort == MagicSort.Attack && HitByMagic(magic) == BattleSystem.MagicType.Normal)*/)
+                    if (m_pOwner.Map.IsTrainingMap() || IsAutoAttack())
                     {
                         SetAutoAttack(magic.Type);
-                        m_tDelay.Startup(1000);
+                        m_tDelay.Startup(800);
                         m_state = MagicState.Delay;
                         return true;
                     }
@@ -423,6 +423,15 @@ namespace Comet.Game.States.Magics
                 int nBonusExp = (int)(targetRole.MaxLife * 20 / 100);
                 await m_pOwner.BattleSystem.OtherMemberAwardExp(targetRole, nBonusExp);
                 await m_pOwner.KillAsync(targetRole, GetDieMode());
+            }
+            else
+            {
+                if (((targetRole is Monster monster && !monster.IsGuard())
+                    || targetRole is DynamicNpc) 
+                    && byMagic == BattleSystem.MagicType.Normal)
+                {
+                    SetAutoAttack(magic.Type);
+                }
             }
             
             if (user != null)
@@ -1346,7 +1355,7 @@ namespace Comet.Game.States.Magics
                             return;
                         }
 
-                        if (m_autoAttack && m_tDelay.ToNextTime())
+                        if (m_autoAttack && m_tDelay.IsTimeOut())
                         {
                             if ((m_tDelay.IsActive() && !m_tDelay.TimeOver()))
                                 return;
@@ -1390,6 +1399,11 @@ namespace Comet.Game.States.Magics
         {
             m_typeMagic = 0;
             m_autoAttack = false;
+        }
+
+        public bool IsAutoAttack()
+        {
+            return m_autoAttack && m_typeMagic != 0;
         }
 
         public async Task<bool> AbortMagicAsync(bool bSynchro)

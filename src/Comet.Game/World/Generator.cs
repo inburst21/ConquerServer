@@ -200,10 +200,9 @@ namespace Comet.Game.World
         {
             foreach (var monster in m_dicMonsters.Values)
             {
+                await monster.BeKillAsync(null);
                 await monster.LeaveMapAsync();
             }
-
-            m_dicMonsters.Clear();
         }
 
         public Monster[] GetRoles()

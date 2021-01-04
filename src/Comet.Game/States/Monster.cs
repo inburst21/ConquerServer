@@ -272,6 +272,9 @@ namespace Comet.Game.States
             if (attacker?.BattleSystem.IsActive() == true)
                 attacker.BattleSystem.ResetBattle();
 
+            if (attacker?.MagicData.QueryMagic != null)
+                await attacker.MagicData.AbortMagicAsync(false);
+
             await DetachAllStatusAsync();
             await AttachStatusAsync(attacker, StatusSet.FADE, 0, int.MaxValue, 0, 0);
             await AttachStatusAsync(attacker, StatusSet.DEAD, 0, int.MaxValue, 0, 0);

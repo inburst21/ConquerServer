@@ -178,6 +178,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a If you don&apos;t reply to this captcha or give me the wrong answer you&apos;ll be disconnected! Press OK if this equation is correct or Cancel if not. {0} + {1} = {2}?.
+        /// </summary>
+        public static string StrBotCaptchaMessage {
+            get {
+                return ResourceManager.GetString("StrBotCaptchaMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} broke up friendship with {1}..
         /// </summary>
         public static string StrBreakFriend {

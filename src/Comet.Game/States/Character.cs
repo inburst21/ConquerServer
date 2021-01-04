@@ -79,6 +79,8 @@ namespace Comet.Game.States
         private uint m_idLuckyTarget = 0;
         private int m_luckyTimeCount = 0;
 
+        private int m_KillsToCaptcha = 0;
+
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
         ///     <see cref="DbCharacter" />. Copies attributes over to the base class of this
@@ -121,6 +123,8 @@ namespace Comet.Game.States
         }
 
         public Client Client => m_socket;
+
+        public CaptchaBox Captcha = null;
 
         public ConnectionStage Connection { get; set; } = ConnectionStage.Connected;
 
@@ -2215,6 +2219,18 @@ namespace Comet.Game.States
                     var status = QueryStatus(StatusSet.CYCLONE) ?? QueryStatus(StatusSet.SUPERMAN);
                     status?.IncTime(700, 30000);
                 }
+
+                /*if (Captcha == null)
+                    m_KillsToCaptcha++;
+
+                if (Captcha == null 
+                    && m_KillsToCaptcha > 50 + await Kernel.NextAsync(1500)
+                    && await Kernel.ChanceCalcAsync(50, 10000))
+                {
+                    Captcha = new CaptchaBox(this);
+                    await Captcha.GenerateAsync();
+                    m_KillsToCaptcha = 0;
+                }*/
 
                 await KillMonsterAsync(monster.Type);
             }
@@ -4479,6 +4495,9 @@ namespace Comet.Game.States
                         ArgumentY = Team.Leader.MapY
                     });
                 }
+
+                if (Captcha != null)
+                    await Captcha.OnTimerAsync();
 
                 if (!IsAlive)
                     return;

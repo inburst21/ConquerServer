@@ -92,6 +92,21 @@ namespace Comet.Game.Packets
 
             switch (InteractionType)
             {
+                case TaskInteraction.MessageBox:
+                {
+                    if (user.Captcha != null)
+                    {
+                        if (OptionIndex == 0)
+                            await user.Captcha.OnCancelAsync();
+                        else
+                            await user.Captcha.OnAcceptAsync();
+
+                        user.Captcha = null;
+                    }
+
+                    break;
+                }
+
                 case TaskInteraction.Answer:
                     if (OptionIndex == byte.MaxValue)
                     {

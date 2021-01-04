@@ -155,7 +155,7 @@ namespace Comet.Game.States.Magics
 
         public bool CheckType(ushort type)
         {
-            return Magics.ContainsKey(type);
+            return Magics.ContainsKey(type) && !Magics[type].Unlearn;
         }
 
         public async Task<bool> CreateAsync(ushort type, byte level)

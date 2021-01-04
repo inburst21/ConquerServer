@@ -156,6 +156,9 @@
   <data name="StrBoothSold" xml:space="preserve">
     <value>{0} purchased your {1} for {2} {3}.</value>
   </data>
+  <data name="StrBotCaptchaMessage" xml:space="preserve">
+    <value>If you don't reply to this captcha or give me the wrong answer you'll be disconnected! Press OK if this equation is correct or Cancel if not. {0} + {1} = {2}?</value>
+  </data>
   <data name="StrBreakFriend" xml:space="preserve">
     <value>{0} broke up friendship with {1}.</value>
   </data>
