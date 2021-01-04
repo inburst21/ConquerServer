@@ -60,6 +60,8 @@ namespace Comet.Game.States.Magics
 
         private int m_autoAttackNum = 0;
 
+        public MagicState State => m_state;
+
         public async Task<(bool Success, ushort X, ushort Y)> CheckConditionAsync(Magic magic, uint idTarget, ushort x,
             ushort y)
         {
@@ -176,6 +178,9 @@ namespace Comet.Game.States.Magics
                     await AbortMagicAsync(true);
                     break;
             }
+
+            m_state = MagicState.None;
+            m_typeMagic = usMagicType;
 
             if (!Magics.TryGetValue(usMagicType, out Magic magic)
                 && (ucAutoActive == 0 || (magic?.AutoActive ?? 0 & ucAutoActive) != 0))

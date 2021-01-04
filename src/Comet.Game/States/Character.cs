@@ -4347,7 +4347,8 @@ namespace Comet.Game.States
                 QueueAction(BattleSystem.ProcessAttackAsync);
             }
 
-            QueueAction(MagicData.OnTimerAsync);
+            if (MagicData.State != MagicData.MagicState.None)
+                QueueAction(MagicData.OnTimerAsync);
         }
 
         public override async Task OnTimerAsync()
