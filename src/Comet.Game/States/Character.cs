@@ -59,7 +59,7 @@ namespace Comet.Game.States
         private Client m_socket;
         private readonly DbCharacter m_dbObject;
 
-        private TimeOut m_energyTm = new TimeOut(ADD_ENERGY_STAND_SECS);
+        private TimeOutMS m_energyTm = new TimeOutMS(ADD_ENERGY_STAND_MS);
         private TimeOut m_autoHeal = new TimeOut(AUTOHEALLIFE_TIME);
         private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
         private TimeOut m_xpPoints = new TimeOut(3);
@@ -4506,7 +4506,7 @@ namespace Comet.Game.States
                 if (Transformation != null && m_transformation.IsTimeOut())
                     await ClearTransformationAsync();
 
-                if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_SECS))
+                if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_MS))
                 {
                     byte energyAmount = ADD_ENERGY_STAND;
                     if (IsWing)

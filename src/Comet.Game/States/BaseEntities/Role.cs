@@ -892,7 +892,7 @@ namespace Comet.Game.States.BaseEntities
 
         public const int EXPBALL_AMOUNT = 600;
         public const int CHGMAP_LOCK_SECS = 10;
-        public const int ADD_ENERGY_STAND_SECS = 2;
+        public const int ADD_ENERGY_STAND_MS = 1000;
         public const int ADD_ENERGY_STAND = 3;
         public const int ADD_ENERGY_SIT = 15;
         public const int ADD_ENERGY_LIE = ADD_ENERGY_SIT / 2;
