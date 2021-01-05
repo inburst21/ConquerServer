@@ -2519,7 +2519,7 @@ namespace Comet.Game.States
                 }
                 else
                 {
-                    var revive = await CurrentEvent.GetRevivePosition(this);
+                    var revive = await CurrentEvent.GetRevivePositionAsync(this);
                     await FlyMapAsync(revive.id, revive.x, revive.y);
                 }
             }

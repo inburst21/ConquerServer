@@ -295,6 +295,7 @@ namespace Comet.Game.States
 
             m_disappear.Startup(5);
             m_leaveMap.Startup(m_generator.RestSeconds);
+            //_ = Task.Run(async () => await OnReviveAsync()).ConfigureAwait(false);
 
             if (m_dbMonster.Action > 0)
             {
@@ -451,7 +452,7 @@ namespace Comet.Game.States
             {
                 await DropItemAsync(1080001, user); // emerald
             }
-            else if (await Kernel.ChanceCalcAsync(43, 6500000)) // Fire Of Hell
+            else if (await Kernel.ChanceCalcAsync(43, 7500000)) // Fire Of Hell
             {
                 await DropItemAsync(1060101, user);
             }
@@ -529,6 +530,13 @@ namespace Comet.Game.States
                     {
                         bool send = false;
                         string itemInfo = "";
+
+                        if (drop.Info.SocketNum > 0)
+                        {
+                            itemInfo += $" {drop.Info.SocketNum}-Socketed";
+                            send = true;
+                        }
+
                         switch (drop.Itemtype%10)
                         {
                             case 9:
@@ -555,12 +563,6 @@ namespace Comet.Game.States
                         if (drop.Info.Addition > 0)
                         {
                             itemInfo += $"(+{drop.Info.Addition})";
-                            send = true;
-                        }
-
-                        if (drop.Info.SocketNum > 0)
-                        {
-                            itemInfo += $" {drop.Info.SocketNum}-Socketed";
                             send = true;
                         }
 
@@ -1437,6 +1439,24 @@ namespace Comet.Game.States
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region Revive Monster
+
+        public async Task OnReviveAsync()
+        {
+            await Task.Delay(m_generator.RestSeconds * 1000);
+
+            if (Map == null)
+            {
+                await LeaveMapAsync();
+                return;
+            }
+
+
+
         }
 
         #endregion

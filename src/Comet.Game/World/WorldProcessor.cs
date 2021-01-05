@@ -24,9 +24,9 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Comet.Shared;
 
 #endregion
 
@@ -41,14 +41,38 @@ namespace Comet.Game.World
 
         protected override async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
+#if DEBUG
             m_Thread[partition] = (from ProcessThread entry in Process.GetCurrentProcess().Threads
                 where entry.Id == GetCurrentWin32ThreadId()
                 select entry).First();
+#endif
 
             while (!m_CancelReads.IsCancellationRequested)
             {
-                await Kernel.GeneratorManager.OnTimerAsync(partition);
-                await Task.Delay(1000, m_CancelReads);
+                try
+                {
+                    await Kernel.GeneratorManager.OnTimerAsync(partition);
+
+                    while (channel.Reader.Count > 0)
+                    {
+                        var action = await channel.Reader.ReadAsync(m_CancelReads);
+                        if (action != null)
+                        {
+#if DEBUG
+                            m_LastExecuted[partition] = action;
+#endif
+                            await action.Invoke();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await Log.WriteLogAsync(LogLevel.Exception, $"{ex.Message}\r\n\t{ex}");
+                }
+                finally
+                {
+                    await Task.Delay(1000, m_CancelReads);
+                }
             }
         }
     }

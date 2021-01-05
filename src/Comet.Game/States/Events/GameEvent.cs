@@ -103,7 +103,7 @@ namespace Comet.Game.States.Events
             return Task.CompletedTask;
         }
 
-        public virtual Task<(uint id, ushort x, ushort y)> GetRevivePosition(Character sender)
+        public virtual Task<(uint id, ushort x, ushort y)> GetRevivePositionAsync(Character sender)
         {
             return Task.FromResult((1002u, (ushort) 430, (ushort)378));
         }

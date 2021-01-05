@@ -131,7 +131,7 @@ namespace Comet.Game.States.Events
             return Task.FromResult(true);
         }
 
-        public override async Task<(uint id, ushort x, ushort y)> GetRevivePosition(Character sender)
+        public override async Task<(uint id, ushort x, ushort y)> GetRevivePositionAsync(Character sender)
         {
             UserData data = FindUser(sender.Identity) ?? CreateUserData(sender);
             if (data.Deaths < MAX_DEATHS_PER_PLAYER)
@@ -139,7 +139,7 @@ namespace Comet.Game.States.Events
                 var pos = m_revivePoints[await Kernel.NextAsync(m_revivePoints.Length)%m_revivePoints.Length];
                 return (MAP_ID, pos.x, pos.y);
             }
-            return await base.GetRevivePosition(sender);
+            return await base.GetRevivePositionAsync(sender);
         }
 
         public override async Task OnTimerAsync()

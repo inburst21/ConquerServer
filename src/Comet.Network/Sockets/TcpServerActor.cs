@@ -100,8 +100,11 @@ namespace Comet.Network.Sockets
             {
                 try
                 {
+                    if (Socket?.Connected != true)
+                        return Task.FromResult(-1);
+
                     Cipher.Encrypt(encrypted, encrypted);
-                    return Socket?.SendAsync(encrypted, SocketFlags.None) ?? Task.FromResult(-1);
+                    return Socket.SendAsync(encrypted, SocketFlags.None);
                 }
                 catch (SocketException e)
                 {

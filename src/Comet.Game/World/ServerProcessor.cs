@@ -38,11 +38,10 @@ namespace Comet.Game.World
 {
     public class ServerProcessor : BackgroundService
     {
+#if DEBUG
         [DllImport("Kernel32", EntryPoint = "GetCurrentThreadId", ExactSpelling = true)]
         protected static extern Int32 GetCurrentWin32ThreadId();
-
         protected readonly ProcessThread[] m_Thread;
-#if DEBUG
         protected readonly Func<Task>[] m_LastExecuted;
 #endif
         protected readonly Task[] m_BackgroundTasks;
@@ -57,8 +56,8 @@ namespace Comet.Game.World
         {
             Count = processorCount;
 
-            m_Thread = new ProcessThread[Count];
 #if DEBUG
+            m_Thread = new ProcessThread[Count];
             m_LastExecuted = new Func<Task>[Count];
 #endif
             m_BackgroundTasks = new Task[Count];
@@ -101,7 +100,6 @@ namespace Comet.Game.World
 #if DEBUG
                     m_LastExecuted[partition] = action;
 #endif
-
                     try
                     {
                         await action.Invoke();

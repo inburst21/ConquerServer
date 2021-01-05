@@ -79,25 +79,25 @@ namespace Comet.Shared
         private async void TimerOnElapse(object sender, ElapsedEventArgs e)
         {
             Stopwatch sw = new Stopwatch();
-            sw.Start();
-            
-            try
+            while (!m_cancellationToken.IsCancellationRequested)
             {
-                while (!m_cancellationToken.IsCancellationRequested)
+                sw.Start();
+                try
                 {
                     await OnElapseAsync();
                     await Task.Delay(m_interval, m_cancellationToken);
                 }
-            }
-            catch (Exception ex)
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error on thread {m_name}");
-                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
-            }
-            finally
-            {
-                sw.Stop();
-                ElapsedMilliseconds = sw.ElapsedMilliseconds;
+                catch (Exception ex)
+                {
+                    await Log.WriteLogAsync(LogLevel.Error, $"Error on thread {m_name}");
+                    await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+                }
+                finally
+                {
+                    sw.Stop();
+                    ElapsedMilliseconds = sw.ElapsedMilliseconds - m_interval;
+                    sw.Reset();
+                }
             }
 
             await Log.WriteLogAsync(LogLevel.Warning, $"Thread [{m_name}] is stopping.");
