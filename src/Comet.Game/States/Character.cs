@@ -515,6 +515,12 @@ namespace Comet.Game.States
             if (Level >= MAX_UPLEV)
                 return;
 
+            if (nExp < 0)
+            {
+                await AddAttributesAsync(ClientUpdateType.Experience, nExp);
+                return;
+            }
+
             const int BATTLE_EXP_TAX = 5;
 
             if (Level < 130)
@@ -539,24 +545,9 @@ namespace Comet.Game.States
             else if (VipLevel >= 2)
                 multiplier += .5;
 
-            nExp = (long)(nExp * Math.Max(1, multiplier));
-
-            if (nExp < 0)
-            {
-                await AddAttributesAsync(ClientUpdateType.Experience, nExp);
-                return;
-            }
-
-            nExp = (long) (nExp * 1 + BattlePower / 100d);
-
             if (bGemEffect)
             {
-                nExp += (int)(nExp * (1 + (RainbowGemBonus / 100d)));
-
-#if DEBUG
-                if (RainbowGemBonus > 0 && IsPm())
-                    await SendAsync($"got gem exp add percent: {RainbowGemBonus:0.00}%");
-#endif
+                multiplier += (1 + (RainbowGemBonus / 100d));
             }
 
             if (IsLucky && await Kernel.ChanceCalcAsync(10, 10000))
@@ -566,16 +557,15 @@ namespace Comet.Game.States
                 await SendAsync(Language.StrLuckyGuyQuintuple);
             }
 
+            multiplier += 1 + BattlePower / 100d;
+
+            nExp = (long)(nExp * Math.Max(1, multiplier));
+
             if (Level >= 120)
                 nExp /= 2;
 
             if (Metempsychosis >= 2)
                 nExp /= 3;
-
-#if DEBUG
-            if (IsPm())
-                await SendAsync($"got battle exp: {nExp}");
-#endif
 
             await AwardExperienceAsync(nExp);
         }
