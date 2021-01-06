@@ -322,6 +322,10 @@ namespace Comet.Game.States
 
         public async Task<bool> IsTargetDodgedAsync(Role attacker, Role target)
         {
+            const int MIN_HITRATE = 40;
+            const int MIN_HITRATE_BOW_SHIELD = 25;
+            const int MAX_HITRATE = 99;
+
             if (attacker == null || target == null || attacker.Identity == target.Identity)
                 return false;
 
@@ -340,8 +344,15 @@ namespace Comet.Game.States
 
             if (target.QueryStatus(StatusSet.DODGE) != null)
                 dodge = Calculations.AdjustData(dodge, attacker.QueryStatus(StatusSet.DODGE).Power);
-            
-            hitRate = Math.Min(99, Math.Max(40, 40 + hitRate - dodge));
+
+            int minHitRate = MIN_HITRATE;
+            if (attacker.IsBowman && target.IsShieldUser)
+            {
+                hitRate /= 2;
+                minHitRate = MIN_HITRATE_BOW_SHIELD;
+            }
+
+            hitRate = Math.Min(MAX_HITRATE, Math.Max(minHitRate, minHitRate + hitRate - dodge));
 
 #if DEBUG
             if (attacker is Character atkUser && atkUser.IsPm())
@@ -544,8 +555,7 @@ namespace Comet.Game.States
 
         public int AdjustMinDamageMonster2User(int nDamage, Role pAtker, Role pTarget)
         {
-            int nMinDamage = 7;
-
+            int nMinDamage = 1;
             if (nDamage >= nMinDamage
                 || pTarget.Level <= 15)
                 return nDamage;

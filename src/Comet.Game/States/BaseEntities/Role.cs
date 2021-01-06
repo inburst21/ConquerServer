@@ -690,6 +690,8 @@ namespace Comet.Game.States.BaseEntities
 
         public virtual bool IsBowman => false;
 
+        public virtual bool IsShieldUser => false;
+
         public virtual bool IsEvil()
         {
             return QueryStatus(StatusSet.BLUE_NAME) != null || QueryStatus(StatusSet.BLACK_NAME) != null;

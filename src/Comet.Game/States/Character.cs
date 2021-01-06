@@ -1580,9 +1580,13 @@ namespace Comet.Game.States
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     if (pos == Item.ItemPosition.LeftHand)
+                    {
                         result += (UserPackage[pos]?.MinAttack ?? 0) / 2;
-                    else 
+                    }
+                    else
+                    {
                         result += UserPackage[pos]?.MinAttack ?? 0;
+                    }
                 }
 
                 result = (int) (result * (1 + (DragonGemBonus / 100d)));
@@ -1726,8 +1730,6 @@ namespace Comet.Game.States
                     if (item != null)
                     {
                         result += item.DragonGemEffect;
-                        //if ((item.IsWeaponTwoHand() || item.IsBow()) && UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == true)
-                            //result += item.DragonGemEffect;
                     }
                 }
                 return result;
@@ -1819,6 +1821,8 @@ namespace Comet.Game.States
         #region Battle
 
         public override bool IsBowman => UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true;
+
+        public override bool IsShieldUser => UserPackage[Item.ItemPosition.LeftHand]?.IsShield() == true;
 
         public async Task<bool> AutoSkillAttackAsync(Role target)
         {

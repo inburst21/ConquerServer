@@ -27,6 +27,7 @@ using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+using Comet.Game.States.BaseEntities;
 using Comet.Shared;
 using Newtonsoft.Json;
 
@@ -394,6 +395,9 @@ namespace Comet.Game.States.Items
             {
                 int result = m_dbItemtype?.AttackMin ?? 0;
                 result += m_dbItemAddition?.AttackMin ?? 0;
+                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
+                if (ws != null && ws.Level > 12)
+                    result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
             }
         }
@@ -406,6 +410,9 @@ namespace Comet.Game.States.Items
                 if (Position == ItemPosition.LeftHand && !IsShield())
                     result /= 2;
                 result += m_dbItemAddition?.AttackMax ?? 0;
+                DbWeaponSkill ws = m_user.WeaponSkill[(ushort)GetItemSubType()];
+                if (ws != null && ws.Level > 12)
+                    result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
             }
         }
@@ -416,6 +423,9 @@ namespace Comet.Game.States.Items
             {
                 int result = m_dbItemtype?.MagicAtk ?? 0;
                 result += m_dbItemAddition?.MagicAtk ?? 0;
+                DbWeaponSkill ws = m_user.WeaponSkill[(ushort)GetItemSubType()];
+                if (ws != null && ws.Type == 421 && ws.Level > 12)
+                    result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
             }
         }
