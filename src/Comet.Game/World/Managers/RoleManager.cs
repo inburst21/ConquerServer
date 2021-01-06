@@ -128,8 +128,7 @@ namespace Comet.Game.World.Managers
                     await concurrent.SendAsync(Language.StrAnotherLoginOtherIp, MsgTalk.TalkChannel.Talk);
                 }
 
-                ForceLogoutUser(user.Character.Identity);
-
+                //concurrent.Client.Disconnect();
                 user.Disconnect();
                 await KickOutAsync(user.Character.Identity, "logged twice");
                 return false;
