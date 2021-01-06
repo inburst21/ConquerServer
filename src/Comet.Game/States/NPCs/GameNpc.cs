@@ -46,8 +46,8 @@ namespace Comet.Game.States.NPCs
 
         public override ushort Type => m_dbNpc.Type;
 
-        public override ushort Sort => m_dbNpc.Sort;
-        
+        public override NpcSort Sort => (NpcSort) m_dbNpc.Sort;
+
         public override uint OwnerIdentity
         {
             get => m_dbNpc.Ownerid;

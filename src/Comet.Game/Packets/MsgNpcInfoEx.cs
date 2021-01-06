@@ -48,7 +48,7 @@ namespace Comet.Game.Packets
             PosY = npc.MapY;
             Lookface = (ushort) npc.Mesh;
             NpcType = npc.Type;
-            Sort = npc.Sort;
+            Sort = (ushort) npc.Sort;
             Name = npc.IsSynFlag() ? npc.Name : "";
         }
 

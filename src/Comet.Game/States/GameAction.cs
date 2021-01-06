@@ -98,11 +98,12 @@ namespace Comet.Game.States
                     case TaskActionType.ActionMenuedit: result = await ExecuteActionMenuEdit(action, param, user, role, item, input); break;
                     case TaskActionType.ActionMenupic: result = await ExecuteActionMenuPic(action, param, user, role, item, input); break;
                     case TaskActionType.ActionMenucreate: result = await ExecuteActionMenuCreate(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionBrocastmsg: result = await ExecuteActionBrocastmsg(action, param, user, role, item, input); break;
                     case TaskActionType.ActionRand: result = await ExecuteActionMenuRand(action, param, user, role, item, input); break;
                     case TaskActionType.ActionRandaction: result = await ExecuteActionMenuRandAction(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionPostcmd: result = await ExecuteActionPostcmd(action, param, user, role, item, input); break;
                     case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionPostcmd: result = await ExecuteActionPostcmd(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionBrocastmsg: result = await ExecuteActionBrocastmsg(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMessagebox: result = await ExecuteActionMessagebox(action, param, user, role, item, input); break;
                     case TaskActionType.ActionExecutequery: result = await ExecuteActionExecutequery(action, param, user, role, item, input); break;
 
                     case TaskActionType.ActionNpcAttr: result = await ExecuteActionNpcAttr(action, param, user, role, item, input); break;
@@ -537,6 +538,20 @@ namespace Comet.Game.States
             return true;
         }
 
+        private static async Task<bool> ExecuteActionMessagebox(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user != null)
+            {
+                MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.MessageBox;
+                if (action.Data != 0 && Enum.IsDefined(typeof(MsgTalk.TalkChannel), (ushort) action.Data))
+                    channel = (MsgTalk.TalkChannel) action.Data;
+
+                await user.SendAsync(new MsgTalk(0, channel, param));
+            }
+            return true;
+        }
+
         private static async Task<bool> ExecuteActionExecutequery(DbAction action, string param, Character user, Role role, Item item, string input)
         {
             try
@@ -730,16 +745,18 @@ namespace Comet.Game.States
                 {
                     if (user?.IsPm() == true)
                         await user.SendAsync($"CTF Flag is not handled");
-                    return false;
+                    return true;
                 }
 
                 if (syn != null)
                 {
-                    await npc.SetOwnerAsync(syn.Identity);
+                    await npc.SetOwnerAsync(syn.Identity, true);
                 }
                 npc.ClearScores();
                 
-                await npc.Map.SaveAsync();
+                if (npc.Map.IsDynamicMap())
+                    await npc.Map.SaveAsync();
+
                 await npc.SaveAsync();
             }
 
@@ -756,14 +773,10 @@ namespace Comet.Game.States
                         continue;
 
                     resetNpc.OwnerIdentity = npc.OwnerIdentity;
-                    if (!resetNpc.IsSysTrans())
+                    /*if (resetNpc.IsLinkNpc()) TODO
                     {
-                        resetNpc.SetData("data0", 0);
-                        resetNpc.SetData("data1", (int) npc.OwnerIdentity);
-                        resetNpc.SetData("data2", 0);
-                        resetNpc.SetData("data3", 0);
-                    }
-
+                        
+                    }*/
                     await resetNpc.SaveAsync();
                 }
             }
@@ -1927,6 +1940,9 @@ namespace Comet.Game.States
                 if (user.UserPackage[i] != null)
                 {
                     if (pIdx == 14 && user.UserPackage[i].Position == Item.ItemPosition.Steed)
+                        continue;
+
+                    if (user.UserPackage[i].IsArrowSort())
                         continue;
 
                     switch (pIdx)
@@ -3397,7 +3413,69 @@ namespace Comet.Game.States
 
                     break;
 
-                    #endregion
+                #endregion
+
+                #region Look (==, set)
+                case "look":
+                {
+                    switch (opt)
+                    {
+                        case "==": return (user.Mesh % 10) == ushort.Parse(value);
+                        case "set":
+                        {
+                            ushort usVal = ushort.Parse(value);
+                            if (user.Gender == 1 && (usVal == 3 || usVal == 4))
+                            {
+                                user.Body = (BodyType) (1000 + usVal);
+                                await user.SynchroAttributesAsync(ClientUpdateType.Mesh, user.Mesh, true);
+                                await user.SaveAsync();
+                                return true;
+                            }
+                            if (user.Gender == 0 && (usVal == 1 || usVal == 2))
+                            {
+                                user.Body = (BodyType) (2000 + usVal);
+                                await user.SynchroAttributesAsync(ClientUpdateType.Mesh, user.Mesh, true);
+                                await user.SaveAsync();
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    return false;
+                }
+                #endregion
+
+                #region Body (set)
+                case "body":
+                    {
+                        switch (opt)
+                        {
+                            case "set":
+                                {
+                                    ushort usNewBody = ushort.Parse(value);
+                                    if (usNewBody == 1003 || usNewBody == 1004)
+                                    {
+                                        if (user.Body != BodyType.AgileFemale && user.Body != BodyType.MuscularFemale)
+                                            return false; // to change body use the fucking item , asshole
+                                    }
+                                    if (usNewBody == 2001 || usNewBody == 2002)
+                                    {
+                                        if (user.Body != BodyType.AgileMale && user.Body != BodyType.MuscularMale)
+                                            return false; // to change body use the fucking item , asshole
+                                    }
+
+                                    if (user.UserPackage[Item.ItemPosition.Garment] != null)
+                                        await user.UserPackage.UnequipAsync(Item.ItemPosition.Garment);
+
+                                    user.Body = (BodyType)usNewBody;
+                                    await user.SynchroAttributesAsync(ClientUpdateType.Mesh, user.Mesh, true);
+                                    await user.SaveAsync();
+                                    return true;;
+                                }
+                        }
+                        return false;
+                    }
+                #endregion
             }
 
             return false;
@@ -3652,7 +3730,7 @@ namespace Comet.Game.States
                     return await user.WeaponSkill.CreateAsync(type, (byte) value);
 
                 case "addexp":
-                    await user.AddWeaponSkillExpAsync(type, value);
+                    await user.AddWeaponSkillExpAsync(type, value, true);
                     return true;
 
                 default:

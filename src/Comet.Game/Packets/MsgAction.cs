@@ -452,8 +452,10 @@ namespace Comet.Game.Packets
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
                     await user.SendMerchantAsync();
-
                     await client.Character.SynchroAttributesAsync(ClientUpdateType.VipLevel, client.Character.BaseVipLevel);
+
+                    if (user.VipLevel > 0)
+                        await user.AttachStatusAsync(user, StatusSet.ORANGE_HALO_GLOW, 0, int.MaxValue, 0, 0);
 
                     await client.SendAsync(this);
                     break;

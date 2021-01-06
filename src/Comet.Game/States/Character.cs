@@ -113,7 +113,7 @@ namespace Comet.Game.States
             TaskDetail = new TaskDetail(this);
 
             if (m_dbObject.LuckyTime != null)
-                m_luckyTimeCount = (int) (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds;
+                m_luckyTimeCount = (int) Math.Max(0, (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds);
 
             m_energyTm.Update();
             m_autoHeal.Update();
@@ -815,7 +815,7 @@ namespace Comet.Game.States
 
         public WeaponSkill WeaponSkill { get; }
         
-        public async Task AddWeaponSkillExpAsync(ushort usType, int nExp)
+        public async Task AddWeaponSkillExpAsync(ushort usType, int nExp, bool byAction = false)
         {
             DbWeaponSkill skill = WeaponSkill[usType];
             if (skill == null)
@@ -849,7 +849,8 @@ namespace Comet.Game.States
                 await SendAsync($"Add Weapon Skill exp: {nExp}, CurExp: {nNewExp}");
 #endif
 
-            int nLevel = (int)skill.Level;
+            int nLevel = skill.Level;
+            uint oldPercent = (uint) (skill.Experience / (double) MsgWeaponSkill.RequiredExperience[nLevel] * 100);
             if (nLevel < MAX_WEAPONSKILLLEVEL)
             {
                 if (nNewExp > MsgWeaponSkill.RequiredExperience[nLevel] ||
@@ -860,7 +861,7 @@ namespace Comet.Game.States
                 }
             }
 
-            if (skill.Level < Level / 10 + 1
+            if (byAction || skill.Level < Level / 10 + 1
                 || skill.Level >= MASTER_WEAPONSKILLLEVEL)
             {
                 skill.Experience = (uint)nNewExp;
@@ -870,6 +871,7 @@ namespace Comet.Game.States
                     skill.Level += (byte) nIncreaseLev;
                     await SendAsync(new MsgWeaponSkill(skill));
                     await SendAsync(Language.StrWeaponSkillUp);
+                    await WeaponSkill.SaveAsync(skill);
                 }
                 else
                 {
@@ -879,9 +881,11 @@ namespace Comet.Game.States
                         Identity = (ushort) skill.Type,
                         Experience = skill.Experience
                     });
-                }
 
-                await WeaponSkill.SaveAsync(skill);
+                    int newPercent = (int) (skill.Experience / (double) MsgWeaponSkill.RequiredExperience[nLevel] * 100);
+                    if (oldPercent-oldPercent%10 != newPercent- newPercent%10)
+                        await WeaponSkill.SaveAsync(skill);
+                }
             }
         }
 
@@ -2263,14 +2267,25 @@ namespace Comet.Game.States
                     SenderIdentity = Identity,
                     TargetIdentity = attacker.Identity
                 }, true);
+
+                if (!attacker.IsAlive)
+                    await attacker.BeKillAsync(null);
+
                 return true;
             }
 
             if (power > 0)
             {
                 await AddAttributesAsync(ClientUpdateType.Hitpoints, power * -1);
+                _ = BroadcastTeamLifeAsync().ConfigureAwait(false);
             }
-            
+
+            if (!Map.IsTrainingMap())
+                await DecEquipmentDurabilityAsync(true, (int) magic, (ushort) (power > MaxLife / 4 ? 10 : 1));
+
+            if (MagicData.QueryMagic != null && MagicData.State == MagicData.MagicState.Intone)
+                await MagicData.AbortMagicAsync(true);
+
             if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, (ulong) (Energy / 2));
             return true;
@@ -4712,6 +4727,12 @@ namespace Comet.Game.States
             {
                 WindowSpawn = true
             });
+        }
+
+        public async Task BroadcastTeamLifeAsync(bool maxLife = false)
+        {
+            if (Team != null)
+                await Team.BroadcastMemberLifeAsync(this, maxLife);
         }
 
         #endregion

@@ -1996,6 +1996,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your weapon proficiency couldn&apos;t be upgraded due to your low level..
+        /// </summary>
+        public static string StrWeaponProfByActionLowLevel {
+            get {
+                return ResourceManager.GetString("StrWeaponProfByActionLowLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your weapon proeficiency level has been improved..
         /// </summary>
         public static string StrWeaponSkillUp {

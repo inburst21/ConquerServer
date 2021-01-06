@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
@@ -76,6 +77,25 @@ namespace Comet.Game.States.NPCs
             ROLE_3DFURNITURE_NPC = 101, // 3D¼Ò¾ßNPC 
             SYN_NPC_WARLETTER = 110; //Ôö¼ÓÐÂµÄ£Î£Ð£ÃÀàÐÍ¡¡×¨ÃÅÓÃÀ´¡¡ÏÂÕ½ÊéµÄ¡¡°ïÅÉ£Î£Ð£Ã
 
+        [Flags]
+        public enum NpcSort
+        {
+            None = 0,
+            Task = 1,           // ÈÎÎñÀà
+            Recycle = 2,            // ¿É»ØÊÕÀà
+            Scene = 4,          // ³¡¾°Àà(´øµØÍ¼Îï¼þ)
+            LinkMap = 8,            // ¹ÒµØÍ¼Àà(LINKIDÎªµØÍ¼ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            DieAction = 16,         // ´øËÀÍöÈÎÎñ(LINKIDÎªACTION_ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            DelEnable = 32,         // ¿ÉÒÔÊÖ¶¯É¾³ý(²»ÊÇÖ¸Í¨¹ýÈÎÎñ)
+            Event = 64,         // ´ø¶¨Ê±ÈÎÎñ, Ê±¼äÔÚdata3ÖÐ£¬¸ñÊ½ÎªMMWWHHMMSS¡£(LINKIDÎªACTION_ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            Table = 128,            // ´øÊý¾Ý±íÀàÐÍ
+
+            //		NPCSORT_SHOP		= ,			// ÉÌµêÀà
+            //		NPCSORT_DICE		= ,			// ÷»×ÓNPC
+
+            NpcsortUseLinkId = LinkMap | DieAction | Event,
+        };
+
         #endregion
 
         protected BaseNpc(uint idNpc)
@@ -100,7 +120,7 @@ namespace Comet.Game.States.NPCs
 
         public virtual uint OwnerType { get; set; }
 
-        public virtual ushort Sort { get; }
+        public virtual NpcSort Sort { get; }
 
         #endregion
 
@@ -264,6 +284,11 @@ namespace Comet.Game.States.NPCs
         #endregion
 
         #region Common Checks
+
+        public bool IsLinkNpc()
+        {
+            return (Sort & NpcSort.LinkMap) != 0;
+        }
 
         public bool IsShopNpc()
         {

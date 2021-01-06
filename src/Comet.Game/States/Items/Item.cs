@@ -66,7 +66,7 @@ namespace Comet.Game.States.Items
                 Magic2 = type.Magic2,
                 Magic3 = type.Magic3,
                 Color = 3,
-                Monopoly = type.Monopoly
+                Monopoly = 0
             };
 
             m_dbItemtype = type;

@@ -869,6 +869,7 @@ namespace Comet.Game.Packets
             GuildWarRight2,
             Offline,
             Announce,
+            MessageBox,
             TradeBoard = 2201,
             FriendBoard,
             TeamBoard,

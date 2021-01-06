@@ -40,7 +40,8 @@ namespace Comet.Game.States.Magics
 {
     public partial class MagicData
     {
-        private const int _MAX_TARGET_NUM = 25;
+        private const int MAX_TARGET_NUM = 25;
+        private const int TC_PK_ARENA_ID = 1005;
 
         /// <summary>
         ///     This delay is a general one, to avoid people from spamming skills in low ping scenarios.
@@ -65,9 +66,18 @@ namespace Comet.Game.States.Magics
         public async Task<(bool Success, ushort X, ushort Y)> CheckConditionAsync(Magic magic, uint idTarget, ushort x,
             ushort y)
         {
-            if (!m_tDelay.IsTimeOut(MAGIC_DELAY - magic.Level * MAGIC_DECDELAY_PER_LEVEL) &&
-                magic.Sort != MagicSort.Collide)
-                return (false, x, y);
+            if (m_pOwner.Map.IsTrainingMap())
+            {
+                if (!m_tDelay.IsTimeOut(MAGIC_DELAY) &&
+                    magic.Sort != MagicSort.Collide)
+                    return (false, x, y);
+            }
+            else
+            {
+                if (!m_tDelay.IsTimeOut(MAGIC_DELAY - magic.Level * MAGIC_DECDELAY_PER_LEVEL) &&
+                    magic.Sort != MagicSort.Collide)
+                    return (false, x, y);
+            }
 
             if (!magic.IsReady())
                 return (false, x, y);
@@ -99,6 +109,9 @@ namespace Comet.Game.States.Magics
                         return (false, x, y);
                 }
             }
+
+            if (map.IsLineSkillMap() && magic.Sort != MagicSort.Line)
+                return (false, x, y);
 
             if (map.IsTrainingMap() && user != null)
             {
@@ -273,7 +286,7 @@ namespace Comet.Game.States.Magics
                     if (m_pOwner.Map.IsTrainingMap() || IsAutoAttack())
                     {
                         SetAutoAttack(magic.Type);
-                        m_tDelay.Startup(800);
+                        m_tDelay.Startup(Math.Max(MAGIC_DELAY, magic.DelayMs));
                         m_state = MagicState.Delay;
                         return true;
                     }
@@ -353,9 +366,7 @@ namespace Comet.Game.States.Magics
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
-            if (m_autoAttack)
-                m_autoAttackNum++;
-
+            m_autoAttackNum++;
             return result;
         }
         
@@ -546,7 +557,7 @@ namespace Comet.Game.States.Magics
                     damage *= 2;
                 }
 
-                if (msg.Count >= _MAX_TARGET_NUM)
+                if (msg.Count >= MAX_TARGET_NUM)
                 {
                     await m_pOwner.BroadcastRoomMsgAsync(msg, true);
                     msg.ClearTargets();
@@ -651,7 +662,7 @@ namespace Comet.Game.States.Magics
                 if (!target.IsAlive)
                     await m_pOwner.KillAsync(target, GetDieMode());
 
-                if (msg.Count < _MAX_TARGET_NUM)
+                if (msg.Count < MAX_TARGET_NUM)
                     msg.Append(target.Identity, atkResult.Damage, true);
             }
 
@@ -881,7 +892,7 @@ namespace Comet.Game.States.Magics
             Tile userTile = m_pOwner.Map[m_pOwner.MapX, m_pOwner.MapY];
             foreach (var point in setPoint)
             {
-                if (msg.Count >= _MAX_TARGET_NUM)
+                if (msg.Count >= MAX_TARGET_NUM)
                 {
                     await m_pOwner.BroadcastRoomMsgAsync(msg, true);
                     msg.ClearTargets();
@@ -1001,8 +1012,6 @@ namespace Comet.Game.States.Magics
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
 
             long battleExp = 0;
-            int exp = 0;
-            
             if (power > 0)
             {
                 int lifeLost = (int) Math.Max(0, Math.Min(target.Life, power));
@@ -1011,7 +1020,6 @@ namespace Comet.Game.States.Magics
 
                 if (user != null && target is Monster monster)
                 {
-                    exp += lifeLost;
                     battleExp += user.AdjustExperience(target, lifeLost, false);
                     if (!monster.IsAlive)
                     {
@@ -1030,7 +1038,7 @@ namespace Comet.Game.States.Magics
                 }
             }
             
-            await AwardExpAsync(0, battleExp, exp, magic);
+            await AwardExpAsync(0, battleExp, AWARDEXP_BY_TIMES, magic);
 
             if (!target.IsAlive)
                 await m_pOwner.KillAsync(target, GetDieMode());
@@ -1234,11 +1242,14 @@ namespace Comet.Game.States.Magics
             if (pMagic == null)
                 return false;
 
-            if (!CheckAwardExpEnable((m_pOwner as Character)?.Profession ?? 0))
+            if (!CheckAwardExpEnable(pMagic))
                 return false;
 
-            if (m_pOwner.Map.IsTrainingMap() && m_autoAttackNum % 10 != 0)
+            if (m_pOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && m_autoAttackNum > 0 && m_autoAttackNum % 10 != 0)
                 return true;
+
+            if (pMagic.AutoActive == 0 && m_pOwner.Map.IsTrainingMap())
+                nExp = Math.Max(1, nExp / 3);
 
             if (pMagic.NeedExp > 0
                 && (pMagic.AutoActive & 16) == 0
@@ -1298,9 +1309,8 @@ namespace Comet.Game.States.Magics
             return true;
         }
 
-        public bool CheckAwardExpEnable(ushort dwProf)
+        public bool CheckAwardExpEnable(Magic magic)
         {
-            Magic magic = QueryMagic;
             if (magic == null)
                 return false;
             return m_pOwner.Level >= magic.NeedLevel

@@ -227,6 +227,24 @@ namespace Comet.Game.States
             }
         }
 
+        public async Task BroadcastMemberLifeAsync(Character user, bool maxLife = false)
+        {
+            if (user == null || !IsMember(user.Identity))
+                return;
+
+            MsgUserAttrib msg = new MsgUserAttrib(user.Identity, ClientUpdateType.Hitpoints, user.Life);
+            if (maxLife)
+                msg.Append(ClientUpdateType.MaxHitpoints, user.MaxLife);
+
+            foreach (var member in m_dicPlayers.Values)
+            {
+                if (member.Identity != user.Identity)
+                {
+                    await member.SendAsync(msg);
+                }
+            }
+        }
+
         public async Task AwardMemberExpAsync(uint idKiller, Role target, long exp)
         {
             if (target == null || exp == 0)

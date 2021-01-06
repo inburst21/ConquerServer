@@ -95,7 +95,7 @@ namespace Comet.Game.States.NPCs
 
         public void SetType(ushort type) => m_dbNpc.Type = type;
 
-        public override ushort Sort => m_dbNpc.Sort;
+        public override NpcSort Sort => (NpcSort) m_dbNpc.Sort;
 
         public void SetSort(ushort sort) => m_dbNpc.Sort = sort;
 
@@ -251,8 +251,7 @@ namespace Comet.Game.States.NPCs
 
         public override bool IsAttackable(Role attacker)
         {
-            if (!IsSynFlag() && !IsCtfFlag() && Sort != MAGICGOAL_NPC && Sort != WEAPONGOAL_NPC &&
-                Sort != ROLE_CITY_GATE_NPC && Sort != ROLE_MOUSE_NPC)
+            if (!IsSynFlag() && !IsCtfFlag() && !IsGoal())
                 return false;
 
             Character attackerUser = attacker as Character;
@@ -347,7 +346,7 @@ namespace Comet.Game.States.NPCs
             await LeaveMapAsync();
         }
 
-        public async Task<bool> SetOwnerAsync(uint idOwner)
+        public async Task<bool> SetOwnerAsync(uint idOwner, bool withLinkMap = false)
         {
             if (idOwner == 0)
             {
@@ -373,6 +372,15 @@ namespace Comet.Game.States.NPCs
                     Name = syn.Name;
                 }
             }
+
+            // TODO
+            /*if (withLinkMap)
+            {
+                foreach (var player in Kernel.RoleManager.QueryUserSetByMap(MapIdentity))
+                {
+
+                }
+            }*/
 
             await SaveAsync();
             await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this) { Lookface = m_dbNpc.Lookface }, false);
