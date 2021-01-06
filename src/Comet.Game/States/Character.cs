@@ -193,7 +193,7 @@ namespace Comet.Game.States
         public BodyType Body
         {
             get => (BodyType)(Mesh % 10000);
-            set => Mesh = (uint)(value + (ushort)(Avatar * 10000));
+            set => Mesh = ((uint) value + (Avatar * 10000u));
         }
 
         public ushort Avatar
