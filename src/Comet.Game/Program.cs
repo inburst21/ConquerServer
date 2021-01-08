@@ -143,7 +143,7 @@ namespace Comet.Game
             await Kernel.Api.PostAsync(new ServerInformation
             {
                 ServerName = Kernel.Configuration.ServerName,
-                ServerStatus = ServerInformation.RealmStatus.Offline,
+                ServerStatus = ServerInformation.RealmStatus.Maintenance,
                 PlayerAmount = 0,
                 MaxPlayerAmount = Kernel.Configuration.MaxConn
 
