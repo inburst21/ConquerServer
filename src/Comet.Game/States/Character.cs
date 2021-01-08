@@ -1324,6 +1324,7 @@ namespace Comet.Game.States
             await SendAsync(string.Format(Language.StrBoothSold, target.Name, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
             await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
 
+            await Log.GmLog("booth_sale", $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.Item.ToJson()}");
             return true;
         }
 
@@ -1576,6 +1577,9 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return Transformation.MinAttack;
+
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -1598,6 +1602,9 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return Transformation.MaxAttack;
+
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -1616,6 +1623,9 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return Transformation.MaxAttack;
+
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -1631,6 +1641,8 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return Transformation.Defense;
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -1655,6 +1667,8 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return Transformation.MagicDefense;
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -1682,6 +1696,8 @@ namespace Comet.Game.States
         {
             get
             {
+                if (Transformation != null)
+                    return (int) Transformation.Dodge;
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -2589,6 +2605,7 @@ namespace Comet.Game.States
                     m_dbObject.MeteLevel = MAX_UPLEV * 10000;
             }
 
+            int metempsychosis = Metempsychosis;
             int oldProf = Profession;
             await ResetUserAttributesAsync(Metempsychosis, prof, look, data.NewLevel);
 
@@ -2598,9 +2615,9 @@ namespace Comet.Game.States
                     await UserPackage[pos].DegradeItemAsync(false);
             }
 
-            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf / 10, prof / 10)?.Magics;
-            var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf / 10, prof/10)?.Magics;
-            var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf / 10, prof/10)?.Magics;
+            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf / 10, prof / 10, metempsychosis)?.Magics;
+            var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf / 10, prof/10, metempsychosis)?.Magics;
+            var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf / 10, prof/10, metempsychosis)?.Magics;
 
             if (removeSkills != null)
             {

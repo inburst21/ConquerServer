@@ -23,6 +23,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
@@ -138,11 +139,21 @@ namespace Comet.Game.States.Magics
         {
             if (m_pOwner.IsPlayer())
             {
+                Character user = (Character) m_pOwner;
+                var checkMagics = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, user.FirstProfession / 10, user.Profession / 10, 1).Magics;
+                checkMagics.AddRange(Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, user.PreviousProfession / 10, user.Profession / 10, 2).Magics);
+
                 foreach (var dbMagic in await MagicRepository.GetAsync(m_pOwner.Identity))
                 {
                     Magic magic = new Magic(m_pOwner);
                     if (!await magic.CreateAsync(dbMagic))
                         continue;
+
+                    if (checkMagics.Any(x => x == dbMagic.Type) && !user.IsGm())
+                    {
+                        _ = BaseRepository.DeleteAsync(dbMagic).ConfigureAwait(false);
+                        continue;
+                    }
 
                     Magics.TryAdd(magic.Type, magic);
                 }

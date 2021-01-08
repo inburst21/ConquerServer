@@ -173,14 +173,14 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcPowerAsync(MagicType magic, Role attacker, Role target)
+        public async Task<(int Damage, InteractionEffect effect)> CalcPowerAsync(MagicType magic, Role attacker, Role target, int adjustAtk = 0)
         {
             (int, InteractionEffect None) result;
             if (magic == MagicType.None)
-                result = await CalcAttackPowerAsync(attacker, target);
+                result = await CalcAttackPowerAsync(attacker, target, adjustAtk);
             else
             {
-                result = await CalcMagicAttackPowerAsync(attacker, target);
+                result = await CalcMagicAttackPowerAsync(attacker, target, adjustAtk);
             }
 
             if (target is DynamicNpc dynamicNpc
@@ -193,7 +193,7 @@ namespace Comet.Game.States
             return result;
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPowerAsync(Role attacker, Role target)
+        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPowerAsync(Role attacker, Role target, int adjustAtk = 0, int adjustDef = 0)
         {
             InteractionEffect effect = InteractionEffect.None;
             int attack = 0;
@@ -207,8 +207,14 @@ namespace Comet.Game.States
             if (attacker is Character && target is Character && attacker.IsBowman)
                 attack = (int)(attack * 0.125f);
 
+            if (adjustAtk > 0)
+                attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
+
             Character targetUser = target as Character;
             int defense = target.Defense;
+
+            if (adjustDef > 0)
+                defense = Calculations.CutTrail(0, Calculations.AdjustDataEx(defense, adjustDef));
 
             if (targetUser != null)
             {
@@ -225,10 +231,7 @@ namespace Comet.Game.States
                 damage = (int) (damage * (1 - targetUser.Blessing / 100d));
                 damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
-
-            if (attacker.MagicData.QueryMagic != null)
-                damage = Calculations.AdjustData(damage, attacker.MagicData.QueryMagic.Power);
-
+            
             if (attacker.QueryStatus(StatusSet.STIG) != null)
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIG).Power);
 
@@ -269,18 +272,17 @@ namespace Comet.Game.States
             return (damage, effect);
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPowerAsync(Role attacker, Role target)
+        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPowerAsync(Role attacker, Role target, int adjustAtk = 0)
         {
             InteractionEffect effect = InteractionEffect.None;
             int attack = attacker.MagicAttack;
 
-            int damage = attack;//(int) (attack * 0.75);
-
-            if (attacker.MagicData.QueryMagic != null)
-                damage = Calculations.AdjustData(damage, attacker.MagicData.QueryMagic.Power);
+            if (adjustAtk > 0)
+                attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
             int defense = target.MagicDefense;
-            damage -= defense;
+
+            int damage = attack - defense;
 
             damage = (int)(damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
 
@@ -320,7 +322,7 @@ namespace Comet.Game.States
             return (damage, effect);
         }
 
-        public async Task<bool> IsTargetDodgedAsync(Role attacker, Role target)
+        public static async Task<bool> IsTargetDodgedAsync(Role attacker, Role target)
         {
             const int MIN_HITRATE = 40;
             const int MIN_HITRATE_BOW_SHIELD = 25;

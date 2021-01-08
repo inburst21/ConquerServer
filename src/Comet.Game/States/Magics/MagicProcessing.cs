@@ -393,7 +393,7 @@ namespace Comet.Game.States.Magics
             }
 
             var byMagic = HitByMagic(magic);
-            var result = await m_pOwner.BattleSystem.CalcPowerAsync(byMagic, m_pOwner, targetRole);
+            var result = await m_pOwner.BattleSystem.CalcPowerAsync(byMagic, m_pOwner, targetRole, magic.Power);
             int power = result.Damage;
 
             Character user = m_pOwner as Character;
@@ -550,7 +550,7 @@ namespace Comet.Game.States.Magics
                     || m_pOwner.IsImmunity(target))
                     continue;
 
-                var (damage, effect) = await m_pOwner.BattleSystem.CalcPowerAsync(byMagic, m_pOwner, target);
+                var (damage, effect) = await m_pOwner.BattleSystem.CalcPowerAsync(byMagic, m_pOwner, target, magic.Power);
                 if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 150))
                 {
                     await user.SendEffectAsync("LuckyGuy", true);
@@ -629,7 +629,7 @@ namespace Comet.Game.States.Magics
                 if (magic.Ground != 0 && target.IsWing)
                     continue;
 
-                var atkResult = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target);
+                var atkResult = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target, magic.Power);
 
                 if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(5, 100))
                 {
@@ -913,7 +913,7 @@ namespace Comet.Game.States.Magics
                 if (magic.Ground != 0 && target.IsWing)
                     continue;
 
-                var result = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target);
+                var result = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target, magic.Power);
 
                 if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
                 {
@@ -986,7 +986,7 @@ namespace Comet.Game.States.Magics
                     case 0:
                         break;
                     default:
-                        var result = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target);
+                        var result = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target, magic.Power);
                         power = result.Damage;
                         effect = result.effect;
                         break;

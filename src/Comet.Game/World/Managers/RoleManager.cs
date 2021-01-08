@@ -128,9 +128,9 @@ namespace Comet.Game.World.Managers
                     await concurrent.SendAsync(Language.StrAnotherLoginOtherIp, MsgTalk.TalkChannel.Talk);
                 }
 
-                //concurrent.Client.Disconnect();
+                concurrent.Client.Disconnect();
                 user.Disconnect();
-                await KickOutAsync(user.Character.Identity, "logged twice");
+                //await KickOutAsync(user.Character.Identity, "logged twice");
                 return false;
             }
 
@@ -335,9 +335,9 @@ namespace Comet.Game.World.Managers
             return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext && x.Metempsychosis == currMete);
         }
 
-        public MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext)
+        public MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext, int metempsychosis)
         {
-            return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext && x.Operation == op);
+            return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext && x.RebirthTime == metempsychosis && x.Operation == op);
         }
 
         public List<T> QueryRoleByMap<T>(uint idMap) where T : Role

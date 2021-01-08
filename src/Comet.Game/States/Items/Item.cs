@@ -37,6 +37,8 @@ namespace Comet.Game.States.Items
 {
     public sealed class Item
     {
+        private const int SPECIAL_FLAG_SUSPICIOUS = 0x1;
+
         private readonly Character m_user;
         private DbItem m_dbItem;
         private DbItemtype m_dbItemtype;
@@ -1415,7 +1417,7 @@ namespace Comet.Game.States.Items
             return isNonSuchItem;
         }
 
-        public bool IsSuspicious() => false;
+        public bool IsSuspicious() => (m_dbItem.Specialflag & SPECIAL_FLAG_SUSPICIOUS) != 0;
 
         public bool IsMonopoly()
         {

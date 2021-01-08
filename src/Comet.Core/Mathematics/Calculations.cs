@@ -25,7 +25,7 @@ namespace Comet.Core.Mathematics
     {
         public const int ADJUST_PERCENT = 30000; // ADJUSTÊ±£¬>=30000 ±íÊ¾°Ù·ÖÊý
         public const int ADJUST_SET = -30000; // ADJUSTÊ±£¬<=-30000 ±íÊ¾µÈÓÚ(-1*num - 30000)
-        public const int ADJUST_FULL = -32768; // ADJUSTÊ±£¬== -32768 ±íÊ¾ÌîÂú
+        public const int ADJUST_FULL = short.MinValue; // ADJUSTÊ±£¬== -32768 ±íÊ¾ÌîÂú
         public const int DEFAULT_DEFENCE2 = 10000; // Êý¾Ý¿âÈ±Ê¡Öµ
 
         public static int ChangeAdjustRate(int nData, int divideBy)
@@ -44,7 +44,7 @@ namespace Comet.Core.Mathematics
             return AdjustDataEx(nData, nAdjust, nMaxData);
         }
 
-        public static int AdjustDataEx(int nData, int nAdjust, int nMaxData)
+        public static int AdjustDataEx(int nData, int nAdjust, int nMaxData = 0)
         {
             if (nAdjust >= ADJUST_PERCENT)
                 return MulDiv(nData, nAdjust - ADJUST_PERCENT, 100);
