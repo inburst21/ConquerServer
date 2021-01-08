@@ -391,7 +391,10 @@ namespace Comet.Game.States
             if (!target.IsAttackable(m_owner))
                 return false;
 
-            if (m_owner.Map?.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY) != false)
+            if (m_owner.Map.IsLineSkillMap())
+                return false;
+
+            if (m_owner.Map.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY) != false)
                 return false;
 
             return true;

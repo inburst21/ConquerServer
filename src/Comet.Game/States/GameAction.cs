@@ -44,7 +44,8 @@ namespace Comet.Game.States
 {
     public static class GameAction
     {
-        public static async Task<bool> ExecuteActionAsync(uint idAction, Character user, Role role, Item item, string input)
+        public static async Task<bool> ExecuteActionAsync(uint idAction, Character user, Role role, Item item,
+            string input)
         {
             const int _MAX_ACTION_I = 128;
             const int _DEADLOCK_CHECK_I = 5;
@@ -59,13 +60,15 @@ namespace Comet.Game.States
             {
                 if (actionCount++ > _MAX_ACTION_I)
                 {
-                    await Log.WriteLogAsync(LogLevel.Error, $"Error: too many game action, from: {idAction}, last action: {idNext}");
+                    await Log.WriteLogAsync(LogLevel.Error,
+                        $"Error: too many game action, from: {idAction}, last action: {idNext}");
                     return false;
                 }
 
                 if (idAction == idOld && deadLookCount++ >= _DEADLOCK_CHECK_I)
                 {
-                    await Log.WriteLogAsync(LogLevel.Deadloop, $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
+                    await Log.WriteLogAsync(LogLevel.Deadloop,
+                        $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
                     return false;
                 }
 
@@ -93,168 +96,468 @@ namespace Comet.Game.States
                 bool result = false;
                 switch ((TaskActionType) action.Type)
                 {
-                    case TaskActionType.ActionMenutext: result = await ExecuteActionMenuText(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMenulink: result = await ExecuteActionMenuLink(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMenuedit: result = await ExecuteActionMenuEdit(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMenupic: result = await ExecuteActionMenuPic(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMenucreate: result = await ExecuteActionMenuCreate(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionRand: result = await ExecuteActionMenuRand(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionRandaction: result = await ExecuteActionMenuRandAction(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionChktime: result = await ExecuteActionMenuChkTime(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionPostcmd: result = await ExecuteActionPostcmd(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionBrocastmsg: result = await ExecuteActionBrocastmsg(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMessagebox: result = await ExecuteActionMessagebox(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionExecutequery: result = await ExecuteActionExecutequery(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMenutext:
+                        result = await ExecuteActionMenuText(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMenulink:
+                        result = await ExecuteActionMenuLink(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMenuedit:
+                        result = await ExecuteActionMenuEdit(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMenupic:
+                        result = await ExecuteActionMenuPic(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMenucreate:
+                        result = await ExecuteActionMenuCreate(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionRand:
+                        result = await ExecuteActionMenuRand(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionRandaction:
+                        result = await ExecuteActionMenuRandAction(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionChktime:
+                        result = await ExecuteActionMenuChkTime(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionPostcmd:
+                        result = await ExecuteActionPostcmd(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionBrocastmsg:
+                        result = await ExecuteActionBrocastmsg(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMessagebox:
+                        result = await ExecuteActionMessagebox(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionExecutequery:
+                        result = await ExecuteActionExecutequery(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionNpcAttr: result = await ExecuteActionNpcAttr(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionNpcErase: result = await ExecuteActionNpcErase(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionNpcResetsynowner: result = await ExecuteActionNpcResetsynowner(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionNpcFindNextTable: result = await ExecuteActionNpcFindNextTable(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionNpcAttr:
+                        result = await ExecuteActionNpcAttr(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionNpcErase:
+                        result = await ExecuteActionNpcErase(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionNpcResetsynowner:
+                        result = await ExecuteActionNpcResetsynowner(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionNpcFindNextTable:
+                        result = await ExecuteActionNpcFindNextTable(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionMapMovenpc: result = await ExecuteActionMapMovenpc(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapMapuser: result = await ExecuteActionMapMapuser(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapBrocastmsg: result = await ExecuteActionMapBrocastmsg(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapDropitem: result = await ExecuteActionMapDropitem(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapSetstatus: result = await ExecuteActionMapSetstatus(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapAttrib: result = await ExecuteActionMapAttrib(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapRegionMonster: result = await ExecuteActionMapRegionMonster(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapRandDropItem: result = await ExecuteActionMapRandDropItem(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapChangeweather: result = await ExecuteActionMapChangeweather(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapChangelight: result = await ExecuteActionMapChangelight(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapMapeffect: result = await ExecuteActionMapMapeffect(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionMapFireworks: result = await ExecuteActionMapFireworks(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMapMovenpc:
+                        result = await ExecuteActionMapMovenpc(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapMapuser:
+                        result = await ExecuteActionMapMapuser(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapBrocastmsg:
+                        result = await ExecuteActionMapBrocastmsg(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapDropitem:
+                        result = await ExecuteActionMapDropitem(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapSetstatus:
+                        result = await ExecuteActionMapSetstatus(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapAttrib:
+                        result = await ExecuteActionMapAttrib(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapRegionMonster:
+                        result = await ExecuteActionMapRegionMonster(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapRandDropItem:
+                        result = await ExecuteActionMapRandDropItem(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapChangeweather:
+                        result = await ExecuteActionMapChangeweather(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapChangelight:
+                        result = await ExecuteActionMapChangelight(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapMapeffect:
+                        result = await ExecuteActionMapMapeffect(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionMapFireworks:
+                        result = await ExecuteActionMapFireworks(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionItemRequestlaynpc: result = await ExecuteActionItemRequestlaynpc(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemLaynpc: result = await ExecuteActionItemLaynpc(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemDelthis: result = await ExecuteActionItemDelthis(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemRequestlaynpc:
+                        result = await ExecuteActionItemRequestlaynpc(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemLaynpc:
+                        result = await ExecuteActionItemLaynpc(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemDelthis:
+                        result = await ExecuteActionItemDelthis(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionItemAdd: result = await ExecuteActionItemAdd(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemDel: result = await ExecuteActionItemDel(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemCheck: result = await ExecuteActionItemCheck(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemHole: result = await ExecuteActionItemHole(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemMultidel: result = await ExecuteActionItemMultidel(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemMultichk: result = await ExecuteActionItemMultichk(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemLeavespace: result = await ExecuteActionItemLeavespace(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemUpequipment: result = await ExecuteActionItemUpequipment(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemEquiptest: result = await ExecuteActionItemEquiptest(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemEquipexist: result = await ExecuteActionItemEquipexist(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemEquipcolor: result = await ExecuteActionItemEquipcolor(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemCheckrand: result = await ExecuteActionItemCheckrand(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemModify: result = await ExecuteActionItemModify(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemJarCreate: result = await ExecuteActionItemJarCreate(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionItemJarVerify: result = await ExecuteActionItemJarVerify(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionItemAdd:
+                        result = await ExecuteActionItemAdd(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemDel:
+                        result = await ExecuteActionItemDel(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemCheck:
+                        result = await ExecuteActionItemCheck(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemHole:
+                        result = await ExecuteActionItemHole(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemMultidel:
+                        result = await ExecuteActionItemMultidel(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemMultichk:
+                        result = await ExecuteActionItemMultichk(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemLeavespace:
+                        result = await ExecuteActionItemLeavespace(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemUpequipment:
+                        result = await ExecuteActionItemUpequipment(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemEquiptest:
+                        result = await ExecuteActionItemEquiptest(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemEquipexist:
+                        result = await ExecuteActionItemEquipexist(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemEquipcolor:
+                        result = await ExecuteActionItemEquipcolor(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemCheckrand:
+                        result = await ExecuteActionItemCheckrand(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemModify:
+                        result = await ExecuteActionItemModify(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemJarCreate:
+                        result = await ExecuteActionItemJarCreate(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionItemJarVerify:
+                        result = await ExecuteActionItemJarVerify(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionSynCreate: result = await ExecuteActionSynCreate(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynDestroy: result = await ExecuteActionSynDestroy(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynSetAssistant: result = await ExecuteActionSynSetAssistant(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynClearRank: result = await ExecuteActionSynClearRank(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynChangeLeader: result = await ExecuteActionSynChangeLeader(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynAntagonize: result = await ExecuteActionSynAntagonize(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynClearAntagonize: result = await ExecuteActionSynClearAntagonize(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynAlly: result = await ExecuteActionSynAlly(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynClearAlly: result = await ExecuteActionSynClearAlly(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSynAttr: result = await ExecuteActionSynAttr(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionSynCreate:
+                        result = await ExecuteActionSynCreate(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynDestroy:
+                        result = await ExecuteActionSynDestroy(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynSetAssistant:
+                        result = await ExecuteActionSynSetAssistant(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynClearRank:
+                        result = await ExecuteActionSynClearRank(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynChangeLeader:
+                        result = await ExecuteActionSynChangeLeader(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynAntagonize:
+                        result = await ExecuteActionSynAntagonize(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynClearAntagonize:
+                        result = await ExecuteActionSynClearAntagonize(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynAlly:
+                        result = await ExecuteActionSynAlly(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynClearAlly:
+                        result = await ExecuteActionSynClearAlly(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSynAttr:
+                        result = await ExecuteActionSynAttr(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionMstDropitem: result = await ExecuteActionMstDropitem(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionMstDropitem:
+                        result = await ExecuteActionMstDropitem(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionUserAttr: result = await ExecuteUserAttr(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserFull: result = await ExecuteUserFull(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserChgmap: result = await ExecuteUserChgMap(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserRecordpoint: result = await ExecuteUserRecordpoint(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserHair: result = await ExecuteUserHair(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserChgmaprecord: result = await ExecuteUserChgmaprecord(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserChglinkmap: result = await ExecuteActionUserChglinkmap(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTransform: result = await ExecuteUserTransform(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserIspure: result = await ExecuteActionUserIspure(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTalk: result = await ExecuteActionUserTalk(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserMagic: result = await ExecuteActionUserMagic(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserWeaponskill: result = await ExecuteActionUserWeaponSkill(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserLog: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserBonus: result = await ExecuteActionUserBonus(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserDivorce: result = await ExecuteActionUserDivorce(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserMarriage: result = await ExecuteActionUserMarriage(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserSex: result = await ExecuteActionUserSex(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserEffect: result = await ExecuteActionUserEffect(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskmask: result = await ExecuteActionUserTaskmask(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserMediaplay: result = await ExecuteActionUserMediaplay(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserCreatemap: result = await ExecuteActionUserCreatemap(action, param, user, role, item, input);break; 
-                    case TaskActionType.ActionUserEnterHome: result = await ExecuteActionUserEnterHome(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserEnterMateHome: result = await ExecuteActionUserEnterMateHome(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserUnlearnMagic: result = await ExecuteActionUserUnlearnMagic(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserRebirth: result = await ExecuteActionUserRebirth(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserWebpage: result = await ExecuteActionUserWebpage(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserBbs: result = await ExecuteActionUserBbs(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserUnlearnSkill: result = await ExecuteActionUserUnlearnSkill(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserDropMagic: result = await ExecuteActionUserDropMagic(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserOpenDialog: result = await ExecuteActionUserOpenDialog(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserPointAllot: result = await ExecuteActionUserFixAttr(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserExpMultiply: result = await ExecuteActionUserExpMultiply(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserWhPassword: result = await ExecuteActionUserWhPassword(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserSetWhPassword: result = await ExecuteActionUserSetWhPassword(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserOpeninterface: result = await ExecuteActionUserOpeninterface(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskManager: result = await ExecuteActionUserTaskManager(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskOpe: result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskLocaltime: result = await ExecuteActionUserTaskLocaltime(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTaskFind: result = await ExecuteActionUserTaskFind(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserVarCompare: result = await ExecuteActionUserVarCompare(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserVarDefine: result = await ExecuteActionUserVarDefine(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserVarCalc: result = await ExecuteActionUserVarCalc(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTestEquipment: result = await ExecuteActionUserTestEquipment(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserExecAction: result = await ExecuteActionUserExecAction(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserTestPos: result = true;  break; // gotta investigate
-                    case TaskActionType.ActionUserStcCompare: result = await ExecuteActionUserStcCompare(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserStcOpe: result = await ExecuteActionUserStcOpe(action, param, user, role, item, input); break;
-                    case (TaskActionType)1075: result = true;  break;
-                    case TaskActionType.ActionUserSelectToData: result = await ExecuteActionUserSelectToData(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserStcTimeCheck: result = await ExecuteActionUserStcTimeCheck(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserStcTimeOperation: result = await ExecuteActionUserStcTimeOpe(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserAttachStatus: result = await ExecuteActionUserAttachStatus(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserGodTime: result = await ExecuteActionUserGodTime(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserLogEvent: result = await ExecuteActionUserLog(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserExpballExp: result = await ExecuteActionUserExpballExp(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionSomethingRelatedToRebirth: result = true; break;
-                    case TaskActionType.ActionUserStatusCreate: result = await ExecuteActionUserStatusCreate(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionUserStatusCheck: result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionUserAttr:
+                        result = await ExecuteUserAttr(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserFull:
+                        result = await ExecuteUserFull(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserChgmap:
+                        result = await ExecuteUserChgMap(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserRecordpoint:
+                        result = await ExecuteUserRecordpoint(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserHair:
+                        result = await ExecuteUserHair(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserChgmaprecord:
+                        result = await ExecuteUserChgmaprecord(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserChglinkmap:
+                        result = await ExecuteActionUserChglinkmap(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTransform:
+                        result = await ExecuteUserTransform(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserIspure:
+                        result = await ExecuteActionUserIspure(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTalk:
+                        result = await ExecuteActionUserTalk(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserMagic:
+                        result = await ExecuteActionUserMagic(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserWeaponskill:
+                        result = await ExecuteActionUserWeaponSkill(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserLog:
+                        result = await ExecuteActionUserLog(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserBonus:
+                        result = await ExecuteActionUserBonus(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserDivorce:
+                        result = await ExecuteActionUserDivorce(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserMarriage:
+                        result = await ExecuteActionUserMarriage(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserSex:
+                        result = await ExecuteActionUserSex(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserEffect:
+                        result = await ExecuteActionUserEffect(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTaskmask:
+                        result = await ExecuteActionUserTaskmask(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserMediaplay:
+                        result = await ExecuteActionUserMediaplay(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserCreatemap:
+                        result = await ExecuteActionUserCreatemap(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserEnterHome:
+                        result = await ExecuteActionUserEnterHome(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserEnterMateHome:
+                        result = await ExecuteActionUserEnterMateHome(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserUnlearnMagic:
+                        result = await ExecuteActionUserUnlearnMagic(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserRebirth:
+                        result = await ExecuteActionUserRebirth(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserWebpage:
+                        result = await ExecuteActionUserWebpage(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserBbs:
+                        result = await ExecuteActionUserBbs(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserUnlearnSkill:
+                        result = await ExecuteActionUserUnlearnSkill(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserDropMagic:
+                        result = await ExecuteActionUserDropMagic(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserOpenDialog:
+                        result = await ExecuteActionUserOpenDialog(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserPointAllot:
+                        result = await ExecuteActionUserFixAttr(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserExpMultiply:
+                        result = await ExecuteActionUserExpMultiply(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserWhPassword:
+                        result = await ExecuteActionUserWhPassword(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserSetWhPassword:
+                        result = await ExecuteActionUserSetWhPassword(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserOpeninterface:
+                        result = await ExecuteActionUserOpeninterface(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTaskManager:
+                        result = await ExecuteActionUserTaskManager(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTaskOpe:
+                        result = await ExecuteActionUserTaskOpe(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTaskLocaltime:
+                        result = await ExecuteActionUserTaskLocaltime(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTaskFind:
+                        result = await ExecuteActionUserTaskFind(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserVarCompare:
+                        result = await ExecuteActionUserVarCompare(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserVarDefine:
+                        result = await ExecuteActionUserVarDefine(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserVarCalc:
+                        result = await ExecuteActionUserVarCalc(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTestEquipment:
+                        result = await ExecuteActionUserTestEquipment(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserExecAction:
+                        result = await ExecuteActionUserExecAction(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserTestPos:
+                        result = true;
+                        break; // gotta investigate
+                    case TaskActionType.ActionUserStcCompare:
+                        result = await ExecuteActionUserStcCompare(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserStcOpe:
+                        result = await ExecuteActionUserStcOpe(action, param, user, role, item, input);
+                        break;
+                    case (TaskActionType) 1075:
+                        result = true;
+                        break;
+                    case TaskActionType.ActionUserSelectToData:
+                        result = await ExecuteActionUserSelectToData(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserStcTimeCheck:
+                        result = await ExecuteActionUserStcTimeCheck(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserStcTimeOperation:
+                        result = await ExecuteActionUserStcTimeOpe(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserAttachStatus:
+                        result = await ExecuteActionUserAttachStatus(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserGodTime:
+                        result = await ExecuteActionUserGodTime(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserLogEvent:
+                        result = await ExecuteActionUserLog(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserExpballExp:
+                        result = await ExecuteActionUserExpballExp(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionSomethingRelatedToRebirth:
+                        result = true;
+                        break;
+                    case TaskActionType.ActionUserStatusCreate:
+                        result = await ExecuteActionUserStatusCreate(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionUserStatusCheck:
+                        result = await ExecuteActionUserStatusCheck(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionGeneralLottery: result = await ExecuteGeneralLottery(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionChgMapSquare: result = await ExecuteActionChgMapSquare(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionAchievements: result = true;  break;
+                    case TaskActionType.ActionTeamBroadcast:
+                        result = await ExecuteActionTeamBroadcast(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamAttr:
+                        result = await ExecuteActionTeamAttr(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamLeavespace:
+                        result = await ExecuteActionTeamLeavespace(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamItemAdd:
+                        result = await ExecuteActionTeamItemAdd(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamItemDel:
+                        result = await ExecuteActionTeamItemDel(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamItemCheck:
+                        result = await ExecuteActionTeamItemCheck(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamChgmap:
+                        result = await ExecuteActionTeamChgmap(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTeamChkIsleader:
+                        result = await ExecuteActionTeamChkIsleader(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionEventSetstatus: result = await ExecuteActionEventSetstatus(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventDelnpcGenid: result = await ExecuteActionEventDelnpcGenid(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventCompare: result = await ExecuteActionEventCompare(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventCompareUnsigned: result = await ExecuteActionEventCompareUnsigned(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventChangeweather: result = await ExecuteActionEventChangeweather(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventCreatepet: result = await ExecuteActionEventCreatepet(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventCreatenewNpc: result = await ExecuteActionEventCreatenewNpc(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventCountmonster: result = await ExecuteActionEventCountmonster(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventDeletemonster: result = await ExecuteActionEventDeletemonster(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventBbs: result = await ExecuteActionEventBbs(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventErase: result = await ExecuteActionEventErase(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventTeleport: result = await ExecuteActionEventTeleport(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventMassaction: result = await ExecuteActionEventMassaction(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionGeneralLottery:
+                        result = await ExecuteGeneralLottery(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionChgMapSquare:
+                        result = await ExecuteActionChgMapSquare(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionAchievements:
+                        result = true;
+                        break;
 
-                    case TaskActionType.ActionEventRegister: result = await ExecuteActionEventRegister(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionEventExit: result = await ExecuteActionEventExit(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventSetstatus:
+                        result = await ExecuteActionEventSetstatus(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventDelnpcGenid:
+                        result = await ExecuteActionEventDelnpcGenid(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventCompare:
+                        result = await ExecuteActionEventCompare(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventCompareUnsigned:
+                        result = await ExecuteActionEventCompareUnsigned(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventChangeweather:
+                        result = await ExecuteActionEventChangeweather(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventCreatepet:
+                        result = await ExecuteActionEventCreatepet(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventCreatenewNpc:
+                        result = await ExecuteActionEventCreatenewNpc(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventCountmonster:
+                        result = await ExecuteActionEventCountmonster(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventDeletemonster:
+                        result = await ExecuteActionEventDeletemonster(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventBbs:
+                        result = await ExecuteActionEventBbs(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventErase:
+                        result = await ExecuteActionEventErase(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventTeleport:
+                        result = await ExecuteActionEventTeleport(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventMassaction:
+                        result = await ExecuteActionEventMassaction(action, param, user, role, item, input);
+                        break;
 
-                    case TaskActionType.ActionTrapCreate: result = await ExecuteActionTrapCreate(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionTrapErase: result = await ExecuteActionTrapErase(action, param, user, role, item, input); break;
-                    case TaskActionType.ActionTrapCount: result = await ExecuteActionTrapCount(action, param, user, role, item, input); break;
+                    case TaskActionType.ActionEventRegister:
+                        result = await ExecuteActionEventRegister(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionEventExit:
+                        result = await ExecuteActionEventExit(action, param, user, role, item, input);
+                        break;
+
+                    case TaskActionType.ActionTrapCreate:
+                        result = await ExecuteActionTrapCreate(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTrapErase:
+                        result = await ExecuteActionTrapErase(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionTrapCount:
+                        result = await ExecuteActionTrapCount(action, param, user, role, item, input);
+                        break;
 
                     default:
-                        await Log.WriteLogAsync(LogLevel.Warning, $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
+                        await Log.WriteLogAsync(LogLevel.Warning,
+                            $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
                         break;
                 }
 
                 idOld = idAction;
                 idNext = result ? action.IdNext : action.IdNextfail;
             }
+
             return true;
         }
 
         #region Action
-        
-        private static async Task<bool> ExecuteActionMenuText(DbAction action, string param, Character user, Role role, Item item, string input)
+
+        private static async Task<bool> ExecuteActionMenuText(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
             {
@@ -271,7 +574,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMenuLink(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuLink(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
             {
@@ -297,7 +601,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMenuEdit(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuEdit(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -305,7 +610,8 @@ namespace Comet.Game.States
             string[] paramStrings = SplitParam(param, 3);
             if (paramStrings.Length < 3)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Invalid input param length for {action.Identity}, param: {param}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"Invalid input param length for {action.Identity}, param: {param}");
                 return false;
             }
 
@@ -320,7 +626,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMenuPic(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuPic(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -339,7 +646,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMenuCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuCreate(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -351,7 +659,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMenuRand(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuRand(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             string[] paramSplit = SplitParam(param, 2);
 
@@ -369,7 +678,8 @@ namespace Comet.Game.States
             return await Kernel.ChanceCalcAsync(chance);
         }
 
-        private static async Task<bool> ExecuteActionMenuRandAction(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuRandAction(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] paramSplit = SplitParam(param);
             if (paramSplit.Length == 0)
@@ -378,12 +688,13 @@ namespace Comet.Game.States
             return await ExecuteActionAsync(taskId, user, role, item, input);
         }
 
-        private static async Task<bool> ExecuteActionMenuChkTime(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMenuChkTime(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] paramSplit = SplitParam(param);
 
             DateTime actual = DateTime.Now;
-            var nCurWeekDay = (int)actual.DayOfWeek;
+            var nCurWeekDay = (int) actual.DayOfWeek;
             int nCurHour = actual.Hour;
             int nCurMinute = actual.Minute;
 
@@ -392,130 +703,137 @@ namespace Comet.Game.States
                 #region Complete date (yyyy-mm-dd hh:mm yyyy-mm-dd hh:mm)
 
                 case 0:
-                    {
-                        if (paramSplit.Length < 4)
-                            return false;
+                {
+                    if (paramSplit.Length < 4)
+                        return false;
 
-                        string[] time0 = paramSplit[1].Split(':');
-                        string[] date0 = paramSplit[0].Split('-');
-                        string[] time1 = paramSplit[3].Split(':');
-                        string[] date1 = paramSplit[2].Split('-');
+                    string[] time0 = paramSplit[1].Split(':');
+                    string[] date0 = paramSplit[0].Split('-');
+                    string[] time1 = paramSplit[3].Split(':');
+                    string[] date1 = paramSplit[2].Split('-');
 
-                        var dTime0 = new DateTime(int.Parse(date0[0]), int.Parse(date0[1]),int.Parse(date0[2]), int.Parse(time0[0]), int.Parse(time0[1]), 0);
-                        var dTime1 = new DateTime(int.Parse(date1[0]), int.Parse(date1[1]),int.Parse(date1[2]), int.Parse(time1[0]), int.Parse(time1[1]), 59);
+                    var dTime0 = new DateTime(int.Parse(date0[0]), int.Parse(date0[1]), int.Parse(date0[2]),
+                        int.Parse(time0[0]), int.Parse(time0[1]), 0);
+                    var dTime1 = new DateTime(int.Parse(date1[0]), int.Parse(date1[1]), int.Parse(date1[2]),
+                        int.Parse(time1[0]), int.Parse(time1[1]), 59);
 
-                        return dTime0 <= actual && dTime1 >= actual;
-                    }
+                    return dTime0 <= actual && dTime1 >= actual;
+                }
 
                 #endregion
 
                 #region On Year date (mm-dd hh:mm mm-dd hh:mm)
 
                 case 1:
-                    {
-                        if (paramSplit.Length < 4)
-                            return false;
+                {
+                    if (paramSplit.Length < 4)
+                        return false;
 
-                        string[] time0 = paramSplit[1].Split(':');
-                        string[] date0 = paramSplit[0].Split('-');
-                        string[] time1 = paramSplit[3].Split(':');
-                        string[] date1 = paramSplit[2].Split('-');
+                    string[] time0 = paramSplit[1].Split(':');
+                    string[] date0 = paramSplit[0].Split('-');
+                    string[] time1 = paramSplit[3].Split(':');
+                    string[] date1 = paramSplit[2].Split('-');
 
-                        var dTime0 = new DateTime(DateTime.Now.Year, int.Parse(date0[1]),int.Parse(date0[2]), int.Parse(time0[0]), int.Parse(time0[1]), 0);
-                        var dTime1 = new DateTime(DateTime.Now.Year, int.Parse(date1[1]), int.Parse(date1[2]), int.Parse(time1[0]), int.Parse(time1[1]), 59);
+                    var dTime0 = new DateTime(DateTime.Now.Year, int.Parse(date0[1]), int.Parse(date0[2]),
+                        int.Parse(time0[0]), int.Parse(time0[1]), 0);
+                    var dTime1 = new DateTime(DateTime.Now.Year, int.Parse(date1[1]), int.Parse(date1[2]),
+                        int.Parse(time1[0]), int.Parse(time1[1]), 59);
 
-                        return dTime0 <= actual && dTime1 >= actual;
-                    }
+                    return dTime0 <= actual && dTime1 >= actual;
+                }
 
                 #endregion
 
                 #region Day of the month (dd hh:mm dd hh:mm)
 
                 case 2:
-                    {
-                        if (paramSplit.Length < 4)
-                            return false;
+                {
+                    if (paramSplit.Length < 4)
+                        return false;
 
-                        string[] time0 = paramSplit[1].Split(':');
-                        string date0 = paramSplit[0];
-                        string[] time1 = paramSplit[3].Split(':');
-                        string date1 = paramSplit[2];
+                    string[] time0 = paramSplit[1].Split(':');
+                    string date0 = paramSplit[0];
+                    string[] time1 = paramSplit[3].Split(':');
+                    string date1 = paramSplit[2];
 
-                        var dTime0 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, int.Parse(date0), int.Parse(time0[0]), int.Parse(time0[1]), 0);
-                        var dTime1 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, int.Parse(date1), int.Parse(time1[0]), int.Parse(time1[1]), 59);
+                    var dTime0 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, int.Parse(date0),
+                        int.Parse(time0[0]), int.Parse(time0[1]), 0);
+                    var dTime1 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, int.Parse(date1),
+                        int.Parse(time1[0]), int.Parse(time1[1]), 59);
 
-                        return dTime0 <= actual && dTime1 >= actual;
-                    }
+                    return dTime0 <= actual && dTime1 >= actual;
+                }
 
                 #endregion
 
                 #region Day of the week (dw hh:mm dw hh:mm)
 
                 case 3:
-                    {
-                        if (paramSplit.Length < 4)
-                            return false;
+                {
+                    if (paramSplit.Length < 4)
+                        return false;
 
-                        string[] time0 = paramSplit[1].Split(':');
-                        string[] time1 = paramSplit[3].Split(':');
+                    string[] time0 = paramSplit[1].Split(':');
+                    string[] time1 = paramSplit[3].Split(':');
 
-                        int nDay0 = int.Parse(paramSplit[0]);
-                        int nDay1 = int.Parse(paramSplit[2]);
-                        int nHour0 = int.Parse(time0[0]);
-                        int nHour1 = int.Parse(time1[0]);
-                        int nMinute0 = int.Parse(time0[1]);
-                        int nMinute1 = int.Parse(time1[1]);
+                    int nDay0 = int.Parse(paramSplit[0]);
+                    int nDay1 = int.Parse(paramSplit[2]);
+                    int nHour0 = int.Parse(time0[0]);
+                    int nHour1 = int.Parse(time1[0]);
+                    int nMinute0 = int.Parse(time0[1]);
+                    int nMinute1 = int.Parse(time1[1]);
 
-                        int timeNow = nCurWeekDay * 24 * 60 + nCurHour * 60 + nCurMinute;
-                        int from = nDay0 * 24 * 60 + nHour0 * 60 + nMinute0;
-                        int to = nDay1 * 24 * 60 + nHour1 * 60 + nMinute1;
+                    int timeNow = nCurWeekDay * 24 * 60 + nCurHour * 60 + nCurMinute;
+                    int from = nDay0 * 24 * 60 + nHour0 * 60 + nMinute0;
+                    int to = nDay1 * 24 * 60 + nHour1 * 60 + nMinute1;
 
-                        return timeNow >= from && timeNow <= to;
-                    }
+                    return timeNow >= from && timeNow <= to;
+                }
 
                 #endregion
 
                 #region Hour check (hh:mm hh:mm)
 
                 case 4:
-                    {
-                        if (paramSplit.Length < 2)
-                            return false;
+                {
+                    if (paramSplit.Length < 2)
+                        return false;
 
-                        string[] time0 = paramSplit[0].Split(':');
-                        string[] time1 = paramSplit[1].Split(':');
+                    string[] time0 = paramSplit[0].Split(':');
+                    string[] time1 = paramSplit[1].Split(':');
 
-                        int nHour0 = int.Parse(time0[0]);
-                        int nHour1 = int.Parse(time1[0]);
-                        int nMinute0 = int.Parse(time0[1]);
-                        int nMinute1 = int.Parse(time1[1]);
+                    int nHour0 = int.Parse(time0[0]);
+                    int nHour1 = int.Parse(time1[0]);
+                    int nMinute0 = int.Parse(time0[1]);
+                    int nMinute1 = int.Parse(time1[1]);
 
-                        int timeNow = nCurHour * 60 + nCurMinute;
-                        int from = nHour0 * 60 + nMinute0;
-                        int to = nHour1 * 60 + nMinute1;
+                    int timeNow = nCurHour * 60 + nCurMinute;
+                    int from = nHour0 * 60 + nMinute0;
+                    int to = nHour1 * 60 + nMinute1;
 
-                        return timeNow >= from && timeNow <= to;
-                    }
+                    return timeNow >= from && timeNow <= to;
+                }
 
                 #endregion
 
                 #region Minute check (mm mm)
 
                 case 5:
-                    {
-                        if (paramSplit.Length < 2)
-                            return false;
+                {
+                    if (paramSplit.Length < 2)
+                        return false;
 
-                        return nCurMinute >= int.Parse(paramSplit[0]) && nCurMinute <= int.Parse(paramSplit[1]);
-                    }
+                    return nCurMinute >= int.Parse(paramSplit[0]) && nCurMinute <= int.Parse(paramSplit[1]);
+                }
 
-                    #endregion
+                #endregion
             }
 
             return false;
         }
 
-        private static async Task<bool> ExecuteActionPostcmd(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionPostcmd(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -531,8 +849,9 @@ namespace Comet.Game.States
 
             return true;
         }
-        
-        private static async Task<bool> ExecuteActionBrocastmsg(DbAction action, string param, Character user, Role role, Item item, string input)
+
+        private static async Task<bool> ExecuteActionBrocastmsg(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             await Kernel.RoleManager.BroadcastMsgAsync(param, (MsgTalk.TalkChannel) action.Data, Color.White);
             return true;
@@ -549,10 +868,12 @@ namespace Comet.Game.States
 
                 await user.SendAsync(new MsgTalk(0, channel, param));
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionExecutequery(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionExecutequery(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             try
             {
@@ -561,7 +882,8 @@ namespace Comet.Game.States
                 {
                     if (!param.Contains("WHERE") || !param.Contains("LIMIT"))
                     {
-                        await Log.WriteLogAsync("database", LogLevel.Warning, $"ExecuteActionExecutequery {action.Identity} doesn't have WHERE or LIMIT clause [{param}]");
+                        await Log.WriteLogAsync("database", LogLevel.Warning,
+                            $"ExecuteActionExecutequery {action.Identity} doesn't have WHERE or LIMIT clause [{param}]");
                         return false;
                     }
                 }
@@ -573,6 +895,7 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
+
             return true;
         }
 
@@ -580,12 +903,14 @@ namespace Comet.Game.States
 
         #region Npc
 
-        private static async Task<bool> ExecuteActionNpcAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionNpcAttr(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             string[] splitParams = SplitParam(param, 4);
             if (splitParams.Length < 3)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionNpcAttr invalid param num {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionNpcAttr invalid param num {param}, {action.Identity}");
                 return false;
             }
 
@@ -601,7 +926,8 @@ namespace Comet.Game.States
             BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
             if (npc == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionNpcAttr invalid NPC id {idNpc} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionNpcAttr invalid NPC id {idNpc} for action {action.Identity}");
                 return false;
             }
 
@@ -625,7 +951,7 @@ namespace Comet.Game.States
             {
                 if (opt == "=")
                 {
-                    return await npc.SetAttributesAsync(ClientUpdateType.Mesh, (ulong)data);
+                    return await npc.SetAttributesAsync(ClientUpdateType.Mesh, (ulong) data);
                 }
 
                 cmp = (int) npc.Mesh;
@@ -649,7 +975,7 @@ namespace Comet.Game.States
             {
                 if (opt == "=")
                 {
-                    return await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, (ulong)data);
+                    return await npc.SetAttributesAsync(ClientUpdateType.MaxHitpoints, (ulong) data);
                 }
 
                 cmp = (int) npc.MaxLife;
@@ -700,7 +1026,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionNpcErase(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionNpcErase(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -720,10 +1047,12 @@ namespace Comet.Game.States
             {
                 await del.DelNpcAsync();
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionNpcResetsynowner(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionNpcResetsynowner(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (!(role is DynamicNpc npc))
                 return false;
@@ -738,7 +1067,8 @@ namespace Comet.Game.States
                 Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) score.Identity);
                 if (npc.IsSynFlag() && syn != null)
                 {
-                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrWarWon, syn.Name), MsgTalk.TalkChannel.Center);
+                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrWarWon, syn.Name),
+                        MsgTalk.TalkChannel.Center);
                     npc.Map.OwnerIdentity = syn.Identity;
                 }
                 else if (npc.IsCtfFlag())
@@ -752,8 +1082,9 @@ namespace Comet.Game.States
                 {
                     await npc.SetOwnerAsync(syn.Identity, true);
                 }
+
                 npc.ClearScores();
-                
+
                 if (npc.Map.IsDynamicMap())
                     await npc.Map.SaveAsync();
 
@@ -784,7 +1115,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionNpcFindNextTable(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionNpcFindNextTable(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 4)
@@ -810,7 +1142,8 @@ namespace Comet.Game.States
 
         #region Map
 
-        private static async Task<bool> ExecuteActionMapMovenpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapMovenpc(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 3)
@@ -829,7 +1162,8 @@ namespace Comet.Game.States
             return await npc.ChangePosAsync(idMap, nPosX, nPosY);
         }
 
-        private static async Task<bool> ExecuteActionMapMapuser(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapMapuser(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 3) return false;
@@ -846,7 +1180,8 @@ namespace Comet.Game.States
             }
             else
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionMapMapuser invalid cmd {splitParam[0]} for action {action.Identity}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionMapMapuser invalid cmd {splitParam[0]} for action {action.Identity}, {param}");
                 return false;
             }
 
@@ -863,7 +1198,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionMapBrocastmsg(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapBrocastmsg(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             GameMap map = Kernel.MapManager.GetMap(action.Data);
             if (map == null)
@@ -873,7 +1209,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapDropitem(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapDropitem(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 4)
@@ -897,10 +1234,12 @@ namespace Comet.Game.States
             {
                 return false;
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapSetstatus(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapSetstatus(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 3)
@@ -918,7 +1257,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapAttrib(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapAttrib(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 3) return false;
@@ -957,7 +1297,7 @@ namespace Comet.Game.States
                         await map.SetStatusAsync((ulong) data, true);
                         return true;
                     case "reset":
-                        await map.SetStatusAsync((ulong)data, false);
+                        await map.SetStatusAsync((ulong) data, false);
                         return true;
                 }
             }
@@ -989,7 +1329,7 @@ namespace Comet.Game.States
                     return true;
                 }
 
-                x = (int)map.PortalX;
+                x = (int) map.PortalX;
             }
             else if (szField.Equals("portal0_y", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -1000,7 +1340,7 @@ namespace Comet.Game.States
                     return true;
                 }
 
-                x = (int)map.PortalY;
+                x = (int) map.PortalY;
             }
             else if (szField.Equals("res_lev", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -1015,7 +1355,8 @@ namespace Comet.Game.States
             }
             else
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionMapAttrib invalid field {szField} for action {action.Identity}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionMapAttrib invalid field {szField} for action {action.Identity}, {param}");
                 return false;
             }
 
@@ -1031,12 +1372,14 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionMapRegionMonster(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapRegionMonster(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 8)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ERROR: Invalid param amount on actionid: [{action.Identity}]");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ERROR: Invalid param amount on actionid: [{action.Identity}]");
                 return false;
             }
 
@@ -1066,7 +1409,8 @@ namespace Comet.Game.States
                 return false;
 
             int count = Kernel.RoleManager.QueryRoleByMap<Monster>(idMap).Count(x =>
-                ((idType != 0 && x.Type == idType) || idType == 0) && x.MapX >= nRegionX && x.MapX < nRegionX - nRegionCX
+                ((idType != 0 && x.Type == idType) || idType == 0) && x.MapX >= nRegionX &&
+                x.MapX < nRegionX - nRegionCX
                 && x.MapY >= nRegionY && x.MapY < nRegionY - nRegionCY);
 
             switch (szOpt)
@@ -1081,14 +1425,16 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionMapRandDropItem(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapRandDropItem(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             // Example: 728006 3030 186 187 304 307 250 3600
             //          ItemID MAP  X   Y   CX  CY  AMOUNT DURATION
             string[] splitParam = SplitParam(param, 8);
             if (splitParam.Length != 8)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionMapRandDropItem: ItemID MAP  X   Y   CX  CY  AMOUNT DURATION :: {param} ({action.Identity})");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionMapRandDropItem: ItemID MAP  X   Y   CX  CY  AMOUNT DURATION :: {param} ({action.Identity})");
                 return false;
             }
 
@@ -1151,10 +1497,12 @@ namespace Comet.Game.States
                 mapItem.SetAliveTimeout(duration);
                 await mapItem.EnterMapAsync();
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapChangeweather(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapChangeweather(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 5) return false;
@@ -1177,12 +1525,14 @@ namespace Comet.Game.States
             if (map == null)
                 return false;
 
-            await map.Weather.SetNewWeatherAsync((Weather.WeatherType) nType, nIntensity, nDir, (int) dwColor, (int) dwKeepSecs, 0);
+            await map.Weather.SetNewWeatherAsync((Weather.WeatherType) nType, nIntensity, nDir, (int) dwColor,
+                (int) dwKeepSecs, 0);
             await map.Weather.SendWeatherAsync();
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapChangelight(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapChangelight(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 2) return false;
@@ -1215,7 +1565,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapMapeffect(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapMapeffect(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParam = SplitParam(param);
 
@@ -1243,7 +1594,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionMapFireworks(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMapFireworks(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user != null)
             {
@@ -1253,6 +1605,7 @@ namespace Comet.Game.States
                     Action = StringAction.Fireworks
                 }, true);
             }
+
             return true;
         }
 
@@ -1260,7 +1613,8 @@ namespace Comet.Game.States
 
         #region Lay Item
 
-        private static async Task<bool> ExecuteActionItemRequestlaynpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemRequestlaynpc(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -1289,7 +1643,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionItemLaynpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemLaynpc(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (string.IsNullOrEmpty(input))
                 return false;
@@ -1305,7 +1660,8 @@ namespace Comet.Game.States
                 || !ushort.TryParse(splitParam[1], out var mapY)
                 || !uint.TryParse(splitParam[2], out var lookface))
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Invalid input params for action [{action.Identity}]1: {input}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"Invalid input params for action [{action.Identity}]1: {input}");
                 return false;
             }
 
@@ -1398,7 +1754,7 @@ namespace Comet.Game.States
                 idTask4 = frame;
                 idTask5 = pose;
                 idTask6 = user.Mesh;
-                idTask7 = ((uint)user.SyndicateRank << 16) + user.Hairstyle;
+                idTask7 = ((uint) user.SyndicateRank << 16) + user.Hairstyle;
             }
 
             if (nRegionType > 0 && !user.Map.QueryRegion((RegionTypes) nRegionType, mapX, mapY))
@@ -1421,7 +1777,8 @@ namespace Comet.Game.States
                     break;
             }
 
-            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0) ?? Kernel.RoleManager.QueryRoleByType<DynamicNpc>().FirstOrDefault(x => x.LinkId == idLink);
+            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0) ?? Kernel.RoleManager
+                .QueryRoleByType<DynamicNpc>().FirstOrDefault(x => x.LinkId == idLink);
             if (npc == null)
             {
                 npc = new DynamicNpc(new DbDynanpc
@@ -1465,7 +1822,7 @@ namespace Comet.Game.States
             {
                 npc.SetType(usType);
                 // npc.OwnerIdentity = idOwner;
-                npc.OwnerType = (byte)dwOwnerType;
+                npc.OwnerType = (byte) dwOwnerType;
                 await npc.SetOwnerAsync(idOwner);
                 npc.Name = szName;
                 await npc.SetAttributesAsync(ClientUpdateType.Mesh, lookface);
@@ -1486,7 +1843,7 @@ namespace Comet.Game.States
                 npc.MapX = mapX;
                 npc.MapY = mapY;
             }
-        
+
             await npc.ChangePosAsync(user.MapIdentity, mapX, mapY);
             await npc.SaveAsync();
 
@@ -1495,7 +1852,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionItemDelthis(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemDelthis(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             user.InteractingItem = 0;
             if (item != null)
@@ -1511,7 +1869,8 @@ namespace Comet.Game.States
 
         #region Item
 
-        private static async Task<bool> ExecuteActionItemAdd(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemAdd(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1522,7 +1881,8 @@ namespace Comet.Game.States
             DbItemtype itemtype = Kernel.ItemManager.GetItemtype(action.Data);
             if (itemtype == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid itemtype: {action.Identity}, {action.Type}, {action.Data}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Invalid itemtype: {action.Identity}, {action.Type}, {action.Data}");
                 return false;
             }
 
@@ -1543,7 +1903,7 @@ namespace Comet.Game.States
                         break;
                     case 1: // amount limit
                         if (value > 0)
-                            newItem.AmountLimit = (ushort)Math.Min(value, ushort.MaxValue);
+                            newItem.AmountLimit = (ushort) Math.Min(value, ushort.MaxValue);
                         break;
                     case 2: // socket progress
                         newItem.Data = (uint) Math.Min(value, ushort.MaxValue);
@@ -1553,12 +1913,12 @@ namespace Comet.Game.States
                             newItem.Gem1 = (byte) value;
                         break;
                     case 4: // gem 2
-                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte)value))
-                            newItem.Gem2 = (byte)value;
+                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte) value))
+                            newItem.Gem2 = (byte) value;
                         break;
                     case 5: // effect magic 1
-                        if (Enum.IsDefined(typeof(Item.ItemEffect), (ushort)value))
-                            newItem.Magic1 = (byte)value;
+                        if (Enum.IsDefined(typeof(Item.ItemEffect), (ushort) value))
+                            newItem.Magic1 = (byte) value;
                         break;
                     case 6: // magic 2
                         newItem.Magic2 = (byte) value;
@@ -1570,21 +1930,21 @@ namespace Comet.Game.States
                         newItem.ReduceDmg = (byte) Math.Min(byte.MaxValue, value);
                         break;
                     case 9: // add life
-                        newItem.AddLife = (byte)Math.Min(byte.MaxValue, value);
+                        newItem.AddLife = (byte) Math.Min(byte.MaxValue, value);
                         break;
                     case 10: // plunder
                         newItem.Plunder = null;
                         break;
                     case 11: // color
-                        if (Enum.IsDefined(typeof(Item.ItemColor), (byte)value))
-                            newItem.Color = (byte)value;
+                        if (Enum.IsDefined(typeof(Item.ItemColor), (byte) value))
+                            newItem.Color = (byte) value;
                         break;
                     case 12: // monopoly
                         newItem.Monopoly = (byte) Math.Min(byte.MaxValue, Math.Max(0, value));
                         break;
                 }
             }
-            
+
             item = new Item(user);
             if (!await item.CreateAsync(newItem))
                 return false;
@@ -1592,7 +1952,8 @@ namespace Comet.Game.States
             return await user.UserPackage.AddItemAsync(item);
         }
 
-        private static async Task<bool> ExecuteActionItemDel(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemDel(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1607,10 +1968,12 @@ namespace Comet.Game.States
                     return false;
                 return await user.UserPackage.SpendItemAsync(item);
             }
+
             return false;
         }
 
-        private static async Task<bool> ExecuteActionItemCheck(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemCheck(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1622,10 +1985,12 @@ namespace Comet.Game.States
             {
                 return user.UserPackage[param] != null;
             }
+
             return false;
         }
 
-        private static async Task<bool> ExecuteActionItemHole(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemHole(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1633,14 +1998,16 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param, 2);
             if (param.Length < 2)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionItemHole invalid [{param}] param split length for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"ExecuteActionItemHole invalid [{param}] param split length for action {action.Identity}");
                 return false;
             }
 
             string opt = splitParam[0];
             if (!int.TryParse(splitParam[1], out var value))
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionItemHole invalid value number [{param}] for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"ExecuteActionItemHole invalid value number [{param}] for action {action.Identity}");
                 return false;
             }
 
@@ -1683,7 +2050,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionItemMultidel(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemMultidel(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1724,10 +2092,12 @@ namespace Comet.Game.States
 
             if (splitParams.Length < 4)
                 return await user.UserPackage.MultiSpendItemAsync((uint) first, (uint) last, amount, true);
-            return await user.UserPackage.MultiSpendItemAsync((uint)first, (uint)last, amount, int.Parse(splitParams[3]) != 0);
+            return await user.UserPackage.MultiSpendItemAsync((uint) first, (uint) last, amount,
+                int.Parse(splitParams[3]) != 0);
         }
 
-        private static async Task<bool> ExecuteActionItemMultichk(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemMultichk(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1767,16 +2137,18 @@ namespace Comet.Game.States
             amount = byte.Parse(splitParams[2]);
 
             if (splitParams.Length < 4)
-                return user.UserPackage.MultiCheckItem((uint)first, (uint)last, amount, true);
-            return user.UserPackage.MultiCheckItem((uint)first, (uint)last, amount, int.Parse(splitParams[3]) != 0);
+                return user.UserPackage.MultiCheckItem((uint) first, (uint) last, amount, true);
+            return user.UserPackage.MultiCheckItem((uint) first, (uint) last, amount, int.Parse(splitParams[3]) != 0);
         }
 
-        private static async Task<bool> ExecuteActionItemLeavespace(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemLeavespace(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             return user?.UserPackage != null && user.UserPackage.IsPackSpare((int) action.Data);
         }
 
-        private static async Task<bool> ExecuteActionItemUpequipment(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemUpequipment(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1788,7 +2160,7 @@ namespace Comet.Game.States
             string szCmd = pszParam[0];
             byte nPos = byte.Parse(pszParam[1]);
 
-            Item pItem = user.UserPackage[(Item.ItemPosition)nPos];
+            Item pItem = user.UserPackage[(Item.ItemPosition) nPos];
             if (pItem == null)
                 return false;
 
@@ -1801,8 +2173,8 @@ namespace Comet.Game.States
 
                 case "recover_dur":
                 {
-                    var szPrice = (uint)pItem.GetRecoverDurCost();
-                    return await user.SpendMoneyAsync((int)szPrice) && await pItem.RecoverDurabilityAsync();
+                    var szPrice = (uint) pItem.GetRecoverDurCost();
+                    return await user.SpendMoneyAsync((int) szPrice) && await pItem.RecoverDurabilityAsync();
                 }
 
                 case "up_levultra":
@@ -1822,7 +2194,8 @@ namespace Comet.Game.States
             }
         }
 
-        private static async Task<bool> ExecuteActionItemEquiptest(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemEquiptest(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1837,7 +2210,7 @@ namespace Comet.Game.States
             string szOpt = pszParam[2];
             int nData = int.Parse(pszParam[3]);
 
-            Item pItem = user.UserPackage[(Item.ItemPosition)nPosition];
+            Item pItem = user.UserPackage[(Item.ItemPosition) nPosition];
             if (pItem == null)
                 return false;
 
@@ -1878,18 +2251,20 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionItemEquipexist(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemEquipexist(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
 
             string[] Params = SplitParam(param);
-            if (param.Length >= 1 && user.UserPackage[(Item.ItemPosition)action.Data] != null)
-                return user.UserPackage[(Item.ItemPosition)action.Data].GetItemSubType() == ushort.Parse(Params[0]);
-            return user.UserPackage[(Item.ItemPosition)action.Data] != null;
+            if (param.Length >= 1 && user.UserPackage[(Item.ItemPosition) action.Data] != null)
+                return user.UserPackage[(Item.ItemPosition) action.Data].GetItemSubType() == ushort.Parse(Params[0]);
+            return user.UserPackage[(Item.ItemPosition) action.Data] != null;
         }
 
-        private static async Task<bool> ExecuteActionItemEquipcolor(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemEquipcolor(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1901,7 +2276,7 @@ namespace Comet.Game.States
             if (!Enum.IsDefined(typeof(Item.ItemColor), byte.Parse(pszParam[1])))
                 return false;
 
-            Item pItem = user.UserPackage[(Item.ItemPosition)byte.Parse(pszParam[0])];
+            Item pItem = user.UserPackage[(Item.ItemPosition) byte.Parse(pszParam[0])];
             if (pItem == null)
                 return false;
 
@@ -1911,13 +2286,14 @@ namespace Comet.Game.States
                 && (pos != Item.ItemPosition.LeftHand || pItem.GetItemSort() != Item.ItemSort.ItemsortWeaponShield))
                 return false;
 
-            pItem.Color = (Item.ItemColor)byte.Parse(pszParam[1]);
+            pItem.Color = (Item.ItemColor) byte.Parse(pszParam[1]);
             await pItem.SaveAsync();
             await user.SendAsync(new MsgItemInfo(pItem, MsgItemInfo.ItemMode.Update));
             return true;
         }
 
-        private static async Task<bool> ExecuteActionItemCheckrand(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemCheckrand(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -1961,12 +2337,12 @@ namespace Comet.Game.States
             byte pos = 0;
 
             if (lPos.Count > 0)
-                pos = (byte)lPos[await Kernel.NextAsync(lPos.Count) % lPos.Count];
+                pos = (byte) lPos[await Kernel.NextAsync(lPos.Count) % lPos.Count];
 
             if (pos == 0)
                 return false;
 
-            Item pItem = user.UserPackage[(Item.ItemPosition)pos];
+            Item pItem = user.UserPackage[(Item.ItemPosition) pos];
             if (pItem == null)
                 return false;
 
@@ -1986,7 +2362,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionItemModify(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemModify(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -2003,7 +2380,8 @@ namespace Comet.Game.States
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 5)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"ACTION: incorrect param, pos type action value update, for action (id:{action.Identity})");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"ACTION: incorrect param, pos type action value update, for action (id:{action.Identity})");
                 return false;
             }
 
@@ -2013,7 +2391,7 @@ namespace Comet.Game.States
             long value = int.Parse(pszParam[3]);
             bool update = int.Parse(pszParam[4]) > 0;
 
-            Item pItem = user.UserPackage[(Item.ItemPosition)pos];
+            Item pItem = user.UserPackage[(Item.ItemPosition) pos];
             if (pItem == null)
             {
                 await user.SendAsync(Language.StrUnableToUseItem);
@@ -2023,200 +2401,202 @@ namespace Comet.Game.States
             switch (type)
             {
                 case 1: // itemtype
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
+                        DbItemtype itemt = Kernel.ItemManager.GetItemtype((uint) value);
+                        if (itemt == null)
                         {
-                            DbItemtype itemt = Kernel.ItemManager.GetItemtype((uint) value);
-                            if (itemt == null)
-                            {
-                                // new item doesnt exist
-                                await Log.WriteLogAsync(LogLevel.Error, $"ACTION: itemtype not found (type:{value}, action:{action.Identity})");
-                                return false;
-                            }
-
-                            if (pItem.Type / 1000 != itemt.Type / 1000)
-                            {
-                                await Log.WriteLogAsync(LogLevel.Error, $"ACTION: cant change to different type (type:{pItem.Type}, new:{value}, action:{action.Identity})");
-                                return false;
-                            }
-
-                            if (!await pItem.ChangeTypeAsync(itemt.Type))
-                                return false;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.Type == value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.Type < value;
-                        }
-                        else
-                        {
+                            // new item doesnt exist
+                            await Log.WriteLogAsync(LogLevel.Error,
+                                $"ACTION: itemtype not found (type:{value}, action:{action.Identity})");
                             return false;
                         }
 
-                        break;
+                        if (pItem.Type / 1000 != itemt.Type / 1000)
+                        {
+                            await Log.WriteLogAsync(LogLevel.Error,
+                                $"ACTION: cant change to different type (type:{pItem.Type}, new:{value}, action:{action.Identity})");
+                            return false;
+                        }
+
+                        if (!await pItem.ChangeTypeAsync(itemt.Type))
+                            return false;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.Type == value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.Type < value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 case 2: // owner id
                 case 3: // player id
                     return false;
                 case 4: // dura
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            if (value > ushort.MaxValue)
-                                value = ushort.MaxValue;
-                            else if (value < 0)
-                                value = 0;
+                        if (value > ushort.MaxValue)
+                            value = ushort.MaxValue;
+                        else if (value < 0)
+                            value = 0;
 
-                            pItem.Durability = (ushort)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.Durability == value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.Durability < value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-
-                        break;
+                        pItem.Durability = (ushort) value;
                     }
-
-                case 5: // max dura
+                    else if (opt == "==")
                     {
-                        if (opt == "set")
-                        {
-                            if (value > ushort.MaxValue)
-                                value = ushort.MaxValue;
-                            else if (value < 0)
-                                value = 0;
-
-                            if (value < pItem.Durability)
-                                pItem.Durability = (ushort)value;
-
-                            pItem.MaximumDurability = (ushort)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.MaximumDurability == value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.MaximumDurability < value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-
-                        break;
+                        return pItem.Durability == value;
                     }
-
-                case 6:
-                case 7: // position
+                    else if (opt == "<")
+                    {
+                        return pItem.Durability < value;
+                    }
+                    else
                     {
                         return false;
                     }
 
-                case 8: // gem1
-                    {
-                        if (opt == "set")
-                        {
-                            pItem.SocketOne = (Item.SocketGem)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.SocketOne == (Item.SocketGem)value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.SocketOne < (Item.SocketGem)value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
+                    break;
+                }
 
-                        break;
+                case 5: // max dura
+                {
+                    if (opt == "set")
+                    {
+                        if (value > ushort.MaxValue)
+                            value = ushort.MaxValue;
+                        else if (value < 0)
+                            value = 0;
+
+                        if (value < pItem.Durability)
+                            pItem.Durability = (ushort) value;
+
+                        pItem.MaximumDurability = (ushort) value;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.MaximumDurability == value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.MaximumDurability < value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
+
+                case 6:
+                case 7: // position
+                {
+                    return false;
+                }
+
+                case 8: // gem1
+                {
+                    if (opt == "set")
+                    {
+                        pItem.SocketOne = (Item.SocketGem) value;
+                    }
+                    else if (opt == "==")
+                    {
+                        return pItem.SocketOne == (Item.SocketGem) value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.SocketOne < (Item.SocketGem) value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 case 9: // gem2
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            pItem.SocketTwo = (Item.SocketGem)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.SocketTwo == (Item.SocketGem)value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.SocketTwo < (Item.SocketGem)value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-
-                        break;
+                        pItem.SocketTwo = (Item.SocketGem) value;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.SocketTwo == (Item.SocketGem) value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.SocketTwo < (Item.SocketGem) value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 case 10: // magic1
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            if (value < 200 || value > 203)
-                                return false;
-                            pItem.Effect = (Item.ItemEffect)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.Effect == (Item.ItemEffect)value;
-                        }
-                        else
-                        {
+                        if (value < 200 || value > 203)
                             return false;
-                        }
-
-                        break;
+                        pItem.Effect = (Item.ItemEffect) value;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.Effect == (Item.ItemEffect) value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 case 11: // magic2
                     return false;
                 case 12: // magic3
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            if (value < 0)
-                                value = 0;
-                            else if (value > 12)
-                                value = 12;
+                        if (value < 0)
+                            value = 0;
+                        else if (value > 12)
+                            value = 12;
 
-                            pItem.ChangeAddition((byte)value);
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.Plus == value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.Plus < value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-
-                        break;
+                        pItem.ChangeAddition((byte) value);
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.Plus == value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.Plus < value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 //case 13: // data
                 //    {
@@ -2246,58 +2626,58 @@ namespace Comet.Game.States
                 //    }
 
                 case 14: // reduce damage
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            if (value < 0)
-                                value = 0;
-                            else if (value > 7)
-                                value = 7;
+                        if (value < 0)
+                            value = 0;
+                        else if (value > 7)
+                            value = 7;
 
-                            pItem.ReduceDamage = (byte)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.ReduceDamage == value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.ReduceDamage < value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-
-                        break;
+                        pItem.ReduceDamage = (byte) value;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.ReduceDamage == value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.ReduceDamage < value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 case 15: // add life
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            if (value < 0)
-                                value = 0;
-                            else if (value > 255)
-                                value = 255;
+                        if (value < 0)
+                            value = 0;
+                        else if (value > 255)
+                            value = 255;
 
-                            pItem.Enchantment = (byte)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.Enchantment == value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.Enchantment < value;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-
-                        break;
+                        pItem.Enchantment = (byte) value;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.Enchantment == value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.Enchantment < value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 case 16: // anti monster
                 case 17: // chk sum
@@ -2305,29 +2685,29 @@ namespace Comet.Game.States
                 case 19: // special flag
                     return false;
                 case 20: // color
+                {
+                    if (opt == "set")
                     {
-                        if (opt == "set")
-                        {
-                            if (!Enum.IsDefined(typeof(Item.ItemColor), value))
-                                return false;
-
-                            pItem.Color = (Item.ItemColor)value;
-                        }
-                        else if (opt == "==")
-                        {
-                            return pItem.Color == (Item.ItemColor)value;
-                        }
-                        else if (opt == "<")
-                        {
-                            return pItem.Color < (Item.ItemColor)value;
-                        }
-                        else
-                        {
+                        if (!Enum.IsDefined(typeof(Item.ItemColor), value))
                             return false;
-                        }
 
-                        break;
+                        pItem.Color = (Item.ItemColor) value;
                     }
+                    else if (opt == "==")
+                    {
+                        return pItem.Color == (Item.ItemColor) value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.Color < (Item.ItemColor) value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
 
                 //case 21: // add lev exp
                 //    {
@@ -2365,7 +2745,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionItemJarCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemJarCreate(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
@@ -2414,43 +2795,43 @@ namespace Comet.Game.States
                 switch (i)
                 {
                     case 0:
-                        newItem.Amount = (ushort)value;
+                        newItem.Amount = (ushort) value;
                         break;
                     case 1:
-                        newItem.AmountLimit = (ushort) value;//(ushort) (1 << ((ushort) value));
+                        newItem.AmountLimit = (ushort) value; //(ushort) (1 << ((ushort) value));
                         break;
                     case 2:
                         // Socket Progress
                         newItem.Data = value;
                         break;
                     case 3:
-                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte)value))
-                            newItem.Gem1 = (byte)value;
+                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte) value))
+                            newItem.Gem1 = (byte) value;
                         break;
                     case 4:
-                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte)value))
-                            newItem.Gem2 = (byte)value;
+                        if (Enum.IsDefined(typeof(Item.SocketGem), (byte) value))
+                            newItem.Gem2 = (byte) value;
                         break;
                     case 5:
-                        if (Enum.IsDefined(typeof(Item.ItemEffect), (ushort)value))
-                            newItem.Magic1 = (byte)value;
+                        if (Enum.IsDefined(typeof(Item.ItemEffect), (ushort) value))
+                            newItem.Magic1 = (byte) value;
                         break;
                     case 6:
                         // magic2.. w/e
                         break;
                     case 7:
                         if (value > 0 && value < 256)
-                            newItem.Magic3 = (byte)value;
+                            newItem.Magic3 = (byte) value;
                         break;
                     case 8:
                         if (value > 0
                             && value < 8)
-                            newItem.ReduceDmg = (byte)value;
+                            newItem.ReduceDmg = (byte) value;
                         break;
                     case 9:
                         if (value > 0
                             && value < 256)
-                            newItem.AddLife = (byte)value;
+                            newItem.AddLife = (byte) value;
                         break;
                     case 10:
                         newItem.Plunder = null;
@@ -2459,11 +2840,11 @@ namespace Comet.Game.States
                         if (value == 0)
                             value = 3;
                         if (Enum.IsDefined(typeof(Item.ItemColor), value))
-                            newItem.Color = (byte)value;
+                            newItem.Color = (byte) value;
                         break;
                     case 12:
                         if (value > 0 && value < 256)
-                            newItem.Monopoly = (byte)value;
+                            newItem.Monopoly = (byte) value;
                         break;
                     case 13:
                     case 14:
@@ -2485,11 +2866,12 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionItemJarVerify(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionItemJarVerify(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.UserPackage == null)
                 return false;
-            
+
             if (!user.UserPackage.IsPackSpare(1))
                 return false;
 
@@ -2508,7 +2890,8 @@ namespace Comet.Game.States
 
         #region Syndicate
 
-        private static async Task<bool> ExecuteActionSynCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynCreate(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null || user.Syndicate != null)
                 return false;
@@ -2516,7 +2899,8 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 2)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid param count for guild creation: {param}, {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Invalid param count for guild creation: {param}, {action.Identity}");
                 return false;
             }
 
@@ -2546,7 +2930,8 @@ namespace Comet.Game.States
         }
 
 
-        private static async Task<bool> ExecuteActionSynDestroy(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynDestroy(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null)
                 return false;
@@ -2560,28 +2945,32 @@ namespace Comet.Game.States
             return await user.DisbandSyndicateAsync();
         }
 
-        private static async Task<bool> ExecuteActionSynSetAssistant(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynSetAssistant(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null || user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
             return await user.Syndicate.PromoteAsync(user, input, SyndicateMember.SyndicateRank.DeputyLeader);
         }
 
-        private static async Task<bool> ExecuteActionSynClearRank(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynClearRank(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null || user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
             return await user.Syndicate.DemoteAsync(user, input);
         }
 
-        private static async Task<bool> ExecuteActionSynChangeLeader(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynChangeLeader(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null || user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
             return await user.Syndicate.PromoteAsync(user, input, SyndicateMember.SyndicateRank.GuildLeader);
         }
 
-        private static async Task<bool> ExecuteActionSynAntagonize(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynAntagonize(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null)
                 return false;
@@ -2599,7 +2988,8 @@ namespace Comet.Game.States
             return await user.Syndicate.AntagonizeAsync(user, target);
         }
 
-        private static async Task<bool> ExecuteActionSynClearAntagonize(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynClearAntagonize(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null)
                 return false;
@@ -2617,7 +3007,8 @@ namespace Comet.Game.States
             return await user.Syndicate.PeaceAsync(user, target);
         }
 
-        private static async Task<bool> ExecuteActionSynAlly(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynAlly(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user?.Syndicate == null)
                 return false;
@@ -2631,11 +3022,12 @@ namespace Comet.Game.States
 
             if (target.Identity == user.SyndicateIdentity)
                 return false;
-            
+
             return await user.Syndicate.CreateAllianceAsync(user, target);
         }
 
-        private static async Task<bool> ExecuteActionSynClearAlly(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynClearAlly(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Syndicate == null)
                 return false;
@@ -2653,7 +3045,8 @@ namespace Comet.Game.States
             return await user.Syndicate.DisbandAllianceAsync(user, target);
         }
 
-        private static async Task<bool> ExecuteActionSynAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionSynAttr(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             string[] splitParam = SplitParam(param, 4);
             if (splitParam.Length < 3)
@@ -2690,7 +3083,7 @@ namespace Comet.Game.States
             {
                 data = target.MemberCount;
             }
-            
+
             switch (opt)
             {
                 case "==": return data == value;
@@ -2707,7 +3100,8 @@ namespace Comet.Game.States
 
         #region Monster
 
-        private static async Task<bool> ExecuteActionMstDropitem(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionMstDropitem(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (role == null || !(role is Monster monster))
                 return false;
@@ -2728,16 +3122,18 @@ namespace Comet.Game.States
                 await monster.DropItemAsync(data, user);
                 return true;
             }
+
             if (ope.Equals("dropmoney"))
             {
                 percent %= 100;
-                uint dwMoneyDrop = (uint)(data * (percent + await Kernel.NextAsync(100 - percent)) / 100);
+                uint dwMoneyDrop = (uint) (data * (percent + await Kernel.NextAsync(100 - percent)) / 100);
                 if (dwMoneyDrop <= 0)
                     return false;
                 uint idUser = user?.Identity ?? 0u;
                 await monster.DropMoneyAsync(dwMoneyDrop, idUser);
                 return true;
             }
+
             return false;
         }
 
@@ -2745,7 +3141,8 @@ namespace Comet.Game.States
 
         #region User
 
-        private static async Task<bool> ExecuteUserAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserAttr(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -2753,7 +3150,8 @@ namespace Comet.Game.States
             string[] parsedParam = SplitParam(param);
             if (parsedParam.Length < 3)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"GameAction::ExecuteUserAttr[{action.Identity}] invalid param num {param}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"GameAction::ExecuteUserAttr[{action.Identity}] invalid param num {param}");
                 return false;
             }
 
@@ -2786,11 +3184,13 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Strength, forceValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Strength, (ulong) forceValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -2815,11 +3215,13 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Agility, speedValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Agility, (ulong) speedValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -2844,11 +3246,13 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Vitality, healthValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Vitality, (ulong) healthValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -2873,11 +3277,13 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Spirit, soulValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Spirit, (ulong) soulValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -2902,14 +3308,16 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Atributes, attrValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Atributes, (ulong) attrValue);
                         return true;
                     }
+
                     break;
 
-                #endregion    
+                #endregion
 
                 #region Level (>, >=, <, <=, =, +=, set)
 
@@ -2930,11 +3338,13 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Level, levelValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Level, (ulong) levelValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -2958,11 +3368,13 @@ namespace Comet.Game.States
                         await user.AddAttributesAsync(ClientUpdateType.Reborn, metempsychosisValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Reborn, (ulong) metempsychosisValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -2986,11 +3398,13 @@ namespace Comet.Game.States
                     {
                         return await user.ChangeMoney(moneyValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Money, (ulong) moneyValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3015,11 +3429,13 @@ namespace Comet.Game.States
                     {
                         return await user.ChangeConquerPoints(emoneyValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.ConquerPoints, (ulong) emoneyValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3033,13 +3449,13 @@ namespace Comet.Game.States
                     if (opt.Equals(">"))
                         return user.SyndicateRank > (SyndicateMember.SyndicateRank) rankShowValue;
                     if (opt.Equals(">="))
-                        return user.SyndicateRank >= (SyndicateMember.SyndicateRank)rankShowValue;
+                        return user.SyndicateRank >= (SyndicateMember.SyndicateRank) rankShowValue;
                     if (opt.Equals("<"))
-                        return user.SyndicateRank < (SyndicateMember.SyndicateRank)rankShowValue;
+                        return user.SyndicateRank < (SyndicateMember.SyndicateRank) rankShowValue;
                     if (opt.Equals("<="))
-                        return user.SyndicateRank <= (SyndicateMember.SyndicateRank)rankShowValue;
+                        return user.SyndicateRank <= (SyndicateMember.SyndicateRank) rankShowValue;
                     if (opt.Equals("==") || opt.Equals("="))
-                        return user.SyndicateRank == (SyndicateMember.SyndicateRank)rankShowValue;
+                        return user.SyndicateRank == (SyndicateMember.SyndicateRank) rankShowValue;
                     break;
 
                 #endregion
@@ -3052,7 +3468,7 @@ namespace Comet.Game.States
                     if (user.Syndicate == null)
                         return false;
 
-                    int synDays = (int)(DateTime.Now - user.Syndicate.CreationDate).TotalDays;
+                    int synDays = (int) (DateTime.Now - user.Syndicate.CreationDate).TotalDays;
                     if (opt.Equals("==") || opt.Equals("="))
                         return synDays == synTime;
                     if (opt.Equals(">="))
@@ -3064,7 +3480,7 @@ namespace Comet.Game.States
                     if (opt.Equals("<"))
                         return synDays < synTime;
                     break;
-                    }
+                }
 
                 #endregion
 
@@ -3111,11 +3527,13 @@ namespace Comet.Game.States
                     {
                         return await user.AwardExperienceAsync((long) expValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Experience, (ulong) expValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3140,11 +3558,13 @@ namespace Comet.Game.States
                     {
                         return await user.AddAttributesAsync(ClientUpdateType.Stamina, energyValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Stamina, (ulong) energyValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3169,11 +3589,13 @@ namespace Comet.Game.States
                         user.QueueAction(() => user.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeValue));
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) lifeValue));
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3197,11 +3619,13 @@ namespace Comet.Game.States
                     {
                         return await user.AddAttributesAsync(ClientUpdateType.Mana, manaValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Mana, (ulong) manaValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3225,11 +3649,13 @@ namespace Comet.Game.States
                     {
                         return await user.AddAttributesAsync(ClientUpdateType.PkPoints, pkValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.PkPoints, (ulong) pkValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3258,11 +3684,13 @@ namespace Comet.Game.States
                     {
                         return await user.AddAttributesAsync(ClientUpdateType.Class, proValue);
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetAttributesAsync(ClientUpdateType.Class, (ulong) proValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3305,14 +3733,16 @@ namespace Comet.Game.States
                         if (virtueValue > 0)
                             user.VirtuePoints += (uint) virtueValue;
                         else
-                            user.VirtuePoints -= (uint)(virtueValue * -1);
+                            user.VirtuePoints -= (uint) (virtueValue * -1);
                         return await user.SaveAsync();
                     }
+
                     if (opt.Equals("set"))
                     {
                         user.VirtuePoints = (uint) virtueValue;
                         return await user.SaveAsync();
                     }
+
                     break;
 
                 #endregion
@@ -3354,11 +3784,13 @@ namespace Comet.Game.States
                         await user.AddXp((byte) xpValue);
                         return true;
                     }
+
                     if (opt.Equals("set"))
                     {
                         await user.SetXp((byte) xpValue);
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3382,11 +3814,13 @@ namespace Comet.Game.States
                         user.Iterator += iteratorValue;
                         return true;
                     }
+
                     if (opt.Equals("set") || opt == "=")
                     {
                         user.Iterator = iteratorValue;
                         return true;
                     }
+
                     break;
 
                 #endregion
@@ -3416,6 +3850,7 @@ namespace Comet.Game.States
                 #endregion
 
                 #region Look (==, set)
+
                 case "look":
                 {
                     switch (opt)
@@ -3431,6 +3866,7 @@ namespace Comet.Game.States
                                 await user.SaveAsync();
                                 return true;
                             }
+
                             if (user.Gender == 0 && (usVal == 1 || usVal == 2))
                             {
                                 user.Body = (BodyType) (2000 + usVal);
@@ -3438,50 +3874,59 @@ namespace Comet.Game.States
                                 await user.SaveAsync();
                                 return true;
                             }
+
                             return false;
                         }
                     }
+
                     return false;
                 }
+
                 #endregion
 
                 #region Body (set)
+
                 case "body":
+                {
+                    switch (opt)
                     {
-                        switch (opt)
+                        case "set":
                         {
-                            case "set":
-                                {
-                                    ushort usNewBody = ushort.Parse(value);
-                                    if (usNewBody == 1003 || usNewBody == 1004)
-                                    {
-                                        if (user.Body != BodyType.AgileFemale && user.Body != BodyType.MuscularFemale)
-                                            return false; // to change body use the fucking item , asshole
-                                    }
-                                    if (usNewBody == 2001 || usNewBody == 2002)
-                                    {
-                                        if (user.Body != BodyType.AgileMale && user.Body != BodyType.MuscularMale)
-                                            return false; // to change body use the fucking item , asshole
-                                    }
+                            ushort usNewBody = ushort.Parse(value);
+                            if (usNewBody == 1003 || usNewBody == 1004)
+                            {
+                                if (user.Body != BodyType.AgileFemale && user.Body != BodyType.MuscularFemale)
+                                    return false; // to change body use the fucking item , asshole
+                            }
 
-                                    if (user.UserPackage[Item.ItemPosition.Garment] != null)
-                                        await user.UserPackage.UnequipAsync(Item.ItemPosition.Garment);
+                            if (usNewBody == 2001 || usNewBody == 2002)
+                            {
+                                if (user.Body != BodyType.AgileMale && user.Body != BodyType.MuscularMale)
+                                    return false; // to change body use the fucking item , asshole
+                            }
 
-                                    user.Body = (BodyType)usNewBody;
-                                    await user.SynchroAttributesAsync(ClientUpdateType.Mesh, user.Mesh, true);
-                                    await user.SaveAsync();
-                                    return true;;
-                                }
+                            if (user.UserPackage[Item.ItemPosition.Garment] != null)
+                                await user.UserPackage.UnequipAsync(Item.ItemPosition.Garment);
+
+                            user.Body = (BodyType) usNewBody;
+                            await user.SynchroAttributesAsync(ClientUpdateType.Mesh, user.Mesh, true);
+                            await user.SaveAsync();
+                            return true;
+                            ;
                         }
-                        return false;
                     }
+
+                    return false;
+                }
+
                 #endregion
             }
 
             return false;
         }
 
-        private static async Task<bool> ExecuteUserFull(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserFull(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3491,26 +3936,31 @@ namespace Comet.Game.States
                 user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife));
                 return true;
             }
+
             if (param.Equals("mana", StringComparison.InvariantCultureIgnoreCase))
             {
                 user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana));
                 return true;
             }
+
             if (param.Equals("xp", StringComparison.InvariantCultureIgnoreCase))
             {
                 await user.SetXp(100);
                 await user.BurstXp();
                 return true;
             }
+
             if (param.Equals("sp", StringComparison.InvariantCultureIgnoreCase))
             {
                 await user.SetAttributesAsync(ClientUpdateType.Stamina, user.MaxEnergy);
                 return true;
             }
+
             return false;
         }
 
-        private static async Task<bool> ExecuteUserChgMap(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserChgMap(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3518,7 +3968,8 @@ namespace Comet.Game.States
             string[] paramStrings = SplitParam(param);
             if (paramStrings.Length < 3)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Action {action.Identity}:{action.Type} invalid param length: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Action {action.Identity}:{action.Type} invalid param length: {param}");
                 return false;
             }
 
@@ -3543,7 +3994,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteUserRecordpoint(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserRecordpoint(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3551,7 +4003,8 @@ namespace Comet.Game.States
             string[] paramStrings = SplitParam(param);
             if (paramStrings.Length < 3)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Action {action.Identity}:{action.Type} invalid param length: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Action {action.Identity}:{action.Type} invalid param length: {param}");
                 return false;
             }
 
@@ -3577,7 +4030,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteUserHair(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserHair(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3594,18 +4048,23 @@ namespace Comet.Game.States
             int value = int.Parse(splitParams[1]);
             if (splitParams[0].Equals("style", StringComparison.InvariantCultureIgnoreCase))
             {
-                await user.SetAttributesAsync(ClientUpdateType.HairStyle, (ushort)(value + (user.Hairstyle - (user.Hairstyle % 100))));
+                await user.SetAttributesAsync(ClientUpdateType.HairStyle,
+                    (ushort) (value + (user.Hairstyle - (user.Hairstyle % 100))));
                 return true;
             }
+
             if (splitParams[0].Equals("color", StringComparison.InvariantCultureIgnoreCase))
             {
-                await user.SetAttributesAsync(ClientUpdateType.HairStyle, (ushort) (user.Hairstyle % 100 + value * 100));
+                await user.SetAttributesAsync(ClientUpdateType.HairStyle,
+                    (ushort) (user.Hairstyle % 100 + value * 100));
                 return true;
             }
+
             return false;
         }
 
-        private static async Task<bool> ExecuteUserChgmaprecord(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserChgmaprecord(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3614,7 +4073,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserChglinkmap(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserChglinkmap(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.Map == null)
                 return false;
@@ -3625,7 +4085,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteUserTransform(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteUserTransform(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3634,7 +4095,8 @@ namespace Comet.Game.States
 
             if (splitParam.Length < 4)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid param count for {action.Identity}:{action.Type}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Invalid param count for {action.Identity}:{action.Type}, {param}");
                 return false;
             }
 
@@ -3643,14 +4105,17 @@ namespace Comet.Game.States
             return await user.TransformAsync(transformation, time, true);
         }
 
-        private static async Task<bool> ExecuteActionUserIspure(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserIspure(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
-            return user.ProfessionSort == user.PreviousProfession/10 && user.FirstProfession /10 == user.ProfessionSort;
+            return user.ProfessionSort == user.PreviousProfession / 10 &&
+                   user.FirstProfession / 10 == user.ProfessionSort;
         }
 
-        private static async Task<bool> ExecuteActionUserTalk(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserTalk(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
             {
@@ -3662,7 +4127,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserMagic(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserMagic(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3670,7 +4136,8 @@ namespace Comet.Game.States
             string[] splitParam = SplitParam(param);
             if (splitParam.Length < 2)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid ActionUserMagic param length: {action.Identity}, {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Invalid ActionUserMagic param length: {action.Identity}, {param}");
                 return false;
             }
 
@@ -3696,12 +4163,14 @@ namespace Comet.Game.States
                     return await user.MagicData.AwardExpAsync(ushort.Parse(splitParam[1]), 0, int.Parse(splitParam[2]));
 
                 default:
-                    await Log.WriteLogAsync(LogLevel.Warning, $"[ActionType: {action.Type}] Unknown {splitParam[0]} param {action.Identity}");
+                    await Log.WriteLogAsync(LogLevel.Warning,
+                        $"[ActionType: {action.Type}] Unknown {splitParam[0]} param {action.Identity}");
                     return false;
             }
         }
 
-        private static async Task<bool> ExecuteActionUserWeaponSkill(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserWeaponSkill(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3717,7 +4186,8 @@ namespace Comet.Game.States
             if (!ushort.TryParse(splitParam[1], out var type)
                 || !int.TryParse(splitParam[2], out var value))
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid weapon skill type {param} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Invalid weapon skill type {param} for action {action.Identity}");
                 return false;
             }
 
@@ -3734,12 +4204,14 @@ namespace Comet.Game.States
                     return true;
 
                 default:
-                    await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserWeaponSkill {splitParam[0]} invalid {action.Identity}");
+                    await Log.WriteLogAsync(LogLevel.Warning,
+                        $"ExecuteActionUserWeaponSkill {splitParam[0]} invalid {action.Identity}");
                     return false;
             }
         }
 
-        private static async Task<bool> ExecuteActionUserLog(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserLog(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3748,7 +4220,8 @@ namespace Comet.Game.States
 
             if (splitParam.Length < 2)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserLog length [id:{action.Identity}], {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionUserLog length [id:{action.Identity}], {param}");
                 return true;
             }
 
@@ -3762,14 +4235,16 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserBonus(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserBonus(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
             return await user.DoBonusAsync();
         }
 
-        private static async Task<bool> ExecuteActionUserDivorce(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserDivorce(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3786,7 +4261,7 @@ namespace Comet.Game.States
                 dbMate.Mate = 0;
                 await BaseRepository.SaveAsync(dbMate);
             }
-            
+
             if (mate == null)
             {
                 DbItem dbItem = Item.CreateEntity(Item.TYPE_METEORTEAR);
@@ -3804,17 +4279,20 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserMarriage(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserMarriage(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             return user?.MateIdentity != 0;
         }
 
-        private static async Task<bool> ExecuteActionUserSex(DbAction action, string param, Character user, Role role, Item item, string input) 
+        private static async Task<bool> ExecuteActionUserSex(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             return user?.Gender != 0;
         }
 
-        private static async Task<bool> ExecuteActionUserEffect(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserEffect(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3822,7 +4300,8 @@ namespace Comet.Game.States
             string[] parsedString = SplitParam(param);
             if (parsedString.Length < 2)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Invalid parsed param[{param}] ExecuteActionUserEffect[{action.Identity}]");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"Invalid parsed param[{param}] ExecuteActionUserEffect[{action.Identity}]");
                 return false;
             }
 
@@ -3858,13 +4337,15 @@ namespace Comet.Game.States
                         msg.Identity = member.Identity;
                         await member.BroadcastRoomMsgAsync(msg, true);
                     }
+
                     return true;
             }
 
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserTaskmask(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserTaskmask(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3872,7 +4353,8 @@ namespace Comet.Game.States
             string[] parsedParam = SplitParam(param);
             if (parsedParam.Length < 2)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserTaskmask invalid param num [{param}] for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionUserTaskmask invalid param num [{param}] for action {action.Identity}");
                 return false;
             }
 
@@ -3900,7 +4382,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserMediaplay(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserMediaplay(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3909,7 +4392,7 @@ namespace Comet.Game.States
             if (pszParam.Length < 2)
                 return false;
 
-            var msg = new MsgName { Action = StringAction.PlayerWave };
+            var msg = new MsgName {Action = StringAction.PlayerWave};
             msg.Strings.Add(pszParam[1]);
 
             switch (pszParam[0].ToLower())
@@ -3925,7 +4408,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserCreatemap(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserCreatemap(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -3934,7 +4418,8 @@ namespace Comet.Game.States
 
             if (safeParam.Length < 10)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionUserCreatemap ({action.Identity}) with invalid param length [{param}]");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"ExecuteActionUserCreatemap ({action.Identity}) with invalid param length [{param}]");
                 return false;
             }
 
@@ -3970,7 +4455,8 @@ namespace Comet.Game.States
 
             if (!await BaseRepository.SaveAsync(pMapInfo) || pMapInfo.Identity < 1000000)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"ExecuteActionUserCreatemap error when saving map\n\t{JsonConvert.SerializeObject(pMapInfo)}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"ExecuteActionUserCreatemap error when saving map\n\t{JsonConvert.SerializeObject(pMapInfo)}");
                 return false;
             }
 
@@ -3983,7 +4469,8 @@ namespace Comet.Game.States
             return Kernel.MapManager.AddMap(map);
         }
 
-        private static async Task<bool> ExecuteActionUserEnterHome(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserEnterHome(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null || user.HomeIdentity == 0)
                 return false;
@@ -4005,7 +4492,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserEnterMateHome(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserEnterMateHome(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4033,7 +4521,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserUnlearnMagic(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserUnlearnMagic(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4052,7 +4541,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserRebirth(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserRebirth(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4069,7 +4559,8 @@ namespace Comet.Game.States
             return await user.RebirthAsync(prof, look);
         }
 
-        private static async Task<bool> ExecuteActionUserWebpage(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserWebpage(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4078,7 +4569,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserBbs(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserBbs(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4087,15 +4579,17 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserUnlearnSkill(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserUnlearnSkill(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
-            
+
             return await user.UnlearnAllSkillAsync();
         }
 
-        private static async Task<bool> ExecuteActionUserDropMagic(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserDropMagic(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4114,7 +4608,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserOpenDialog(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserOpenDialog(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4138,12 +4633,14 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserFixAttr(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserFixAttr(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
 
-            ushort attr = (ushort)(user.Agility + user.Vitality + user.Strength + user.Spirit + user.AttributePoints - 10);
+            ushort attr = (ushort) (user.Agility + user.Vitality + user.Strength + user.Spirit + user.AttributePoints -
+                                    10);
             ushort profSort = user.ProfessionSort;
             if (profSort == 13 || profSort == 14)
                 profSort = 10;
@@ -4168,7 +4665,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserExpMultiply(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserExpMultiply(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 2)
@@ -4180,7 +4678,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserWhPassword(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserWhPassword(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4190,7 +4689,7 @@ namespace Comet.Game.States
 
             if (string.IsNullOrEmpty(input))
                 return false;
-            
+
             if (input.Length < 1 || input.Length > ulong.MaxValue.ToString().Length)
                 return false;
 
@@ -4200,7 +4699,8 @@ namespace Comet.Game.States
             return user.SecondaryPassword == password;
         }
 
-        private static async Task<bool> ExecuteActionUserSetWhPassword(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserSetWhPassword(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4221,7 +4721,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserOpeninterface(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserOpeninterface(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null) return false;
 
@@ -4236,7 +4737,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserTaskManager(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserTaskManager(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.TaskDetail == null)
                 return false;
@@ -4252,14 +4754,15 @@ namespace Comet.Game.States
                     return await user.TaskDetail.CreateNewAsync(action.Data);
                 case "isexit":
                     return user.TaskDetail.QueryTaskData(action.Data) != null;
-                case "delete": 
+                case "delete":
                     return await user.TaskDetail.DeleteTaskAsync(action.Data);
             }
 
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserTaskOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserTaskOpe(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.TaskDetail == null)
                 return false;
@@ -4281,12 +4784,15 @@ namespace Comet.Game.States
                 {
                     return user.TaskDetail.QueryTaskData(action.Data)?.CompleteFlag == data;
                 }
+
                 if (opt.Equals("set"))
                 {
                     return await user.TaskDetail.SetCompleteAsync(action.Data, data);
                 }
+
                 return false;
             }
+
             if (ope.StartsWith("data"))
             {
                 switch (opt)
@@ -4306,8 +4812,10 @@ namespace Comet.Game.States
                     case "set":
                         return await user.TaskDetail.SetDataAsync(action.Data, ope, data);
                 }
+
                 return false;
             }
+
             if (ope.Equals("notify"))
             {
                 DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
@@ -4317,6 +4825,7 @@ namespace Comet.Game.States
                 detail.NotifyFlag = (byte) data;
                 return await user.TaskDetail.SaveAsync(detail);
             }
+
             if (ope.Equals("overtime"))
             {
                 DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
@@ -4330,7 +4839,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserTaskLocaltime(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserTaskLocaltime(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.TaskDetail == null)
                 return false;
@@ -4358,7 +4868,8 @@ namespace Comet.Game.States
                     case 0: // seconds
                     {
                         DateTime timeStamp = DateTime.Now;
-                        int nDiff = (int)((timeStamp - UnixTimestamp.ToDateTime(detail.TaskOvertime)).TotalSeconds + data);
+                        int nDiff = (int) ((timeStamp - UnixTimestamp.ToDateTime(detail.TaskOvertime)).TotalSeconds +
+                                           data);
                         switch (opt)
                         {
                             case "==": return nDiff == data;
@@ -4389,7 +4900,8 @@ namespace Comet.Game.States
 
                         return false;
                     default:
-                        await Log.WriteLogAsync(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
+                        await Log.WriteLogAsync(LogLevel.Warning,
+                            $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
                         return false;
                 }
             }
@@ -4407,13 +4919,15 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserTaskFind(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserTaskFind(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionUserTaskFind unhandled");
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserVarCompare(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserVarCompare(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -4445,7 +4959,8 @@ namespace Comet.Game.States
             }
         }
 
-        private static async Task<bool> ExecuteActionUserVarDefine(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserVarDefine(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] safeParam = SplitParam(param);
             if (safeParam.Length < 3)
@@ -4475,7 +4990,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserVarCalc(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserVarCalc(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] safeParam = SplitParam(param);
             if (safeParam.Length < 3)
@@ -4537,7 +5053,8 @@ namespace Comet.Game.States
             return temp.GetItemSubType() == type;
         }
 
-        private static async Task<bool> ExecuteActionUserExecAction(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserExecAction(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] splitParams = SplitParam(param, 3);
             if (splitParams.Length < 3)
@@ -4553,7 +5070,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserStcCompare(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStcCompare(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -4595,7 +5113,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserStcOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStcOpe(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -4616,7 +5135,7 @@ namespace Comet.Game.States
 
             if (!user.Statistic.HasEvent(idEvent, idType))
             {
-                return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)value, bUpdate);
+                return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint) value, bUpdate);
             }
 
             switch (opt)
@@ -4625,11 +5144,12 @@ namespace Comet.Game.States
                     if (value == 0) return false;
 
                     long tempValue = user.Statistic.GetValue(idEvent, idType) + value;
-                    return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)Math.Max(0, tempValue), bUpdate);
+                    return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint) Math.Max(0, tempValue),
+                        bUpdate);
                 case "=":
                 case "set":
                     if (value < 0) return false;
-                    return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint)Math.Max(0, value), bUpdate);
+                    return await user.Statistic.AddOrUpdateAsync(idEvent, idType, (uint) Math.Max(0, value), bUpdate);
             }
 
             return false;
@@ -4654,7 +5174,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserStcTimeCheck(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStcTimeCheck(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -4683,22 +5204,22 @@ namespace Comet.Game.States
             switch (mode)
             {
                 case 0: // seconds
+                {
+                    DateTime timeStamp = DateTime.Now;
+                    int nDiff = (int) ((timeStamp - dbStc.Timestamp.Value).TotalSeconds + value);
+                    switch (opt)
                     {
-                        DateTime timeStamp = DateTime.Now;
-                        int nDiff = (int) ((timeStamp - dbStc.Timestamp.Value).TotalSeconds + value);
-                        switch (opt)
-                        {
-                            case "==": return nDiff == value;
-                            case "<": return nDiff < value;
-                            case ">": return nDiff > value;
-                            case "<=": return nDiff <= value;
-                            case ">=": return nDiff >= value;
-                            case "<>":
-                            case "!=": return nDiff != value;
-                        }
-
-                        return false;
+                        case "==": return nDiff == value;
+                        case "<": return nDiff < value;
+                        case ">": return nDiff > value;
+                        case "<=": return nDiff <= value;
+                        case ">=": return nDiff >= value;
+                        case "<>":
+                        case "!=": return nDiff != value;
                     }
+
+                    return false;
+                }
 
                 case 1: // days
                     int interval = int.Parse(DateTime.Now.ToString("yyyyMMdd")) -
@@ -4716,12 +5237,14 @@ namespace Comet.Game.States
 
                     return false;
                 default:
-                    await Log.WriteLogAsync(LogLevel.Warning, $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
+                    await Log.WriteLogAsync(LogLevel.Warning,
+                        $"Unhandled Time mode ({mode}) on action (id:{action.Identity})");
                     return false;
             }
         }
 
-        private static async Task<bool> ExecuteActionUserStcTimeOpe(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStcTimeOpe(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -4749,7 +5272,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserAttachStatus(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserAttachStatus(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             // self add 64 200 900 0
             string[] pszParam = SplitParam(param);
@@ -4770,7 +5294,7 @@ namespace Comet.Game.States
             if (target == "self")
             {
                 if (opt == "add")
-                    await user.AttachStatusAsync(user, status, multiply, (int)seconds, times, 0);
+                    await user.AttachStatusAsync(user, status, multiply, (int) seconds, times, 0);
                 else if (opt == "del")
                     await user.DetachStatusAsync(status);
                 return true;
@@ -4781,10 +5305,11 @@ namespace Comet.Game.States
                 foreach (var member in user.Team.Members)
                 {
                     if (opt == "add")
-                        await member.AttachStatusAsync(member, status, multiply, (int)seconds, times, 0);
+                        await member.AttachStatusAsync(member, status, multiply, (int) seconds, times, 0);
                     else if (opt == "del")
                         await member.DetachStatusAsync(status);
                 }
+
                 return true;
             }
 
@@ -4811,7 +5336,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionUserGodTime(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserGodTime(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParma = SplitParam(param);
 
@@ -4832,7 +5358,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserExpballExp(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserExpballExp(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -4849,7 +5376,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserStatusCreate(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStatusCreate(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user == null)
                 return false;
@@ -4874,12 +5402,13 @@ namespace Comet.Game.States
             uint remainTime = uint.Parse(pszParam[2]);
             uint intervalTime = uint.Parse(pszParam[4]);
             bool save = pszParam[5] != "0"; // ??
-            
-            await user.AttachStatusAsync(user, (int)action.Data, 0, (int)remainTime, (int)leaveTimes, 0, save);
+
+            await user.AttachStatusAsync(user, (int) action.Data, 0, (int) remainTime, (int) leaveTimes, 0, save);
             return true;
         }
 
-        private static async Task<bool> ExecuteActionUserStatusCheck(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionUserStatusCheck(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             if (user?.StatusSet == null) return false;
 
@@ -4898,7 +5427,9 @@ namespace Comet.Game.States
                         if (user.QueryStatus(int.Parse(st)) != null)
                         {
                             await user.DetachStatusAsync(int.Parse(st));
-                            DbStatus db = (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x => x.Status == uint.Parse(st));
+                            DbStatus db =
+                                (await StatusRepository.GetAsync(user.Identity)).FirstOrDefault(x =>
+                                    x.Status == uint.Parse(st));
                             if (db != null)
                                 await BaseRepository.DeleteAsync(db);
                         }
@@ -4911,9 +5442,251 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Team
+
+        private static async Task<bool> ExecuteActionTeamBroadcast(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null || user.Team.MemberCount < 1)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamBroadcast user or team is null {action.Identity}");
+                return false;
+            }
+
+            if (!user.Team.IsLeader(user.Identity))
+                return false;
+
+            await user.Team.SendAsync(new MsgTalk(user.Identity, MsgTalk.TalkChannel.Team, Color.White, param));
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamAttr(DbAction action, string param, Character user, Role role,
+            Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamAttr user or team is null {action.Identity}");
+                return false;
+            }
+
+            string[] splitParams = SplitParam(param, 3);
+            if (splitParams.Length < 3) // invalid param num
+                return false;
+
+            string cmd = splitParams[0].ToLower();
+            string opt = splitParams[1];
+            int.TryParse(splitParams[2], out var value);
+
+            if (cmd.Equals("count"))
+            {
+                if (opt.Equals("<"))
+                    return user.Team.MemberCount < value;
+                if (opt.Equals("=="))
+                    return user.Team.MemberCount == value;
+            }
+
+            foreach (var member in user.Team.Members)
+            {
+                if (cmd.Equals("money"))
+                {
+                    if (opt.Equals("+="))
+                    {
+                        await member.ChangeMoney(value);
+                    }
+                    else if (opt.Equals("<"))
+                    {
+                        return member.Silvers < value;
+                    }
+                    else if (opt.Equals("=="))
+                    {
+                        return member.Silvers == value;
+                    }
+                    else if (opt.Equals(">"))
+                    {
+                        return member.Silvers > value;
+                    }
+                }
+                else if (cmd.Equals("emoney"))
+                {
+                    if (opt.Equals("+="))
+                    {
+                        await member.ChangeConquerPoints(value);
+                    }
+                    else if (opt.Equals("<"))
+                    {
+                        return member.ConquerPoints < value;
+                    }
+                    else if (opt.Equals("=="))
+                    {
+                        return member.ConquerPoints == value;
+                    }
+                    else if (opt.Equals(">"))
+                    {
+                        return member.ConquerPoints > value;
+                    }
+                }
+                else if (cmd.Equals("level"))
+                {
+                    if (opt.Equals("<"))
+                    {
+                        return member.Level < value;
+                    }
+                    else if (opt.Equals("=="))
+                    {
+                        return member.Level == value;
+                    }
+                    else if (opt.Equals(">"))
+                    {
+                        return member.Level > value;
+                    }
+                }
+                else if (cmd.Equals("vip"))
+                {
+                    if (opt.Equals("<"))
+                    {
+                        return member.BaseVipLevel < value;
+                    }
+                    else if (opt.Equals("=="))
+                    {
+                        return member.BaseVipLevel == value;
+                    }
+                    else if (opt.Equals(">"))
+                    {
+                        return member.BaseVipLevel > value;
+                    }
+                }
+                else if (cmd.Equals("mate"))
+                {
+                    if (member.Identity == user.Identity)
+                        continue;
+
+                    if (member.MateIdentity != user.Identity)
+                        return false;
+                }
+                else if (cmd.Equals("friend"))
+                {
+                    if (member.Identity == user.Identity)
+                        continue;
+
+                    if (!user.IsFriend(member.Identity))
+                        return false;
+                }
+                else if (cmd.Equals("count_near"))
+                {
+                    if (member.Identity == user.Identity)
+                        continue;
+
+                    if (!(member.MapIdentity == user.MapIdentity && member.IsAlive))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamLeavespace(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamLeavespace user or team is null {action.Identity}");
+                return false;
+            }
+
+            if (!int.TryParse(param, out var space))
+                return false;
+
+            foreach (var member in user.Team.Members)
+            {
+                if (!member.UserPackage.IsPackSpare(space))
+                    return false;
+            }
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamItemAdd(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamItemAdd user or team is null {action.Identity}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamItemDel(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamItemDel user or team is null {action.Identity}");
+                return false;
+            }
+
+            foreach (var member in user.Team.Members)
+                await member.UserPackage.AwardItemAsync(action.Data);
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamItemCheck(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamItemCheck user or team is null {action.Identity}");
+                return false;
+            }
+
+            foreach (var member in user.Team.Members)
+                await member.UserPackage.SpendItemAsync(action.Data);
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamChgmap(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamChgmap user or team is null {action.Identity}");
+                return false;
+            }
+
+            foreach (var member in user.Team.Members)
+                if (member.UserPackage.GetItemByType(action.Data) == null)
+                    return false;
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionTeamChkIsleader(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Team == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Action,
+                    $"ExecuteActionTeamChkIsleader user or team is null {action.Identity}");
+                return false;
+            }
+
+            return user.Team.IsLeader(user.Identity);
+        }
+
+        #endregion
+
         #region General
 
-        private static async Task<bool> ExecuteGeneralLottery(DbAction action, string param, Character user, Role role, Item item,
+        private static async Task<bool> ExecuteGeneralLottery(DbAction action, string param, Character user, Role role,
+            Item item,
             string input)
         {
             if (user == null)
@@ -4928,22 +5701,27 @@ namespace Comet.Game.States
             {
                 allItems.RemoveAll(x => x.Rank == 1);
             }
+
             if (lottoChance > 75)
             {
                 allItems.RemoveAll(x => x.Rank == 2);
             }
+
             if (lottoChance > 200)
             {
                 allItems.RemoveAll(x => x.Rank == 3);
             }
+
             if (lottoChance > 1000)
             {
                 allItems.RemoveAll(x => x.Rank == 4);
             }
+
             if (lottoChance > 2000)
             {
                 allItems.RemoveAll(x => x.Rank == 5);
             }
+
             if (lottoChance > 4000)
             {
                 allItems.RemoveAll(x => x.Rank == 6);
@@ -4960,8 +5738,8 @@ namespace Comet.Game.States
                 Amount = itemtype.Amount,
                 AmountLimit = itemtype.AmountLimit,
                 Magic3 = lottery.Plus > 0 ? lottery.Plus : itemtype.Magic3,
-                Gem1 = (byte) (lottery.SocketNum > 0 ? 255: 0),
-                Gem2 = (byte) (lottery.SocketNum > 1 ? 255: 0),
+                Gem1 = (byte) (lottery.SocketNum > 0 ? 255 : 0),
+                Gem2 = (byte) (lottery.SocketNum > 1 ? 255 : 0),
                 Color = 3,
                 PlayerId = user.Identity
             };
@@ -4975,20 +5753,24 @@ namespace Comet.Game.States
 
             await user.UserPackage.AddItemAsync(newItem);
 
-            await Log.GmLog("lottery", $"{user.Identity},{user.Name},{lottery.Rank},{lottery.Color},{newItem.Type},{newItem.Plus},{newItem.SocketOne},{newItem.SocketTwo}");
+            await Log.GmLog("lottery",
+                $"{user.Identity},{user.Name},{lottery.Rank},{lottery.Color},{newItem.Type},{newItem.Plus},{newItem.SocketOne},{newItem.SocketTwo}");
 
             if (lottery.Rank <= 5)
             {
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
+                await Kernel.RoleManager.BroadcastMsgAsync(
+                    string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
             }
             else
             {
                 await user.SendAsync(string.Format(Language.StrLotteryLow, lottery.Itemname));
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionChgMapSquare(DbAction action, string param, Character user, Role role, Item item,
+        private static async Task<bool> ExecuteActionChgMapSquare(DbAction action, string param, Character user,
+            Role role, Item item,
             string input)
         {
             if (user == null)
@@ -5012,8 +5794,8 @@ namespace Comet.Game.States
 
             for (int i = 0; i < 10; i++)
             {
-                x = (ushort)(x + await Kernel.NextAsync(cx));
-                y = (ushort)(y + await Kernel.NextAsync(cy));
+                x = (ushort) (x + await Kernel.NextAsync(cx));
+                y = (ushort) (y + await Kernel.NextAsync(cy));
 
                 if (map.IsStandEnable(x, y))
                     break;
@@ -5027,7 +5809,8 @@ namespace Comet.Game.States
 
         #region Event
 
-        private static async Task<bool> ExecuteActionEventSetstatus(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventSetstatus(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -5048,13 +5831,15 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventDelnpcGenid(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventDelnpcGenid(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             //Generator generator = Kernel.WorldThread.GetGenerator(action.Data);
             Generator generator = Kernel.GeneratorManager.GetGenerator(action.Data);
             if (generator == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid generator {action.Data} for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"Invalid generator {action.Data} for action {action.Identity}");
                 return false;
             }
 
@@ -5063,10 +5848,12 @@ namespace Comet.Game.States
                 if (monster.Map != null)
                     await monster.LeaveMapAsync();
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventCompare(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventCompare(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -5093,7 +5880,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionEventCompareUnsigned(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventCompareUnsigned(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -5120,14 +5908,16 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionEventChangeweather(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventChangeweather(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
-            
+
 
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventCreatepet(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventCreatepet(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(action.Param);
 
@@ -5153,7 +5943,8 @@ namespace Comet.Game.States
 
             if (monstertype == null || map == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] invalid monstertype or map: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionEventCreatepet [{action.Identity}] invalid monstertype or map: {param}");
                 return false;
             }
 
@@ -5161,14 +5952,16 @@ namespace Comet.Game.States
             Generator generator = Kernel.GeneratorManager.GetGenerator(idGen);
             if (generator == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] unexistent generator: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionEventCreatepet [{action.Identity}] unexistent generator: {param}");
                 return false;
             }
 
-            Monster monster = new Monster(monstertype, (uint)IdentityGenerator.Monster.GetNextIdentity, generator);
+            Monster monster = new Monster(monstertype, (uint) IdentityGenerator.Monster.GetNextIdentity, generator);
             if (!await monster.InitializeAsync(idMap, usPosX, usPosY))
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatepet [{action.Identity}] could not initialize monster: {param}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionEventCreatepet [{action.Identity}] could not initialize monster: {param}");
                 return false;
             }
 
@@ -5177,7 +5970,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventCreatenewNpc(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventCreatenewNpc(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 9)
@@ -5246,7 +6040,8 @@ namespace Comet.Game.States
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"ExecuteActionEventCreatenewNpc invalid {idMap} map identity for action {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                    $"ExecuteActionEventCreatenewNpc invalid {idMap} map identity for action {action.Identity}");
                 return false;
             }
 
@@ -5295,7 +6090,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventCountmonster(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventCountmonster(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -5312,7 +6108,8 @@ namespace Comet.Game.States
             switch (szField.ToLowerInvariant())
             {
                 case "name":
-                    nCount += Kernel.GeneratorManager.GetGenerators(idMap, szData).Sum(x => x.GetRoles().Count(y => y.IsAlive));
+                    nCount += Kernel.GeneratorManager.GetGenerators(idMap, szData)
+                        .Sum(x => x.GetRoles().Count(y => y.IsAlive));
                     break;
                 case "gen_id":
                     Generator gen = Kernel.GeneratorManager.GetGenerator(uint.Parse(szData));
@@ -5335,7 +6132,8 @@ namespace Comet.Game.States
             return false;
         }
 
-        private static async Task<bool> ExecuteActionEventDeletemonster(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventDeletemonster(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -5378,13 +6176,15 @@ namespace Comet.Game.States
             return ret;
         }
 
-        private static async Task<bool> ExecuteActionEventBbs(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventBbs(DbAction action, string param, Character user, Role role,
+            Item item, string input)
         {
             await Kernel.RoleManager.BroadcastMsgAsync(param, MsgTalk.TalkChannel.System);
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventErase(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventErase(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -5396,10 +6196,12 @@ namespace Comet.Game.States
                 if (dynaNpc.Type == npcType)
                     await dynaNpc.DelNpcAsync();
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventTeleport(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventTeleport(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
 
@@ -5427,10 +6229,12 @@ namespace Comet.Game.States
             {
                 await player.FlyMapAsync(idTarget, usMapX, usMapY);
             }
+
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventMassaction(DbAction action, string param, Character user, Role role, Item item, string input)
+        private static async Task<bool> ExecuteActionEventMassaction(DbAction action, string param, Character user,
+            Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
@@ -5458,7 +6262,8 @@ namespace Comet.Game.States
             return true;
         }
 
-        private static async Task<bool> ExecuteActionEventRegister(DbAction action, string param, Character user, Role role,
+        private static async Task<bool> ExecuteActionEventRegister(DbAction action, string param, Character user,
+            Role role,
             Item item, string input)
         {
             if (user == null)
@@ -5503,7 +6308,8 @@ namespace Comet.Game.States
 
             if (splitParams.Length < 7)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Invalid param length ExecuteActionTrapCreate {action.Identity}");
+                await Log.WriteLogAsync(LogLevel.Error,
+                    $"Invalid param length ExecuteActionTrapCreate {action.Identity}");
                 return false;
             }
 
@@ -5531,7 +6337,7 @@ namespace Comet.Game.States
                 MapId = idMap,
                 PosX = posX,
                 PosY = posY,
-                Id = (uint)IdentityGenerator.Traps.GetNextIdentity
+                Id = (uint) IdentityGenerator.Traps.GetNextIdentity
             });
 
             if (!await trap.InitializeAsync())
@@ -5578,7 +6384,7 @@ namespace Comet.Game.States
                 .Replace("%user_map_x", user?.MapX.ToString() ?? "0")
                 .Replace("%user_map_y", user?.MapY.ToString() ?? "0")
                 .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
-                .Replace("%user_nobility_rank", ((int)(user?.NobilityRank ?? 0)).ToString())
+                .Replace("%user_nobility_rank", ((int) (user?.NobilityRank ?? 0)).ToString())
                 .Replace("%user_nobility_position", user?.NobilityPosition.ToString() ?? "0")
                 .Replace("%user_home_id", user?.HomeIdentity.ToString() ?? "0")
                 .Replace("%syn_id", user?.SyndicateIdentity.ToString() ?? "0")
@@ -5587,8 +6393,10 @@ namespace Comet.Game.States
                 .Replace("%user_virtue", user?.VirtuePoints.ToString() ?? "0")
                 .Replace("%map_owner_id", user?.Map.OwnerIdentity.ToString() ?? "0")
                 .Replace("%last_add_item_id", user?.LastAddItemIdentity.ToString() ?? "0")
-                .Replace("%online_time", $"{user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds")
-                .Replace("%session_time", $"{user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds")
+                .Replace("%online_time",
+                    $"{user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds")
+                .Replace("%session_time",
+                    $"{user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds")
                 .Replace("%businessman_days", $"{user?.BusinessManDays}");
 
             if (result.Contains("%levelup_exp"))
@@ -5613,6 +6421,7 @@ namespace Comet.Game.States
                                 comma = true;
                                 continue;
                             }
+
                             strEvent += result[i];
                         }
                         else
@@ -5667,7 +6476,7 @@ namespace Comet.Game.States
 
             if (result.Contains("%iter_upquality_gem"))
             {
-                Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
+                Item pItem = user?.UserPackage[(Item.ItemPosition) user.Iterator];
                 if (pItem != null)
                     result = result.Replace("%iter_upquality_gem", pItem.GetUpQualityGemAmount().ToString());
                 else
@@ -5676,7 +6485,7 @@ namespace Comet.Game.States
 
             if (result.Contains("%iter_itembound"))
             {
-                Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
+                Item pItem = user?.UserPackage[(Item.ItemPosition) user.Iterator];
                 if (pItem != null)
                     result = result.Replace("%iter_itembound", pItem.IsBound ? "1" : "0");
                 else
@@ -5685,7 +6494,7 @@ namespace Comet.Game.States
 
             if (result.Contains("%iter_uplevel_gem"))
             {
-                Item pItem = user?.UserPackage[(Item.ItemPosition)user.Iterator];
+                Item pItem = user?.UserPackage[(Item.ItemPosition) user.Iterator];
                 if (pItem != null)
                     result = result.Replace("%iter_uplevel_gem", pItem.GetUpgradeGemAmount().ToString());
                 else
@@ -5699,7 +6508,9 @@ namespace Comet.Game.States
 
         private static string[] SplitParam(string param, int count = 0)
         {
-            return count > 0 ? param.Split(new[] {' '}, count, StringSplitOptions.RemoveEmptyEntries) : param.Split(' ');
+            return count > 0
+                ? param.Split(new[] {' '}, count, StringSplitOptions.RemoveEmptyEntries)
+                : param.Split(' ');
         }
 
         private static string GetParenthesys(string szParam)
@@ -5725,7 +6536,7 @@ namespace Comet.Game.States
             m_timeOut.Startup(secs);
             Action = action;
         }
-        
+
         public uint Action { get; }
 
         public bool CanBeExecuted => m_timeOut.IsActive() && m_timeOut.IsTimeOut();
@@ -5788,7 +6599,7 @@ namespace Comet.Game.States
         ActionItemLaynpc = 403,
         ActionItemDelthis = 498,
         ActionItemonlyLimit = 499,
-        
+
         // Item
         ActionItemFirst = 500,
         ActionItemAdd = 501,
@@ -5838,7 +6649,7 @@ namespace Comet.Game.States
         ActionMstMagic = 802,
         ActionMstRefinery = 803,
         ActionMstLimit = 899,
-        
+
         //User
         ActionUserFirst = 1000,
         ActionUserAttr = 1001,

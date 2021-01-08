@@ -24,6 +24,7 @@
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Magics;
 using Comet.Game.World.Maps;
 
 #endregion
@@ -44,7 +45,8 @@ namespace Comet.Game.States.Events
             None,
             TimedGuildWar,
             GuildPk,
-            GuildContest
+            GuildContest,
+            LineSkillPk
         }
 
         private TimeOutMS m_eventCheck;
@@ -89,6 +91,12 @@ namespace Comet.Game.States.Events
         }
 
         public virtual Task OnAttackAsync(Character sender)
+        {
+            return Task.CompletedTask;
+        }
+
+
+        public virtual Task OnHitAsync(Character sender, Magic magic = null) // magic null is auto attack
         {
             return Task.CompletedTask;
         }

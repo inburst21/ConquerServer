@@ -39,7 +39,8 @@ namespace Comet.Shared
         Error,
         Exception,
         Deadloop,
-        Cheat
+        Cheat,
+        Action
     }
 
     internal enum LogFolder
@@ -77,33 +78,38 @@ namespace Comet.Shared
         {
             RefreshFolders();
 
-            var now = DateTime.Now;
+            if (level == LogLevel.Action)
+                file = "GameAction";
+
             message = string.Format(message, values);
             message = $"{DateTime.Now:HH:mm:ss.fff} [{level}] - {message}";
 
             await WriteToFile(file, LogFolder.SystemLog, message);
 
-            switch (level)
+            if (level != LogLevel.Action)
             {
-                case LogLevel.Message:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogLevel.Debug:
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    break;
-                case LogLevel.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case LogLevel.Exception:
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    break;
-                case LogLevel.Warning:
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    break;
-            }
+                switch (level)
+                {
+                    case LogLevel.Message:
+                        Console.ForegroundColor = ConsoleColor.White;
+                        break;
+                    case LogLevel.Debug:
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        break;
+                    case LogLevel.Error:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    case LogLevel.Exception:
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        break;
+                    case LogLevel.Warning:
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        break;
+                }
 
-            Console.WriteLine(message);
-            Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine(message);
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
 
         public static async Task GmLog(string file, string message, params object[] values)

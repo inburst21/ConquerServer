@@ -5,9 +5,9 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyVersion>1.2021.0106.4</AssemblyVersion>
+    <AssemblyVersion>1.2021.0108.4</AssemblyVersion>
 
-    <FileVersion>1.2021.0106.8</FileVersion>
+    <FileVersion>1.2021.0108.9</FileVersion>
 
     <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
