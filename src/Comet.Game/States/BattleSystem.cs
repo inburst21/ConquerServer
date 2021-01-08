@@ -205,7 +205,7 @@ namespace Comet.Game.States
                 attack = attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
 
             if (attacker is Character && target is Character && attacker.IsBowman)
-                attack = (int)(attack * 0.125f);
+                attack = (int)(attack * 0.25f);
 
             if (adjustAtk > 0)
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
@@ -241,8 +241,6 @@ namespace Comet.Game.States
             if (attacker.QueryStatus(StatusSet.SUPERMAN) != null && !target.IsDynaNpc() && !target.IsPlayer())
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.SUPERMAN).Power);
 
-            damage = Math.Max(damage, 1);
-
             if (attacker is Character && target.IsMonster())
             {
                 damage = CalcDamageUser2Monster(damage, defense, attacker.Level, target.Level);
@@ -269,6 +267,7 @@ namespace Comet.Game.States
             if (target is Monster mob)
                 damage = (int)Math.Min(mob.MaxLife * 700, damage);
 
+            damage = Math.Max(damage, 1);
             return (damage, effect);
         }
 
