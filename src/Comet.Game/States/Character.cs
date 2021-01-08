@@ -1351,6 +1351,9 @@ namespace Comet.Game.States
             await Log.GmLog("drop_item",
                 $"{Name}({Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.OriginalMaximumDurability}\r\n\t{item.ToJson()}");
 
+            if (item.IsSuspicious())
+                return false;
+
             if ((item.CanBeDropped() || force) && item.IsDisappearWhenDropped())
                 return await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
 

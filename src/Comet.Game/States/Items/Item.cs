@@ -1436,7 +1436,7 @@ namespace Comet.Game.States.Items
 
         public bool CanBeDropped()
         {
-            return !IsMonopoly() && !IsLocked() && BattlePower < 8;
+            return !IsMonopoly() && !IsLocked() && !IsSuspicious() && BattlePower < 8;
         }
 
         public bool CanBeStored()

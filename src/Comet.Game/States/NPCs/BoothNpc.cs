@@ -109,6 +109,8 @@ namespace Comet.Game.States.NPCs
                 return false;
             if (item.IsLocked())
                 return false;
+            if (item.IsSuspicious())
+                return false;
             return true;
         }
 

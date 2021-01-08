@@ -803,7 +803,7 @@ namespace Comet.Game.States.Items
             {
                 if (await Kernel.ChanceCalcAsync(nChance))
                 {
-                    if (item.IsNeverDropWhenDead())
+                    if (item.IsNeverDropWhenDead() || item.IsSuspicious())
                         continue;
 
                     switch (nMapType)
@@ -856,7 +856,7 @@ namespace Comet.Game.States.Items
             var temp = new List<Item>();
             foreach (var item in m_dicInventory.Values)
             {
-                if (item.IsNeverDropWhenDead())
+                if (item.IsNeverDropWhenDead() || item.IsSuspicious())
                     continue;
                 temp.Add(item);
             }
@@ -911,7 +911,7 @@ namespace Comet.Game.States.Items
             if (m_dicEquipment.Count == 0 || attacker == null)
                 return false;
 
-            List<Item> items = m_dicEquipment.Values.Where(x => !x.IsArrowSort() && !x.IsGourd() && !x.IsGourd()).ToList();
+            List<Item> items = m_dicEquipment.Values.Where(x => !x.IsArrowSort() && !x.IsGourd() && !x.IsGourd() && !x.IsSuspicious()).ToList();
             Item item = items[await Kernel.NextAsync(items.Count) % items.Count];
 
             if (!await UnequipAsync(item.Position))
