@@ -74,7 +74,7 @@ namespace Comet.Game
             var partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
 
-            await Log.WriteLogAsync(LogLevel.Message, $"Client[{client.GUID}] {client.IPAddress} has connected");
+            // await Log.WriteLogAsync(LogLevel.Message, $"Client[{client.GUID}] {client.IPAddress} has connected");
 
             await client.DiffieHellman.ComputePublicKeyAsync();
 
