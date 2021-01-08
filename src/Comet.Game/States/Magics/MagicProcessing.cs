@@ -397,7 +397,7 @@ namespace Comet.Game.States.Magics
             int power = result.Damage;
 
             Character user = m_pOwner as Character;
-            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 100))
             {
                 await user.SendEffectAsync("LuckyGuy", true);
                 power *= 2;
@@ -551,7 +551,7 @@ namespace Comet.Game.States.Magics
                     continue;
 
                 var (damage, effect) = await m_pOwner.BattleSystem.CalcPowerAsync(byMagic, m_pOwner, target, magic.Power);
-                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 150))
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 250))
                 {
                     await user.SendEffectAsync("LuckyGuy", true);
                     damage *= 2;
@@ -631,7 +631,7 @@ namespace Comet.Game.States.Magics
 
                 var atkResult = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target, magic.Power);
 
-                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(5, 100))
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 100))
                 {
                     await user.SendEffectAsync("LuckyGuy", true);
                     atkResult.Damage *= 2;
@@ -915,7 +915,7 @@ namespace Comet.Game.States.Magics
 
                 var result = await m_pOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), m_pOwner, target, magic.Power);
 
-                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+                if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 100))
                 {
                     await user.SendEffectAsync("LuckyGuy", true);
                     result.Damage *= 2;
@@ -994,7 +994,7 @@ namespace Comet.Game.States.Magics
             }
             
             Character user = m_pOwner as Character;
-            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 100))
             {
                 await user.SendEffectAsync("LuckyGuy", true);
                 power *= 2;

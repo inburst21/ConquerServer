@@ -2258,13 +2258,13 @@ namespace Comet.Game.States
             if (attacker == null)
                 return false;
 
-            if (IsLucky && await Kernel.ChanceCalcAsync(10, 100))
+            if (IsLucky && await Kernel.ChanceCalcAsync(1, 100))
             {
                 await SendEffectAsync("LuckyGuy", true);
                 power /= 10;
             }
 
-            if ((PreviousProfession == 25 || FirstProfession == 25) && bReflectEnable && await Kernel.ChanceCalcAsync(10d))
+            if ((PreviousProfession == 25 || FirstProfession == 25) && bReflectEnable && await Kernel.ChanceCalcAsync(5, 100))
             {
                 power = Math.Min(1700, power);
                 await attacker.BeAttackAsync(magic, this, power, false);

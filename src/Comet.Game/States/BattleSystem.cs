@@ -99,7 +99,7 @@ namespace Comet.Game.States
             InteractionEffect effect = result.effect;
             int damage = result.Damage;
 
-            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(10, 100))
+            if (user?.IsLucky == true && await Kernel.ChanceCalcAsync(1, 200))
             {
                 await user.SendEffectAsync("LuckyGuy", true);
                 damage *= 2;
