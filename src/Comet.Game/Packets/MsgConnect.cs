@@ -103,7 +103,7 @@ namespace Comet.Game.Packets
             client.AuthorityLevel = auth.AuthorityID;
 
             // temp code for pre-release
-/*#if DEBUG
+#if DEBUG
             if (client.AuthorityLevel < 2)
             {
                 await client.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.NonCooperatorAccount));
@@ -111,7 +111,7 @@ namespace Comet.Game.Packets
                 client.Socket.Disconnect(false);
                 return;
             }
-#endif*/
+#endif
 
             if (character == null)
             {

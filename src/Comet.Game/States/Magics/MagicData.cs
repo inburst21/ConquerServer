@@ -140,8 +140,11 @@ namespace Comet.Game.States.Magics
             if (m_pOwner.IsPlayer())
             {
                 Character user = (Character) m_pOwner;
-                var checkMagics = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, user.FirstProfession / 10, user.Profession / 10, 1).Magics;
-                checkMagics.AddRange(Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, user.PreviousProfession / 10, user.Profession / 10, 2).Magics);
+                List<ushort> checkMagics = new List<ushort>();
+                //if (user.Metempsychosis > 0)
+                //    checkMagics.AddRange(Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, user.FirstProfession / 10, user.PreviousProfession / 10, 1)?.Magics ?? new List<ushort>());
+                //if (user.Metempsychosis > 1)
+                //    checkMagics.AddRange(Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, user.PreviousProfession / 10, user.Profession / 10, 2)?.Magics ?? new List<ushort>());
 
                 foreach (var dbMagic in await MagicRepository.GetAsync(m_pOwner.Identity))
                 {
@@ -149,7 +152,7 @@ namespace Comet.Game.States.Magics
                     if (!await magic.CreateAsync(dbMagic))
                         continue;
 
-                    if (checkMagics.Any(x => x == dbMagic.Type) && !user.IsGm())
+                    if (checkMagics?.Any(x => x == dbMagic.Type) == true && !user.IsGm())
                     {
                         _ = BaseRepository.DeleteAsync(dbMagic).ConfigureAwait(false);
                         continue;
