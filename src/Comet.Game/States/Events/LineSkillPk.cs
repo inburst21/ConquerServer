@@ -190,6 +190,7 @@ namespace Comet.Game.States.Events
                         await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
                 }
 
+                m_participants.Clear();
                 await DeliverRewardsAsync();
                 Stage = EventStage.Idle;
                 return;
