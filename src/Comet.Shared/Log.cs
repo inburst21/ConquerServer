@@ -40,7 +40,8 @@ namespace Comet.Shared
         Exception,
         Deadloop,
         Cheat,
-        Action
+        Action,
+        Socket
     }
 
     internal enum LogFolder

@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Comet.Network.Sockets;
+using Comet.Shared;
 using Microsoft.Extensions.Hosting;
 
 #endregion
@@ -118,7 +119,14 @@ namespace Comet.Network.Packets
                 var msg = await channel.Reader.ReadAsync(CancelReads);
                 if (msg != null)
                 {
-                    await Process(msg.Actor, msg.Packet).ConfigureAwait(false);
+                    try
+                    {
+                        await Process(msg.Actor, msg.Packet).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = Log.WriteLogAsync(LogLevel.Socket, ex.ToString()).ConfigureAwait(false);
+                    }
                 }
             }
         }

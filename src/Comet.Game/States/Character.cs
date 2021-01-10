@@ -4424,11 +4424,11 @@ namespace Comet.Game.States
                 {
                     if (MapIdentity == 6001)
                     {
-                        await AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE_IN_PRISON);
+                        QueueAction(() => AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE_IN_PRISON));
                     }
                     else
                     {
-                        await AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE);
+                        QueueAction(() => AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE));
                     }
                 }
 
