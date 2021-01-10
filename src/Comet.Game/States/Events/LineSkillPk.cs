@@ -118,11 +118,24 @@ namespace Comet.Game.States.Events
             return Task.CompletedTask;
         }
 
-        public override Task OnEnterAsync(Character sender)
+        public override async Task OnEnterAsync(Character sender)
         {
+            sender.PkMode = PkModeType.FreePk;
+            await sender.SendAsync(new MsgAction
+            {
+                Identity = sender.Identity,
+                Action = MsgAction.ActionType.CharacterPkMode,
+                Command = (uint) sender.PkMode
+            });
+
             if (sender.SyndicateIdentity != 0)
-                return Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounceSyn, sender.Name, sender.SyndicateName));
-            return Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounce, sender.Name));
+            {
+                await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounceSyn, sender.Name, sender.SyndicateName));
+            }
+            else
+            {
+                await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounce, sender.Name));
+            }
         }
 
         public override async Task OnTimerAsync()
@@ -135,29 +148,34 @@ namespace Comet.Game.States.Events
                 return;
             }
 
-            if (m_updateScreen.ToNextTime())
+            if (IsActive)
             {
-                await Map.BroadcastMsgAsync(Language.StrLineSkillPktTitleRank, MsgTalk.TalkChannel.GuildWarRight1);
-                var list = m_participants.Values
-                    .OrderByDescending(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks))
-                    .Take(8);
-                int i = 1;
-                foreach (var ranked in list)
+                if (m_updateScreen.ToNextTime())
                 {
-                    double points = CalculatePoints(ranked.Attacks, ranked.AttacksSuccess, ranked.ReceivedAttacks);
-                    await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktUsrRank, i++, ranked.Name, points,
-                        ranked.AttacksSuccess, ranked.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
-                }
+                    await Map.BroadcastMsgAsync(Language.StrLineSkillPktTitleRank, MsgTalk.TalkChannel.GuildWarRight1);
+                    var list = m_participants.Values
+                        .OrderByDescending(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks))
+                        .Take(8);
+                    int i = 1;
+                    foreach (var ranked in list)
+                    {
+                        double points = CalculatePoints(ranked.Attacks, ranked.AttacksSuccess, ranked.ReceivedAttacks);
+                        await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktUsrRank, i++, ranked.Name,
+                            points,
+                            ranked.AttacksSuccess, ranked.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
+                    }
 
-                foreach (var user in m_participants.Values)
-                {
-                    Character player = Kernel.RoleManager.GetUser(user.Identity);
-                    if (player == null)
-                        continue;
+                    foreach (var user in m_participants.Values)
+                    {
+                        Character player = Kernel.RoleManager.GetUser(user.Identity);
+                        if (player == null)
+                            continue;
 
-                    await player.SendAsync(string.Format(Language.StrLineSkillPktOwnRank,
-                        CalculatePoints(user.Attacks, user.AttacksSuccess, user.ReceivedAttacks), user.AttacksSuccess,
-                        user.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
+                        await player.SendAsync(string.Format(Language.StrLineSkillPktOwnRank,
+                            CalculatePoints(user.Attacks, user.AttacksSuccess, user.ReceivedAttacks),
+                            user.AttacksSuccess,
+                            user.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
+                    }
                 }
             }
 

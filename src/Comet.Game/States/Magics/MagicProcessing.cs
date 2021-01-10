@@ -47,8 +47,8 @@ namespace Comet.Game.States.Magics
         ///     This delay is a general one, to avoid people from spamming skills in low ping scenarios.
         /// </summary>
         private readonly TimeOutMS m_tDelay = new TimeOutMS(MAGIC_DELAY);
-
         private TimeOutMS m_tIntone = new TimeOutMS();
+        private readonly TimeOutMS m_MagicDelay = new TimeOutMS(MAGIC_DELAY);
 
         //private Magic m_pMagic = null;
         private ushort m_typeMagic = 0;
@@ -69,7 +69,7 @@ namespace Comet.Game.States.Magics
             int delay = m_pOwner.Map.IsTrainingMap()
                 ? MAGIC_DELAY
                 : MAGIC_DELAY - magic.Level * MAGIC_DECDELAY_PER_LEVEL;
-            if (!m_tDelay.IsTimeOut(delay) &&
+            if (!m_MagicDelay.IsTimeOut(delay) &&
                 magic.Sort != MagicSort.Collide)
                 return (false, x, y);
 
@@ -267,6 +267,7 @@ namespace Comet.Game.States.Magics
                     await user.SendGemEffectAsync();
             }
 
+            m_MagicDelay.Update();
             await m_pOwner.ProcessOnAttackAsync();
 
             if (magic.IntoneSpeed <= 0)
