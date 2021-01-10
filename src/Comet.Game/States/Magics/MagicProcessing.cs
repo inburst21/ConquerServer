@@ -519,21 +519,11 @@ namespace Comet.Game.States.Magics
             long nExp = 0, battleExp = 0;
 
             List<Role> setTarget = new List<Role>();
-            Point center;
-            if (magic.Ground == 0)
-            {
-                center = new Point(m_pOwner.MapX, m_pOwner.MapY);
-            }
-            else
-            {
-                Role target = m_pOwner.Map.QueryAroundRole(m_pOwner, m_idTarget);
-                if (target == null || !target.IsAlive)
-                    return false;
-
-                center = new Point(m_pOwner.MapX, m_pOwner.MapY);
-                //center = new Point(target.MapX, target.MapY);
-                setTarget.Add(target);
-            }
+            Point center = new Point(m_pOwner.MapX, m_pOwner.MapY);
+            
+            Role tgt = m_pOwner.Map.QueryAroundRole(m_pOwner, m_idTarget);
+            if (tgt != null && tgt.IsAlive)
+                setTarget.Add(tgt);
 
             var targets = m_pOwner.Map.Query9BlocksByPos(m_pOwner.MapX, m_pOwner.MapY);
             foreach (var target in targets)
