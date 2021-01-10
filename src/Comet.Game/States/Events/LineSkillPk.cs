@@ -61,7 +61,7 @@ namespace Comet.Game.States.Events
 
         public override EventType Identity => EventType.LineSkillPk;
 
-        public override bool IsInTime => DateTime.Now.Minute >= 10 && DateTime.Now.Minute < 20;
+        public override bool IsInTime => DateTime.Now.Minute >= 00 && DateTime.Now.Minute < 60;
         public override bool IsActive => Stage == EventStage.Running && IsInTime;
         public override bool IsEnded => Stage == EventStage.Running && !IsInTime;
 
@@ -228,7 +228,11 @@ namespace Comet.Game.States.Events
 
         private double CalculatePoints(int attacks, int dealt, int recv)
         {
-            return dealt / (double) attacks + dealt / (double) recv;
+            attacks = Math.Max(1, attacks);
+            dealt = Math.Max(1, dealt);
+            recv = Math.Max(1, recv);
+            double currPoints = Math.Max(dealt / (double) attacks + dealt / (double) recv, 0.01d);
+            return currPoints;
         }
         
         private Participant GetUser(uint idUser)
