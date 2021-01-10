@@ -100,6 +100,16 @@ namespace Comet.Game.States.Events
             if (!IsActive)
                 return Task.CompletedTask;
 
+#if !DEBUG
+            if (attacker is Character player)
+                if (player.IsGm())
+                    return Task.CompletedTask;
+
+            if (target is Character tgtPlayer)
+                if (tgtPlayer.IsGm())
+                    return Task.CompletedTask;
+#endif
+
             var user = GetUser(attacker as Character);
             user.AttacksSuccess++;
             return Task.CompletedTask;
@@ -112,6 +122,16 @@ namespace Comet.Game.States.Events
 
             if (!IsActive)
                 return Task.CompletedTask;
+
+#if !DEBUG
+            if (attacker is Character player)
+                if (player.IsGm())
+                    return Task.CompletedTask;
+
+            if (target is Character tgtPlayer)
+                if (tgtPlayer.IsGm())
+                    return Task.CompletedTask;
+#endif
 
             var user = GetUser(target as Character);
             user.ReceivedAttacks++;
@@ -189,9 +209,9 @@ namespace Comet.Game.States.Events
                     if (user != null)
                         await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
                 }
-
-                m_participants.Clear();
+                
                 await DeliverRewardsAsync();
+                m_participants.Clear();
                 Stage = EventStage.Idle;
                 return;
             }

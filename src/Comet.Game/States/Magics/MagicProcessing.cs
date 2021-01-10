@@ -212,16 +212,16 @@ namespace Comet.Game.States.Magics
             if (!magic.IsReady())
                 return false;
 
-            if (magic.Ground > 0 && magic.Sort != MagicSort.Atkstatus)
+            /*if (magic.Ground > 0 && magic.Sort != MagicSort.Atkstatus)
                 m_idTarget = 0;
-            else
+            else*/
                 m_idTarget = idTarget;
 
             m_targetPos = new Point(x, y);
 
             Character user = m_pOwner as Character;
             GameMap map = m_pOwner.Map;
-            if (user != null  && !map.IsTrainingMap())
+            if (user != null  && !map.IsTrainingMap() && map.Identity != TC_PK_ARENA_ID)
             {
                 if (magic.UseMana > 0)
                     await user.AddAttributesAsync(ClientUpdateType.Mana, magic.UseMana * -1);
@@ -519,8 +519,23 @@ namespace Comet.Game.States.Magics
             long nExp = 0, battleExp = 0;
 
             List<Role> setTarget = new List<Role>();
+            Point center;
+            if (magic.Ground == 0)
+            {
+                center = new Point(m_pOwner.MapX, m_pOwner.MapY);
+            }
+            else
+            {
+                Role target = m_pOwner.Map.QueryAroundRole(m_pOwner, m_idTarget);
+                if (target == null || !target.IsAlive)
+                    return false;
+
+                center = new Point(m_pOwner.MapX, m_pOwner.MapY);
+                //center = new Point(target.MapX, target.MapY);
+                setTarget.Add(target);
+            }
+
             var targets = m_pOwner.Map.Query9BlocksByPos(m_pOwner.MapX, m_pOwner.MapY);
-            Point center = new Point(m_pOwner.MapX, m_pOwner.MapY);
             foreach (var target in targets)
             {
                 if (target.Identity == m_pOwner.Identity)
@@ -531,7 +546,8 @@ namespace Comet.Game.States.Magics
                     continue;
 
                 if (target.IsAttackable(m_pOwner)
-                    && !m_pOwner.IsImmunity(target))
+                    && !m_pOwner.IsImmunity(target)
+                    && target.Identity != m_idTarget)
                     setTarget.Add(target);
             }
 
@@ -1272,6 +1288,9 @@ namespace Comet.Game.States.Magics
 
             if (!CheckAwardExpEnable(pMagic))
                 return false;
+
+            if (m_pOwner.Map.Identity == TC_PK_ARENA_ID)
+                return true;
 
             if (m_pOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && m_autoAttackNum > 0 && m_autoAttackNum % 10 != 0)
                 return true;

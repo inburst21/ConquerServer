@@ -4038,22 +4038,33 @@ namespace Comet.Game.States
 
             string[] splitParams = SplitParam(param);
 
-            if (splitParams.Length < 2)
+            if (splitParams.Length < 1)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
                     $"Action {action.Identity}:{action.Type} has not enough argments: {param}");
                 return false;
             }
 
-            int value = int.Parse(splitParams[1]);
-            if (splitParams[0].Equals("style", StringComparison.InvariantCultureIgnoreCase))
+            string cmd = "style";
+            int value = 0;
+            if (splitParams.Length > 1)
+            {
+                cmd = splitParams[0];
+                value = int.Parse(splitParams[1]);
+            }
+            else
+            {
+                value = int.Parse(splitParams[0]);
+            }
+
+            if (cmd.Equals("style", StringComparison.InvariantCultureIgnoreCase))
             {
                 await user.SetAttributesAsync(ClientUpdateType.HairStyle,
                     (ushort) (value + (user.Hairstyle - (user.Hairstyle % 100))));
                 return true;
             }
 
-            if (splitParams[0].Equals("color", StringComparison.InvariantCultureIgnoreCase))
+            if (cmd.Equals("color", StringComparison.InvariantCultureIgnoreCase))
             {
                 await user.SetAttributesAsync(ClientUpdateType.HairStyle,
                     (ushort) (user.Hairstyle % 100 + value * 100));
