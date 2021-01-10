@@ -1324,7 +1324,7 @@ namespace Comet.Game.States
             await SendAsync(string.Format(Language.StrBoothSold, target.Name, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
             await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
 
-            await Log.GmLog("booth_sale", $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.Item.ToJson()}");
+            await Log.GmLog("booth_sale", $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.IsSilver},{item.Value},{item.Item.ToJson()}");
             return true;
         }
 
