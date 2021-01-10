@@ -61,7 +61,7 @@ namespace Comet.Game.States.Events
 
         public override EventType Identity => EventType.LineSkillPk;
 
-        public override bool IsInTime => DateTime.Now.Minute >= 00 && DateTime.Now.Minute < 60;
+        public override bool IsInTime => DateTime.Now.Minute >= 10 && DateTime.Now.Minute < 20;
         public override bool IsActive => Stage == EventStage.Running && IsInTime;
         public override bool IsEnded => Stage == EventStage.Running && !IsInTime;
 
