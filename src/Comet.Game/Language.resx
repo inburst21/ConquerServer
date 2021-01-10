@@ -348,6 +348,21 @@
   <data name="StrLayNpcSynTransInvalidMap" xml:space="preserve">
     <value>You cannot set a transportation NPC in this map.</value>
   </data>
+  <data name="StrLineSkillPktAnnounce" xml:space="preserve">
+    <value>{0} has joined the Line Skill Tournament.</value>
+  </data>
+  <data name="StrLineSkillPktAnnounceSyn" xml:space="preserve">
+    <value>{0} from has {1} joined the Line Skill Tournament.</value>
+  </data>
+  <data name="StrLineSkillPktOwnRank" xml:space="preserve">
+    <value>Me: {0:0.00}[{1}/{2}]</value>
+  </data>
+  <data name="StrLineSkillPktTitleRank" xml:space="preserve">
+    <value>Line Skill PK Tournament</value>
+  </data>
+  <data name="StrLineSkillPktUsrRank" xml:space="preserve">
+    <value>Nº {0} - {1} - {2:0.00}[{3}/{4}]</value>
+  </data>
   <data name="StrLotteryHigh" xml:space="preserve">
     <value>{0} has won {1} from the Lottery.</value>
   </data>

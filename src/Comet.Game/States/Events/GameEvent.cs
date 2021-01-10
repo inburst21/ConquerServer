@@ -49,6 +49,8 @@ namespace Comet.Game.States.Events
             LineSkillPk
         }
 
+        public const int RANK_REFRESH_RATE_MS = 10000;
+
         private TimeOutMS m_eventCheck;
 
         protected GameEvent(string name, int timeCheck = 1000)
@@ -61,7 +63,13 @@ namespace Comet.Game.States.Events
 
         public string Name { get; }
 
+        protected EventStage Stage { get; set; } = EventStage.Idle;
+
         public virtual GameMap Map { get; protected set; }
+
+        public virtual bool IsInTime { get; } = false;
+        public virtual bool IsActive { get; } = false;
+        public virtual bool IsEnded { get; } = false;
 
         public bool ToNextTime() => m_eventCheck.ToNextTime();
 
@@ -95,8 +103,17 @@ namespace Comet.Game.States.Events
             return Task.CompletedTask;
         }
 
+        public virtual Task OnBeAttackAsync(Role attacker, Role target, Magic magic = null)
+        {
+            return Task.CompletedTask;
+        }
 
-        public virtual Task OnHitAsync(Character sender, Magic magic = null) // magic null is auto attack
+        public virtual Task<int> GetDamageLimitAsync(Role attacker, Role target, int power)
+        {
+            return Task.FromResult(power);
+        }
+
+        public virtual Task OnHitAsync(Role attacker, Role target, Magic magic = null) // magic null is auto attack
         {
             return Task.CompletedTask;
         }

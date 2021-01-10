@@ -19,13 +19,225 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
+using Comet.Game.Database;
+using Comet.Game.Database.Models;
+using Comet.Game.Packets;
+using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Magics;
+using Comet.Shared;
+
 namespace Comet.Game.States.Events
 {
     public sealed class LineSkillPk : GameEvent
     {
-        public LineSkillPk(string name, int timeCheck = 1000)
-            : base(name, timeCheck)
+        private const int MAP_ID_I = 2080;
+        private const int MAX_REWARDS = 3;
+
+        private ConcurrentDictionary<uint, Participant> m_participants = new ConcurrentDictionary<uint, Participant>();
+
+        private TimeOutMS m_updateScreen = new TimeOutMS(RANK_REFRESH_RATE_MS);
+
+        private uint[] m_rewardsActionIds = {
+            110000000, // 1st
+            110000050, // 2nd
+            110000100, // 3rd
+            0, // 4th
+            0, // 5th
+            0, // 6th
+            0, // 7th
+            0, // 8th
+            0 // >8th
+        };
+
+        public LineSkillPk()
+            : base("LineSkillPk", 1000)
         {
+        }
+
+        public override EventType Identity => EventType.LineSkillPk;
+
+        public override bool IsInTime => DateTime.Now.Minute >= 10 && DateTime.Now.Minute < 20;
+        public override bool IsActive => Stage == EventStage.Running && IsInTime;
+        public override bool IsEnded => Stage == EventStage.Running && !IsInTime;
+
+        public override async Task<bool> CreateAsync()
+        {
+            Map = Kernel.MapManager.GetMap(MAP_ID_I);
+            if (Map == null)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, $"LineSkillPK init error map not found").ConfigureAwait(false);
+                return false;
+            }
+            
+            return true;
+        }
+
+        public override Task<int> GetDamageLimitAsync(Role attacker, Role target, int power)
+        {
+            return Task.FromResult(1);
+        }
+
+        public override Task OnAttackAsync(Character sender)
+        {
+            var user = GetUser(sender);
+            user.Attacks++;
+            return Task.CompletedTask;
+        }
+
+        public override Task OnHitAsync(Role attacker, Role target, Magic magic = null)
+        {
+            if (!attacker.IsPlayer())
+                return Task.CompletedTask;
+
+            if (magic == null || magic.Sort != MagicData.MagicSort.Line)
+                return Task.CompletedTask;
+
+            if (!IsActive)
+                return Task.CompletedTask;
+
+            var user = GetUser(attacker as Character);
+            user.AttacksSuccess++;
+            return Task.CompletedTask;
+        }
+
+        public override Task OnBeAttackAsync(Role attacker, Role target, Magic magic = null)
+        {
+            if (!attacker.IsPlayer())
+                return Task.CompletedTask;
+
+            if (!IsActive)
+                return Task.CompletedTask;
+
+            var user = GetUser(target as Character);
+            user.ReceivedAttacks++;
+            return Task.CompletedTask;
+        }
+
+        public override Task OnEnterAsync(Character sender)
+        {
+            if (sender.SyndicateIdentity != 0)
+                return Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounceSyn, sender.Name, sender.SyndicateName));
+            return Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounce, sender.Name));
+        }
+
+        public override async Task OnTimerAsync()
+        {
+            if (IsInTime && !IsActive)
+            {
+                m_participants.Clear();
+                Stage = EventStage.Running;
+                m_updateScreen.Startup(RANK_REFRESH_RATE_MS);
+                return;
+            }
+
+            if (m_updateScreen.ToNextTime())
+            {
+                await Map.BroadcastMsgAsync(Language.StrLineSkillPktTitleRank, MsgTalk.TalkChannel.GuildWarRight1);
+                var list = m_participants.Values
+                    .OrderByDescending(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks))
+                    .Take(8);
+                int i = 1;
+                foreach (var ranked in list)
+                {
+                    double points = CalculatePoints(ranked.Attacks, ranked.AttacksSuccess, ranked.ReceivedAttacks);
+                    await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktUsrRank, i++, ranked.Name, points,
+                        ranked.AttacksSuccess, ranked.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
+                }
+
+                foreach (var user in m_participants.Values)
+                {
+                    Character player = Kernel.RoleManager.GetUser(user.Identity);
+                    if (player == null)
+                        continue;
+
+                    await player.SendAsync(string.Format(Language.StrLineSkillPktOwnRank,
+                        CalculatePoints(user.Attacks, user.AttacksSuccess, user.ReceivedAttacks), user.AttacksSuccess,
+                        user.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
+                }
+            }
+
+            if (IsEnded)
+            {
+                m_updateScreen.Clear();
+
+                foreach (var player in m_participants.Values)
+                {
+                    Character user = Kernel.RoleManager.GetUser(player.Identity);
+                    if (user != null)
+                        await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
+                }
+
+                await DeliverRewardsAsync();
+                Stage = EventStage.Idle;
+                return;
+            }
+        }
+
+        private async Task DeliverRewardsAsync()
+        {
+            int idx = 0;
+            foreach (var player in m_participants.Values
+                .OrderByDescending(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks))
+                .Take(MAX_REWARDS))
+            {
+                idx = Math.Min(m_rewardsActionIds.Length - 1, idx);
+
+                uint idReward = m_rewardsActionIds[idx++];
+                if (idReward == 0)
+                    continue;
+
+                Character user = Kernel.RoleManager.GetUser(player.Identity);
+                if (user != null)
+                {
+                    await GameAction.ExecuteActionAsync(idReward, user, null, null, "");
+                }
+                else
+                {
+                    await BaseRepository.SaveAsync(new DbBonus
+                    {
+                        AccountIdentity = player.AccountIdentity,
+                        Action = idReward,
+                        ReferenceCode = MAP_ID_I
+                    });
+                }
+            }
+        }
+
+        private double CalculatePoints(int attacks, int dealt, int recv)
+        {
+            return dealt / (double) attacks + dealt / (double) recv;
+        }
+        
+        private Participant GetUser(uint idUser)
+        {
+            return m_participants.TryGetValue(idUser, out var user) ? user : null;
+        }
+
+        private Participant GetUser(Character user)
+        {
+            if (m_participants.TryGetValue(user.Identity, out var player))
+                return player;
+            return !m_participants.TryAdd(user.Identity, player = new Participant
+            {
+                Identity = user.Identity,
+                AccountIdentity = user.Client.AccountIdentity,
+                Name = user.Name
+            }) ? null : player;
+        }
+
+        private class Participant
+        {
+            public uint Identity { get; set; }
+            public uint AccountIdentity { get; set; }
+            public string Name { get; set; }
+            public int Attacks { get; set; }
+            public int AttacksSuccess { get; set; }
+            public int ReceivedAttacks { get; set; }
         }
     }
 }

@@ -30,6 +30,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Events;
 using Comet.Game.States.Magics;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
@@ -755,6 +756,13 @@ namespace Comet.Game.Packets
                     case "/resetchannel":
                     {
                         //Kernel.Services.Processor.Queue();
+                        return true;
+                    }
+
+                    case "/cancelevent":
+                    {
+                        GameEvent.EventType type = (GameEvent.EventType) int.Parse(param);
+                        Kernel.EventThread.RemoveEvent(type);
                         return true;
                     }
                 }

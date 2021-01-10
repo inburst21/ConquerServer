@@ -754,6 +754,51 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has joined the Line Skill Tournament..
+        /// </summary>
+        public static string StrLineSkillPktAnnounce {
+            get {
+                return ResourceManager.GetString("StrLineSkillPktAnnounce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} from has {1} joined the Line Skill Tournament..
+        /// </summary>
+        public static string StrLineSkillPktAnnounceSyn {
+            get {
+                return ResourceManager.GetString("StrLineSkillPktAnnounceSyn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Me: {0:0.00}[{1}/{2}].
+        /// </summary>
+        public static string StrLineSkillPktOwnRank {
+            get {
+                return ResourceManager.GetString("StrLineSkillPktOwnRank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Line Skill PK Tournament.
+        /// </summary>
+        public static string StrLineSkillPktTitleRank {
+            get {
+                return ResourceManager.GetString("StrLineSkillPktTitleRank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Nº {0} - {1} - {2:0.00}[{3}/{4}].
+        /// </summary>
+        public static string StrLineSkillPktUsrRank {
+            get {
+                return ResourceManager.GetString("StrLineSkillPktUsrRank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has won {1} from the Lottery..
         /// </summary>
         public static string StrLotteryHigh {

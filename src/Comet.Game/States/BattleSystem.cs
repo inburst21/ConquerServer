@@ -25,6 +25,7 @@ using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
@@ -83,6 +84,8 @@ namespace Comet.Game.States
                 return false;
             }
 
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnAttackAsync(user);
 
             if (user != null && await user.AutoSkillAttackAsync(target))
             {
@@ -116,6 +119,9 @@ namespace Comet.Game.States
                 return true;
 
             await target.BeAttackAsync(MagicType.None, m_owner, damage, true);
+
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnHitAsync(m_owner, target);
 
             if (user != null)
                 await user.CheckCrimeAsync(target);
@@ -181,6 +187,13 @@ namespace Comet.Game.States
             else
             {
                 result = await CalcMagicAttackPowerAsync(attacker, target, adjustAtk);
+            }
+
+            GameEvent @event = Kernel.EventThread.GetEvent(attacker.MapIdentity);
+            if (@event != null)
+            {
+                result.Item1 = await @event.GetDamageLimitAsync(attacker, target, result.Item1);
+                return result;
             }
 
             if (target is DynamicNpc dynamicNpc

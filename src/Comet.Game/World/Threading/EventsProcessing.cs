@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,7 +38,7 @@ namespace Comet.Game.World.Threading
     public sealed class EventsProcessing : TimerBase
     {
         private TimeOut m_rankingBroadcast = new TimeOut(10);
-        private List<GameEvent> m_events = new List<GameEvent>();
+        private ConcurrentDictionary<GameEvent.EventType, GameEvent> m_events = new ConcurrentDictionary<GameEvent.EventType, GameEvent>();
 
         public EventsProcessing()
             : base(500, "EventsProcessing")
@@ -57,11 +58,11 @@ namespace Comet.Game.World.Threading
 
                 await dynaNpc.CheckFightTimeAsync();
 
-                if(ranking && m_events.All(x => x.Map.Identity != dynaNpc.MapIdentity)) 
+                if(ranking && m_events.Values.All(x => x.Map.Identity != dynaNpc.MapIdentity)) 
                     await dynaNpc.BroadcastRankingAsync();
             }
 
-            foreach (var @event in m_events)
+            foreach (var @event in m_events.Values)
             {
                 if (@event.ToNextTime())
                     await @event.OnTimerAsync();
@@ -73,25 +74,39 @@ namespace Comet.Game.World.Threading
         public override async Task OnStartAsync()
         {
             await RegisterEventAsync(new TimedGuildWar());
+            await RegisterEventAsync(new LineSkillPk());
 
             await base.OnStartAsync();
         }
 
         public async Task<bool> RegisterEventAsync(GameEvent @event)
         {
-            if (m_events.Any(x => x.Name.Equals(@event.Name, StringComparison.InvariantCultureIgnoreCase)))
+            if (m_events.ContainsKey(@event.Identity))
                 return false;
+
             if (await @event.CreateAsync())
             {
-                m_events.Add(@event);
+                m_events.TryAdd(@event.Identity, @event);
                 return true;
             }
             return false;
         }
 
+        public void RemoveEvent(GameEvent.EventType type)
+        {
+            m_events.TryRemove(type, out _);
+        }
+
         public T GetEvent<T>() where T : GameEvent
         {
-            return m_events.FirstOrDefault(x => x.GetType() == typeof(T)) as T;
+            return m_events.Values.FirstOrDefault(x => x.GetType() == typeof(T)) as T;
+        }
+
+        public GameEvent GetEvent(GameEvent.EventType type) => m_events.TryGetValue(type, out var ev) ? ev : null;
+
+        public GameEvent GetEvent(uint idMap)
+        {
+            return m_events.Values.FirstOrDefault(x => x.Map?.Identity == idMap);
         }
     }
 }

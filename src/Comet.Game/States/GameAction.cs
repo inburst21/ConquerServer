@@ -6277,6 +6277,12 @@ namespace Comet.Game.States
                     baseEvent = Kernel.EventThread.GetEvent<TimedGuildWar>();
                     break;
                 }
+                case "lineskillpk":
+                {
+                    baseEvent = Kernel.EventThread.GetEvent(GameEvent.EventType.LineSkillPk);
+                    break;
+                }
+
                 default:
                     return false;
             }

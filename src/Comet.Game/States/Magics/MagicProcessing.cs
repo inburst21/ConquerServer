@@ -66,18 +66,12 @@ namespace Comet.Game.States.Magics
         public async Task<(bool Success, ushort X, ushort Y)> CheckConditionAsync(Magic magic, uint idTarget, ushort x,
             ushort y)
         {
-            if (m_pOwner.Map.IsTrainingMap())
-            {
-                if (!m_tDelay.IsTimeOut(MAGIC_DELAY) &&
-                    magic.Sort != MagicSort.Collide)
-                    return (false, x, y);
-            }
-            else
-            {
-                if (!m_tDelay.IsTimeOut(MAGIC_DELAY - magic.Level * MAGIC_DECDELAY_PER_LEVEL) &&
-                    magic.Sort != MagicSort.Collide)
-                    return (false, x, y);
-            }
+            int delay = m_pOwner.Map.IsTrainingMap()
+                ? MAGIC_DELAY
+                : MAGIC_DELAY - magic.Level * MAGIC_DECDELAY_PER_LEVEL;
+            if (!m_tDelay.IsTimeOut(delay) &&
+                magic.Sort != MagicSort.Collide)
+                return (false, x, y);
 
             if (!magic.IsReady())
                 return (false, x, y);
@@ -427,7 +421,13 @@ namespace Comet.Game.States.Magics
                 {
                     dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
+
+                if (user?.CurrentEvent != null)
+                    await user.CurrentEvent.OnHitAsync(user, targetRole, magic);
             }
+
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnAttackAsync(user);
 
             if (totalExp > 0)
             {
@@ -497,7 +497,9 @@ namespace Comet.Game.States.Magics
                 if (power > 0)
                 {
                     await target.AddAttributesAsync(ClientUpdateType.Hitpoints, power);
-                    // todo broadcast team life
+
+                    if (target is Character user)
+                        await user.BroadcastTeamLifeAsync();
                 }
             }
 
@@ -588,14 +590,21 @@ namespace Comet.Game.States.Magics
                     dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
 
+                if (user?.CurrentEvent != null)
+                    await user.CurrentEvent.OnHitAsync(user, target, magic);
+
                 if (!target.IsAlive)
                     await m_pOwner.KillAsync(target, GetDieMode());
-                else if (!bMagic2Dealt && await Kernel.ChanceCalcAsync(5d) && user != null)
+                
+                if (!bMagic2Dealt && await Kernel.ChanceCalcAsync(5d) && user != null)
                 {
                     await user.SendWeaponMagic2Async(target);
                     bMagic2Dealt = true;
                 }
             }
+
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnAttackAsync(user);
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
             await CheckCrimeAsync(setTarget.ToDictionary(x => x.Identity), magic);
@@ -659,14 +668,20 @@ namespace Comet.Game.States.Magics
                     dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
 
+                if (user?.CurrentEvent != null)
+                    await user.CurrentEvent.OnHitAsync(user, target, magic);
+
                 if (!target.IsAlive)
                     await m_pOwner.KillAsync(target, GetDieMode());
 
                 if (msg.Count < MAX_TARGET_NUM)
                     msg.Append(target.Identity, atkResult.Damage, true);
             }
-
+            
             await m_pOwner.Map.BroadcastRoomMsgAsync(result.Center.X, result.Center.Y, msg);
+
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnAttackAsync(user);
 
             await CheckCrimeAsync(result.Roles.ToDictionary(x => x.Identity, x => x), magic);
             await AwardExpAsync(0, battleExp, exp, magic);
@@ -943,6 +958,9 @@ namespace Comet.Game.States.Magics
                     dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
 
+                if (user?.CurrentEvent != null)
+                    await user.CurrentEvent.OnHitAsync(user, target, magic);
+
                 if (!target.IsAlive)
                     await m_pOwner.KillAsync(target, GetDieMode());
 
@@ -951,6 +969,9 @@ namespace Comet.Game.States.Magics
             }
 
             await m_pOwner.BroadcastRoomMsgAsync(msg, true);
+
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnAttackAsync(user);
 
             await CheckCrimeAsync(targets.ToDictionary(x => x.Identity, x => x), magic);
             await AwardExpAsync(0, battleExp, exp, magic);
@@ -1036,8 +1057,14 @@ namespace Comet.Game.States.Magics
                 {
                     dynaNpc.AddSynWarScore(user.Syndicate, lifeLost);
                 }
+
+                if (user?.CurrentEvent != null)
+                    await user.CurrentEvent.OnHitAsync(user, target, magic);
             }
-            
+
+            if (user?.CurrentEvent != null)
+                await user.CurrentEvent.OnAttackAsync(user);
+
             await AwardExpAsync(0, battleExp, AWARDEXP_BY_TIMES, magic);
 
             if (!target.IsAlive)

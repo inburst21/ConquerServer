@@ -2287,6 +2287,9 @@ namespace Comet.Game.States
                 return true;
             }
 
+            if (CurrentEvent != null)
+                await CurrentEvent.OnBeAttackAsync(attacker, this);
+
             if (power > 0)
             {
                 await AddAttributesAsync(ClientUpdateType.Hitpoints, power * -1);
@@ -3587,6 +3590,13 @@ namespace Comet.Game.States
                 await Screen.SynchroScreenAsync();
 
                 m_respawn.Startup(10);
+
+                if (Map.IsTeamDisable() && Team != null)
+                {
+                    if (Team.Leader.Identity == Identity)
+                        await Team.DismissAsync(this);
+                    else await Team.DismissMemberAsync(this);
+                }
             }
             else
             {
@@ -4400,6 +4410,13 @@ namespace Comet.Game.States
         {
             if (Connection != ConnectionStage.Ready)
                 return;
+
+            Character instance = Kernel.RoleManager.GetUser(Identity);
+            if (instance == null || !instance.Client.GUID.Equals(Client.GUID))
+            {
+                Client.Disconnect();
+                return;
+            }
 
             try
             {
