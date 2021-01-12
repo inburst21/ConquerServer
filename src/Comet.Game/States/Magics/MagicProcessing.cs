@@ -1285,15 +1285,15 @@ namespace Comet.Game.States.Magics
             if (m_pOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && m_autoAttackNum > 0 && m_autoAttackNum % 10 != 0)
                 return true;
 
-            if (pMagic.AutoActive == 0 && m_pOwner.Map.IsTrainingMap())
-                nExp = Math.Max(1, nExp / 3);
+            /*if (pMagic.AutoActive == 0 && m_pOwner.Map.IsTrainingMap())
+                nExp = Math.Max(AWARDEXP_BY_TIMES, nExp / 3);*/
 
             if (pMagic.NeedExp > 0
                 && (pMagic.AutoActive & 16) == 0
                 || bIgnoreFlag)
             {
                 if (m_pOwner is Character owner)
-                    nExp = (int)(nExp * ((1 + (owner.MoonGemBonus / 100f))));
+                    nExp = (int)(nExp * ((1 + (owner.MoonGemBonus / 100d))));
 
                 pMagic.Experience += (uint)nExp;
 
@@ -1309,7 +1309,7 @@ namespace Comet.Game.States.Magics
                 && pMagic.Target == 4)
             {
                 if (m_pOwner is Character owner)
-                    nExp = (int)(nExp * ((1 + (owner.MoonGemBonus / 100f))));
+                    nExp = (int)(nExp * ((1 + (owner.MoonGemBonus / 100d))));
 
                 pMagic.Experience += (uint)nExp;
 
