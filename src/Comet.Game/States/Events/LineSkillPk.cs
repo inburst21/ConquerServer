@@ -70,7 +70,7 @@ namespace Comet.Game.States.Events
             Map = Kernel.MapManager.GetMap(MAP_ID_I);
             if (Map == null)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"LineSkillPK init error map not found").ConfigureAwait(false);
+                _ = Log.WriteLogAsync(LogLevel.Error, $"LineSkillPK init error map not found").ConfigureAwait(false);
                 return false;
             }
             
@@ -150,12 +150,14 @@ namespace Comet.Game.States.Events
 
             if (sender.SyndicateIdentity != 0)
             {
-                await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounceSyn, sender.Name, sender.SyndicateName));
+                _ = Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounceSyn, sender.Name, sender.SyndicateName));
             }
             else
             {
-                await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounce, sender.Name));
+                _ = Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounce, sender.Name));
             }
+
+            _ = Log.GmLog("xianjinengbisai", $"Enter\t{sender.Identity},{sender.Name},{sender.Client.IPAddress}");
         }
 
         public override async Task OnTimerAsync()
@@ -174,13 +176,14 @@ namespace Comet.Game.States.Events
                 {
                     await Map.BroadcastMsgAsync(Language.StrLineSkillPktTitleRank, MsgTalk.TalkChannel.GuildWarRight1);
                     var list = m_participants.Values
+                        .Where(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks) > 0)
                         .OrderByDescending(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks))
                         .Take(8);
                     int i = 1;
                     foreach (var ranked in list)
                     {
                         double points = CalculatePoints(ranked.Attacks, ranked.AttacksSuccess, ranked.ReceivedAttacks);
-                        await Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktUsrRank, i++, ranked.Name,
+                        _ = Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktUsrRank, i++, ranked.Name,
                             points,
                             ranked.AttacksSuccess, ranked.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
                     }
@@ -191,7 +194,7 @@ namespace Comet.Game.States.Events
                         if (player == null)
                             continue;
 
-                        await player.SendAsync(string.Format(Language.StrLineSkillPktOwnRank,
+                        _ = player.SendAsync(string.Format(Language.StrLineSkillPktOwnRank,
                             CalculatePoints(user.Attacks, user.AttacksSuccess, user.ReceivedAttacks),
                             user.AttacksSuccess,
                             user.ReceivedAttacks), MsgTalk.TalkChannel.GuildWarRight2);
@@ -202,17 +205,26 @@ namespace Comet.Game.States.Events
             if (IsEnded)
             {
                 m_updateScreen.Clear();
-
-                foreach (var player in m_participants.Values)
+                try
                 {
-                    Character user = Kernel.RoleManager.GetUser(player.Identity);
-                    if (user != null)
-                        await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
+                    foreach (var player in m_participants.Values)
+                    {
+                        Character user = Kernel.RoleManager.GetUser(player.Identity);
+                        if (user != null)
+                            await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
+                    }
+
+                    await DeliverRewardsAsync();
                 }
-                
-                await DeliverRewardsAsync();
-                m_participants.Clear();
-                Stage = EventStage.Idle;
+                catch (Exception ex)
+                {
+                    _ = Log.WriteLogAsync(LogLevel.Warning, ex.ToString()).ConfigureAwait(false);
+                }
+                finally
+                {
+                    m_participants.Clear();
+                    Stage = EventStage.Idle;
+                }
                 return;
             }
         }
@@ -221,6 +233,7 @@ namespace Comet.Game.States.Events
         {
             int idx = 0;
             foreach (var player in m_participants.Values
+                .Where(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks) > 0)
                 .OrderByDescending(x => CalculatePoints(x.Attacks, x.AttacksSuccess, x.ReceivedAttacks))
                 .Take(MAX_REWARDS))
             {
@@ -233,11 +246,11 @@ namespace Comet.Game.States.Events
                 Character user = Kernel.RoleManager.GetUser(player.Identity);
                 if (user != null)
                 {
-                    await GameAction.ExecuteActionAsync(idReward, user, null, null, "");
+                    _ = GameAction.ExecuteActionAsync(idReward, user, null, null, "");
                 }
                 else
                 {
-                    await BaseRepository.SaveAsync(new DbBonus
+                    _ = BaseRepository.SaveAsync(new DbBonus
                     {
                         AccountIdentity = player.AccountIdentity,
                         Action = idReward,
@@ -249,6 +262,9 @@ namespace Comet.Game.States.Events
 
         private double CalculatePoints(int attacks, int dealt, int recv)
         {
+            if (dealt == 0)
+                return 0;
+
             attacks = Math.Max(1, attacks);
             dealt = Math.Max(1, dealt);
             recv = Math.Max(1, recv);
@@ -269,7 +285,8 @@ namespace Comet.Game.States.Events
             {
                 Identity = user.Identity,
                 AccountIdentity = user.Client.AccountIdentity,
-                Name = user.Name
+                Name = user.Name,
+                IpAddress = user.Client.IPAddress
             }) ? null : player;
         }
 
@@ -281,6 +298,7 @@ namespace Comet.Game.States.Events
             public int Attacks { get; set; }
             public int AttacksSuccess { get; set; }
             public int ReceivedAttacks { get; set; }
+            public string IpAddress { get; set; }
         }
     }
 }

@@ -2868,14 +2868,7 @@ namespace Comet.Game.States
 
         public uint InteractingItem { get; set; }
         public uint InteractingNpc { get; set; }
-
-        private List<QueuedAction> m_queuedActions = new List<QueuedAction>();
-
-        public void AddActionToQueue(QueuedAction action)
-        {
-            m_queuedActions.Add(action);
-        }
-
+        
         public bool CheckItem(DbTask task)
         {
             if (task.Itemname1.Length > 0)
@@ -3597,6 +3590,13 @@ namespace Comet.Game.States
                         await Team.DismissAsync(this);
                     else await Team.DismissMemberAsync(this);
                 }
+
+                if (CurrentEvent == null)
+                {
+                    GameEvent @event = Kernel.EventThread.GetEvent(m_idMap);
+                    if (@event != null)
+                        await SignInEventAsync(@event);
+                }
             }
             else
             {
@@ -3613,10 +3613,16 @@ namespace Comet.Game.States
             BattleSystem.ResetBattle();
             await MagicData.AbortMagicAsync(false);
             StopMining();
-            
+
             if (Map != null)
+            {
                 await Map.RemoveAsync(Identity);
 
+                if (CurrentEvent != null && CurrentEvent.Map.Identity != 0 && CurrentEvent.Map.Identity == Map.Identity)
+                {
+                    await SignOutEventAsync();
+                }
+            }
             await Screen.ClearAsync();
         }
 

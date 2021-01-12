@@ -159,6 +159,9 @@
   <data name="StrBotCaptchaMessage" xml:space="preserve">
     <value>If you don't reply to this captcha or give me the wrong answer you'll be disconnected! Press OK if this equation is correct or Cancel if not. {0} + {1} = {2}?</value>
   </data>
+  <data name="StrBotjail" xml:space="preserve">
+    <value>You have been sent to the botjail!</value>
+  </data>
   <data name="StrBreakFriend" xml:space="preserve">
     <value>{0} broke up friendship with {1}.</value>
   </data>
@@ -380,6 +383,9 @@
   </data>
   <data name="StrLuckyGuySuccessUplevel" xml:space="preserve">
     <value>Lucky! Your equipment has been leveled successfully.</value>
+  </data>
+  <data name="StrMacrojail" xml:space="preserve">
+    <value>You have been sent to the macrojail!</value>
   </data>
   <data name="StrMakeFriend" xml:space="preserve">
     <value>{0} and {1} are friends from now on.</value>

@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.States;
 using Comet.Game.States.Events;
 using Comet.Game.States.NPCs;
 using Comet.Shared;
@@ -39,6 +40,7 @@ namespace Comet.Game.World.Threading
     {
         private TimeOut m_rankingBroadcast = new TimeOut(10);
         private ConcurrentDictionary<GameEvent.EventType, GameEvent> m_events = new ConcurrentDictionary<GameEvent.EventType, GameEvent>();
+        private ConcurrentDictionary<uint, QueuedAction> m_queuedActions = new ConcurrentDictionary<uint, QueuedAction>();
 
         public EventsProcessing()
             : base(500, "EventsProcessing")
@@ -66,6 +68,16 @@ namespace Comet.Game.World.Threading
             {
                 if (@event.ToNextTime())
                     await @event.OnTimerAsync();
+            }
+
+            foreach (var action in m_queuedActions.Values)
+            {
+                Character user = Kernel.RoleManager.GetUser(action.UserIdentity);
+                if (action.CanBeExecuted && user != null)
+                {
+                    await GameAction.ExecuteActionAsync(action.UserIdentity, user, null, null, "");
+                    m_queuedActions.TryRemove(user.Identity, out _);
+                }
             }
 
             return true;
@@ -107,6 +119,11 @@ namespace Comet.Game.World.Threading
         public GameEvent GetEvent(uint idMap)
         {
             return m_events.Values.FirstOrDefault(x => x.Map?.Identity == idMap);
+        }
+
+        public bool QueueAction(QueuedAction action)
+        {
+            return m_queuedActions.TryAdd(action.UserIdentity, action);
         }
     }
 }

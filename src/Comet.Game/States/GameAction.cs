@@ -5067,6 +5067,9 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionUserExecAction(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
+            if (user == null)
+                return false;
+
             string[] splitParams = SplitParam(param, 3);
             if (splitParams.Length < 3)
             {
@@ -5077,7 +5080,7 @@ namespace Comet.Game.States
                 || !uint.TryParse(splitParams[1], out var idAction))
                 return false;
 
-            user.AddActionToQueue(new QueuedAction(secSpan, idAction));
+            Kernel.EventThread.QueueAction(new QueuedAction(secSpan, idAction, user.Identity));
             return true;
         }
 
@@ -6548,15 +6551,17 @@ namespace Comet.Game.States
     {
         private TimeOut m_timeOut = new TimeOut();
 
-        public QueuedAction(int secs, uint action)
+        public QueuedAction(int secs, uint action, uint idUser)
         {
             m_timeOut.Startup(secs);
             Action = action;
+            UserIdentity = idUser;
         }
 
+        public uint UserIdentity { get; }
         public uint Action { get; }
-
         public bool CanBeExecuted => m_timeOut.IsActive() && m_timeOut.IsTimeOut();
+        public bool IsValid => Kernel.RoleManager.GetUser(UserIdentity) != null;
 
         public void Clear()
         {

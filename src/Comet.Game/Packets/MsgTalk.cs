@@ -733,6 +733,7 @@ namespace Comet.Game.Packets
                         await user.FlyMapAsync(findTarget.MapIdentity, findTarget.MapX, findTarget.MapY);
                         return true;
                     }
+
                     case "/bot":
                     {
                         string[] myParams = param.Split(new [] {" "}, 2, StringSplitOptions.RemoveEmptyEntries);
@@ -747,7 +748,29 @@ namespace Comet.Game.Packets
                         if (target != null)
                         {
                             await Log.GmLog("botjail", $"{user.Identity} {user.Name} botjailed {target.Identity} {target.Name} by: {myParams[1]}");
+                            await target.SendAsync(Language.StrBotjail);
                             await target.FlyMapAsync(6002, 28, 74);
+                            await target.SaveAsync();
+                        }
+                        return true;
+                    }
+
+                    case "/macro":
+                    {
+                        string[] myParams = param.Split(new[] { " " }, 2, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (myParams.Length < 2)
+                        {
+                            await user.SendAsync("/macro [target_name] [reason]", TalkChannel.Talk);
+                            return true;
+                        }
+
+                        Character target = Kernel.RoleManager.GetUser(myParams[0]);
+                        if (target != null)
+                        {
+                            await Log.GmLog("macrojail", $"{user.Identity} {user.Name} macrojailed {target.Identity} {target.Name} by: {myParams[1]}");
+                            await target.SendAsync(Language.StrMacrojail);
+                            await target.FlyMapAsync(6010, 28, 74);
                             await target.SaveAsync();
                         }
                         return true;

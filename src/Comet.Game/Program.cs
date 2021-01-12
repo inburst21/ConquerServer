@@ -185,6 +185,15 @@ namespace Comet.Game
                         break;
                     }
 
+                    case "/broadcast":
+                    {
+                        string[] bc = text.Split(new[] {" "}, 2, StringSplitOptions.RemoveEmptyEntries);
+                        if (bc.Length < 2)
+                            break;
+                        await Kernel.RoleManager.BroadcastMsgAsync(bc[1], MsgTalk.TalkChannel.Center);
+                        break;
+                    }
+
                     case "/createbots":
                     {
                         if (!int.TryParse(full[1], out int amount))

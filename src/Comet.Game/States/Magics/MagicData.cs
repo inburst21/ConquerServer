@@ -152,9 +152,19 @@ namespace Comet.Game.States.Magics
                     if (!await magic.CreateAsync(dbMagic))
                         continue;
 
-                    if (checkMagics?.Any(x => x == dbMagic.Type) == true && !user.IsGm())
+                    if (magic.Type == 1100 && user != null && user.ProfessionSort != 13)
                     {
-                        _ = BaseRepository.DeleteAsync(dbMagic).ConfigureAwait(false);
+                        await BaseRepository.DeleteAsync(dbMagic);
+                        continue;
+                    }
+                    if (magic.Type == 1025 && user != null && user.ProfessionSort != 2 && user.ProfessionSort != 13)
+                    {
+                        await BaseRepository.DeleteAsync(dbMagic);
+                        continue;
+                    }
+                    if (magic.Type == 1050 && user != null && user.ProfessionSort != 14 && user.ProfessionSort != 13)
+                    {
+                        await BaseRepository.DeleteAsync(dbMagic);
                         continue;
                     }
 

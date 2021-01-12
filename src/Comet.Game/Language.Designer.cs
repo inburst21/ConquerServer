@@ -187,6 +187,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have been sent to the botjail!.
+        /// </summary>
+        public static string StrBotjail {
+            get {
+                return ResourceManager.GetString("StrBotjail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} broke up friendship with {1}..
         /// </summary>
         public static string StrBreakFriend {
@@ -849,6 +858,15 @@ namespace Comet.Game {
         public static string StrLuckyGuySuccessUplevel {
             get {
                 return ResourceManager.GetString("StrLuckyGuySuccessUplevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have been sent to the macrojail!.
+        /// </summary>
+        public static string StrMacrojail {
+            get {
+                return ResourceManager.GetString("StrMacrojail", resourceCulture);
             }
         }
         
