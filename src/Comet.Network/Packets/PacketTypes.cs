@@ -54,6 +54,7 @@ namespace Comet.Network.Packets
         // MsgAccount = 1051,
         MsgConnect = 1052,
         MsgConnectEx = 1055,
+        MsgEncryptCode = 1059,
         MsgAccount = 1086,
         MsgPCNum = 1100,
         MsgMapItem = 1101,

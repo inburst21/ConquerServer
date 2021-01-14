@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyVersion>1.2021.0114.20</AssemblyVersion>
-    <FileVersion>1.2021.0114.42</FileVersion>
+    <FileVersion>1.2021.0114.43</FileVersion>
     <LangVersion>latest</LangVersion>
     <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>

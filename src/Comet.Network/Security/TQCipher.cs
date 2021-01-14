@@ -40,9 +40,6 @@ namespace Comet.Network.Security
     /// </remarks>
     public sealed class TQCipher : ICipher
     {
-        // Static fields and properties
-        private static readonly byte[] KInit = new byte[0x200];
-
         /// <summary>
         ///     Increments the counter used for decryption or encryption using the keystream.
         ///     Allows the server to specify thread safety for parallel reads and writes, or
@@ -53,17 +50,21 @@ namespace Comet.Network.Security
         /// <returns>Returns the previous value.</returns>
         public delegate ushort Increment(ref ushort x, int n);
 
-        // Local fields and properties
-        private byte[] K;
-        private readonly byte[] K1 = new byte[0x200];
-        private readonly byte[] K2 = new byte[0x200];
-        private ushort DecryptCounter, EncryptCounter;
+        // Static fields and properties
+        private static byte[] KInit = new byte[0x200];
 
         /// <summary>
         ///     Add defines how the cipher increments counters. By default, counters are
         ///     incremented without thread-safety for synchronous reads and writes.
         /// </summary>
         public Increment Add;
+
+        private ushort DecryptCounter, EncryptCounter;
+
+        // Local fields and properties
+        private byte[] K;
+        private byte[] K1 = new byte[0x200];
+        private byte[] K2 = new byte[0x200];
 
         /// <summary>
         ///     Initializes static variables for <see cref="TQCipher" />. Generates the static
@@ -77,8 +78,8 @@ namespace Comet.Network.Security
             {
                 KInit[i] = seed[0];
                 KInit[i + 0x100] = seed[4];
-                seed[0] = (byte) ((seed[1] + seed[0] * seed[2]) * seed[0] + seed[3]);
-                seed[4] = (byte) ((seed[5] - seed[4] * seed[6]) * seed[4] + seed[7]);
+                seed[0] = (byte) ((seed[1] + (seed[0] * seed[2])) * seed[0] + seed[3]);
+                seed[4] = (byte) ((seed[5] - (seed[4] * seed[6])) * seed[4] + seed[7]);
             }
         }
 
@@ -107,8 +108,8 @@ namespace Comet.Network.Security
         {
             var seed = seeds[0] as ulong?;
             var a = (uint) (seed >> 32);
-            var b = (uint) seed;
-            var c = (a + b) ^ 0x4321 ^ a;
+            var b = (uint) (seed);
+            var c = ((a + b) ^ 0x4321) ^ a;
             var d = c * c;
 
             var temp1 = BitConverter.GetBytes(c);
@@ -121,16 +122,6 @@ namespace Comet.Network.Security
 
             K = K2;
             EncryptCounter = 0;
-        }
-
-        public bool SetDecryptionIV(byte[] iv)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SetEncryptionIV(byte[] iv)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -172,7 +163,7 @@ namespace Comet.Network.Security
             for (int i = 0; i < src.Length; i++)
             {
                 dst[i] = (byte) (src[i] ^ 0xAB);
-                dst[i] = (byte) ((dst[i] >> 4) | (dst[i] << 4));
+                dst[i] = (byte) (dst[i] >> 4 | dst[i] << 4);
                 dst[i] = (byte) (dst[i] ^ k[x & 0xff]);
                 dst[i] = (byte) (dst[i] ^ k[(x >> 8) + 0x100]);
                 x++;

@@ -7,7 +7,7 @@
 
     <AssemblyVersion>1.2021.0114.4</AssemblyVersion>
 
-    <FileVersion>1.2021.0114.10</FileVersion>
+    <FileVersion>1.2021.0114.11</FileVersion>
 
     <Configurations>Debug;Release;DebugProduction;Debug Windows (x64)</Configurations>
   </PropertyGroup>

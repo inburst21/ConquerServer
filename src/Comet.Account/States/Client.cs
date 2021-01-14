@@ -56,5 +56,6 @@ namespace Comet.Account.States
         }
 
         public DbRealm Realm { get; set; }
+        public uint Seed { get; set; }
     }
 }

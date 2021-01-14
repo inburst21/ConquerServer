@@ -67,8 +67,15 @@ namespace Comet.Account
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            uint partition = Processor.SelectPartition();
-            return new Client(socket, buffer, partition);
+            uint partition = this.Processor.SelectPartition();
+            var client = new Client(socket, buffer, partition)
+            {
+                Seed = (uint) (await Kernel.NextAsync(10000, int.MaxValue))
+            };
+
+            await client.SendAsync(new MsgEncryptCode(client.Seed));
+            return client;
+
         }
 
         /// <summary>

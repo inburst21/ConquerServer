@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Comet.Account.Database;
 using Comet.Account.Database.Models;
@@ -75,8 +76,11 @@ namespace Comet.Account
             }
 
             // Recover caches from the database
-            var tasks = new List<Task>();
-            tasks.Add(RealmsRepository.LoadAsync());
+            var tasks = new List<Task>
+            {
+                RealmsRepository.LoadAsync(), 
+                Kernel.Services.Randomness.StartAsync(CancellationToken.None)
+            };
 #pragma warning disable VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono
             Task.WaitAll(tasks.ToArray());
 #pragma warning restore VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono

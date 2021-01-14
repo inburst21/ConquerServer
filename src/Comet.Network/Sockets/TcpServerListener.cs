@@ -27,7 +27,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Comet.Shared;
 
 #endregion
 
@@ -43,6 +42,9 @@ namespace Comet.Network.Sockets
     public abstract class TcpServerListener<TActor> : TcpServerEvents<TActor>
         where TActor : TcpServerActor
     {
+        // Constants
+        private const int ReceiveTimeoutSeconds = 30;
+
         // Fields and properties
         private readonly Semaphore AcceptanceSemaphore;
         private readonly ConcurrentStack<Memory<byte>> BufferPool;
@@ -51,6 +53,7 @@ namespace Comet.Network.Sockets
         private readonly TaskFactory ReceiveTasks;
         private readonly CancellationTokenSource ShutdownToken;
         private readonly Socket Socket;
+        private TcpServerRegistry Registry;
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="TcpServerListener" /> with a new server
@@ -63,8 +66,8 @@ namespace Comet.Network.Sockets
         /// <param name="delay">Use Nagel's algorithm to delay sending smaller packets</param>
         /// <param name="exchange">Use a key exchange before receiving packets</param>
         /// <param name="footerLength">Length of the packet footer</param>
-        public TcpServerListener(
-            int maxConn = 500,
+        protected TcpServerListener(
+            int maxConn = 1000,
             int bufferSize = 4096,
             bool delay = false,
             bool exchange = false,
@@ -74,16 +77,17 @@ namespace Comet.Network.Sockets
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket.LingerState = new LingerOption(false, 0);
             Socket.NoDelay = !delay;
+            ShutdownToken = new CancellationTokenSource();
 
             // Initialize management mechanisms
             AcceptanceSemaphore = new Semaphore(maxConn, maxConn);
             BufferPool = new ConcurrentStack<Memory<byte>>();
             EnableKeyExchange = exchange;
             FooterLength = footerLength;
-            ShutdownToken = new CancellationTokenSource();
             ReceiveTasks = new TaskFactory(ShutdownToken.Token);
+            Registry = new TcpServerRegistry();
 
-            // Initialize pre-allocated buffer pool
+            // Initialize preallocated buffer pool
             for (int i = 0; i < maxConn; i++)
                 BufferPool.Push(new Memory<byte>(new byte[bufferSize]));
         }
@@ -97,11 +101,14 @@ namespace Comet.Network.Sockets
         /// <param name="address">Interface IPv4 address the server will bind to</param>
         /// <param name="backlog">Maximum connections backlogged for acceptance</param>
         /// <returns>Returns a new task for accepting new connections.</returns>
-        public Task StartAsync(int port, string address = "0.0.0.0", int backlog = 100)
+        public async Task StartAsync(int port, string address = "0.0.0.0", int backlog = 100)
         {
             Socket.Bind(new IPEndPoint(IPAddress.Parse(address), port));
             Socket.Listen(backlog);
-            return AcceptingAsync();
+
+            // Start the background registry cleaner and accepting clients
+            await Registry.StartAsync(ShutdownToken.Token);
+            await AcceptingAsync();
         }
 
         /// <summary>
@@ -118,10 +125,18 @@ namespace Comet.Network.Sockets
                 // and a new client can be accepted. Check shutdown every 5 seconds.
                 if (AcceptanceSemaphore.WaitOne(TimeSpan.FromSeconds(5)))
                 {
-                    // Pop a preallocated buffer and accept a client
-                    BufferPool.TryPop(out var buffer);
-
+                    // Pop a preallocated buffer and check the connection
                     var socket = await Socket.AcceptAsync();
+                    var ip = (socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
+                    if (!Registry.AddActiveClient(ip))
+                    {
+                        socket.Disconnect(false);
+                        AcceptanceSemaphore.Release();
+                        continue;
+                    }
+
+                    // Construct the client before receiving data
+                    BufferPool.TryPop(out var buffer);
                     var actor = await AcceptedAsync(socket, buffer);
 
                     // Start receiving data from the client connection
@@ -151,35 +166,32 @@ namespace Comet.Network.Sockets
         {
             // Initialize multiple receive variables
             var actor = state as TActor;
+            var timeout = new CancellationTokenSource();
             int consumed = 0, examined = 0, remaining = 0;
+
             if (actor.Socket.Connected && !ShutdownToken.IsCancellationRequested)
             {
                 try
                 {
-                    actor.Socket.ReceiveTimeout = 5000;
-
+                    using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                        timeout.Token, ShutdownToken.Token);
                     // Receive data from the client socket
-                    examined = await actor.Socket.ReceiveAsync(
+                    var receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer.Slice(0),
                         SocketFlags.None,
-                        ShutdownToken.Token);
-                    if (examined < 9)
-                    {
-                        await Log.WriteLogAsync(LogLevel.Cheat, $"Actor didn't respond for Exchange [{actor.IPAddress}].");
-                        actor.Disconnect();
-                        Disconnecting(actor);
-                        return;
-                    }
+                        cancellation.Token);
 
-                    actor.Socket.ReceiveTimeout = -1;
+                    timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
+                    examined = await receiveOperation;
+                    if (examined < 9) throw new Exception("Invalid length");
                 }
-                catch (SocketException e)
+                catch (Exception e)
                 {
-                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
-                        e.SocketErrorCode > SocketError.Shutdown)
-                        Console.WriteLine(e);
+                    if (e is SocketException socketEx)
+                        if (socketEx.SocketErrorCode < SocketError.ConnectionAborted ||
+                            socketEx.SocketErrorCode > SocketError.Shutdown)
+                            Console.WriteLine(e);
 
-                    await Log.WriteLogAsync(LogLevel.Cheat, $"Actor didn't respond for Exchange [{actor.IPAddress}].");
                     actor.Disconnect();
                     Disconnecting(actor);
                     return;
@@ -208,8 +220,6 @@ namespace Comet.Network.Sockets
                 {
                     actor.Disconnect();
                     Disconnecting(actor);
-
-                    await Log.WriteLogAsync(LogLevel.Cheat, $"Could not Exchange actor from [{actor.IPAddress}].");
                     return;
                 }
 
@@ -261,20 +271,34 @@ namespace Comet.Network.Sockets
         {
             // Initialize multiple receive variables
             var actor = state as TActor;
+            var timeout = new CancellationTokenSource();
             int examined = 0, consumed = 0;
+
             while (actor.Socket.Connected && !ShutdownToken.IsCancellationRequested)
             {
                 try
                 {
+                    using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                        timeout.Token, ShutdownToken.Token);
                     // Receive data from the client socket
-                    examined = await actor.Socket.ReceiveAsync(
+                    var receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer.Slice(remaining),
                         SocketFlags.None,
-                        ShutdownToken.Token);
+                        cancellation.Token);
+
+                    timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
+                    examined = await receiveOperation;
                     if (examined == 0) break;
                 }
-                catch
+                catch (OperationCanceledException)
                 {
+                    break;
+                }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
+                        e.SocketErrorCode > SocketError.Shutdown)
+                        Console.WriteLine(e);
                     break;
                 }
 
@@ -339,6 +363,7 @@ namespace Comet.Network.Sockets
             actor.Buffer.Span.Clear();
             BufferPool.Push(actor.Buffer);
             AcceptanceSemaphore.Release();
+            Registry.RemoveActiveClient(actor.IPAddress);
 
             // Complete processing for disconnect
             Disconnected(actor);

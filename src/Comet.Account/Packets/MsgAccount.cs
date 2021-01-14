@@ -21,6 +21,7 @@
 
 #region References
 
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Comet.Account.Database.Repositories;
@@ -51,7 +52,7 @@ namespace Comet.Account.Packets
     {
         // Packet Properties
         public string Username { get; private set; }
-        public string Password { get; private set; }
+        public byte[] Password { get; private set; }
         public string Realm { get; private set; }
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace Comet.Account.Packets
             // Fetch account info from the database
             client.Account = await AccountsRepository.FindAsync(Username).ConfigureAwait(false);
             if (client.Account == null || !AccountsRepository.CheckPassword(
-                    Password, client.Account.Password, client.Account.Salt))
+                    DecryptPassword(Password, client.Seed), client.Account.Password, client.Account.Salt))
             {
                 await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] tried to login with an invalid account or password.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidPassword));
@@ -132,27 +133,32 @@ namespace Comet.Account.Packets
         public override void Decode(byte[] bytes)
         {
             var reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16();
-            Type = (PacketType) reader.ReadUInt16();
-            Username = reader.ReadString(16);
-            reader.BaseStream.Position = 132;
-            Password = DecryptPassword(reader.ReadBytes(16));
-            reader.BaseStream.Position = 260;
-            Realm = reader.ReadString(16);
+            this.Length = reader.ReadUInt16();
+            this.Type = (PacketType)reader.ReadUInt16();
+            this.Username = reader.ReadString(16);
+            reader.BaseStream.Seek(132, SeekOrigin.Begin);
+            this.Password = reader.ReadBytes(16);
+            reader.BaseStream.Seek(260, SeekOrigin.Begin);
+            this.Realm = reader.ReadString(16);
+
         }
 
         /// <summary>
-        ///     Decrypts the password from read in packet bytes for the <see cref="Decode" />
-        ///     method. Trims the end of the password string of null terminators.
+        /// Decrypts the password from read in packet bytes for the <see cref="Decode"/>
+        /// method. Trims the end of the password string of null terminators.
         /// </summary>
         /// <param name="buffer">Bytes from the packet buffer</param>
+        /// <param name="seed">Seed for generating RC5 keys</param>
         /// <returns>Returns the decrypted password string.</returns>
-        private string DecryptPassword(byte[] buffer)
+        private string DecryptPassword(byte[] buffer, uint seed)
         {
-            var rc5 = new RC5();
+            var rc5 = new RC5(seed);
+            var scanCodes = new ScanCodeCipher(this.Username);
             var password = new byte[16];
             rc5.Decrypt(buffer, password);
+            scanCodes.Decrypt(password, password);
             return Encoding.ASCII.GetString(password).Trim('\0');
         }
+
     }
 }
