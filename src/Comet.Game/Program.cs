@@ -61,7 +61,7 @@ namespace Comet.Game
             Console.Title = @"Comet, Game Server";
             Console.WriteLine();
             await Log.WriteLogAsync(LogLevel.Message, "  Comet: Game Server");
-            await Log.WriteLogAsync(LogLevel.Message, "  Copyright 2018-2020 Gareth Jensen \"Spirited\"");
+            await Log.WriteLogAsync(LogLevel.Message, "  Copyright 2018-2021 Gareth Jensen \"Spirited\"");
             await Log.WriteLogAsync(LogLevel.Message, "  All Rights Reserved");
             Console.WriteLine();
 

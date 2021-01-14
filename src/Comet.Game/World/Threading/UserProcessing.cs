@@ -22,6 +22,7 @@
 #region References
 
 using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Shared;
 
 #endregion
@@ -31,7 +32,7 @@ namespace Comet.Game.World.Threading
     public sealed class UserProcessor : TimerBase
     {
         public UserProcessor()
-            : base(500, "User Thread")
+            : base(60, "User Thread")
         {
         }
 

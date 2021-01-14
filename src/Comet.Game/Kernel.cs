@@ -48,7 +48,7 @@ namespace Comet.Game
     /// </summary>
     public static class Kernel
     {
-        public const int SERVER_VERSION = 5078;
+        public const int SERVER_VERSION = 5180;
         public static readonly string Version;
 
         // State caches
@@ -73,7 +73,6 @@ namespace Comet.Game
 
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
-        public static UserBattleProcessing BattleThread = new UserBattleProcessing();
         public static GeneratorManager GeneratorManager = new GeneratorManager();
         public static AiProcessor AiThread = new AiProcessor();
         public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
@@ -126,7 +125,6 @@ namespace Comet.Game
 
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
-            await BattleThread.StartAsync();
             await AiThread.StartAsync();
             await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
@@ -137,7 +135,6 @@ namespace Comet.Game
         public static async Task<bool> CloseAsync()
         {
             await UserThread.CloseAsync();
-            await BattleThread.CloseAsync();
             await AiThread.CloseAsync();
             await AutomaticActions.CloseAsync();
             await EventThread.CloseAsync();

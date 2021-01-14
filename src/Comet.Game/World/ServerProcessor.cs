@@ -38,7 +38,7 @@ namespace Comet.Game.World
 {
     public class ServerProcessor : BackgroundService
     {
-#if DEBUG
+#if DEBUG && WINDOWS
         [DllImport("Kernel32", EntryPoint = "GetCurrentThreadId", ExactSpelling = true)]
         protected static extern Int32 GetCurrentWin32ThreadId();
         protected readonly ProcessThread[] m_Thread;
@@ -56,7 +56,7 @@ namespace Comet.Game.World
         {
             Count = processorCount;
 
-#if DEBUG
+#if DEBUG && WINDOWS
             m_Thread = new ProcessThread[Count];
             m_LastExecuted = new Func<Task>[Count];
 #endif
@@ -89,7 +89,7 @@ namespace Comet.Game.World
         
         protected virtual async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
-#if DEBUG
+#if DEBUG && WINDOWS
             m_Thread[partition] = (from ProcessThread entry in Process.GetCurrentProcess().Threads
                                    where entry.Id == GetCurrentWin32ThreadId()
                                    select entry).First();
@@ -99,7 +99,7 @@ namespace Comet.Game.World
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
                 if (action != null)
                 {
-#if DEBUG
+#if DEBUG && WINDOWS
                     m_LastExecuted[partition] = action;
 #endif
                     try

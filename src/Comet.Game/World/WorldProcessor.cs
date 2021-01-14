@@ -41,7 +41,7 @@ namespace Comet.Game.World
 
         protected override async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
-#if DEBUG
+#if DEBUG && WINDOWS
             m_Thread[partition] = (from ProcessThread entry in Process.GetCurrentProcess().Threads
                 where entry.Id == GetCurrentWin32ThreadId()
                 select entry).First();
@@ -58,7 +58,7 @@ namespace Comet.Game.World
                         var action = await channel.Reader.ReadAsync(m_CancelReads);
                         if (action != null)
                         {
-#if DEBUG
+#if DEBUG && WINDOWS
                             m_LastExecuted[partition] = action;
 #endif
                             await action.Invoke();

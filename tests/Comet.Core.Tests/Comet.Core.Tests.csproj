@@ -5,11 +5,11 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyVersion>1.2021.0108.4</AssemblyVersion>
+    <AssemblyVersion>1.2021.0114.4</AssemblyVersion>
 
-    <FileVersion>1.2021.0108.9</FileVersion>
+    <FileVersion>1.2021.0114.10</FileVersion>
 
-    <Configurations>Debug;Release;DebugProduction</Configurations>
+    <Configurations>Debug;Release;DebugProduction;Debug Windows (x64)</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

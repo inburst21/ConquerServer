@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyVersion>1.2021.0110.20</AssemblyVersion>
-    <FileVersion>1.2021.0110.41</FileVersion>
+    <AssemblyVersion>1.2021.0114.20</AssemblyVersion>
+    <FileVersion>1.2021.0114.42</FileVersion>
     <LangVersion>latest</LangVersion>
     <Configurations>Debug;Release;DebugProduction</Configurations>
   </PropertyGroup>
@@ -14,11 +14,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>../Debug</OutputPath>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProduction|AnyCPU'">
     <OutputPath>../Debug</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>

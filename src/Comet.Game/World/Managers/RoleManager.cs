@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
@@ -57,6 +58,8 @@ namespace Comet.Game.World.Managers
 
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
+
+        private TimeOutMS m_userUpdate = new TimeOutMS(500);
 
         private bool m_isShutdown = false;
 
@@ -103,6 +106,8 @@ namespace Comet.Game.World.Managers
             }
 
             m_superman = (await DbSuperman.GetAsync()).ToDictionary(superman => superman.UserIdentity);
+
+            m_userUpdate.Update();
         }
 
         public async Task<bool> LoginUserAsync(Client user)
@@ -174,14 +179,7 @@ namespace Comet.Game.World.Managers
         public async Task KickOutAllAsync(string reason = "", bool isShutdown = false)
         {
             if (isShutdown)
-            {
                 m_isShutdown = true;
-
-                Kernel.UserThread.CloseRequest = true;
-                //Kernel.AiThread.CloseRequest = true;
-                Kernel.EventThread.CloseRequest = true;
-                //Kernel.GeneratorThread.CloseRequest = true;
-            }
 
             foreach (var user in m_userSet.Values)
             {
@@ -235,23 +233,7 @@ namespace Comet.Game.World.Managers
             m_mapItemSet.TryRemove(idRole, out _);
             return m_roleSet.TryRemove(idRole, out _);
         }
-
-        public async Task OnBattleTimerAsync()
-        {
-            foreach (var (_, value) in m_userSet)
-            {
-                try
-                {
-                    if (value != null)
-                        await value.OnBattleTimerAsync();
-                }
-                catch (Exception ex)
-                {
-                    await Log.WriteLogAsync("OnBattleTimerAsync", LogLevel.Exception, $"Exception thrown: {ex.Message}\n{ex}");
-                }
-            }
-        }
-
+        
         public async Task OnUserTimerAsync()
         {
             foreach (var (_, value) in m_userSet)
@@ -259,7 +241,11 @@ namespace Comet.Game.World.Managers
                 try
                 {
                     if (value != null)
-                        await value.OnTimerAsync();
+                    {
+                        await value.OnBattleTimerAsync();
+                        if (m_userUpdate.ToNextTime())
+                            await value.OnTimerAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
