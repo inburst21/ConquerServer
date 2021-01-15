@@ -90,9 +90,9 @@ namespace Comet.Network.Packets
         MsgGuideInfo = 2066,
         MsgGuideContribute = 2067,
 
-        MsgWalk = 1005,
-        MsgAction = 1010,
-        MsgPlayer = 1014,
-        MsgUserAttrib = 1017
+        MsgWalk = 10005,
+        MsgAction = 10010,
+        MsgPlayer = 10014,
+        MsgUserAttrib = 10017
     }
 }

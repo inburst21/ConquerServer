@@ -22,7 +22,6 @@
 #region References
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.Database;
@@ -34,7 +33,7 @@ using Comet.Game.States.Relationship;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Org.BouncyCastle.Bcpg.OpenPgp;
+using SColor = System.Drawing.Color;
 
 #endregion
 
@@ -88,6 +87,10 @@ namespace Comet.Game.Packets
         }
         public ushort Direction { get; set; }
         public ActionType Action { get; set; }
+        public ushort X { get; set; }
+        public ushort Y { get; set; }
+        public uint Map { get; set; }
+        public uint Color { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -100,13 +103,16 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
-            Timestamp = reader.ReadUInt32();
             Identity = reader.ReadUInt32();
-            //Data = reader.ReadUInt32();
             Command = reader.ReadUInt32();
             Argument = reader.ReadUInt32();
+            Timestamp = reader.ReadUInt32();
+            Action = (ActionType)reader.ReadUInt16();
             Direction = reader.ReadUInt16();
-            Action = (ActionType) reader.ReadUInt16();
+            X = reader.ReadUInt16();
+            Y = reader.ReadUInt16();
+            Map = reader.ReadUInt32();
+            Color = reader.ReadUInt32();
         }
 
         /// <summary>
@@ -119,13 +125,16 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(Timestamp);
             writer.Write(Identity);
-            //writer.Write(Data);
             writer.Write(Command);
             writer.Write(Argument);
+            writer.Write(Timestamp);
+            writer.Write((ushort)Action);
             writer.Write(Direction);
-            writer.Write((ushort) Action);
+            writer.Write(X);
+            writer.Write(Y);
+            writer.Write(Map);
+            writer.Write(Color);
             return writer.ToArray();
         }
 
@@ -431,7 +440,7 @@ namespace Comet.Game.Packets
                 case ActionType.LoginComplete: // 130
                     int bonusCount = await user.BonusCountAsync();
                     if (bonusCount > 0)
-                        await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
+                        await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, SColor.Red);
 
                     if (user.Gender == 1 && 
                         (user.SendFlowerTime == null 
@@ -465,7 +474,7 @@ namespace Comet.Game.Packets
                     {
                         if (!user.IsAlive)
                         {
-                            await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
+                            await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, SColor.Red);
                             return;
                         }
 
@@ -474,7 +483,7 @@ namespace Comet.Game.Packets
 
                         if (user.GetDistance(newX, newY) >= 2 * Screen.VIEW_SIZE)
                         {
-                            await user.SendAsync(Language.StrInvalidMsg, MsgTalk.TalkChannel.System, Color.Red);
+                            await user.SendAsync(Language.StrInvalidMsg, MsgTalk.TalkChannel.System, SColor.Red);
                             await Kernel.RoleManager.KickOutAsync(user.Identity, "big jump");
                             return;
                         }

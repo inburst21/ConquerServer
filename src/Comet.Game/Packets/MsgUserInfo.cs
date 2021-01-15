@@ -22,6 +22,7 @@
 #region References
 
 using System.Collections.Generic;
+using System.IO;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Network.Packets;
@@ -63,10 +64,13 @@ namespace Comet.Game.Packets
             Level = character.Level;
             CurrentClass = character.Profession;
             PreviousClass = character.PreviousProfession;
+            FirstClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
+            QuizPoints = 5000;
+            EnlightenPoints = 200;
+            VipLevel = character.BaseVipLevel;
             CharacterName = character.Name;
             SpouseName = character.MateName;
-            HasName = true;
         }
 
         // Packet Properties
@@ -88,8 +92,10 @@ namespace Comet.Game.Packets
         public byte CurrentClass { get; set; }
         public byte PreviousClass { get; set; }
         public byte Rebirths { get; set; }
-        public bool HasName { get; set; }
+        public byte FirstClass { get; set; }
         public uint QuizPoints { get; set; }
+        public ushort EnlightenPoints { get; set; }
+        public uint VipLevel { get; set; }
         public string CharacterName { get; set; }
         public string SpouseName { get; set; }
 
@@ -124,8 +130,11 @@ namespace Comet.Game.Packets
             writer.Write(CurrentClass); // 67
             writer.Write(PreviousClass); // 68
             writer.Write(Rebirths); // 69 
-            writer.Write(HasName); // 70
+            writer.Write(FirstClass); // 70
             writer.Write(QuizPoints); // 71
+            writer.Write(EnlightenPoints);
+            writer.BaseStream.Seek(8, SeekOrigin.Current);
+            writer.Write(VipLevel);
             writer.Write(new List<string>
             {
                 CharacterName,

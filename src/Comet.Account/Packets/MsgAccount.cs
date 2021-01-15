@@ -59,7 +59,10 @@ namespace Comet.Account.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see>
+        ///         <cref>PacketProcessor</cref>
+        ///     </see>
+        ///     .
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
@@ -67,9 +70,10 @@ namespace Comet.Account.Packets
             // Fetch account info from the database
             client.Account = await AccountsRepository.FindAsync(Username).ConfigureAwait(false);
             if (client.Account == null || !AccountsRepository.CheckPassword(
-                    DecryptPassword(Password, client.Seed), client.Account.Password, client.Account.Salt))
+                DecryptPassword(Password, client.Seed), client.Account.Password, client.Account.Salt))
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] tried to login with an invalid account or password.");
+                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                    $"[{Username}] tried to login with an invalid account or password.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidPassword));
                 client.Socket.Disconnect(false);
                 return;
@@ -77,7 +81,8 @@ namespace Comet.Account.Packets
 
             if (client.Account.StatusID == 5) // Banned
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] has tried to login with a banned account.");
+                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                    $"[{Username}] has tried to login with a banned account.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.AccountBanned));
                 client.Socket.Disconnect(false);
                 return;
@@ -85,7 +90,8 @@ namespace Comet.Account.Packets
 
             if (client.Account.StatusID == 4) // suspicious? temp lock
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] has tried to login with a locked account.");
+                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                    $"[{Username}] has tried to login with a locked account.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.AccountLocked));
                 client.Socket.Disconnect(false);
                 return;
@@ -99,7 +105,8 @@ namespace Comet.Account.Packets
             // Connect to the game server
             if (!Kernel.Realms.TryGetValue(Realm, out var server) || !server.Rpc.Online)
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message, $"[{Username}] tried to login on a not connected [{Realm}] server.");
+                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                    $"[{Username}] tried to login on a not connected [{Realm}] server.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
                 client.Socket.Disconnect(false);
                 return;
@@ -117,11 +124,10 @@ namespace Comet.Account.Packets
             };
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
-
-            string serverIpAddr = server.GameIPAddress;
-
-            await client.SendAsync(new MsgConnectEx(serverIpAddr, server.GamePort, token));
-            await Log.WriteLogAsync("login", LogLevel.Message, $"[{Username}] has authenticated successfully on [{Realm}].");
+            
+            await client.SendAsync(new MsgConnectEx(server.GameIPAddress, server.GamePort, token));
+            await Log.WriteLogAsync("login", LogLevel.Message,
+                $"[{Username}] has authenticated successfully on [{Realm}].");
         }
 
         /// <summary>
@@ -133,19 +139,18 @@ namespace Comet.Account.Packets
         public override void Decode(byte[] bytes)
         {
             var reader = new PacketReader(bytes);
-            this.Length = reader.ReadUInt16();
-            this.Type = (PacketType)reader.ReadUInt16();
-            this.Username = reader.ReadString(16);
+            Length = reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
+            Username = reader.ReadString(16);
             reader.BaseStream.Seek(132, SeekOrigin.Begin);
-            this.Password = reader.ReadBytes(16);
+            Password = reader.ReadBytes(16);
             reader.BaseStream.Seek(260, SeekOrigin.Begin);
-            this.Realm = reader.ReadString(16);
-
+            Realm = reader.ReadString(16);
         }
 
         /// <summary>
-        /// Decrypts the password from read in packet bytes for the <see cref="Decode"/>
-        /// method. Trims the end of the password string of null terminators.
+        ///     Decrypts the password from read in packet bytes for the <see cref="Decode" />
+        ///     method. Trims the end of the password string of null terminators.
         /// </summary>
         /// <param name="buffer">Bytes from the packet buffer</param>
         /// <param name="seed">Seed for generating RC5 keys</param>
@@ -153,12 +158,11 @@ namespace Comet.Account.Packets
         private string DecryptPassword(byte[] buffer, uint seed)
         {
             var rc5 = new RC5(seed);
-            var scanCodes = new ScanCodeCipher(this.Username);
+            var scanCodes = new ScanCodeCipher(Username);
             var password = new byte[16];
             rc5.Decrypt(buffer, password);
             scanCodes.Decrypt(password, password);
             return Encoding.ASCII.GetString(password).Trim('\0');
         }
-
     }
 }

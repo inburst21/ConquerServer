@@ -128,10 +128,6 @@ namespace Comet.Game.Packets
             writer.Write(Generator, Generator.Length);
             writer.Write(ServerKey.Length);
             writer.Write(ServerKey, ServerKey.Length);
-
-            //Console.WriteLine(@$"RealMsgLength:[{writer.BaseStream.Length}]");
-            //Console.WriteLine(@$"MsgLength:[{messageLength}],P:[{Padding.Length}],EIV:[{EncryptionIV.Length}],DIV:[{DecryptionIV.Length}],PR:[{PrimeRoot.Length}],G:[{Generator.Length}],SK:[{ServerKey.Length}]");
-
             return writer.ToArray();
         }
     }

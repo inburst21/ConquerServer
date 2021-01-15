@@ -28,6 +28,7 @@ using Comet.Game.States;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Comet.Shared.Models;
+using Org.BouncyCastle.Utilities.Encoders;
 
 #endregion
 
@@ -54,6 +55,7 @@ namespace Comet.Game.Packets
         public ulong Token { get; set; }
         public ushort Patch { get; set; }
         public string Language { get; set; }
+        public string MacAddress { get; set; }
         public int Version { get; set; }
 
         /// <summary>
@@ -65,12 +67,13 @@ namespace Comet.Game.Packets
         public override void Decode(byte[] bytes)
         {
             var reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16();
-            Type = (PacketType) reader.ReadUInt16();
-            Token = reader.ReadUInt64();
-            Patch = reader.ReadUInt16();
-            Language = reader.ReadString(10);
-            Version = Convert.ToInt32(reader.ReadInt32().ToString(), 2);
+            this.Length = reader.ReadUInt16();
+            this.Type = (PacketType)reader.ReadUInt16();
+            this.Token = reader.ReadUInt64();
+            this.Patch = reader.ReadUInt16();
+            this.Language = reader.ReadString(2);
+            this.MacAddress = Hex.ToHexString(reader.ReadBytes(8));
+            this.Version = Convert.ToInt32(reader.ReadInt32().ToString(), 2);
         }
 
         /// <summary>
@@ -101,6 +104,7 @@ namespace Comet.Game.Packets
             var character = await CharactersRepository.FindAsync(auth.AccountID);
             client.AccountIdentity = auth.AccountID;
             client.AuthorityLevel = auth.AuthorityID;
+            client.MacAddress = MacAddress;
 
             // temp code for pre-release
 #if DEBUG
@@ -118,7 +122,7 @@ namespace Comet.Game.Packets
                 // Create a new character
                 client.Creation = new Creation {AccountID = auth.AccountID, Token = (uint) Token};
                 Kernel.Registration.Add(client.Creation.Token);
-                await client.SendAsync(LoginNewRole);
+                await client.SendAsync(MsgTalk.LoginNewRole);
             }
             else
             {
