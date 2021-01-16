@@ -236,6 +236,7 @@ namespace Comet.Game.World.Managers
         
         public async Task OnUserTimerAsync()
         {
+            bool updateUser = m_userUpdate.ToNextTime();
             foreach (var (_, value) in m_userSet)
             {
                 try
@@ -243,7 +244,7 @@ namespace Comet.Game.World.Managers
                     if (value != null)
                     {
                         await value.OnBattleTimerAsync();
-                        if (m_userUpdate.ToNextTime())
+                        if (updateUser)
                             await value.OnTimerAsync();
                     }
                 }
