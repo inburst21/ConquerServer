@@ -399,6 +399,9 @@ namespace Comet.Game.States.Items
             if (item.IsSuspicious())
                 return false;
 
+            if (item.IsShield() && m_user.Map.IsLineSkillMap())
+                return false;
+
             if (item.RequiredLevel > m_user.Level)
                 return false;
 
