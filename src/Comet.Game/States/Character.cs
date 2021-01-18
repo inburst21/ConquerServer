@@ -4267,13 +4267,16 @@ namespace Comet.Game.States
             if (await Kernel.ChanceCalcAsync(nChance))
             {
                 uint idItem = await Kernel.MineManager.GetDropAsync(this);
+
                 DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItem);
                 if (itemtype == null)
                     return;
 
-                await UserPackage.AwardItemAsync(idItem);
-                await SendAsync(string.Format(Language.StrMineItemFound, itemtype.Name));
-
+                if (await UserPackage.AwardItemAsync(idItem))
+                {
+                    await SendAsync(string.Format(Language.StrMineItemFound, itemtype.Name));
+                    await Log.GmLog($"mine_drop", $"{Identity},{Name},{idItem},{MapIdentity},{Map?.Name},{MapX},{MapY}");
+                }
                 m_mineCount++;
             }
 

@@ -112,7 +112,8 @@ namespace Comet.Game.States.Events
 #endif
 
             var user = GetUser(attacker as Character);
-            user.AttacksSuccess++;
+            if (attacker is Character player && target is Character tgtPlayer && !player.Client.IPAddress.Equals(tgtPlayer.Client.IPAddress))
+                user.AttacksSuccess++;
             return Task.CompletedTask;
         }
 
