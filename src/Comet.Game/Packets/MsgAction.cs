@@ -169,15 +169,15 @@ namespace Comet.Game.Packets
                     GameMap targetMap = Kernel.MapManager.GetMap(client.Character.MapIdentity);
                     if (targetMap == null)
                     {
-                        Command = 1002;
-                        ArgumentX = 430;
-                        ArgumentX = 378;
+                        await user.SavePositionAsync(1002, 430, 378);
+                        client.Disconnect();
+                        return;
                     }
                     else
                     {
                         Command = targetMap.MapDoc;
-                        ArgumentX = client.Character.MapX;
-                        ArgumentY = client.Character.MapY;
+                        X = client.Character.MapX;
+                        Y = client.Character.MapY;
                     }
 
                     await client.Character.EnterMapAsync();
@@ -363,8 +363,8 @@ namespace Comet.Game.Packets
                         return;
 
                     targetUser = user.Team.Leader;
-                    ArgumentX = targetUser.MapX;
-                    ArgumentY = targetUser.MapY;
+                    X = targetUser.MapX;
+                    Y = targetUser.MapY;
                     await user.SendAsync(this);
                     break;
 
@@ -378,8 +378,8 @@ namespace Comet.Game.Packets
                         return;
 
                     Command = targetUser.RecordMapIdentity;
-                    ArgumentX = targetUser.MapX;
-                    ArgumentY = targetUser.MapY;
+                    X = targetUser.MapX;
+                    Y = targetUser.MapY;
                     await user.SendAsync(this);
                     break;
 
@@ -387,8 +387,8 @@ namespace Comet.Game.Packets
                     if (await user.CreateBoothAsync())
                     {
                         Command = user.Booth.Identity;
-                        ArgumentX = user.Booth.MapX;
-                        ArgumentY = user.Booth.MapY;
+                        X = user.Booth.MapX;
+                        Y = user.Booth.MapY;
                         await user.SendAsync(this);
                     }
                     break;
@@ -461,7 +461,7 @@ namespace Comet.Game.Packets
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
                     await user.SendMerchantAsync();
-                    await client.Character.SynchroAttributesAsync(ClientUpdateType.VipLevel, client.Character.BaseVipLevel);
+                    // await client.Character.SynchroAttributesAsync(ClientUpdateType.VipLevel, client.Character.BaseVipLevel);
 
                     if (user.VipLevel > 0)
                         await user.AttachStatusAsync(user, StatusSet.ORANGE_HALO_GLOW, 0, int.MaxValue, 0, 0);
@@ -469,7 +469,7 @@ namespace Comet.Game.Packets
                     await client.SendAsync(this);
                     break;
 
-                case ActionType.MapJump: // 133
+                case ActionType.MapJump: // 137
                     if (user != null) // todo handle ai 
                     {
                         if (!user.IsAlive)
@@ -490,6 +490,10 @@ namespace Comet.Game.Packets
 
                         await user.ProcessOnMoveAsync();
                         await user.JumpPosAsync(newX, newY);
+
+                        X = user.MapX;
+                        Y = user.MapY;
+
                         await user.SendAsync(this);
                         await user.Screen.UpdateAsync(this);
                     }
@@ -506,7 +510,7 @@ namespace Comet.Game.Packets
                     await fetchFriend.SendInfoAsync();
                     break;
 
-                case ActionType.CharacterDead: // 137
+                case ActionType.CharacterDead: // 145
                     if (user.IsAlive)
                         return;
 
@@ -532,6 +536,19 @@ namespace Comet.Game.Packets
 
                     await partner.SendInfoAsync();
                     break;
+
+                case ActionType.Away:
+                {
+                    user.IsAway = Data != 0;
+
+                    if (user.IsAway && user.Action != EntityAction.Sit)
+                        await user.SetActionAsync(EntityAction.Sit);
+                    else if (!user.IsAway && user.Action == EntityAction.Sit)
+                        await user.SetActionAsync(EntityAction.Stand);
+
+                    await user.BroadcastRoomMsgAsync(this, true);
+                    break;
+                }
 
                 case ActionType.FriendObservation: // 310
                     targetUser = Kernel.RoleManager.GetUser(Command);
@@ -598,15 +615,16 @@ namespace Comet.Game.Packets
             MapGold,
             RelationshipsEnemy = 123,
             ClientDialog = 126,
-            LoginComplete = 130,
+            LoginComplete = 132,
             MapEffect,
-            RemoveEntity,
-            MapJump,
-            CharacterDead = 137,
-            RelationshipsFriend = 140,
-            CharacterAvatar = 142,
+            RemoveEntity = 135,
+            MapJump = 137,
+            CharacterDead = 145,
+            RelationshipsFriend = 148,
+            CharacterAvatar = 151,
             QueryTradeBuddy = 143,
-            SetGhost = 145,
+            Away = 161,
+            //SetGhost = 145,
             FriendObservation = 310,
         }
     }

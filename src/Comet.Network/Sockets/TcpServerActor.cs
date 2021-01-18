@@ -72,6 +72,8 @@ namespace Comet.Network.Sockets
             PacketFooter = Encoding.ASCII.GetBytes(packetFooter);
             Partition = partition;
             SendLock = new object();
+
+            IPAddress = (Socket.RemoteEndPoint as IPEndPoint)?.Address.MapToIPv4().ToString();
         }
 
         public bool Exchanged = false;
@@ -79,7 +81,7 @@ namespace Comet.Network.Sockets
         /// <summary>
         ///     Returns the remote IP address of the connected client.
         /// </summary>
-        public string IPAddress =>  (Socket.RemoteEndPoint as IPEndPoint)?.Address.MapToIPv4().ToString();
+        public string IPAddress { get; }
 
         /// <summary>
         ///     Sends a packet to the game client after encrypting bytes. This may be called

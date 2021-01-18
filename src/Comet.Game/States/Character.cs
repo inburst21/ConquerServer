@@ -1536,7 +1536,7 @@ namespace Comet.Game.States
                 Action = NobilityAction.Info,
                 DataLow = Identity
             };
-            msg.Strings.Add($"{Identity} {NobilityDonation} {(int) NobilityRank} {NobilityPosition}");
+            msg.Strings.Add($"{Identity} {NobilityDonation} {(int) NobilityRank:d} {NobilityPosition}");
             await SendAsync(msg);
 
             if (broadcast)
@@ -2237,17 +2237,17 @@ namespace Comet.Game.States
                     status?.IncTime(700, 30000);
                 }
 
-                /*if (Captcha == null)
+                if (Captcha == null)
                     m_KillsToCaptcha++;
 
-                if (Captcha == null 
+                if (Captcha == null
                     && m_KillsToCaptcha > 50 + await Kernel.NextAsync(1500)
                     && await Kernel.ChanceCalcAsync(50, 10000))
                 {
                     Captcha = new CaptchaBox(this);
                     await Captcha.GenerateAsync();
                     m_KillsToCaptcha = 0;
-                }*/
+                }
 
                 await KillMonsterAsync(monster.Type);
             }
@@ -3719,8 +3719,8 @@ namespace Comet.Game.States
                 {
                     Identity = Identity,
                     Command = newMap.MapDoc,
-                    ArgumentX = MapX,
-                    ArgumentY = MapY,
+                    X = MapX,
+                    Y = MapY,
                     Action = MsgAction.ActionType.MapTeleport,
                     Direction = (ushort) Direction
                 });
@@ -3768,8 +3768,8 @@ namespace Comet.Game.States
             {
                 Identity = Identity,
                 Action = MsgAction.ActionType.Kickback,
-                ArgumentX = x,
-                ArgumentY = y,
+                X = x,
+                Y = y,
                 Command = (uint)((y << 16) | x),
                 Direction = (ushort)Direction,
             });
@@ -3777,13 +3777,13 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task KickbackAsync()
+        public Task KickbackAsync()
         {
-            await SendAsync(new MsgAction
+            return SendAsync(new MsgAction
             {
                 Identity = Identity,
-                ArgumentX = MapX,
-                ArgumentY = MapY,
+                X = MapX,
+                Y = MapY,
                 Command = (uint) ((MapY << 16) | MapX),
                 Direction = (ushort)Direction,
                 Action = MsgAction.ActionType.Kickback
@@ -4291,11 +4291,18 @@ namespace Comet.Game.States
 
         #region Status
 
+        public bool IsAway { get; set; }
+
         public async Task LoadStatusAsync()
         {
             var statusList = await DbStatus.GetAsync(Identity);
             foreach (var status in statusList)
             {
+                if (status.EndTime < DateTime.Now)
+                {
+                    _ = BaseRepository.DeleteAsync(status);
+                    continue;
+                }
                 await AttachStatusAsync(status);
             }
         }

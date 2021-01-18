@@ -88,6 +88,7 @@ namespace Comet.Game.Packets
         public uint Data1 { get; set; }
         public uint Data2 { get; set; }
         public uint Data3 { get; set; }
+        public uint Data4 { get; set; }
         
         public List<string> Strings = new List<string>();
 
@@ -107,6 +108,7 @@ namespace Comet.Game.Packets
             Data1 = reader.ReadUInt32();
             Data2 = reader.ReadUInt32();
             Data3 = reader.ReadUInt32();
+            Data4 = reader.ReadUInt32();
             Strings = reader.ReadStrings();
         }
 
@@ -120,11 +122,12 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write((uint) Action);
-            writer.Write(Data);
-            writer.Write(Data1);
-            writer.Write(Data2);
-            writer.Write(Data3);
+            writer.Write((uint) Action); // 4
+            writer.Write(Data); // 8
+            writer.Write(Data1); // 16
+            writer.Write(Data2); // 20
+            writer.Write(Data3); // 24
+            writer.Write(Data4); // 28
             writer.Write(Strings);
             return writer.ToArray();
         }

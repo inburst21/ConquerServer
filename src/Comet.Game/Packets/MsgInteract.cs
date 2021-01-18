@@ -115,7 +115,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case MsgInteractType.Attack:
-                case MsgInteractType.Shoot5065:
+                case MsgInteractType.Shoot:
                     if (!user.IsAlive)
                         return;
 
@@ -127,7 +127,7 @@ namespace Comet.Game.Packets
 
                     break;
 
-                case MsgInteractType.Unknown21:
+                case MsgInteractType.MagicAttack:
                     if (!user.IsAlive)
                         return;
 

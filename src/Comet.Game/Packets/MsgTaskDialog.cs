@@ -140,10 +140,13 @@ namespace Comet.Game.Packets
                     DbTask task = Kernel.EventManager.GetTask(idTask);
                     if (task == null)
                     {
-                        user.CancelInteraction();
+                        if (OptionIndex != 0)
+                        {
+                            user.CancelInteraction();
 
-                        if (user.IsGm() && idTask != 0)
-                            await user.SendAsync($"Could not find InteractionAsnwer for task {idTask}");
+                            if (user.IsGm() && idTask != 0)
+                                await user.SendAsync($"Could not find InteractionAsnwer for task {idTask}");
+                        }
                         return;
                     }
 

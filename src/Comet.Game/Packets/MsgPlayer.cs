@@ -24,6 +24,7 @@
 #region References
 
 using System.Collections.Generic;
+using System.IO;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
@@ -56,8 +57,6 @@ namespace Comet.Game.Packets
             SyndicatePosition = (byte) user.SyndicateRank;
 
             NobilityRank = (uint) user.NobilityRank;
-            NobilityIdentity = 0; // SharedBattlePower
-            NobilityPosition = (uint) user.NobilityPosition;
 
             Helmet = user.Headgear?.Type ?? 0;
             HelmetColor = (ushort) (user.Headgear?.Color ?? Item.ItemColor.None);
@@ -68,8 +67,19 @@ namespace Comet.Game.Packets
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
+            FlowerRanking = 30010001;
+
+            QuizPoints = 50000;
+            EnlightenPoints = 200;
+            UserTitle = 1;
+            SharedBattlePower = 15;
+
+            FamilyIdentity = 1;
+            FamilyRank = 100;
+
             Name = user.Name;
             Mate = user.MateName;
+            FamilyName = "Family";
         }
 
         public MsgPlayer(Monster monster)
@@ -100,6 +110,7 @@ namespace Comet.Game.Packets
 
             Name = monster.Name;
             Mate = "";
+            FamilyName = "";
         }
 
         public uint Identity { get; set; }
@@ -109,8 +120,8 @@ namespace Comet.Game.Packets
 
         #region Struct
 
-        public ushort SyndicateIdentity { get; set; }
-        public byte SyndicatePosition { get; set; }
+        public uint SyndicateIdentity { get; set; }
+        public uint SyndicatePosition { get; set; }
 
         #endregion
 
@@ -136,6 +147,7 @@ namespace Comet.Game.Packets
         public uint Armor { get; set; }
         public uint RightHand { get; set; }
         public uint LeftHand { get; set; }
+        public uint Mount { get; set; }
 
         public uint Padding0 { get; set; }
 
@@ -150,12 +162,11 @@ namespace Comet.Game.Packets
         public ushort Metempsychosis { get; set; }
         public ushort Level { get; set; }
         public bool WindowSpawn { get; set; }
+        public bool Away { get; set; }
         public uint SharedBattlePower { get; set; }
         public uint FlowerRanking { get; set; }
 
         public uint NobilityRank { get; set; }
-        public uint NobilityIdentity { get; set; }
-        public uint NobilityPosition { get; set; }
 
         public ushort Padding2 { get; set; }
 
@@ -164,8 +175,18 @@ namespace Comet.Game.Packets
         public ushort LeftHandColor { get; set; }
         public uint QuizPoints { get; set; }
 
+        public byte MountAddition { get; set; }
+        public uint MountColor { get; set; }
+        public ushort EnlightenPoints { get; set; }
+
+        public uint FamilyIdentity { get; set; }
+        public uint FamilyRank { get; set; }
+
+        public uint UserTitle { get; set; }
+
         public string Name { get; set; }
         public string Mate { get; set; }
+        public string FamilyName { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -177,60 +198,75 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(Identity); // 8
             writer.Write(Mesh); // 4
-
-            if (StatuaryLife > 0)
-            {
-                writer.Write(StatuaryLife); // 16
-                writer.Write(StatuaryFrame); // 18
-                writer.Write(0u); // 20
-            }
-            else
-            {
-                writer.Write(Status); // 16
-            }
+            writer.Write(Identity); // 8
 
             if (OwnerIdentity > 0)
             {
                 writer.Write(OwnerIdentity); // 12
+                writer.Write(0); // 16
             }
             else
             {
                 writer.Write(SyndicateIdentity); // 12
-                writer.Write((byte)0); // 14
-                writer.Write(SyndicatePosition); // 15
+                writer.Write(SyndicatePosition); // 16
             }
 
-            writer.Write(Garment); // 24
-            writer.Write(Helmet); // 28
-            writer.Write(Armor); // 32
-            writer.Write(RightHand); // 36
-            writer.Write(LeftHand); // 40
-            writer.Write(Padding0); // 44
-            writer.Write(MonsterLife); // 48
-            writer.Write(MonsterLevel); // 50
-            writer.Write(MapX); // 52
-            writer.Write(MapY); // 54
-            writer.Write(Hairstyle); // 56
-            writer.Write(Direction); // 58
-            writer.Write(Pose); // 59
-            writer.Write(Metempsychosis); // 60
-            writer.Write(Level); // 62
-            writer.Write(WindowSpawn); // 64 
-            writer.Write(SharedBattlePower); // 65 
-            writer.Write(FlowerRanking); // 69
-            writer.Write(NobilityRank); // 73
-            writer.Write(NobilityPosition); // 77
-            writer.Write(0); // 81
-            writer.Write(HelmetColor); // 85
-            writer.Write(ArmorColor); // 87
-            writer.Write(LeftHandColor); // 89
-            writer.Write(QuizPoints); // 91
+            if (StatuaryLife > 0)
+            {
+                writer.Write(StatuaryLife); // 24
+                writer.Write(StatuaryFrame); // 26
+                writer.Write(0u); // 28
+            }
+            else
+            {
+                writer.Write(Status); // 24
+            }
+
+            writer.Write((ushort)0);
+
+            writer.Write(Helmet); // 30
+            writer.Write(Garment); // 34
+            writer.Write(Armor); // 38
+            writer.Write(RightHand); // 42
+            writer.Write(LeftHand); // 46
+            writer.Write(Mount); // 50
+            writer.Write(Padding0); // 54
+            writer.Write(MonsterLife); // 58
+            writer.Write(MonsterLevel); // 60
+            writer.Write(Hairstyle); // 62
+            writer.Write(MapX); // 64
+            writer.Write(MapY); // 66
+            writer.Write(Direction); // 68
+            writer.Write(Pose); // 69
+            writer.BaseStream.Seek(4, SeekOrigin.Current);
+            writer.Write((byte) Metempsychosis); // 73
+            writer.Write(Level); // 74
+            writer.Write(WindowSpawn); // 76
+            writer.Write(Away); // 77
+            writer.Write(SharedBattlePower); // 78
+            writer.BaseStream.Seek(8, SeekOrigin.Current); // 82
+            writer.Write(FlowerRanking); // 91
+            writer.Write(NobilityRank); // 95
+            writer.Write(ArmorColor); // 99
+            writer.Write(LeftHandColor); // 101
+            writer.Write(HelmetColor); // 103
+            writer.Write(QuizPoints); // 105
+            writer.Write(MountAddition); // 107
+            writer.Write(0); // 108
+            writer.Write(MountColor); // 112
+            writer.Write((byte) 0); // 116
+            writer.Write(EnlightenPoints); // 117
+            writer.BaseStream.Seek(9, SeekOrigin.Current); // 119
+            writer.Write(FamilyIdentity); // 128
+            writer.Write(FamilyRank); // 132
+            writer.BaseStream.Seek(5, SeekOrigin.Current); // 136
+            writer.Write(UserTitle); // 141
+            writer.BaseStream.Seek(8, SeekOrigin.Current); // 145
             writer.Write(new List<string> // 95
             {
                 Name,
-                Mate
+                FamilyName
             });
 
             return writer.ToArray();

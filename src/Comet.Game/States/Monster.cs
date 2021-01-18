@@ -821,8 +821,8 @@ namespace Comet.Game.States
             {
                 Action = MsgAction.ActionType.MapEffect,
                 Identity = Identity,
-                CommandX = MapX,
-                CommandY= MapY
+                X = MapX,
+                Y= MapY
             }, false);
         }
 

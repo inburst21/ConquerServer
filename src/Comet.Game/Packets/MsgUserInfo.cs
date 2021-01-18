@@ -66,9 +66,11 @@ namespace Comet.Game.Packets
             PreviousClass = character.PreviousProfession;
             FirstClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
-            QuizPoints = 5000;
-            EnlightenPoints = 200;
+            //QuizPoints = 5000;
+            //EnlightenPoints = 200;
+            //EnlightenExp = 2;
             VipLevel = character.BaseVipLevel;
+            //UserTitle = 1;
             CharacterName = character.Name;
             SpouseName = character.MateName;
         }
@@ -95,7 +97,9 @@ namespace Comet.Game.Packets
         public byte FirstClass { get; set; }
         public uint QuizPoints { get; set; }
         public ushort EnlightenPoints { get; set; }
+        public uint EnlightenExp { get; set; }
         public uint VipLevel { get; set; }
+        public ushort UserTitle { get; set; }
         public string CharacterName { get; set; }
         public string SpouseName { get; set; }
 
@@ -132,9 +136,11 @@ namespace Comet.Game.Packets
             writer.Write(Rebirths); // 69 
             writer.Write(FirstClass); // 70
             writer.Write(QuizPoints); // 71
-            writer.Write(EnlightenPoints);
-            writer.BaseStream.Seek(8, SeekOrigin.Current);
-            writer.Write(VipLevel);
+            writer.Write(EnlightenPoints); // 75
+            writer.Write(EnlightenExp); // 77
+            writer.Write((ushort) 0); // 81
+            writer.Write(VipLevel); // 83
+            writer.Write(UserTitle); // 87
             writer.Write(new List<string>
             {
                 CharacterName,

@@ -41,13 +41,8 @@ namespace Comet.Game.Database.Models
         [Column("amount")] public virtual uint Amount { get; set; }
         [Column("totem_pole")] public virtual int TotemPole { get; set; }
         [Column("last_totem")] public virtual DateTime? LastTotem { get; set; }
-        [Column("req_lev")] public virtual byte ReqLevel { get; set; }
-        [Column("req_class")] public virtual byte ReqClass { get; set; }
-        [Column("req_metempsychosis")] public virtual byte ReqMetempsychosis { get; set; }
-        [Column("money_prize")] public virtual long MoneyPrize { get; set; }
-        [Column("emoney_prize")] public virtual uint EmoneyPrize { get; set; }
-        [Column("castle_id")] public virtual uint CastleIdentity { get; set; }
-        [Column("castle_level")] public virtual uint CastleLevel { get; set; }
-        [Column("current_boss_level")] public virtual uint CurrentBossLevel { get; set; }
+        [Column("condition_level")] public virtual byte ReqLevel { get; set; }
+        [Column("condition_prof")] public virtual byte ReqClass { get; set; }
+        [Column("condition_metem")] public virtual byte ReqMetempsychosis { get; set; }
     }
 }

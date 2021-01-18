@@ -1504,7 +1504,7 @@ namespace Comet.Game.States.Items
 
         public bool IsEquipEnable()
         {
-            return IsEquipment() || IsArrowSort() || IsGourd() || IsGarment();
+            return IsEquipment() || IsArrowSort() || IsGourd() || IsGarment() || IsTalisman() || IsMount();
         }
 
         public bool IsBackswordType()
@@ -1520,6 +1520,56 @@ namespace Comet.Game.States.Items
         public bool IsEquipment()
         {
             return IsHelmet() || IsNeck() || IsRing() || IsBangle() || IsWeapon() || IsArmor() || IsShoes() || IsShield();
+        }
+
+        public static bool IsMount(uint type)
+        {
+            return type == 300000;
+        }
+
+        public bool IsMount()
+        {
+            return IsMount(Type);
+        }
+
+        public static bool IsTalisman(uint type)
+        {
+            return IsAttackTalisman(type) || IsDefenseTalisman(type) || IsCrop(type);
+        }
+
+        public bool IsTalisman()
+        {
+            return IsTalisman(Type);
+        }
+
+        public static bool IsAttackTalisman(uint type)
+        {
+            return type >= 201000 && type < 202000;
+        }
+
+        public bool IsAttackTalisman()
+        {
+            return IsAttackTalisman(Type);
+        }
+
+        public static bool IsDefenseTalisman(uint type)
+        {
+            return type >= 202000 && type < 203000;
+        }
+
+        public bool IsDefenseTalisman()
+        {
+            return IsDefenseTalisman(Type);
+        }
+
+        public static bool IsCrop(uint type)
+        {
+            return type >= 203000 && type < 204000;
+        }
+
+        public bool IsCrop()
+        {
+            return IsCrop(Type);
         }
 
         public int GetItemSubType()
@@ -1886,7 +1936,7 @@ namespace Comet.Game.States.Items
             LeftHandAccessory = 16,
             SteedArmor = 17,
             Crop = 18,
-            EquipmentEnd = Garment,
+            EquipmentEnd = Steed,
 
             AltHead = 21,
             AltNecklace = 22,

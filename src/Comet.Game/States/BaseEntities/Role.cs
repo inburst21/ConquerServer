@@ -173,8 +173,8 @@ namespace Comet.Game.States.BaseEntities
             {
                 await BroadcastRoomMsgAsync(new MsgAction
                 {
-                    CommandX = (ushort) x,
-                    CommandY = (ushort) y,
+                    X = (ushort) x,
+                    Y = (ushort) y,
                     ArgumentX = m_posX,
                     ArgumentY = m_posY,
                     Identity = Identity,

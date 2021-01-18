@@ -1942,6 +1942,9 @@ namespace Comet.Game.States
                     case 12: // monopoly
                         newItem.Monopoly = (byte) Math.Min(byte.MaxValue, Math.Max(0, value));
                         break;
+                    case 13: // mount color
+                        newItem.Data = (uint) value;
+                        break;
                 }
             }
 
