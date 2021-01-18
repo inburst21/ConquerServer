@@ -15,8 +15,8 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
-    <AssemblyVersion>1.2021.0115.28</AssemblyVersion>
-    <FileVersion>1.2021.0115.65</FileVersion>
+    <AssemblyVersion>1.2021.0118.28</AssemblyVersion>
+    <FileVersion>1.2021.0118.67</FileVersion>
     <Configurations>Debug;Release;DebugProduction;Debug Windows (x64)</Configurations>
   </PropertyGroup>
 

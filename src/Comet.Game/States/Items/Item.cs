@@ -161,7 +161,7 @@ namespace Comet.Game.States.Items
                 AmountLimit = itemtype.AmountLimit,
                 Gem1 = itemtype.Gem1,
                 Gem2 = itemtype.Gem2,
-                Monopoly = (byte)(bound ? 3 : itemtype.Monopoly),
+                Monopoly = (byte)(bound ? 3 : 0),
                 Color = (byte)ItemColor.Orange
             };
             return entity;

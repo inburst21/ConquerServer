@@ -43,7 +43,7 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgPeerage;
             Action = action;
             DataLow2 = maxPages;
-            DataHigh1 = maxPerPage;
+            DataLow1 = maxPerPage;
         }
 
         public NobilityAction Action { get; set; }
@@ -91,6 +91,7 @@ namespace Comet.Game.Packets
         public uint Data4 { get; set; }
         
         public List<string> Strings = new List<string>();
+        public List<NobilityStruct> Rank = new List<NobilityStruct>();
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -108,7 +109,7 @@ namespace Comet.Game.Packets
             Data1 = reader.ReadUInt32();
             Data2 = reader.ReadUInt32();
             Data3 = reader.ReadUInt32();
-            Data4 = reader.ReadUInt32();
+             Data4 = reader.ReadUInt32();
             Strings = reader.ReadStrings();
         }
 
@@ -128,7 +129,23 @@ namespace Comet.Game.Packets
             writer.Write(Data2); // 20
             writer.Write(Data3); // 24
             writer.Write(Data4); // 28
-            writer.Write(Strings);
+            
+            if (Rank.Count == 0)
+            {
+                writer.Write(Strings);
+            }
+            else
+            {
+                foreach (var rank in Rank)
+                {
+                    writer.Write(rank.Identity);
+                    writer.Write(rank.LookFace);
+                    writer.Write(rank.Name, 16);
+                    writer.Write(rank.Donation);
+                    writer.Write((uint)rank.Rank);
+                    writer.Write(rank.Position + 1);
+                }
+            }
             return writer.ToArray();
         }
 
@@ -176,6 +193,16 @@ namespace Comet.Game.Packets
                     break;
             }
 #endif
+        }
+
+        public struct NobilityStruct
+        {
+            public uint Identity;
+            public uint LookFace;
+            public string Name;
+            public ulong Donation;
+            public NobilityRank Rank;
+            public int Position;
         }
     }
 

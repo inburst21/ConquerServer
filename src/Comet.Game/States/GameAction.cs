@@ -5223,7 +5223,7 @@ namespace Comet.Game.States
                 case 0: // seconds
                 {
                     DateTime timeStamp = DateTime.Now;
-                    int nDiff = (int) ((timeStamp - dbStc.Timestamp.Value).TotalSeconds + value);
+                    int nDiff = (int) ((timeStamp - dbStc.Timestamp.Value).TotalSeconds);
                     switch (opt)
                     {
                         case "==": return nDiff == value;
@@ -5282,7 +5282,7 @@ namespace Comet.Game.States
                 {
                     if (value > 0)
                         return await user.Statistic.SetTimestampAsync(idEvent, idType, DateTime.Now);
-                    return await user.Statistic.SetTimestampAsync(idEvent, idType, null);
+                    return await user.Statistic.SetTimestampAsync(idEvent, idType, DateTime.Now);
                 }
             }
 
