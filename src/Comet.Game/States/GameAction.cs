@@ -126,6 +126,7 @@ namespace Comet.Game.States
                     case TaskActionType.ActionBrocastmsg:
                         result = await ExecuteActionBrocastmsg(action, param, user, role, item, input);
                         break;
+                    case TaskActionType.ActionMenuMessage:
                     case TaskActionType.ActionMessagebox:
                         result = await ExecuteActionMessagebox(action, param, user, role, item, input);
                         break;
@@ -4870,7 +4871,7 @@ namespace Comet.Game.States
                 opt = splitParam[1].ToLowerInvariant();
             int data = int.Parse(splitParam[2]);
 
-            if (opt.StartsWith("interval", StringComparison.InvariantCultureIgnoreCase))
+            if (ope.StartsWith("interval", StringComparison.InvariantCultureIgnoreCase))
             {
                 DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
                 if (detail == null)
@@ -4882,8 +4883,7 @@ namespace Comet.Game.States
                     case 0: // seconds
                     {
                         DateTime timeStamp = DateTime.Now;
-                        int nDiff = (int) ((timeStamp - UnixTimestamp.ToDateTime(detail.TaskOvertime)).TotalSeconds +
-                                           data);
+                        int nDiff = (int) ((timeStamp - UnixTimestamp.ToDateTime(detail.TaskOvertime)).TotalSeconds);
                         switch (opt)
                         {
                             case "==": return nDiff == data;
@@ -4920,7 +4920,7 @@ namespace Comet.Game.States
                 }
             }
 
-            if (opt.Equals("time"))
+            if (opt.Equals("set"))
             {
                 DbTaskDetail detail = user.TaskDetail.QueryTaskData(action.Data);
                 if (detail == null)
@@ -6580,6 +6580,7 @@ namespace Comet.Game.States
         ActionMenulink = 102,
         ActionMenuedit = 103,
         ActionMenupic = 104,
+        ActionMenuMessage = 105,
         ActionMenubutton = 110,
         ActionMenulistpart = 111,
         ActionMenucreate = 120,

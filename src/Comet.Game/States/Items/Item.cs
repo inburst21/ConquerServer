@@ -295,7 +295,7 @@ namespace Comet.Game.States.Items
 
         public bool IsBound
         {
-            get => (m_dbItem.Monopoly & ITEM_MONOPOLY_MASK) != 0;
+            get => m_dbItem.Monopoly != 0;
             set
             {
                 if (value)
@@ -419,6 +419,21 @@ namespace Comet.Game.States.Items
             }
         }
 
+        public int AddFinalDamage
+        {
+            get
+            {
+                if (Position == ItemPosition.AttackTalisman)
+                {
+                    int result = m_dbItemtype?.AttackMax ?? 0;
+                    result += m_dbItemAddition?.AttackMax ?? 0;
+                    return result;
+                }
+
+                return 0;
+            }
+        }
+
         public int MagicAttack
         {
             get
@@ -429,6 +444,21 @@ namespace Comet.Game.States.Items
                 if (ws != null && ws.Type == 421 && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
+            }
+        }
+
+        public int AddFinalMagicDamage
+        {
+            get
+            {
+                if (Position == ItemPosition.AttackTalisman)
+                {
+                    int result = m_dbItemtype?.MagicAtk ?? 0;
+                    result += m_dbItemAddition?.MagicAtk ?? 0;
+                    return result;
+                }
+
+                return 0;
             }
         }
 
@@ -444,6 +474,21 @@ namespace Comet.Game.States.Items
             }
         }
 
+        public int AddFinalDefense
+        {
+            get
+            {
+                if (Position == ItemPosition.DefenceTalisman)
+                {
+                    int result = m_dbItemtype?.Defense ?? 0;
+                    result += m_dbItemAddition?.Defense ?? 0;
+                    return result;
+                }
+
+                return 0;
+            }
+        }
+
         public int MagicDefense
         {
             get
@@ -454,6 +499,21 @@ namespace Comet.Game.States.Items
                 }
 
                 return m_dbItemtype?.MagicDef ?? 0;
+            }
+        }
+
+        public int AddFinalMagicDefense
+        {
+            get
+            {
+                if (Position == ItemPosition.DefenceTalisman)
+                {
+                    int result = m_dbItemtype?.MagicDef ?? 0;
+                    result += m_dbItemAddition?.MagicDef ?? 0;
+                    return result;
+                }
+
+                return 0;
             }
         }
 
@@ -1441,7 +1501,7 @@ namespace Comet.Game.States.Items
 
         public bool CanBeStored()
         {
-            return (m_dbItem.Monopoly & ITEM_STORAGE_MASK) == 0;
+            return (m_dbItemtype.Monopoly & ITEM_STORAGE_MASK) == 0;
         }
 
         public bool IsHoldEnable()

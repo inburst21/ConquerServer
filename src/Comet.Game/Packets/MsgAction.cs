@@ -616,7 +616,7 @@ namespace Comet.Game.Packets
             RelationshipsEnemy = 123,
             ClientDialog = 126,
             LoginComplete = 132,
-            MapEffect,
+            MapEffect = 134,
             RemoveEntity = 135,
             MapJump = 137,
             CharacterDead = 145,

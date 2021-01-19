@@ -375,6 +375,11 @@ namespace Comet.Game.States.BaseEntities
         public virtual int Defense2 => Calculations.DEFAULT_DEFENCE2;
         public virtual int Blessing { get; } = 0;
 
+        public virtual int AddFinalAttack { get; } = 0;
+        public virtual int AddFinalMAttack { get; } = 0;
+        public virtual int AddFinalDefense { get; } = 0;
+        public virtual int AddFinalMDefense { get; } = 0;
+
         #endregion
 
         #region Battle Processing

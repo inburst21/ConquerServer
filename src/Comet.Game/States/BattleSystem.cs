@@ -277,6 +277,9 @@ namespace Comet.Game.States
                 damage = (int) (damage * (1 - delta));
             }
 
+            damage += attacker.AddFinalAttack;
+            damage -= target.AddFinalDefense;
+
             if (target is Monster mob)
                 damage = (int)Math.Min(mob.MaxLife * 700, damage);
 
@@ -327,6 +330,9 @@ namespace Comet.Game.States
                 double delta = Math.Min(50, target.BattlePower - attacker.BattlePower) / 100f;
                 damage = (int)(damage * (1 - delta));
             }
+
+            damage += attacker.AddFinalMAttack;
+            damage -= target.AddFinalMDefense;
 
             if (target is Monster mob)
                 damage = (int)Math.Min(mob.MaxLife * 700, damage);

@@ -1586,6 +1586,9 @@ namespace Comet.Game.States
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
+                    if (pos == Item.ItemPosition.AttackTalisman || pos == Item.ItemPosition.DefenceTalisman)
+                        continue;
+
                     if (pos == Item.ItemPosition.LeftHand)
                     {
                         result += (UserPackage[pos]?.MinAttack ?? 0) / 2;
@@ -1611,6 +1614,9 @@ namespace Comet.Game.States
                 int result = Strength;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
+                    if (pos == Item.ItemPosition.AttackTalisman || pos == Item.ItemPosition.DefenceTalisman)
+                        continue;
+
                     if (pos == Item.ItemPosition.LeftHand)
                         result += (UserPackage[pos]?.MaxAttack ?? 0) / 2;
                     else
@@ -1632,6 +1638,9 @@ namespace Comet.Game.States
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
+                    if (pos == Item.ItemPosition.AttackTalisman || pos == Item.ItemPosition.DefenceTalisman)
+                        continue;
+
                     result += UserPackage[pos]?.MagicAttack ?? 0;
                 }
 
@@ -1649,6 +1658,9 @@ namespace Comet.Game.States
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
+                    if (pos == Item.ItemPosition.AttackTalisman || pos == Item.ItemPosition.DefenceTalisman)
+                        continue;
+
                     result += UserPackage[pos]?.Defense ?? 0;
                 }
 
@@ -1675,6 +1687,9 @@ namespace Comet.Game.States
                 int result = 0;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
+                    if (pos == Item.ItemPosition.AttackTalisman || pos == Item.ItemPosition.DefenceTalisman)
+                        continue;
+
                     result += UserPackage[pos]?.MagicDefense ?? 0;
                 }
 
@@ -1718,6 +1733,67 @@ namespace Comet.Game.States
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.Blessing ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int AddFinalAttack
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                    pos <= Item.ItemPosition.EquipmentEnd;
+                    pos++)
+                {
+                    result += UserPackage[pos]?.AddFinalDefense ?? 0;
+                }
+
+                return result;
+            }
+        }
+
+        public override int AddFinalMAttack
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                    pos <= Item.ItemPosition.EquipmentEnd;
+                    pos++)
+                {
+                    result += UserPackage[pos]?.AddFinalMagicDamage ?? 0;
+                }
+
+                return result;
+            }
+        }
+
+        public override int AddFinalDefense
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                    pos <= Item.ItemPosition.EquipmentEnd;
+                    pos++)
+                {
+                    result += UserPackage[pos]?.AddFinalDefense ?? 0;
+                }
+
+                return result;
+            }
+        }
+
+        public override int AddFinalMDefense
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.AddFinalMagicDefense ?? 0;
                 }
                 return result;
             }

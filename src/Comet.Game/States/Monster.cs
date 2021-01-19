@@ -822,7 +822,7 @@ namespace Comet.Game.States
                 Action = MsgAction.ActionType.MapEffect,
                 Identity = Identity,
                 X = MapX,
-                Y= MapY
+                Y = MapY
             }, false);
         }
 

@@ -131,7 +131,7 @@ namespace Comet.Game.States.NPCs
             GameMap map = Kernel.MapManager.GetMap(idMap);
             if (map != null)
             {
-                if (!map.IsStandEnable(x, y))
+                if (!map.IsStandEnable(x, y) && idMap != 5000)
                     return false;
 
                 await LeaveMapAsync();

@@ -100,25 +100,32 @@ namespace Comet.Shared
 
         public async Task<bool> PostAsync<T>(T e, string url) where T : class
         {
-            if (!m_isAuthenticated || DateTime.Now > m_ExpireTime) m_isAuthenticated = await AuthenticateAsync();
-
-            if (!m_isAuthenticated)
+            try
             {
-                await Log.WriteLogAsync(LogLevel.Error, "Could not authenticate to the API.");
+                if (!m_isAuthenticated || DateTime.Now > m_ExpireTime) m_isAuthenticated = await AuthenticateAsync();
+
+                if (!m_isAuthenticated)
+                {
+                    await Log.WriteLogAsync(LogLevel.Error, "Could not authenticate to the API.");
+                    return false;
+                }
+
+                using HttpClient client = new HttpClient
+                {
+                    BaseAddress = new Uri(BASE_URL)
+                };
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", m_token);
+
+                var contentData = new StringContent(JsonConvert.SerializeObject(e), Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync(url, contentData);
+                return JsonConvert.DeserializeObject<bool>(await response.Content.ReadAsStringAsync());
+            }
+            catch
+            {
                 return false;
             }
-
-            using HttpClient client = new HttpClient
-            {
-                BaseAddress = new Uri(BASE_URL)
-            };
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", m_token);
-
-            var contentData = new StringContent(JsonConvert.SerializeObject(e), Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await client.PostAsync(url, contentData);
-            return JsonConvert.DeserializeObject<bool>(await response.Content.ReadAsStringAsync());
         }
 
         public async Task<T> GetAsync<T>(string url) where T : class
