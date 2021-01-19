@@ -53,7 +53,7 @@
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2021.0119.189</AssemblyVersion>
     <FileVersion>1.2021.0119.223</FileVersion>
-    <Configurations>Debug;Release;DebugProduction;Debug Windows (x64)</Configurations>
+    <Configurations>Debug;Release;Debug Windows (x64)</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
