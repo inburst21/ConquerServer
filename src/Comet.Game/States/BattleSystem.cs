@@ -217,9 +217,6 @@ namespace Comet.Game.States
             else
                 attack = attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
 
-            if (attacker is Character && target is Character && attacker.IsBowman)
-                attack = (int)(attack * 0.25f);
-
             if (adjustAtk > 0)
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
@@ -244,7 +241,10 @@ namespace Comet.Game.States
                 damage = (int) (damage * (1 - targetUser.Blessing / 100d));
                 damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
-            
+
+            if (attacker is Character && target is Character && attacker.IsBowman)
+                damage = (int)(damage * 0.1125f);
+
             if (attacker.QueryStatus(StatusSet.STIG) != null)
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIG).Power);
 
@@ -254,20 +254,27 @@ namespace Comet.Game.States
             if (attacker.QueryStatus(StatusSet.SUPERMAN) != null && !target.IsDynaNpc() && !target.IsPlayer())
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.SUPERMAN).Power);
 
-            if (attacker is Character && target.IsMonster())
+            if (attacker is Character atkUsr && target is Monster tgtMonster)
             {
-                damage = CalcDamageUser2Monster(damage, defense, attacker.Level, target.Level);
+                if (!tgtMonster.IsEquality())
+                    damage = CalcDamageUser2Monster(atkUsr, target, damage);
+
                 damage = target.AdjustWeaponDamage(damage);
                 damage = AdjustMinDamageUser2Monster(damage, attacker, target);
             }
-            else if (attacker.IsMonster() && target is Character)
+            else if (attacker is Monster atkMonster && target is Character tgtUsr)
             {
-                damage = CalcDamageMonster2User(damage, defense, attacker.Level, target.Level);
+                if (!atkMonster.IsEquality())
+                    damage = CalcDamageMonster2User(attacker, tgtUsr, damage);
+
                 damage = target.AdjustWeaponDamage(damage);
                 damage = AdjustMinDamageMonster2User(damage, attacker, target);
             }
             else
             {
+                if (attacker is Character && target is Character)
+                    damage = CalcDamageUser2User((Character)attacker, (Character)target, damage);
+
                 damage = target.AdjustWeaponDamage(damage);
             }
 
@@ -279,10 +286,7 @@ namespace Comet.Game.States
 
             damage += attacker.AddFinalAttack;
             damage -= target.AddFinalDefense;
-
-            if (target is Monster mob)
-                damage = (int)Math.Min(mob.MaxLife * 700, damage);
-
+            
             damage = Math.Max(damage, 1);
             return (damage, effect);
         }
@@ -307,22 +311,29 @@ namespace Comet.Game.States
                 damage = (int)(damage * (1 - targetUser.Blessing / 100d));
                 damage = (int)(damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
-            
-            if (attacker is Character && target.IsMonster())
+
+            if (attacker is Character atkUsr && target is Monster tgtMonster)
             {
-                damage = CalcDamageUser2Monster(damage, defense, attacker.Level, target.Level);
-                damage = target.AdjustMagicDamage(damage);
+                if (!tgtMonster.IsEquality())
+                    damage = CalcDamageUser2Monster(atkUsr, target, damage);
+
+                damage = target.AdjustWeaponDamage(damage);
                 damage = AdjustMinDamageUser2Monster(damage, attacker, target);
             }
-            else if (attacker.IsMonster() && target is Character)
+            else if (attacker is Monster atkMonster && target is Character tgtUsr)
             {
-                damage = CalcDamageMonster2User(damage, defense, attacker.Level, target.Level);
-                damage = target.AdjustMagicDamage(damage);
+                if (!atkMonster.IsEquality())
+                    damage = CalcDamageMonster2User(attacker, tgtUsr, damage);
+
+                damage = target.AdjustWeaponDamage(damage);
                 damage = AdjustMinDamageMonster2User(damage, attacker, target);
             }
             else
             {
-                damage = target.AdjustMagicDamage(damage);
+                if (attacker is Character && target is Character)
+                    damage = CalcDamageUser2User((Character) attacker, (Character) target, damage);
+
+                damage = target.AdjustWeaponDamage(damage);
             }
 
             if (targetUser != null && attacker.BattlePower < target.BattlePower)
@@ -333,10 +344,7 @@ namespace Comet.Game.States
 
             damage += attacker.AddFinalMAttack;
             damage -= target.AddFinalMDefense;
-
-            if (target is Monster mob)
-                damage = (int)Math.Min(mob.MaxLife * 700, damage);
-
+            
             return (damage, effect);
         }
 
@@ -435,7 +443,7 @@ namespace Comet.Game.States
             m_bAutoAttack = false;
         }
 
-        public int AdjustDrop(int nDrop, int nAtkLev, int nDefLev)
+        public static int AdjustDrop(int nDrop, int nAtkLev, int nDefLev)
         {
             if (nAtkLev > 120)
                 nAtkLev = 120;
@@ -498,7 +506,7 @@ namespace Comet.Game.States
             return Calculations.CutTrail(0, nDrop);
         }
 
-        public int GetNameType(int nAtkLev, int nDefLev)
+        public static int GetNameType(int nAtkLev, int nDefLev)
         {
             int nDeltaLev = nAtkLev - nDefLev;
 
@@ -511,53 +519,154 @@ namespace Comet.Game.States
             return NAME_BLACK;
         }
 
-        public int CalcDamageUser2Monster(int nAtk, int nDef, int nAtkLev, int nDefLev)
+        public static int CalcDamageUser2Monster(Character attacker, Role target, int damage)//(int nAtk, int nDef, int nAtkLev, int nDefLev)
         {
-            int nDamage = nAtk - nDef;
+            var disdain = Kernel.RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
+            int factor = disdain.MaxAtk;
 
-            if (GetNameType(nAtkLev, nDefLev) != NAME_GREEN)
-                return Calculations.CutTrail(0, nDamage);
+            if (attacker.IsOnXpSkill())
+                factor = disdain.MaxXpAtk;
 
-            int nDeltaLev = nAtkLev - nDefLev;
-            if (nDeltaLev >= 3
-                && nDeltaLev <= 5)
-                nAtk = (int)(nAtk * 1.5);
-            else if (nDeltaLev > 5
-                     && nDeltaLev <= 10)
-                nAtk *= 2;
-            else if (nDeltaLev > 10
-                     && nDeltaLev <= 20)
-                nAtk = (int)(nAtk * 2.5);
-            else if (nDeltaLev > 20)
-                nAtk *= 3;
+            int maxDamage = (int) (target.MaxLife * (factor / 100d));
+            damage = Math.Min(damage, maxDamage);
 
-            return Calculations.CutTrail(0, nAtk - nDef);
-        }
-
-        public int CalcDamageMonster2User(int nAtk, int nDef, int nAtkLev, int nDefLev)
-        {
-            if (nAtkLev > 120)
-                nAtkLev = 120;
-
-            int nDamage = nAtk; // (int) (nAtk - nDef*0.6);
-
-            int nNameType = GetNameType(nDefLev, nAtkLev);
-
-            if (nNameType == NAME_RED)
-                nDamage = (int)(nAtk * 1.5f - nDef);
-            else if (nNameType == NAME_BLACK)
+            int extraDelta = target.BattlePower - attacker.BattlePower;
+            if (extraDelta > 0)
             {
-                int nDeltaLev = nDefLev - nAtkLev;
-                if (nDeltaLev >= -10 && nDeltaLev <= -5)
-                    nAtk *= 2;
-                else if (nDeltaLev >= -20 && nDeltaLev < -10)
-                    nAtk = (int)(nAtk * 3.5f);
-                else if (nDeltaLev < -20)
-                    nAtk *= 5;
-                // nDamage = nAtk - nDef;
+                if (extraDelta >= 10) factor = 1;
+                else if (extraDelta >= 5) factor = 5;
+                else factor = 10;
+                damage = Calculations.MulDiv(damage, factor, 100);
             }
 
-            return Calculations.CutTrail(0, nDamage);
+            return damage;
+            //int nDamage = nAtk - nDef;
+
+            //if (GetNameType(nAtkLev, nDefLev) != NAME_GREEN)
+            //    return Calculations.CutTrail(0, nDamage);
+
+            //int nDeltaLev = nAtkLev - nDefLev;
+            //if (nDeltaLev >= 3
+            //    && nDeltaLev <= 5)
+            //    nAtk = (int)(nAtk * 1.5);
+            //else if (nDeltaLev > 5
+            //         && nDeltaLev <= 10)
+            //    nAtk *= 2;
+            //else if (nDeltaLev > 10
+            //         && nDeltaLev <= 20)
+            //    nAtk = (int)(nAtk * 2.5);
+            //else if (nDeltaLev > 20)
+            //    nAtk *= 3;
+
+            //return Calculations.CutTrail(0, nAtk - nDef);
+        }
+
+        public static int CalcDamageMonster2User(Role attacker, Character target, int damage)//(int nAtk, int nDef, int nAtkLev, int nDefLev)
+        {
+            int extraDelta = target.BattlePower - attacker.BattlePower;
+            int factor;
+            if (extraDelta < 5) factor = 100;
+            else if (extraDelta < 10) factor = 80;
+            else if (extraDelta < 15) factor = 60;
+            else if (extraDelta < 20) factor = 40;
+            else factor = 30;
+
+            int adjustDamage = Calculations.MulDiv((int) target.MaxLife, factor * attacker.ExtraDamage, 1000000);
+            return Math.Max(adjustDamage, damage);
+            //if (nAtkLev > 120)
+            //    nAtkLev = 120;
+
+            //int nDamage = nAtk; // (int) (nAtk - nDef*0.6);
+
+            //int nNameType = GetNameType(nDefLev, nAtkLev);
+            //if (nNameType == NAME_RED)
+            //    nDamage = (int)(nAtk * 1.5f - nDef);
+            //else if (nNameType == NAME_BLACK)
+            //{
+            //    int nDeltaLev = nDefLev - nAtkLev;
+            //    if (nDeltaLev >= -10 && nDeltaLev <= -5)
+            //        nAtk *= 2;
+            //    else if (nDeltaLev >= -20 && nDeltaLev < -10)
+            //        nAtk = (int)(nAtk * 3.5f);
+            //    else if (nDeltaLev < -20)
+            //        nAtk *= 5;
+            //    // nDamage = nAtk - nDef;
+            //}
+
+            //return Calculations.CutTrail(0, nDamage);
+        }
+
+        public static int CalcDamageUser2User(Character attacker, Character target, int damage)
+        {
+            var disdain = Kernel.RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
+
+            int min, max, overAdjust;
+
+            if (attacker.Level < 110)
+            {
+                if (target.Level < 110)
+                {
+                    min = disdain.UsrAtkUsrMin;
+                    max = disdain.UsrAtkUsrMax;
+                    overAdjust = disdain.UsrAtkUsrOveradj;
+                }
+                else
+                {
+                    min = disdain.UsrAtkUsrxMin;
+                    max = disdain.UsrAtkUsrxMax;
+                    overAdjust = disdain.UsrAtkUsrxOveradj;
+                }
+            }
+            else
+            {
+                if (target.Level < 110)
+                {
+                    min = disdain.UsrxAtkUsrMin;
+                    max = disdain.UsrxAtkUsrMax;
+                    overAdjust = disdain.UsrxAtkUsrOveradj;
+                }
+                else
+                {
+                    min = disdain.UsrxAtkUsrxMin;
+                    max = disdain.UsrxAtkUsrMax;
+                    overAdjust = disdain.UsrxAtkUsrxOveradj;
+                }
+            }
+
+            int factor = UserAttackUserGetFactor(target);
+            int targetLev = target.Level;
+
+            int minDamage = min * targetLev * factor / 100;
+            if (damage < minDamage)
+                return minDamage;
+
+            int maxDamage = max * targetLev * factor / 100;
+            if (damage > maxDamage)
+            {
+
+                var nDamage = Calculations.MulDiv(damage - maxDamage, overAdjust, 100);
+                return (nDamage + maxDamage);
+            }
+            return damage;
+        }
+
+        static int[] _nonRebornInts = { 10, 6, 6, 6, 6 };
+        static int[] _rebornInts = { 18, 18, 14, 27, 18 };
+        public static int UserAttackUserGetFactor(Character target)
+        {
+
+            int index;
+            if (target.ProfessionSort == 1) index = 0;
+            else if (target.ProfessionSort == 2) index = 1;
+            else if (target.ProfessionSort == 4) index = 2;
+            else if (target.ProfessionSort == 10 || target.ProfessionSort == 14) index = 3;
+            else if (target.ProfessionSort == 13) index = 4;
+            else index = 1;
+
+            if (target.Metempsychosis > 0)
+                return _rebornInts[index];
+            else
+                return _nonRebornInts[index];
         }
 
         public int AdjustMinDamageUser2Monster(int nDamage, Role pAtker, Role pTarget)

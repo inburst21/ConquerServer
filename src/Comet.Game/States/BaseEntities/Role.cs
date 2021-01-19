@@ -380,6 +380,8 @@ namespace Comet.Game.States.BaseEntities
         public virtual int AddFinalDefense { get; } = 0;
         public virtual int AddFinalMDefense { get; } = 0;
 
+        public virtual int ExtraDamage { get; } = 0;
+
         #endregion
 
         #region Battle Processing
@@ -472,7 +474,7 @@ namespace Comet.Game.States.BaseEntities
                 PosY = MapY
             };
             
-            msg.Action = IsBowman ? MsgInteractType.Shoot5065 : MsgInteractType.Attack;
+            msg.Action = IsBowman ? MsgInteractType.Shoot : MsgInteractType.Attack;
 
             if (this is Character user)
                 await user.Screen.BroadcastRoomMsgAsync(msg);
@@ -674,6 +676,11 @@ namespace Comet.Game.States.BaseEntities
         public virtual async Task<bool> DetachStatusAsync(ulong nType, bool b64)
         {
             return await StatusSet.DelObjAsync(StatusSet.InvertFlag(nType, b64));
+        }
+
+        public virtual bool IsOnXpSkill()
+        {
+            return false;
         }
 
         public virtual IStatus QueryStatus(int nType)

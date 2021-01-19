@@ -1018,7 +1018,7 @@ namespace Comet.Game.States
 
         public override async Task<bool> CheckCrimeAsync(Role target)
         {
-            if (target == null) return false;
+            if (target == null || !target.IsAlive) return false;
             if (!target.IsEvil() && !target.IsMonster() && !(target is DynamicNpc))
             {
                 if (!Map.IsTrainingMap() && !Map.IsDeadIsland() 
@@ -1747,7 +1747,7 @@ namespace Comet.Game.States
                     pos <= Item.ItemPosition.EquipmentEnd;
                     pos++)
                 {
-                    result += UserPackage[pos]?.AddFinalDefense ?? 0;
+                    result += UserPackage[pos]?.AddFinalDamage ?? 0;
                 }
 
                 return result;

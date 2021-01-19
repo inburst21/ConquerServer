@@ -58,6 +58,7 @@ namespace Comet.Game.World.Managers
 
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
+        private readonly List<DbDisdain> m_disdains = new List<DbDisdain>();
 
         private TimeOutMS m_userUpdate = new TimeOutMS(500);
 
@@ -106,6 +107,8 @@ namespace Comet.Game.World.Managers
             }
 
             m_superman = (await DbSuperman.GetAsync()).ToDictionary(superman => superman.UserIdentity);
+
+            m_disdains.AddRange(await DbDisdain.GetAsync());
 
             m_userUpdate.Update();
         }
@@ -372,6 +375,11 @@ namespace Comet.Game.World.Managers
             }
             
             return result;
+        }
+
+        public DbDisdain GetDisdain(int delta)
+        {
+            return m_disdains.Aggregate((x, y) => Math.Abs(x.DeltaLev - delta) < Math.Abs(y.DeltaLev - delta) ? x : y);
         }
     }
 }

@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyVersion>1.2021.0119.20</AssemblyVersion>
-    <FileVersion>1.2021.0119.49</FileVersion>
+    <FileVersion>1.2021.0119.52</FileVersion>
     <LangVersion>latest</LangVersion>
-    <Configurations>Debug;Release;DebugProduction</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

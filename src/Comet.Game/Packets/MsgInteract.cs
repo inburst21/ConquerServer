@@ -338,6 +338,7 @@ namespace Comet.Game.Packets
         AcceptMerchant = 33,
         IncreaseJar = 36,
         PresentEmoney = 39,
+        CancelMerchant = 41,
         CounterKill = 43,
         CounterKillSwitch = 44,
         FatalStrike = 45,

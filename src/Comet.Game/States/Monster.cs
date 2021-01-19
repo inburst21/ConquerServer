@@ -165,11 +165,13 @@ namespace Comet.Game.States
 
         public override uint MaxLife => (uint)(m_dbMonster?.Life ?? 1);
 
-        public override int BattlePower => 1;
+        public override int BattlePower => m_dbMonster?.ExtraBattlelev ?? 0;
 
         public override int MinAttack => m_dbMonster?.AttackMin ?? 0;
 
         public override int MaxAttack => m_dbMonster?.AttackMax ?? 0;
+
+        public override int ExtraDamage => m_dbMonster?.ExtraDamage ?? 0;
 
         public override int MagicAttack => m_dbMonster?.AttackMax ?? 0;
 
@@ -186,7 +188,7 @@ namespace Comet.Game.States
         public uint AttackUser => m_dbMonster?.AttackUser ?? 0;
 
         public int ViewRange => m_dbMonster?.ViewRange ?? 1;
-
+        
         #endregion
 
         #region Battle
@@ -778,6 +780,11 @@ namespace Comet.Game.States
         public bool IsEscapeEnable()
         {
             return (AttackUser & ATKUSER_NOESCAPE) == 0;
+        }
+
+        public bool IsEquality()
+        {
+            return (AttackUser & ATKUSER_EQUALITY) != 0;
         }
 
         #endregion

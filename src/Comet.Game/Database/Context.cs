@@ -100,6 +100,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbTutorType> TutorTypes { get; set; }
         public virtual DbSet<DbDynaRankRec> DynaRankRec { get; set; }
         public virtual DbSet<DbSuperman> Superman { get; set; }
+        public virtual DbSet<DbDisdain> Disdains { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
