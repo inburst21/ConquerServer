@@ -103,11 +103,20 @@ namespace Comet.Game.Packets
 
                         user.Captcha = null;
                     }
+                    else
+                    {
+                        uint idTask = user.GetTaskId(OptionIndex);
+
+                        user.ClearTaskId();
+                        await GameAction.ExecuteActionAsync(idTask, user,
+                            Kernel.RoleManager.GetRole(user.InteractingNpc), user.UserPackage[user.InteractingItem], Text);
+                    }
 
                     break;
                 }
 
                 case TaskInteraction.Answer:
+                {
                     if (OptionIndex == byte.MaxValue)
                     {
                         user.CancelInteraction();
@@ -147,6 +156,7 @@ namespace Comet.Game.Packets
                             if (user.IsGm() && idTask != 0)
                                 await user.SendAsync($"Could not find InteractionAsnwer for task {idTask}");
                         }
+
                         return;
                     }
 
@@ -154,8 +164,9 @@ namespace Comet.Game.Packets
                     await GameAction.ExecuteActionAsync(await user.TestTask(task) ? task.IdNext : task.IdNextfail, user,
                         targetRole, user.UserPackage[user.InteractingItem], Text);
                     break;
-
+                }
                 case TaskInteraction.TextInput:
+                {
                     if (TaskIdentity == 31100)
                     {
                         if (user.SyndicateIdentity == 0 ||
@@ -168,7 +179,7 @@ namespace Comet.Game.Packets
                     }
 
                     break;
-
+                }
                 default:
                     await Log.WriteLogAsync(LogLevel.Warning, $"MsgTaskDialog: {Type}, {InteractionType} unhandled");
                     break;

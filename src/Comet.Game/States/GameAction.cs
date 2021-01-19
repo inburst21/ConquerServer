@@ -108,6 +108,9 @@ namespace Comet.Game.States
                     case TaskActionType.ActionMenupic:
                         result = await ExecuteActionMenuPic(action, param, user, role, item, input);
                         break;
+                    case TaskActionType.ActionMenuMessage:
+                        result = await ExecuteActionMenuMessage(action, param, user, role, item, input);
+                        break;
                     case TaskActionType.ActionMenucreate:
                         result = await ExecuteActionMenuCreate(action, param, user, role, item, input);
                         break;
@@ -126,7 +129,6 @@ namespace Comet.Game.States
                     case TaskActionType.ActionBrocastmsg:
                         result = await ExecuteActionBrocastmsg(action, param, user, role, item, input);
                         break;
-                    case TaskActionType.ActionMenuMessage:
                     case TaskActionType.ActionMessagebox:
                         result = await ExecuteActionMessagebox(action, param, user, role, item, input);
                         break;
@@ -644,6 +646,22 @@ namespace Comet.Game.States
                 InteractionType = MsgTaskDialog.TaskInteraction.Avatar,
                 Data = ushort.Parse(splitParam[2])
             });
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionMenuMessage(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            await user.SendAsync(new MsgTaskDialog
+            {
+                InteractionType = MsgTaskDialog.TaskInteraction.MessageBox,
+                Text = param,
+                OptionIndex = user.PushTaskId(action.Data)
+            });
+
             return true;
         }
 

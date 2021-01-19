@@ -37,6 +37,7 @@ namespace Comet.Game.World.Maps
     public sealed class Screen
     {
         public const int VIEW_SIZE = 18;
+        public const int BROADCAST_SIZE = 21;
 
         private readonly Character m_user;
 

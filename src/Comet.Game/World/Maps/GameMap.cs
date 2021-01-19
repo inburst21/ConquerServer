@@ -338,7 +338,7 @@ namespace Comet.Game.World.Maps
             foreach (var user in m_users.Values)
             {
                 if (user.Identity == exclude ||
-                    ScreenCalculations.GetDistance(x, y, user.MapX, user.MapY) > Screen.VIEW_SIZE)
+                    ScreenCalculations.GetDistance(x, y, user.MapX, user.MapY) > Screen.BROADCAST_SIZE)
                     continue;
 
                 await user.SendAsync(msg);
