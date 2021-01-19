@@ -772,7 +772,7 @@ namespace Comet.Game {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} from has {1} joined the Line Skill Tournament..
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} from {1} has joined the Line Skill Tournament..
         /// </summary>
         public static string StrLineSkillPktAnnounceSyn {
             get {

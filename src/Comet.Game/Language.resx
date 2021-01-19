@@ -355,7 +355,7 @@
     <value>{0} has joined the Line Skill Tournament.</value>
   </data>
   <data name="StrLineSkillPktAnnounceSyn" xml:space="preserve">
-    <value>{0} from has {1} joined the Line Skill Tournament.</value>
+    <value>{0} from {1} has joined the Line Skill Tournament.</value>
   </data>
   <data name="StrLineSkillPktOwnRank" xml:space="preserve">
     <value>Me: {0:0.00}[{1}/{2}]</value>

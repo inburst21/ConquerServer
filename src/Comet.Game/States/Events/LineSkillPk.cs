@@ -28,6 +28,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Shared;
 
@@ -111,7 +112,8 @@ namespace Comet.Game.States.Events
 #endif
 
             var user = GetUser(attacker as Character);
-            user.AttacksSuccess++;
+            if (attacker is Character player && target is Character tgtPlayer && !player.Client.IPAddress.Equals(tgtPlayer.Client.IPAddress))
+                user.AttacksSuccess++;
             return Task.CompletedTask;
         }
 
@@ -140,6 +142,10 @@ namespace Comet.Game.States.Events
 
         public override async Task OnEnterAsync(Character sender)
         {
+            await sender.DetachAllStatusAsync();
+            if (sender.UserPackage[Item.ItemPosition.LeftHand]?.IsShield() == true)
+                await sender.UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
+
             sender.PkMode = PkModeType.FreePk;
             await sender.SendAsync(new MsgAction
             {
