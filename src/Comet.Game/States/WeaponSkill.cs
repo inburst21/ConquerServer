@@ -103,6 +103,11 @@ namespace Comet.Game.States
             }
         }
 
+        public Task<bool> SaveAllAsync()
+        {
+            return BaseRepository.SaveAsync(m_skills.Values.ToList());
+        }
+
         public async Task<bool> UnearnAllAsync()
         {
             foreach (var skill in m_skills.Values)

@@ -54,7 +54,9 @@ namespace Comet.Network.Packets
         // MsgAccount = 1051,
         MsgConnect = 1052,
         MsgConnectEx = 1055,
+        MsgSynpOffer = 1058,
         MsgEncryptCode = 1059,
+        MsgDutyMinContri = 1061,
         MsgAccount = 1086,
         MsgPCNum = 1100,
         MsgMapItem = 1101,
@@ -89,6 +91,13 @@ namespace Comet.Network.Packets
         MsgGuide = 2065,
         MsgGuideInfo = 2066,
         MsgGuideContribute = 2067,
+
+        MsgFactionRankInfo = 2101,
+        MsgSynMemberList = 2102,
+
+        MsgTotemPoleInfo = 2201,
+        MsgWeaponsInfo = 2202,
+        MsgTotemPole = 2203,
 
         MsgWalk = 10005,
         MsgAction = 10010,

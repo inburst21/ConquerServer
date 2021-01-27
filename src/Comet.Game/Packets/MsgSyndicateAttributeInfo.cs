@@ -21,6 +21,7 @@
 
 #region References
 
+using System.IO;
 using Comet.Game.States;
 using Comet.Game.States.Syndicates;
 using Comet.Network.Packets;
@@ -39,10 +40,17 @@ namespace Comet.Game.Packets
 
         public uint Identity { get; set; }
         public int PlayerDonation { get; set; }
-        public int Funds { get; set; }
+        public long Funds { get; set; }
+        public uint ConquerPointsFunds { get; set; }
         public int MemberAmount { get; set; }
         public SyndicateMember.SyndicateRank Rank { get; set; }
         public string LeaderName { get; set; }
+        public int ConditionLevel { get; set; }
+        public int ConditionMetempsychosis { get; set; }
+        public int ConditionProfession { get; set; }
+        public byte Level { get; set; }
+        public uint PositionExpiration { get; set; }
+        public uint EnrollmentDate { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -54,12 +62,21 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write(Identity);
-            writer.Write(PlayerDonation);
-            writer.Write(Funds);
-            writer.Write(MemberAmount);
-            writer.Write((byte) Rank);
-            writer.Write(LeaderName, 16);
+            writer.Write(Identity); // 4
+            writer.Write(PlayerDonation); // 8
+            writer.Write(Funds); // 12
+            writer.Write(ConquerPointsFunds); // 20
+            writer.Write(MemberAmount); // 24
+            writer.Write((uint) Rank); // 28
+            writer.Write(LeaderName, 16); // 32
+            writer.Write(ConditionLevel); // 48
+            writer.Write(ConditionMetempsychosis); // 52
+            writer.Write(ConditionProfession); // 56
+            writer.Write(Level); // 60
+            writer.BaseStream.Seek(2, SeekOrigin.Current); // 61
+            writer.Write(PositionExpiration); // 63
+            writer.Write(0); // 67
+            writer.Write(EnrollmentDate);
             return writer.ToArray();
         }
     }

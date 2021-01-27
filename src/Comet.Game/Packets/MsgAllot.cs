@@ -87,23 +87,23 @@ namespace Comet.Game.Packets
             Character user = client.Character;
             if (Force > 0 && Force <= user.AttributePoints)
             {
-                user.Strength += Force;
-                user.AttributePoints -= Force;
+                user.Strength += 1;
+                user.AttributePoints -= 1;
             }
             if (Speed > 0 && Speed <= user.AttributePoints)
             {
-                user.Agility += Speed;
-                user.AttributePoints -= Speed;
+                user.Agility += 1;
+                user.AttributePoints -= 1;
             }
             if (Health > 0 && Health <= user.AttributePoints)
             {
-                user.Vitality += Health;
-                user.AttributePoints -= Health;
+                user.Vitality += 1;
+                user.AttributePoints -= 1;
             }
             if (Soul > 0 && Soul <= user.AttributePoints)
             {
-                user.Spirit += Soul;
-                user.AttributePoints -= Soul;
+                user.Spirit += 1;
+                user.AttributePoints -= 1;
             }
 
             await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Strength, client.Character.Strength));

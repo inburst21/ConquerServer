@@ -195,41 +195,73 @@ namespace Comet.Game.Packets
 
         private async Task GenerateInitialEquipmentAsync(DbCharacter user)
         {
-            await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
-            await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
-            await CreateItemAsync(1000000, user.Identity, Item.ItemPosition.Inventory);
+            DbNewbieInfo info = await DbNewbieInfo.GetAsync(user.Profession);
+            if (info == null)
+                return;
 
-            await CreateItemAsync((uint) await Kernel.NextAsync(132003, 132005), user.Identity,
-                Item.ItemPosition.Armor);
-            switch (user.Profession)
-            {
-                case 10:
-                case 20:
-                    await CreateItemAsync(150005, user.Identity, Item.ItemPosition.Ring);
-                    await CreateItemAsync(410301, user.Identity, Item.ItemPosition.RightHand);
-                    break;
-                case 40:
-                    await CreateItemAsync(150005, user.Identity, Item.ItemPosition.Ring);
-                    await CreateItemAsync(500301, user.Identity, Item.ItemPosition.RightHand);
-                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.LeftHand);
+            if (info.LeftHand != 0)
+                await CreateItemAsync(info.LeftHand, user.Identity, Item.ItemPosition.LeftHand);
+            if (info.RightHand != 0)
+                await CreateItemAsync(info.RightHand, user.Identity, Item.ItemPosition.RightHand);
+            if (info.Shoes != 0)
+                await CreateItemAsync(info.Shoes, user.Identity, Item.ItemPosition.Boots);
+            if (info.Headgear != 0)
+                await CreateItemAsync(info.Headgear, user.Identity, Item.ItemPosition.Headwear);
+            if (info.Necklace != 0)
+                await CreateItemAsync(info.Necklace, user.Identity, Item.ItemPosition.Necklace);
+            if (info.Armor != 0)
+                await CreateItemAsync(info.Armor, user.Identity, Item.ItemPosition.Armor);
+            if (info.Ring != 0)
+                await CreateItemAsync(info.Ring, user.Identity, Item.ItemPosition.Ring);
 
-                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.Inventory);
-                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.Inventory);
-                    await CreateItemAsync(1050000, user.Identity, Item.ItemPosition.Inventory);
-                    break;
-                case 100:
-                    await CreateMagicAsync(user.Identity, 1000);
-                    await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
-                    await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
-                    await CreateItemAsync(1001000, user.Identity, Item.ItemPosition.Inventory);
-                    await CreateItemAsync(152015, user.Identity, Item.ItemPosition.Ring);
-                    await CreateItemAsync(421301, user.Identity, Item.ItemPosition.RightHand);
-                    break;
-            }
+            if (info.Item0 != 0)
+                for (int i = 0; i < info.Number0; i++)
+                    await CreateItemAsync(info.Item0, user.Identity, Item.ItemPosition.Inventory);
 
-            await CreateItemAsync(1060020, user.Identity, Item.ItemPosition.Inventory);
-            await CreateItemAsync(1060020, user.Identity, Item.ItemPosition.Inventory);
-            await CreateItemAsync(1060020, user.Identity, Item.ItemPosition.Inventory);
+            if (info.Item1 != 0)
+                for (int i = 0; i < info.Number1; i++)
+                    await CreateItemAsync(info.Item1, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item2 != 0)
+                for (int i = 0; i < info.Number2; i++)
+                    await CreateItemAsync(info.Item2, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item3 != 0)
+                for (int i = 0; i < info.Number3; i++)
+                    await CreateItemAsync(info.Item3, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item4 != 0)
+                for (int i = 0; i < info.Number4; i++)
+                    await CreateItemAsync(info.Item4, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item5 != 0)
+                for (int i = 0; i < info.Number5; i++)
+                    await CreateItemAsync(info.Item5, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item6 != 0)
+                for (int i = 0; i < info.Number6; i++)
+                    await CreateItemAsync(info.Item6, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item7 != 0)
+                for (int i = 0; i < info.Number7; i++)
+                    await CreateItemAsync(info.Item7, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item8 != 0)
+                for (int i = 0; i < info.Number8; i++)
+                    await CreateItemAsync(info.Item8, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Item9 != 0)
+                for (int i = 0; i < info.Number9; i++)
+                    await CreateItemAsync(info.Item9, user.Identity, Item.ItemPosition.Inventory);
+
+            if (info.Magic0 != 0)
+                await CreateMagicAsync(user.Identity, (ushort)info.Magic0);
+            if (info.Magic1 != 0)
+                await CreateMagicAsync(user.Identity, (ushort)info.Magic1);
+            if (info.Magic2 != 0)
+                await CreateMagicAsync(user.Identity, (ushort)info.Magic2);
+            if (info.Magic3 != 0)
+                await CreateMagicAsync(user.Identity, (ushort)info.Magic3);
         }
 
         private async Task CreateItemAsync(uint type, uint idOwner, Item.ItemPosition position, byte add = 0,

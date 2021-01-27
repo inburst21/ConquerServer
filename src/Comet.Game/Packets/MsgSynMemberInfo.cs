@@ -74,7 +74,7 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            Donation = target.Donation;
+            Donation = target.Silvers;
             Position = target.Rank;
             await user.SendAsync(this);
         }

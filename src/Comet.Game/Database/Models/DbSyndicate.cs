@@ -42,7 +42,8 @@ namespace Comet.Game.Database.Models
         [Column("totem_pole")] public virtual int TotemPole { get; set; }
         [Column("last_totem")] public virtual DateTime? LastTotem { get; set; }
         [Column("condition_level")] public virtual byte ReqLevel { get; set; }
-        [Column("condition_prof")] public virtual byte ReqClass { get; set; }
+        [Column("condition_prof")] public virtual uint ReqClass { get; set; }
         [Column("condition_metem")] public virtual byte ReqMetempsychosis { get; set; }
+        [Column("synrank")] public virtual byte Level { get; set; }
     }
 }

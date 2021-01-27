@@ -29,12 +29,13 @@ using Comet.Game.Packets;
 
 namespace Comet.Game.States
 {
-    public sealed class CaptchaBox
+    public sealed class CaptchaBox : MessageBox
     {
         private TimeOut m_Expiration = new TimeOut();
         private Character m_Owner;
 
-        public CaptchaBox(Character owner)
+        public CaptchaBox(Character owner) 
+            : base(owner)
         {
             m_Owner = owner;
         }
@@ -43,21 +44,21 @@ namespace Comet.Game.States
         public long Value2 { get; private set; }
         public long Result { get; private set; }
 
-        public Task OnAcceptAsync()
+        public override Task OnAcceptAsync()
         {
             if (Value1 + Value2 != Result)
                 return Kernel.RoleManager.KickOutAsync(m_Owner.Identity, "Wrong captcha reply");
             return Task.CompletedTask;
         }
 
-        public Task OnCancelAsync()
+        public override Task OnCancelAsync()
         {
             if (Value1 + Value2 == Result)
                 return Kernel.RoleManager.KickOutAsync(m_Owner.Identity, "Wrong captcha reply");
             return Task.CompletedTask;
         }
 
-        public Task OnTimerAsync()
+        public override Task OnTimerAsync()
         {
             if (m_Expiration.IsActive() && m_Expiration.IsTimeOut())
                 return Kernel.RoleManager.KickOutAsync(m_Owner.Identity, "No captcha reply");
@@ -73,12 +74,10 @@ namespace Comet.Game.States
             else 
                 Result = Value1 + Value2 + await Kernel.NextAsync(int.MaxValue) % 10;
             
-            await m_Owner.SendAsync(new MsgTaskDialog
-            {
-                InteractionType = MsgTaskDialog.TaskInteraction.MessageBox,
-                Text = string.Format(Language.StrBotCaptchaMessage, Value1, Value2, Result),
-                OptionIndex = 255
-            });
+            Message = string.Format(Language.StrBotCaptchaMessage, Value1, Value2, Result);
+            TimeOut = 60;
+
+            await SendAsync();
             m_Expiration.Startup(60);
         }
     }

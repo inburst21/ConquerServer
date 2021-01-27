@@ -297,7 +297,6 @@ namespace Comet.Game.States
 
             m_disappear.Startup(5);
             m_leaveMap.Startup(m_generator.RestSeconds);
-            //_ = Task.Run(async () => await OnReviveAsync()).ConfigureAwait(false);
 
             if (m_dbMonster.Action > 0)
             {
@@ -593,7 +592,7 @@ namespace Comet.Game.States
         public async Task DropMoneyAsync(uint amount, uint idOwner)
         {
             Point targetPos = new Point(MapX, MapY);
-            if (Map.FindDropItemCell(4, ref targetPos))
+            if (Map?.FindDropItemCell(4, ref targetPos) == true)
             {
                 MapItem drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                 if (drop.CreateMoney(Map, targetPos, amount, idOwner))

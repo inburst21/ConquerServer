@@ -247,13 +247,16 @@ namespace Comet.Game.Packets
             switch (Channel)
             {
                 case TalkChannel.Talk:
+                {
                     if (!sender.IsAlive)
                         return;
 
                     await sender.BroadcastRoomMsgAsync(this, false);
                     break;
+                }
 
                 case TalkChannel.Whisper:
+                {
                     if (target == null)
                     {
                         await sender.SendAsync(Language.StrTargetNotOnline, TalkChannel.Talk, Color.White);
@@ -265,31 +268,41 @@ namespace Comet.Game.Packets
 
                     await target.SendAsync(this);
                     break;
+                }
 
                 case TalkChannel.Team:
+                {
                     if (sender.Team != null)
                         await sender.Team.SendAsync(this, sender.Identity);
                     break;
+                }
 
                 case TalkChannel.Friend:
+                {
                     await sender.SendToFriendsAsync(this);
                     break;
+                }
 
                 case TalkChannel.Guild:
+                {
                     if (sender.SyndicateIdentity == 0)
                         return;
 
                     await sender.Syndicate.SendAsync(this, sender.Identity);
                     break;
+                }
 
                 case TalkChannel.Ghost:
+                {
                     if (sender.IsAlive)
                         return;
 
                     await sender.BroadcastRoomMsgAsync(this, false);
                     break;
+                }
 
                 case TalkChannel.Announce:
+                {
                     if (sender.SyndicateIdentity == 0 ||
                         sender.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                         return;
@@ -298,6 +311,7 @@ namespace Comet.Game.Packets
                     sender.Syndicate.AnnounceDate = DateTime.Now;
                     await sender.Syndicate.SaveAsync();
                     break;
+                }
 
                 case TalkChannel.Bbs:
                 case TalkChannel.GuildBoard:
@@ -305,8 +319,19 @@ namespace Comet.Game.Packets
                 case TalkChannel.OthersBoard:
                 case TalkChannel.TeamBoard:
                 case TalkChannel.TradeBoard:
+                {
                     MessageBoard.AddMessage(sender, Message, Channel);
                     break;
+                }
+
+                case TalkChannel.World:
+                {
+                    if (sender.CanUseWorldChat())
+                        return;
+
+                    await Kernel.RoleManager.BroadcastMsgAsync(this);
+                    break;
+                }
             }
         }
 
@@ -569,7 +594,8 @@ namespace Comet.Game.Packets
                         {
                             InteractionType = MsgTaskDialog.TaskInteraction.MessageBox,
                             OptionIndex = 255,
-                            Text = param
+                            Text = param,
+                            Data = 60
                         });
                         return true;
                     }

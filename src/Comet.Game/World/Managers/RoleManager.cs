@@ -156,6 +156,8 @@ namespace Comet.Game.World.Managers
 
             await user.Character.SetLoginAsync();
 
+            user.Character.FlowersToday = await DbFlower.GetAsync(user.Character.Identity) ?? new DbFlower { UserIdentity = user.Character.Identity };
+
             await Log.WriteLogAsync(LogLevel.Message, $"{user.Character.Name} has logged in.");
 
             if (OnlinePlayers > MaxOnlinePlayers)

@@ -320,6 +320,12 @@ namespace Comet.Game.States.Items
             set => m_dbItem.Data = value;
         }
 
+        public uint SyndicateIdentity
+        {
+            get => m_dbItem.Syndicate;
+            set => m_dbItem.Syndicate = value;
+        }
+
         #endregion
 
         #region Requirements
@@ -349,7 +355,7 @@ namespace Comet.Game.States.Items
             get
             {
 #if BATTLE_POWER
-                if (!IsEquipment() || IsGarment() || IsGourd())
+                if ((!IsEquipment() && !IsMount()) || IsGarment() || IsGourd())
                     return 0;
 
                 int ret = Math.Max(0, (int) Type % 10 - 5);
@@ -1579,7 +1585,7 @@ namespace Comet.Game.States.Items
 
         public bool IsEquipment()
         {
-            return IsHelmet() || IsNeck() || IsRing() || IsBangle() || IsWeapon() || IsArmor() || IsShoes() || IsShield();
+            return IsHelmet() || IsNeck() || IsRing() || IsBangle() || IsWeapon() || IsArmor() || IsShoes() || IsShield() || IsTalisman();
         }
 
         public static bool IsMount(uint type)
@@ -1797,7 +1803,7 @@ namespace Comet.Game.States.Items
 
         public static bool IsArrowSort(uint type)
         {
-            return GetItemtype(type) == 50000 && type != TYPE_JAR;
+            return GetItemtype(type) == 50000 && type != TYPE_JAR && !IsRing(type) && !IsBangle(type);
         }
 
         public static ItemSort GetItemSort(uint type)

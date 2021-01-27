@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Comet.Game.Database;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
@@ -39,7 +41,7 @@ namespace Comet.Game.Packets
         {
             SendFlower,
             QueryIcon,
-            RemoveIcon
+            QueryData
         }
 
         public enum FlowerType
@@ -61,6 +63,15 @@ namespace Comet.Game.Packets
         public uint SendAmount { get; set; }
         public FlowerType SendFlowerType { get; set; }
 
+        public uint RedRoses { get; set; }
+        public uint RedRosesToday { get; set; }
+        public uint WhiteRoses { get; set; }
+        public uint WhiteRosesToday { get; set; }
+        public uint Orchids { get; set; }
+        public uint OrchidsToday { get; set; }
+        public uint Tulips { get; set; }
+        public uint TulipsToday { get; set; }
+
         public List<string> Strings { get; set; } = new List<string>();
 
         public override void Decode(byte[] bytes)
@@ -71,9 +82,9 @@ namespace Comet.Game.Packets
             Mode = (RequestMode) reader.ReadUInt32(); // 4
             Identity = reader.ReadUInt32(); // 8
             ItemIdentity = reader.ReadUInt32(); // 12
-            //FlowerIdentity = reader.ReadUInt32(); // 16
-            //Amount = reader.ReadUInt32(); // 20
-            //Flower = (FlowerType) reader.ReadUInt32(); // 24
+            FlowerIdentity = reader.ReadUInt32(); // 16
+            Amount = reader.ReadUInt32(); // 20
+            Flower = (FlowerType) reader.ReadUInt32(); // 24
             Strings = reader.ReadStrings();
         }
 
@@ -84,13 +95,16 @@ namespace Comet.Game.Packets
             writer.Write((uint) Mode);
             writer.Write(Identity);
             writer.Write(ItemIdentity);
-            if (Strings.Count > 0)
+            if (Mode == RequestMode.QueryData)
             {
-                writer.Write((ushort)Strings.Count);
-                foreach (var t in Strings)
-                {
-                    writer.Write(t);
-                }
+                writer.Write(RedRoses);
+                writer.Write(RedRosesToday);
+                writer.Write(WhiteRoses);
+                writer.Write(WhiteRosesToday);
+                writer.Write(Orchids);
+                writer.Write(OrchidsToday);
+                writer.Write(Tulips);
+                writer.Write(TulipsToday);
             }
             else
             {
@@ -111,10 +125,8 @@ namespace Comet.Game.Packets
             {
                 case RequestMode.SendFlower:
                 {
-                    string[] data = Strings[0].Split(' ');
-                    uint idTarget = uint.Parse(data[0]);
-                    int quantity = int.Parse(data[1]);
-                    uint idItem = uint.Parse(data[2]);
+                    uint idTarget = Identity;
+                    uint idItem = ItemIdentity;
 
                     Character target = Kernel.RoleManager.GetUser(idTarget);
 
@@ -161,7 +173,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        switch (user.VipLevel)
+                        switch (user.BaseVipLevel)
                         {
                             case 0:
                                 amount = 1;
@@ -207,19 +219,24 @@ namespace Comet.Game.Packets
                         await user.UserPackage.SpendItemAsync(flower);
                     }
 
+                    target.FlowersToday ??= new DbFlower{ UserIdentity = target.Identity };
                     switch (type)
                     {
                         case FlowerType.RedRose:
                             target.FlowerRed += amount;
+                            target.FlowersToday.RedRose += amount;
                             break;
                         case FlowerType.WhiteRose:
                             target.FlowerWhite += amount;
-                            break;
+                            target.FlowersToday.WhiteRose += amount;
+                                break;
                         case FlowerType.Orchid:
                             target.FlowerOrchid += amount;
+                            target.FlowersToday.Orchids += amount;
                             break;
                         case FlowerType.Tulip:
                             target.FlowerTulip += amount;
+                            target.FlowersToday.Tulips += amount;
                             break;
                     }
 
@@ -233,11 +250,7 @@ namespace Comet.Game.Packets
 
                     await target.SendAsync(Language.StrFlowerReceiverPrompt);
                     await user.SendAsync(this);
-                    await user.SendAsync(new MsgFlower
-                    {
-                        Mode = RequestMode.RemoveIcon,
-                        Identity = user.Identity
-                    });
+                    
                     await target.SendAsync(new MsgFlower
                     {
                         SenderName = user.Name,
@@ -245,6 +258,8 @@ namespace Comet.Game.Packets
                         SendAmount = amount,
                         SendFlowerType = type
                     });
+
+                    await BaseRepository.SaveAsync(target.FlowersToday);
                     break;
                 }
                 default:

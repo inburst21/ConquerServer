@@ -72,6 +72,7 @@ namespace Comet.Game.States
         private TimeOut m_heavenBlessing = new TimeOut(60);
         private TimeOut m_luckyAbsorbStart = new TimeOut(2);
         private TimeOut m_luckyStep = new TimeOut(1);
+        private TimeOut m_tWorldChat = new TimeOut();
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -124,7 +125,7 @@ namespace Comet.Game.States
 
         public Client Client => m_socket;
 
-        public CaptchaBox Captcha = null;
+        public MessageBox MessageBox = null;
 
         public ConnectionStage Connection { get; set; } = ConnectionStage.Connected;
 
@@ -722,6 +723,13 @@ namespace Comet.Game.States
                 Team.Leader.VirtuePoints += virtue;
                 await Team.SendAsync(new MsgTalk(Identity, MsgTalk.TalkChannel.Team, Color.White, 
                     string.Format(Language.StrAwardVirtue, Team.Leader.Name, virtue)));
+
+                if (Team.Leader.SyndicateIdentity != 0)
+                {
+                    Team.Leader.SyndicateMember.GuideDonation += 1;
+                    Team.Leader.SyndicateMember.GuideTotalDonation += 1;
+                    await Team.Leader.SyndicateMember.SaveAsync();
+                }
             }
 
             Experience = (ulong)amount;
@@ -1004,6 +1012,50 @@ namespace Comet.Game.States
                             nAddPk = 5;
                         if (target.PkPoints > 29)
                             nAddPk /= 2;
+                    }
+
+                    int synPkPoints = 0;
+                    int deltaLevel = Level - target.Level;
+
+                    if (deltaLevel > 30)
+                        synPkPoints = 1;
+                    else if (deltaLevel > 20)
+                        synPkPoints = 2;
+                    else if (deltaLevel > 10)
+                        synPkPoints = 3;
+                    else if (deltaLevel > 0)
+                        synPkPoints = 5;
+                    else
+                        synPkPoints = 10;
+
+                    if (SyndicateIdentity != 0)
+                    {
+                        SyndicateMember.PkDonation += synPkPoints;
+                        SyndicateMember.PkTotalDonation += synPkPoints;
+                        await SyndicateMember.SaveAsync().ConfigureAwait(false);
+                    }
+
+                    if (target.SyndicateIdentity != 0)
+                    {
+                        target.SyndicateMember.PkDonation -= synPkPoints;
+                        await target.SyndicateMember.SaveAsync().ConfigureAwait(false);
+                    }
+
+                    if (SyndicateIdentity != 0 && target.SyndicateIdentity != 0)
+                    {
+                        if (SyndicateIdentity == target.SyndicateIdentity)
+                        {
+                            await Syndicate.SendAsync(
+                                string.Format(Language.StrSyndicateSameKill, SyndicateRankName, Name,
+                                    target.SyndicateRankName, target.Name, Map.Name), 0, Color.White);
+                        }
+                        else
+                        {
+                            await Syndicate.SendAsync(string.Format(Language.StrSyndicateKill, SyndicateRankName, Name, target.Name, target.SyndicateRankName, target.SyndicateName, Map.Name));
+                            await target.SendAsync(
+                                string.Format(Language.StrSyndicateBeKill, Name, SyndicateRankName, SyndicateName, target.SyndicateRankName, target.Name, Map.Name)
+                            );
+                        }
                     }
 
                     await AddAttributesAsync(ClientUpdateType.PkPoints, nAddPk);
@@ -1565,6 +1617,8 @@ namespace Comet.Game.States
             {
 #if BATTLE_POWER
                 int result = Level + Metempsychosis * 5 + (int) NobilityRank;
+                if (SyndicateIdentity > 0)
+                    result += Syndicate.GetSharedBattlePower(SyndicateRank);
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.BattlePower ?? 0;
@@ -2313,15 +2367,15 @@ namespace Comet.Game.States
                     status?.IncTime(700, 30000);
                 }
 
-                if (Captcha == null)
+                if (!(MessageBox is CaptchaBox))
                     m_KillsToCaptcha++;
 
-                if (Captcha == null
-                    && m_KillsToCaptcha > 50 + await Kernel.NextAsync(1500)
+                if (!(MessageBox is CaptchaBox)
+                    && m_KillsToCaptcha > 5000 + await Kernel.NextAsync(1500)
                     && await Kernel.ChanceCalcAsync(50, 10000))
                 {
-                    Captcha = new CaptchaBox(this);
-                    await Captcha.GenerateAsync();
+                    CaptchaBox captcha = (CaptchaBox) (MessageBox = new CaptchaBox(this));
+                    await captcha.GenerateAsync();
                     m_KillsToCaptcha = 0;
                 }
 
@@ -3412,6 +3466,7 @@ namespace Comet.Game.States
         public ushort SyndicateIdentity => Syndicate?.Identity ?? 0;
         public string SyndicateName => Syndicate?.Name ?? Language.StrNone;
         public SyndicateMember.SyndicateRank SyndicateRank => SyndicateMember?.Rank ?? SyndicateMember.SyndicateRank.None;
+        public string SyndicateRankName => SyndicateMember?.RankName ?? Language.StrNone;
 
         public async Task<bool> CreateSyndicateAsync(string name, int price = 1000000)
         {
@@ -3491,11 +3546,20 @@ namespace Comet.Game.States
                     Rank = SyndicateRank,
                     MemberAmount = Syndicate.MemberCount,
                     Funds = Syndicate.Money,
-                    PlayerDonation = SyndicateMember.Donation,
-                    LeaderName = Syndicate.Leader.UserName
+                    PlayerDonation = SyndicateMember.Silvers,
+                    LeaderName = Syndicate.Leader.UserName,
+                    ConditionLevel = Syndicate.LevelRequirement,
+                    ConditionMetempsychosis = Syndicate.MetempsychosisRequirement,
+                    ConditionProfession = (int) Syndicate.ProfessionRequirement,
+                    ConquerPointsFunds = Syndicate.ConquerPoints,
+                    PositionExpiration = uint.Parse(SyndicateMember.PositionExpiration?.ToString("yyyyMMdd") ?? "0"),
+                    EnrollmentDate = uint.Parse(SyndicateMember.JoinDate.ToString("yyyyMMdd")),
+                    Level = Syndicate.Level
                 });
                 await SendAsync(Syndicate.Announce, MsgTalk.TalkChannel.Announce);
                 await Syndicate.SendAsync(this);
+                await SendAsync(new MsgSynpOffer(SyndicateMember));
+                await SynchroAttributesAsync(ClientUpdateType.TotemPoleBattlePower, (ulong) Syndicate.TotemSharedBattlePower, true);
             }
             else
             {
@@ -4462,9 +4526,20 @@ namespace Comet.Game.States
 
         public uint BaseVipLevel => Math.Min(6, Math.Max(0, VipLevel));
 
-        public uint VipLevel => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now ? m_dbObject.VipLevel : 0;
+        public uint VipLevel
+        {
+            get =>
+                m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now
+                    ? m_dbObject.VipLevel
+                    : 0;
+            set => m_dbObject.VipLevel = value;
+        }
 
-        public DateTime VipExpiration => m_dbObject.VipExpiration ?? DateTime.MinValue;
+        public DateTime VipExpiration
+        {
+            get => m_dbObject.VipExpiration ?? DateTime.MinValue;
+            set => m_dbObject.VipExpiration = value;
+        }
 
         #endregion
 
@@ -4476,10 +4551,65 @@ namespace Comet.Game.States
             set => m_dbObject.SendFlowerDate = value;
         }
 
-        public uint FlowerRed  {  get => m_dbObject.FlowerRed;  set => m_dbObject.FlowerRed = value;  }
-        public uint FlowerWhite {  get => m_dbObject.FlowerWhite;  set => m_dbObject.FlowerWhite = value;  }
-        public uint FlowerOrchid  {  get => m_dbObject.FlowerOrchid;  set => m_dbObject.FlowerOrchid = value;  }
-        public uint FlowerTulip  {  get => m_dbObject.FlowerTulip;  set => m_dbObject.FlowerTulip = value;  }
+        public uint FlowerRed
+        {
+            get => m_dbObject.FlowerRed;
+            set
+            {
+                m_dbObject.FlowerRed = value;
+                if (SyndicateIdentity != 0)
+                    SyndicateMember.RedRoseDonation = value;
+            }
+        }
+
+        public uint FlowerWhite
+        {
+            get => m_dbObject.FlowerWhite;
+            set
+            {
+                m_dbObject.FlowerWhite = value;
+                if (SyndicateIdentity != 0)
+                    SyndicateMember.WhiteRoseDonation = value;
+            }
+        }
+
+        public uint FlowerOrchid
+        {
+            get => m_dbObject.FlowerOrchid;
+            set
+            {
+                m_dbObject.FlowerOrchid = value;
+                if (SyndicateIdentity != 0)
+                    SyndicateMember.OrchidDonation = value;
+            }
+        }
+
+        public uint FlowerTulip
+        {
+            get => m_dbObject.FlowerTulip;
+            set
+            {
+                m_dbObject.FlowerTulip = value;
+                if (SyndicateIdentity != 0)
+                    SyndicateMember.TulipDonation = value;
+            }
+        }
+
+        public DbFlower FlowersToday { get; set; }
+
+        #endregion
+
+        #region Chat
+
+        public bool CanUseWorldChat()
+        {
+            if (Level < 50)
+                return false;
+            if (Level < 70 && m_tWorldChat.ToNextTime(60))
+                return false;
+            // todo get correct times
+            return m_tWorldChat.ToNextTime(15);
+        }
 
         #endregion
 
@@ -4635,8 +4765,11 @@ namespace Comet.Game.States
                     });
                 }
 
-                if (Captcha != null)
-                    await Captcha.OnTimerAsync();
+                if (MessageBox != null)
+                    await MessageBox.OnTimerAsync();
+
+                if (MessageBox != null && MessageBox.HasExpired)
+                    MessageBox = null;
 
                 if (!IsAlive)
                     return;
@@ -4796,6 +4929,33 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 
+            try
+            {
+                await WeaponSkill.SaveAllAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on save weaponskills ");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                if (Syndicate != null && SyndicateMember != null)
+                {
+                    SyndicateMember.LastLogout = DateTime.Now;
+                    await SyndicateMember.SaveAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on save syndicate");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            if (FlowersToday != null)
+                await BaseRepository.SaveAsync(FlowersToday);
+
             if (!m_IsDeleted)
                 await SaveAsync();
 
@@ -4810,7 +4970,7 @@ namespace Comet.Game.States
                     LogoutTime = m_dbObject.LogoutTime,
                     ServerVersion = $"[{Kernel.SERVER_VERSION}]{Kernel.Version}",
                     IpAddress = Client.IPAddress,
-                    MacAddress = "Unknown",
+                    MacAddress = Client.MacAddress,
                     OnlineTime = (uint) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds
                 });
                 await context.SaveChangesAsync();
@@ -4884,8 +5044,22 @@ namespace Comet.Game.States
 
         private bool m_IsDeleted = false;
 
-        public async Task DeleteCharacterAsync()
+        public async Task<bool> DeleteCharacterAsync()
         {
+            if (Syndicate != null)
+            {
+                if (SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                {
+                    if (!await Syndicate.QuitSyndicateAsync(this))
+                        return false;
+                }
+                else
+                {
+                    if (!await Syndicate.DisbandAsync(this))
+                        return false;
+                }
+            }
+
             await BaseRepository.ScalarAsync($"INSERT INTO `cq_deluser` SELECT * FROM `cq_user` WHERE `id`={Identity};");
             await BaseRepository.DeleteAsync(m_dbObject);
             await Log.GmLog("delete_user", $"{Identity},{Name},{MapIdentity},{MapX},{MapY},{Silvers},{ConquerPoints},{Level},{Profession},{FirstProfession},{PreviousProfession}");
@@ -4903,7 +5077,7 @@ namespace Comet.Game.States
             if (peerage != null)
                 await BaseRepository.DeleteAsync(peerage);
 
-            m_IsDeleted = true;
+            return m_IsDeleted = true;
         }
 
         #endregion
@@ -4931,6 +5105,7 @@ namespace Comet.Game.States
         Trojan = 10,
         Warrior = 20,
         Archer = 40,
+        Ninja = 50,
         Taoist = 100
     }
 

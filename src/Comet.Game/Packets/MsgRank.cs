@@ -22,9 +22,11 @@
 #region References
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -71,9 +73,6 @@ namespace Comet.Game.Packets
             RankMode = (RankType) reader.ReadByte(); // 12
             Subtype = reader.ReadByte(); // 13
             PageNumber = reader.ReadUInt16();
-            //Data2 = reader.ReadUInt16();
-            //PageNumber = reader.ReadUInt16();
-            //Strings = reader.ReadStrings();
         }
 
         public override byte[] Encode()
@@ -85,14 +84,11 @@ namespace Comet.Game.Packets
             writer.Write((byte) RankMode);
             writer.Write(Subtype);
             writer.Write(PageNumber);
-            //writer.Write(Data2);
-            //writer.Write(PageNumber);
             writer.Write((ushort) Strings.Count);
             foreach (var t in Strings)
             {
                 writer.Write(t);
             }
-            // writer.Write(Strings);
             return writer.ToArray();
         }
 
@@ -108,18 +104,33 @@ namespace Comet.Game.Packets
 
                     await user.SendAsync(new MsgFlower
                     {
-                        Mode = MsgFlower.RequestMode.QueryIcon,
-                        Strings = new List<string>
-                        {
-                            $"{user.FlowerRed} 0 {user.FlowerWhite} 0 {user.FlowerOrchid} 0 {user.FlowerTulip} 0"
-                        }
+                        Mode = MsgFlower.RequestMode.QueryData,
+                        RedRoses = user.FlowerRed,
+                        RedRosesToday = user.FlowersToday.RedRose,
+                        WhiteRoses = user.FlowerWhite,
+                        WhiteRosesToday = user.FlowersToday.WhiteRose,
+                        Orchids = user.FlowerOrchid,
+                        OrchidsToday = user.FlowersToday.Orchids,
+                        Tulips = user.FlowerTulip,
+                        TulipsToday = user.FlowersToday.Tulips
                     });
+
+                    var roseRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
+                    var lilyRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
+                    var orchidRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
+                    var tulipRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
+
+                    int myRose = roseRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                    int myLily = lilyRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                    int myOrchid = orchidRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                    int myTulip = tulipRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+
+
 
                     await user.SendAsync(new MsgRank
                     {
                         Mode = RequestType.QueryIcon
                     });
-
                     break;
                 }
                 default:

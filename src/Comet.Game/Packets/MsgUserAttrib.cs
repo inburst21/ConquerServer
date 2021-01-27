@@ -119,6 +119,7 @@ namespace Comet.Game.Packets
         ExtraBattlePower = 36,
         Merchant = 38,
         VipLevel = 39,
-        QuizPoints = 40
+        QuizPoints = 40,
+        TotemPoleBattlePower = 44,
     }
 }

@@ -54,7 +54,7 @@ namespace Comet.Game.Packets
             Level = user.Level;
 
             SyndicateIdentity = user.SyndicateIdentity;
-            SyndicatePosition = (byte) user.SyndicateRank;
+            SyndicatePosition = (ushort) user.SyndicateRank;
 
             NobilityRank = (uint) user.NobilityRank;
 
@@ -67,12 +67,12 @@ namespace Comet.Game.Packets
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
-            FlowerRanking = 30010001;
+            //FlowerRanking = 30010001;
 
-            QuizPoints = 50000;
-            EnlightenPoints = 200;
-            UserTitle = 1;
-            SharedBattlePower = 15;
+            //QuizPoints = 50000;
+            //EnlightenPoints = 200;
+            //UserTitle = 1;
+            //SharedBattlePower = 15;
 
             FamilyIdentity = 1;
             FamilyRank = 100;

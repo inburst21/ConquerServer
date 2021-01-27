@@ -943,6 +943,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target user is pending a captcha reply. Please try again later!.
+        /// </summary>
+        public static string StrMessageBoxCannotCaptcha {
+            get {
+                return ResourceManager.GetString("StrMessageBoxCannotCaptcha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You found {0}!.
         /// </summary>
         public static string StrMineItemFound {
@@ -1456,6 +1465,123 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild {0} has accepted your alliance request..
+        /// </summary>
+        public static string StrSyndicateAllianceAccept {
+            get {
+                return ResourceManager.GetString("StrSyndicateAllianceAccept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild {0} has denied your alliance request..
+        /// </summary>
+        public static string StrSyndicateAllianceDeny {
+            get {
+                return ResourceManager.GetString("StrSyndicateAllianceDeny", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} Guild Leader from {1} is asking to be your ally. Do you accept?.
+        /// </summary>
+        public static string StrSyndicateAllianceRequest {
+            get {
+                return ResourceManager.GetString("StrSyndicateAllianceRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Our {0} {1} has added {2} to the enemies list..
+        /// </summary>
+        public static string StrSyndicateAntagonize0 {
+            get {
+                return ResourceManager.GetString("StrSyndicateAntagonize0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} from {2} has added us to the enemies list..
+        /// </summary>
+        public static string StrSyndicateAntagonize1 {
+            get {
+                return ResourceManager.GetString("StrSyndicateAntagonize1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Enemy {0} {1} from  {2} has killed {3} {4} in {5}!.
+        /// </summary>
+        public static string StrSyndicateBeKill {
+            get {
+                return ResourceManager.GetString("StrSyndicateBeKill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has killed {3} {4} from {5} in {6}!.
+        /// </summary>
+        public static string StrSyndicateKill {
+            get {
+                return ResourceManager.GetString("StrSyndicateKill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild {0} has removed us from the allies list..
+        /// </summary>
+        public static string StrSyndicateNeutral0 {
+            get {
+                return ResourceManager.GetString("StrSyndicateNeutral0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Our Guild Leader {0} has removed {1} from the allies list..
+        /// </summary>
+        public static string StrSyndicateNeutral1 {
+            get {
+                return ResourceManager.GetString("StrSyndicateNeutral1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Guild {0} has removed us from the enemies list..
+        /// </summary>
+        public static string StrSyndicatePeace0 {
+            get {
+                return ResourceManager.GetString("StrSyndicatePeace0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Our Guild Leader {0} has removed {2} from the enemies list..
+        /// </summary>
+        public static string StrSyndicatePeace1 {
+            get {
+                return ResourceManager.GetString("StrSyndicatePeace1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has killed {2} {3} in {4}!.
+        /// </summary>
+        public static string StrSyndicateSameKill {
+            get {
+                return ResourceManager.GetString("StrSyndicateSameKill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has donated {2:N0} Conquer Points to the guild..
+        /// </summary>
+        public static string StrSynDonateEmoney {
+            get {
+                return ResourceManager.GetString("StrSynDonateEmoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} {1} has donated {2:N0} silvers to the guild..
         /// </summary>
         public static string StrSynDonateMoney {
@@ -1821,6 +1947,15 @@ namespace Comet.Game {
         public static string StrToMakeFriend {
             get {
                 return ResourceManager.GetString("StrToMakeFriend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You&apos;ve reached the limit of {0} items on this arsenal..
+        /// </summary>
+        public static string StrTotemPoleLimit {
+            get {
+                return ResourceManager.GetString("StrTotemPoleLimit", resourceCulture);
             }
         }
         

@@ -148,7 +148,7 @@ namespace Comet.Game.Database.Models
         [Column("plunder")]
         public virtual DateTime? Plunder { get; set; }
 
-        
+
         /// <summary>
         ///     Forbbiden or not?
         /// </summary>
@@ -173,13 +173,11 @@ namespace Comet.Game.Database.Models
         [Column("monopoly")]
         public virtual byte Monopoly { get; set; }
 
-        [Column("syndicate")]
-        public virtual uint Syndicate { get; set; }
+        [Column("syndicate")] public virtual uint Syndicate { get; set; }
 
-        [Column("del_time")]
-        public virtual DateTime? DeleteTime { get; set; }
+        [Column("del_time")] public virtual DateTime? DeleteTime { get; set; }
 
-        [Column("save_time")] 
-        public virtual DateTime? SaveTime { get; set; }
+        [Column("save_time")] public virtual DateTime? SaveTime { get; set; }
+
     }
 }

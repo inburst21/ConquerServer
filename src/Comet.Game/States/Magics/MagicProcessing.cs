@@ -700,7 +700,7 @@ namespace Comet.Game.States.Magics
             if (magic == null)
                 return false;
 
-            var target = Kernel.RoleManager.GetRole(m_idTarget);
+            var target = m_pOwner.Map.QueryRole(m_idTarget);
             if (target == null)
                 return false;
 
@@ -806,7 +806,7 @@ namespace Comet.Game.States.Magics
         {
             if (magic == null) return false;
 
-            Role target = Kernel.RoleManager.GetRole(m_idTarget);
+            Role target = m_pOwner.Map.QueryRole(m_idTarget);
             if (target == null)
                 return false;
 
@@ -990,7 +990,7 @@ namespace Comet.Game.States.Magics
             if (magic == null)
                 return false;
 
-            Role target = Kernel.RoleManager.GetRole(m_idTarget);
+            Role target = m_pOwner.Map.QueryRole(m_idTarget);
             if (target == null)
                 return false;
 
@@ -1111,7 +1111,7 @@ namespace Comet.Game.States.Magics
             }
             else if (magic.Target == 1) // target
             {
-                target = Kernel.RoleManager.GetRole(m_idTarget);
+                target = m_pOwner.Map.QueryRole(m_idTarget);
             }
             else // unhandled
             {

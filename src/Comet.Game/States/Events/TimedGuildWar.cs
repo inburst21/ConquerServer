@@ -31,6 +31,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Maps;
 using Comet.Shared;
 
 namespace Comet.Game.States.Events
@@ -172,7 +173,7 @@ namespace Comet.Game.States.Events
             {
                 foreach (var idNpc in m_poleIdentities)
                 {
-                    DynamicNpc npc = Kernel.RoleManager.GetRole<DynamicNpc>(idNpc);
+                    DynamicNpc npc = Map.QueryRole<DynamicNpc>(idNpc);
                     if (npc == null || npc.OwnerIdentity == 0)
                         continue;
 

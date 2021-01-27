@@ -411,6 +411,9 @@
   <data name="StrMarry" xml:space="preserve">
     <value>{0} and {1} are pronounced the husband and wife. They promise to love and care for each other for better or worse.</value>
   </data>
+  <data name="StrMessageBoxCannotCaptcha" xml:space="preserve">
+    <value>The target user is pending a captcha reply. Please try again later!</value>
+  </data>
   <data name="StrMineItemFound" xml:space="preserve">
     <value>You found {0}!</value>
   </data>
@@ -582,6 +585,45 @@
   <data name="StrSynDestroy" xml:space="preserve">
     <value>Guild {0} has been terminated.</value>
   </data>
+  <data name="StrSyndicateAllianceAccept" xml:space="preserve">
+    <value>Guild {0} has accepted your alliance request.</value>
+  </data>
+  <data name="StrSyndicateAllianceDeny" xml:space="preserve">
+    <value>Guild {0} has denied your alliance request.</value>
+  </data>
+  <data name="StrSyndicateAllianceRequest" xml:space="preserve">
+    <value>{0} Guild Leader from {1} is asking to be your ally. Do you accept?</value>
+  </data>
+  <data name="StrSyndicateAntagonize0" xml:space="preserve">
+    <value>Our {0} {1} has added {2} to the enemies list.</value>
+  </data>
+  <data name="StrSyndicateAntagonize1" xml:space="preserve">
+    <value>{0} {1} from {2} has added us to the enemies list.</value>
+  </data>
+  <data name="StrSyndicateBeKill" xml:space="preserve">
+    <value>Enemy {0} {1} from  {2} has killed {3} {4} in {5}!</value>
+  </data>
+  <data name="StrSyndicateKill" xml:space="preserve">
+    <value>{0} {1} has killed {3} {4} from {5} in {6}!</value>
+  </data>
+  <data name="StrSyndicateNeutral0" xml:space="preserve">
+    <value>Guild {0} has removed us from the allies list.</value>
+  </data>
+  <data name="StrSyndicateNeutral1" xml:space="preserve">
+    <value>Our Guild Leader {0} has removed {1} from the allies list.</value>
+  </data>
+  <data name="StrSyndicatePeace0" xml:space="preserve">
+    <value>Guild {0} has removed us from the enemies list.</value>
+  </data>
+  <data name="StrSyndicatePeace1" xml:space="preserve">
+    <value>Our Guild Leader {0} has removed {2} from the enemies list.</value>
+  </data>
+  <data name="StrSyndicateSameKill" xml:space="preserve">
+    <value>{0} {1} has killed {2} {3} in {4}!</value>
+  </data>
+  <data name="StrSynDonateEmoney" xml:space="preserve">
+    <value>{0} {1} has donated {2:N0} Conquer Points to the guild.</value>
+  </data>
   <data name="StrSynDonateMoney" xml:space="preserve">
     <value>{0} {1} has donated {2:N0} silvers to the guild.</value>
   </data>
@@ -704,6 +746,9 @@
   </data>
   <data name="StrToMakeFriend" xml:space="preserve">
     <value>{0} has sent you a friend request.</value>
+  </data>
+  <data name="StrTotemPoleLimit" xml:space="preserve">
+    <value>You've reached the limit of {0} items on this arsenal.</value>
   </data>
   <data name="StrTradeBuddyAlreadyAdded" xml:space="preserve">
     <value>You're already partners.</value>

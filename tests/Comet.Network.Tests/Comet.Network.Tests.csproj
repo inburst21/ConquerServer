@@ -5,9 +5,9 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyVersion>1.2021.0119.4</AssemblyVersion>
+    <AssemblyVersion>1.2021.0120.4</AssemblyVersion>
 
-    <FileVersion>1.2021.0119.12</FileVersion>
+    <FileVersion>1.2021.0120.13</FileVersion>
 
     <Configurations>Debug;Release;DebugProduction;Debug Windows (x64)</Configurations>
   </PropertyGroup>

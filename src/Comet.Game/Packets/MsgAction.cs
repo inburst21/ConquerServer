@@ -322,8 +322,8 @@ namespace Comet.Game.Packets
                     if (user.SecondaryPassword != Command)
                         return;
 
-                    await user.DeleteCharacterAsync();
-                    await Kernel.RoleManager.KickOutAsync(user.Identity, "DELETED");
+                    if (await user.DeleteCharacterAsync())
+                        await Kernel.RoleManager.KickOutAsync(user.Identity, "DELETED");
                     break;
 
                 case ActionType.CharacterPkMode: // 96

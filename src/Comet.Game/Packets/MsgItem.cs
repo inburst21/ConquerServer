@@ -132,7 +132,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ItemActionType.ShopPurchase:
-                    npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                    npc = user.Map.QueryRole<BaseNpc>(Identity);
                     if (npc == null)
                         return;
                     if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
@@ -215,7 +215,7 @@ namespace Comet.Game.Packets
                     if (Identity == 2888)
                         return;
 
-                    npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                    npc = user.Map.QueryRole<BaseNpc>(Identity);
                     if (npc == null)
                         return;
 
@@ -531,6 +531,14 @@ namespace Comet.Game.Packets
                 }
 
                 case ItemActionType.ClientPing:
+                    Character testUser = Kernel.RoleManager.GetUser(user.Identity);
+                    if (testUser == null || !testUser.Client.GUID.Equals(user.Client.GUID))
+                    {
+                        await Kernel.RoleManager.KickOutAsync(user.Identity, "Duplicated client!!!!");
+                        user.Client.Disconnect();
+                        return;
+                    }
+
                     await client.SendAsync(this);
                     await client.SendAsync(new MsgData(DateTime.Now));
                     break;

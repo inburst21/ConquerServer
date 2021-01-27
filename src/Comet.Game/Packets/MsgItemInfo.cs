@@ -21,6 +21,7 @@
 
 #region References
 
+using System.IO;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
@@ -69,6 +70,7 @@ namespace Comet.Game.Packets
             IsLocked = item.IsLocked() || item.IsUnlocking();
             IsBound = item.IsBound;
             CompositionProgress = item.CompositionProgress;
+            Inscribed = item.SyndicateIdentity != 0;
         }
 
         public uint Identity { get; set; }
@@ -89,6 +91,7 @@ namespace Comet.Game.Packets
         public bool IsLocked { get; set; }
         public bool IsBound { get; set; }
         public uint CompositionProgress { get; set; }
+        public bool Inscribed { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -115,13 +118,15 @@ namespace Comet.Game.Packets
             writer.Write(Bless); // 29
             writer.Write(IsBound); // 30
             writer.Write(Enchantment); // 31
-            writer.Write(0); // 31
-            writer.Write(IsSuspicious); // 36
-            writer.Write((byte) 0); // 37
+            writer.Write(0); // 32
+            writer.Write((byte) 0); // 36
+            writer.Write(IsSuspicious); // 37
             writer.Write(IsLocked); // 38
-            writer.Write((byte)0); // 39
+            writer.Write((byte) 0); // 39
             writer.Write((int) Color); // 40
             writer.Write(CompositionProgress); // 44
+            writer.BaseStream.Seek(2, SeekOrigin.Current);
+            writer.Write(Inscribed ? 1 : 0);
             return writer.ToArray();
         }
 

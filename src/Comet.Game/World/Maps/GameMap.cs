@@ -224,6 +224,16 @@ namespace Comet.Game.World.Maps
 
         #region Query Role
 
+        public Role QueryRole(uint target)
+        {
+            return m_roles.TryGetValue(target, out var value) ? value : null;
+        }
+
+        public T QueryRole<T>(uint target) where T : Role
+        {
+            return m_roles.TryGetValue(target, out var value) && value is T role ? role : null;
+        }
+
         public Role QueryAroundRole(Role sender, uint target)
         {
             int currentBlockX = GetBlockX(sender.MapX);

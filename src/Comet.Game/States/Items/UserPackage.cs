@@ -1119,6 +1119,21 @@ namespace Comet.Game.States.Items
             return m_dicEquipment.Values.FirstOrDefault(x => x.Identity == id) ?? m_dicInventory.Values.FirstOrDefault(x => x.Identity == id);
         }
 
+        public Item FindByIdentityAnywhere(uint id)
+        {
+            Item item = FindByIdentity(id);
+            if (item != null)
+                return item;
+
+            if (m_dicSashes.Values.Any(sash => (item = sash.FirstOrDefault(x => x.Identity == id)) != null))
+                return item;
+
+            if (m_dicWarehouses.Values.Any(
+                warehouse => (item = warehouse.FirstOrDefault(x => x.Identity == id)) != null))
+                return item;
+            return null;
+        }
+
         public async Task ClearInventoryAsync()
         {
             foreach (var item in m_dicInventory.Values)

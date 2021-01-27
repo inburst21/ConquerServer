@@ -28,7 +28,6 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
-using Comet.Game.States.Syndicates;
 using Comet.Game.World.Maps;
 
 namespace Comet.Game.States
@@ -63,7 +62,7 @@ namespace Comet.Game.States
 
             await m_owner.MagicData.AbortMagicAsync(true);
 
-            Role target = Kernel.RoleManager.GetRole(m_idTarget);
+            Role target = m_owner.Map.QueryRole(m_idTarget);
             if (target == null)
             {
                 ResetBattle();
@@ -395,10 +394,10 @@ namespace Comet.Game.States
 
         public bool IsBattleMaintain()
         {
-            if (m_idTarget == 0)
+            if (m_idTarget == 0 || m_owner.Map == null)
                 return false;
 
-            Role target = Kernel.RoleManager.GetRole(m_idTarget);
+            Role target = m_owner.Map.QueryRole(m_idTarget);
             if (target == null) return false;
 
             if (!target.IsAlive) return false;

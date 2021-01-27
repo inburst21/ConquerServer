@@ -3787,6 +3787,36 @@ namespace Comet.Game.States
 
                 #endregion
 
+                #region SVip (>, >=, <, <=, =, ==)
+
+                case "svip":
+                {
+                    int svipValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.VipLevel > svipValue;
+                    if (opt.Equals(">="))
+                        return user.VipLevel >= svipValue;
+                    if (opt.Equals("<"))
+                        return user.VipLevel < svipValue;
+                    if (opt.Equals("<="))
+                        return user.VipLevel <= svipValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.VipLevel == svipValue;
+                    if (opt.Equals("set"))
+                    {
+                        int minutes = 0;
+                        if (string.IsNullOrEmpty(last) || int.TryParse(last, out minutes))
+                            minutes = 1440; // 24 hours
+                        user.VipLevel = uint.Parse(value);
+                        user.VipExpiration = user.VipExpiration < DateTime.Now ? DateTime.Now.AddMinutes(minutes) : user.VipExpiration.AddMinutes(minutes);
+                        return await user.SaveAsync();
+                    }
+
+                    break;
+                }
+
+                #endregion
+
                 #region Xp (>, >=, <, <=, =, +=, set)
 
                 case "xp":

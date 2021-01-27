@@ -213,6 +213,10 @@ namespace Comet.Game
                         msg = new MsgTrade();
                         break;
 
+                    case PacketType.MsgSynpOffer:
+                        msg = new MsgSynpOffer();
+                        break;
+
                     case PacketType.MsgMapItem:
                         msg = new MsgMapItem();
                         break;
@@ -289,6 +293,26 @@ namespace Comet.Game
                         msg = new MsgGuideContribute();
                         break;
 
+                    case PacketType.MsgFactionRankInfo:
+                        msg = new MsgFactionRankInfo();
+                        break;
+
+                    case PacketType.MsgSynMemberList:
+                        msg = new MsgSynMemberList();
+                        break;
+
+                    case PacketType.MsgTotemPoleInfo:
+                        msg = new MsgTotemPoleInfo();
+                        break;
+
+                    case PacketType.MsgWeaponsInfo:
+                        msg  = new MsgWeaponsInfo();
+                        break;
+
+                    case PacketType.MsgTotemPole:
+                        msg = new MsgTotemPole();
+                        break;
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
                             "Missing packet {0}, Length {1}\n{2}",
@@ -336,7 +360,13 @@ namespace Comet.Game
                 Log.WriteLogAsync(LogLevel.Message, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
                 actor.Character.Connection = Character.ConnectionStage.Disconnected;
                 Kernel.RoleManager.ForceLogoutUser(actor.Character.Identity);
-                actor.Character.OnDisconnectAsync().ConfigureAwait(true);   
+                actor.Character.OnDisconnectAsync().ConfigureAwait(true);
+
+                try
+                {
+                    actor.Disconnect();
+                }
+                catch { }
             }
             else
             {

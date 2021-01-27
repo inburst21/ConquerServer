@@ -22,6 +22,7 @@
 #region References
 
 using System.Collections.Concurrent;
+using System.Threading;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 
@@ -53,7 +54,7 @@ namespace Comet.Game.World.Maps
         public bool Add(Role role)
         {
             if (role is Character)
-                m_userCount += 1;
+                Interlocked.Increment(ref m_userCount);
             return RoleSet.TryAdd(role.Identity, role);
         }
 
@@ -61,7 +62,7 @@ namespace Comet.Game.World.Maps
         {
             bool remove = RoleSet.TryRemove(role.Identity, out _);
             if (role is Character && remove)
-                m_userCount -= 1;
+                Interlocked.Decrement(ref m_userCount);
             return remove;
         }
 
@@ -69,7 +70,7 @@ namespace Comet.Game.World.Maps
         {
             bool remove = RoleSet.TryRemove(role, out var target);
             if (target is Character && remove)
-                m_userCount -= 1;
+                Interlocked.Decrement(ref m_userCount);
             return remove;
         }
     }

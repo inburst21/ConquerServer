@@ -94,14 +94,14 @@ namespace Comet.Game.Packets
             {
                 case TaskInteraction.MessageBox:
                 {
-                    if (user.Captcha != null)
+                    if (user.MessageBox != null)
                     {
                         if (OptionIndex == 0)
-                            await user.Captcha.OnCancelAsync();
+                            await user.MessageBox.OnCancelAsync();
                         else
-                            await user.Captcha.OnAcceptAsync();
+                            await user.MessageBox.OnAcceptAsync();
 
-                        user.Captcha = null;
+                        user.MessageBox = null;
                     }
                     else
                     {
@@ -173,7 +173,7 @@ namespace Comet.Game.Packets
                             user.SyndicateRank < SyndicateMember.SyndicateRank.DeputyLeader)
                             return;
 
-                        await user.Syndicate.KickoutMemberAsync(user, Text);
+                        await user.Syndicate.KickOutMemberAsync(user, Text);
                         await user.Syndicate.SendMembersAsync(0, user);
                         return;
                     }
