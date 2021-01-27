@@ -192,7 +192,8 @@ namespace Comet.Game.World.Managers
             int current = 0;
             int min = page * MAX_PER_PAGE_I;
             int max = (page * MAX_PER_PAGE_I) + MAX_PER_PAGE_I;
-            MsgPeerage msg = new MsgPeerage(NobilityAction.List, MAX_PER_PAGE_I, (ushort)currentPagesNum);
+            
+            List<MsgPeerage.NobilityStruct> rank = new List<MsgPeerage.NobilityStruct>();
             foreach (var peerage in PeerageSet.Values.OrderByDescending(x => x.Donation).ThenBy(x => x.FirstDonation))
             {
                 if (current >= MAX_PAGES * MAX_PER_PAGE_I)
@@ -209,22 +210,21 @@ namespace Comet.Game.World.Managers
 
                 Character peerageUser = Kernel.RoleManager.GetUser(peerage.UserIdentity);
                 uint lookface = peerageUser?.Mesh ?? 0;
-                msg.Strings.Add($"{peerage.UserIdentity} {lookface} {lookface} {peerage.Name} {peerage.Donation} {(int)GetRanking(peerage.UserIdentity)} {current + 1}");
-                //msg.Rank.Add(new MsgPeerage.NobilityStruct
-                //{
-                //    Identity = peerage.UserIdentity,
-                //    Name = peerage.Name,
-                //    Donation = peerage.Donation,
-                //    LookFace = lookface,
-                //    Position = current,
-                //    Rank = GetRanking(peerage.UserIdentity)
-                //});
+                rank.Add(new MsgPeerage.NobilityStruct
+                {
+                    Identity = peerage.UserIdentity,
+                    Name = peerage.Name,
+                    Donation = peerage.Donation,
+                    LookFace = lookface,
+                    Position = current,
+                    Rank = GetRanking(peerage.UserIdentity)
+                });
 
                 current++;
             }
 
-            msg.Data4 = (uint) msg.Strings.Count;
-
+            MsgPeerage msg = new MsgPeerage(NobilityAction.List, (ushort) Math.Min(MAX_PER_PAGE_I, rank.Count), (ushort)currentPagesNum);
+            msg.Rank.AddRange(rank);
             await target.SendAsync(msg);
         }
 

@@ -91,5 +91,19 @@ namespace Comet.Game.Database.Models
         [Column("flower_w")] public uint FlowerWhite { get; set; }
         [Column("flower_lily")] public uint FlowerOrchid { get; set; }
         [Column("flower_tulip")] public uint FlowerTulip { get; set; }
+        /// <summary>
+        /// Experience Gained by staying online with Heaven Blessing.
+        /// </summary>
+        [Column("online_god_exptime")] public uint OnlineGodExpTime { get; set; }
+        /// <summary>
+        /// Experience gained by killing monsters in the world with Heaven Blessing.
+        /// </summary>
+        [Column("battle_god_exptime")] public uint BattleGodExpTime { get; set; }
+        [Column("mentor_opportunity")] public uint MentorOpportunity { get; set; }
+        [Column("mentor_uplev_time")] public uint MentorUplevTime { get; set; }
+        [Column("mentor_achieve")] public uint MentorAchieve { get; set; }
+        [Column("mentor_day")] public uint MentorDay { get; set; }
+        [Column("title")] public uint Title { get; set; }
+        [Column("title_select")] public byte TitleSelect { get; set; }
     }
 }

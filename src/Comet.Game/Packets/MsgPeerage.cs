@@ -38,12 +38,12 @@ namespace Comet.Game.Packets
             Data = 0;
         }
 
-        public MsgPeerage(NobilityAction action, ushort maxPages, ushort maxPerPage)
+        public MsgPeerage(NobilityAction action, ushort maxPerPage, ushort maxPages)
         {
             Type = PacketType.MsgPeerage;
             Action = action;
             DataLow2 = maxPages;
-            DataLow1 = maxPerPage;
+            DataHigh = maxPerPage;
         }
 
         public NobilityAction Action { get; set; }
@@ -129,23 +129,26 @@ namespace Comet.Game.Packets
             writer.Write(Data2); // 20
             writer.Write(Data3); // 24
             writer.Write(Data4); // 28
-            
-            if (Rank.Count == 0)
-            {
-                writer.Write(Strings);
-            }
-            else
+
+            if (Action == NobilityAction.List)
             {
                 foreach (var rank in Rank)
                 {
                     writer.Write(rank.Identity);
                     writer.Write(rank.LookFace);
+                    writer.Write(rank.LookFace);
                     writer.Write(rank.Name, 16);
+                    writer.Write(0);
                     writer.Write(rank.Donation);
-                    writer.Write((uint)rank.Rank);
-                    writer.Write(rank.Position + 1);
+                    writer.Write((uint) rank.Rank);
+                    writer.Write(rank.Position);
                 }
             }
+            else
+            {
+                writer.Write(Strings);
+            }
+
             return writer.ToArray();
         }
 
