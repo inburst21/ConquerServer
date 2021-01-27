@@ -5,9 +5,9 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyVersion>1.2021.0120.5</AssemblyVersion>
+    <AssemblyVersion>1.2021.0127.5</AssemblyVersion>
 
-    <FileVersion>1.2021.0120.16</FileVersion>
+    <FileVersion>1.2021.0127.17</FileVersion>
 
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
 
