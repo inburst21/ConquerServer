@@ -99,6 +99,12 @@ namespace Comet.Network.Packets
         MsgWeaponsInfo = 2202,
         MsgTotemPole = 2203,
 
+        MsgQualifyingInteractive = 2205,
+        MsgQualifyingFightersList = 2206,
+        MsgQualifyingRank = 2207,
+        MsgQualifyingSeasonRankList = 2208,
+        MsgQualifyingDetailInfo = 2209,
+
         MsgWalk = 10005,
         MsgAction = 10010,
         MsgPlayer = 10014,

@@ -313,6 +313,26 @@ namespace Comet.Game
                         msg = new MsgTotemPole();
                         break;
 
+                    case PacketType.MsgQualifyingInteractive:
+                        msg = new MsgQualifyingInteractive();
+                        break;
+
+                    case PacketType.MsgQualifyingFightersList:
+                        msg = new MsgQualifyingFightersList();
+                        break;
+
+                    case PacketType.MsgQualifyingRank:
+                        msg = new MsgQualifyingRank();
+                        break;
+
+                    case PacketType.MsgQualifyingSeasonRankList:
+                        msg = new MsgQualifyingSeasonRankList();
+                        break;
+
+                    case PacketType.MsgQualifyingDetailInfo:
+                        msg = new MsgQualifyingDetailInfo();
+                        break;
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
                             "Missing packet {0}, Length {1}\n{2}",
