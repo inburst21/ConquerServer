@@ -418,8 +418,8 @@ namespace Comet.Game.States
                     case TaskActionType.ActionUserStcOpe:
                         result = await ExecuteActionUserStcOpe(action, param, user, role, item, input);
                         break;
-                    case (TaskActionType) 1075:
-                        result = true;
+                    case TaskActionType.ActionUserDataSync:
+                        result = await ExecuteActionUserDataSync(action, param, user, role, item, input);
                         break;
                     case TaskActionType.ActionUserSelectToData:
                         result = await ExecuteActionUserSelectToData(action, param, user, role, item, input);
@@ -5220,6 +5220,38 @@ namespace Comet.Game.States
             return false;
         }
 
+        private static async Task<bool> ExecuteActionUserDataSync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user == null)
+                return false;
+
+            string[] splitParam = SplitParam(param);
+            if (splitParam.Length < 3)
+                return false;
+
+            string act = splitParam[0];
+            uint type = uint.Parse(splitParam[1]);
+            uint data = uint.Parse(splitParam[2]);
+
+            if (act.Equals("send"))
+            {
+                await user.SendAsync(new MsgAction
+                {
+                    Identity = user.Identity,
+                    Action = (MsgAction.ActionType) type,
+                    Command = data,
+                    ArgumentX = user.MapX,
+                    ArgumentY = user.MapY,
+                    X = user.MapX,
+                    Y = user.MapY
+                });
+                return true;
+            }
+
+            return false;
+        }
+
         private static async Task<bool> ExecuteActionUserSelectToData(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
@@ -6783,6 +6815,7 @@ namespace Comet.Game.States
         ActionUserTestPos = 1072,
         ActionUserStcCompare = 1073,
         ActionUserStcOpe = 1074,
+        ActionUserDataSync = 1075,
         ActionUserSelectToData = 1077,
         ActionUserStcTimeOperation = 1080,
         ActionUserStcTimeCheck = 1081,

@@ -4469,48 +4469,58 @@ namespace Comet.Game.States
             return m_dbObject.Business.HasValue && m_dbObject.Business.Value > DateTime.Now;
         }
 
-        public Task<bool> SetMerchantAsync()
+        public async Task<bool> SetMerchantAsync()
         {
             if (IsMerchant())
-                return Task.FromResult(false);
+                return false;
 
             if (Level <= 30 && Metempsychosis == 0)
+            {
                 m_dbObject.Business = DateTime.Now;
+                await SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
+            }
             else
                 m_dbObject.Business = DateTime.Now.AddDays(5);
-            return SaveAsync();
+            return await SaveAsync();
         }
 
-        public Task RemoveMerchantAsync()
+        public async Task RemoveMerchantAsync()
         {
             m_dbObject.Business = null;
-            return SaveAsync();
+            await SynchroAttributesAsync(ClientUpdateType.Merchant, 0);
+            await SaveAsync();
         }
 
-        public Task SendMerchantAsync()
+        public async Task SendMerchantAsync()
         {
             if (IsMerchant())
-                return SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
+            {
+                await SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
+                return;
+            }
+
             if (IsAwaitingMerchantStatus())
             {
-                return SynchroAttributesAsync(ClientUpdateType.Merchant, 1);
-                //return SendAsync(new MsgInteract
-                //{
-                //    Action = MsgInteractType.AcceptMerchant,
-                //    Data = 4,
-                //    SenderIdentity = 60,
-                //    TargetIdentity = 30
-                //});
+                await SynchroAttributesAsync(ClientUpdateType.Merchant, 1);
+                await SendAsync(new MsgInteract
+                {
+                    Action = MsgInteractType.MerchantProgress,
+                    Command = BusinessManDays
+                });
+                return;
             }
 
             if (Level <= 30 && Metempsychosis == 0)
-                return SendAsync(new MsgInteract
+            {
+                await SendAsync(new MsgInteract
                 {
                     Action = MsgInteractType.AcceptMerchant,
                     Data = 3
                 });
+                return;
+            }
 
-            return SynchroAttributesAsync(ClientUpdateType.Merchant, 0);
+            await SynchroAttributesAsync(ClientUpdateType.Merchant, 0);
         }
 
         #endregion

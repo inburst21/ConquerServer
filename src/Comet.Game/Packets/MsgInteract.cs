@@ -279,6 +279,18 @@ namespace Comet.Game.Packets
                 case MsgInteractType.AcceptMerchant:
                 {
                     // ON ACCEPT: Sender = 1 Target = 1
+                    await user.SetMerchantAsync();
+                    break;
+                }
+
+                case MsgInteractType.CancelMerchant:
+                {
+                    await user.RemoveMerchantAsync();
+                    break;
+                }
+
+                case MsgInteractType.MerchantProgress:
+                {
                     break;
                 }
 
@@ -339,6 +351,7 @@ namespace Comet.Game.Packets
         IncreaseJar = 36,
         PresentEmoney = 39,
         CancelMerchant = 41,
+        MerchantProgress = 42,
         CounterKill = 43,
         CounterKillSwitch = 44,
         FatalStrike = 45,
