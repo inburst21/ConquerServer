@@ -105,5 +105,13 @@ namespace Comet.Game.Database.Models
         [Column("mentor_day")] public uint MentorDay { get; set; }
         [Column("title")] public uint Title { get; set; }
         [Column("title_select")] public byte TitleSelect { get; set; }
+
+        [Column("athlete_point")] public uint AthletePoint { get; set; }
+        [Column("athlete_history_wins")] public uint AthleteHistoryWins { get; set; }
+        [Column("athlete_history_loses")] public uint AthleteHistoryLoses { get; set; }
+        [Column("athlete_day_wins")] public uint AthleteDayWins { get; set; }
+        [Column("athlete_day_loses")] public uint AthleteDayLoses { get; set; }
+        [Column("athlete_cur_honor_point")] public uint AthleteCurrentHonorPoints { get; set; }
+        [Column("athlete_hisorty_honor_point")] public uint AthleteHistoryHonorPoints { get; set; }
     }
 }
