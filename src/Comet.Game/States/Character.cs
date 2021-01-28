@@ -3556,7 +3556,12 @@ namespace Comet.Game.States
                     EnrollmentDate = uint.Parse(SyndicateMember.JoinDate.ToString("yyyyMMdd")),
                     Level = Syndicate.Level
                 });
-                await SendAsync(Syndicate.Announce, MsgTalk.TalkChannel.Announce);
+                await SendAsync(new MsgSyndicate
+                {
+                    Mode = MsgSyndicate.SyndicateRequest.Bulletin,
+                    Strings = new List<string>{ Syndicate.Announce },
+                    Identity = uint.Parse(Syndicate.AnnounceDate.ToString("yyyyMMdd"))
+                });
                 await Syndicate.SendAsync(this);
                 await SendAsync(new MsgSynpOffer(SyndicateMember));
                 await SynchroAttributesAsync(ClientUpdateType.TotemPoleBattlePower, (ulong) Syndicate.TotemSharedBattlePower, true);
@@ -4514,8 +4519,7 @@ namespace Comet.Game.States
             {
                 await SendAsync(new MsgInteract
                 {
-                    Action = MsgInteractType.AcceptMerchant,
-                    Data = 3
+                    Action = MsgInteractType.InitialMerchant
                 });
                 return;
             }

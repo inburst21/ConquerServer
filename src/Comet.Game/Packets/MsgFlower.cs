@@ -52,6 +52,21 @@ namespace Comet.Game.Packets
             Tulip
         }
 
+        public enum FlowerEffect : uint
+        {
+            None = 0,
+
+            RedRose,
+            WhiteRose,
+            Orchid,
+            Tulip,
+
+            Kiss = 1,
+            Love = 2,
+            Tins = 3,
+            Jade = 4,
+        }
+
         public RequestMode Mode { get; set; }
         public uint Identity { get; set; }
         public uint ItemIdentity { get; set; }
@@ -62,6 +77,7 @@ namespace Comet.Game.Packets
         public string ReceiverName { get; set; } = "";
         public uint SendAmount { get; set; }
         public FlowerType SendFlowerType { get; set; }
+        public FlowerEffect SendFlowerEffect { get; set; }
 
         public uint RedRoses { get; set; }
         public uint RedRosesToday { get; set; }
@@ -95,7 +111,7 @@ namespace Comet.Game.Packets
             writer.Write((uint) Mode);
             writer.Write(Identity);
             writer.Write(ItemIdentity);
-            if (Mode == RequestMode.QueryData)
+            if (Mode == RequestMode.QueryIcon)
             {
                 writer.Write(RedRoses);
                 writer.Write(RedRosesToday);
@@ -108,12 +124,12 @@ namespace Comet.Game.Packets
             }
             else
             {
-                writer.Write(FlowerIdentity);
-                writer.Write(SenderName);
-                writer.Write(ReceiverName);
-                writer.Write(SendAmount);
-                writer.Write((uint) SendFlowerType);
+                writer.Write(SenderName, 16);
+                writer.Write(ReceiverName, 16);
             }
+            writer.Write(SendAmount);
+            writer.Write((uint) SendFlowerType);
+            writer.Write((uint) SendFlowerEffect);
             return writer.ToArray();
         }
 
@@ -161,8 +177,9 @@ namespace Comet.Game.Packets
                     }
 
                     ushort amount = 0;
-                    string flowerName = "";
+                    string flowerName = Language.StrFlowerNameRed;
                     FlowerType type = FlowerType.RedRose;
+                    FlowerEffect effect = FlowerEffect.RedRose;
                     if (ItemIdentity == 0) // daily flower
                     {
                         if (user.SendFlowerTime != null
@@ -209,10 +226,26 @@ namespace Comet.Game.Packets
 
                         switch (flower.GetItemSubType())
                         {
-                                case 751: type = FlowerType.RedRose; break;
-                                case 752: type = FlowerType.WhiteRose; break;
-                                case 753: type = FlowerType.Orchid; break;
-                                case 754: type = FlowerType.Tulip; break;
+                            case 751:
+                                type = FlowerType.RedRose;
+                                effect = FlowerEffect.RedRose;
+                                flowerName = Language.StrFlowerNameRed;
+                                break;
+                            case 752:
+                                type = FlowerType.WhiteRose;
+                                effect = FlowerEffect.WhiteRose;
+                                flowerName = Language.StrFlowerNameWhite;
+                                break;
+                            case 753:
+                                type = FlowerType.Orchid;
+                                effect = FlowerEffect.Orchid;
+                                flowerName = Language.StrFlowerNameLily;
+                                break;
+                            case 754:
+                                type = FlowerType.Tulip;
+                                effect = FlowerEffect.Tulip;
+                                flowerName = Language.StrFlowerNameTulip;
+                                break;
                         }
 
                         amount = flower.Durability;
@@ -248,16 +281,25 @@ namespace Comet.Game.Packets
                             MsgTalk.TalkChannel.Center);
                     }
 
-                    await target.SendAsync(Language.StrFlowerReceiverPrompt);
-                    await user.SendAsync(this);
-                    
-                    await target.SendAsync(new MsgFlower
+                    await target.SendAsync(string.Format(Language.StrFlowerReceiverPrompt, user.Name));
+                    await user.BroadcastRoomMsgAsync(new MsgFlower
                     {
+                        Identity = Identity,
+                        ItemIdentity = ItemIdentity,
                         SenderName = user.Name,
                         ReceiverName = target.Name,
                         SendAmount = amount,
-                        SendFlowerType = type
-                    });
+                        SendFlowerType = type,
+                        SendFlowerEffect = effect
+                    }, true);
+                    
+                    //await target.SendAsync(new MsgFlower
+                    //{
+                    //    SenderName = user.Name,
+                    //    ReceiverName = target.Name,
+                    //    SendAmount = amount,
+                    //    SendFlowerType = type
+                    //});
 
                     await BaseRepository.SaveAsync(target.FlowersToday);
                     break;

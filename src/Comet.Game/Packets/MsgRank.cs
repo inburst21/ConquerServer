@@ -104,7 +104,8 @@ namespace Comet.Game.Packets
 
                     await user.SendAsync(new MsgFlower
                     {
-                        Mode = MsgFlower.RequestMode.QueryData,
+                        Mode = MsgFlower.RequestMode.QueryIcon,
+                        Identity =  user.Identity,
                         RedRoses = user.FlowerRed,
                         RedRosesToday = user.FlowersToday.RedRose,
                         WhiteRoses = user.FlowerWhite,
@@ -125,12 +126,6 @@ namespace Comet.Game.Packets
                     int myOrchid = orchidRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
                     int myTulip = tulipRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
 
-
-
-                    await user.SendAsync(new MsgRank
-                    {
-                        Mode = RequestType.QueryIcon
-                    });
                     break;
                 }
                 default:
