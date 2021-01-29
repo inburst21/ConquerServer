@@ -132,7 +132,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ItemActionType.ShopPurchase:
-                    npc = user.Map.QueryRole<BaseNpc>(Identity);
+                    npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
                     if (npc == null)
                         return;
                     if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)

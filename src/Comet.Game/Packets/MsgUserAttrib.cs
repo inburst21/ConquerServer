@@ -88,7 +88,7 @@ namespace Comet.Game.Packets
         }
     }
 
-    public enum ClientUpdateType : byte
+    public enum ClientUpdateType
     {
         Hitpoints = 0,
         MaxHitpoints = 1,
@@ -121,5 +121,7 @@ namespace Comet.Game.Packets
         VipLevel = 39,
         QuizPoints = 40,
         TotemPoleBattlePower = 44,
+
+        Vigor = 10000
     }
 }

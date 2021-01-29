@@ -98,6 +98,8 @@ namespace Comet.Game.States.Magics
         public const int PURE_WATER_ID = 30000;
         public const int PURE_FIRE_ID = 10310;
 
+        public const int TWOFOLDBLADES_ID = 6000;
+
         public const int MAGICDAMAGE_ALT = 26;
         public const int AUTOLEVELUP_EXP = -1;
         public const int DISABLELEVELUP_EXP = 0;
@@ -119,7 +121,7 @@ namespace Comet.Game.States.Magics
         public const int AWARDEXP_BY_TIMES = 1;
         public const int AUTO_MAGIC_DELAY_PERCENT = 150;
         public const int BOW_SUBTYPE = 500;
-        public const int POISON_MAGIC_TYPE = 10200;
+        public const ushort POISON_MAGIC_TYPE = 10010;
         public const int DEFAULT_MAGIC_FAN = 120;
         public const int STUDENTBONUS_PERCENT = 5;
 

@@ -3604,17 +3604,27 @@ namespace Comet.Game.States
                         return user.Life < lifeValue;
                     if (opt.Equals("<="))
                         return user.Life <= lifeValue;
-                    if (opt.Equals("=") || opt.Equals("=="))
+                    if (opt.Equals("=="))
                         return user.Life == lifeValue;
                     if (opt.Equals("+="))
                     {
-                        user.QueueAction(() => user.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeValue));
+                        user.QueueAction(async () =>
+                        {
+                            await user.AddAttributesAsync(ClientUpdateType.Hitpoints, lifeValue);
+                            if (!user.IsAlive)
+                                await user.BeKillAsync(null);
+                        });
                         return true;
                     }
 
-                    if (opt.Equals("set"))
+                    if (opt.Equals("set") || opt.Equals("="))
                     {
-                        user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) lifeValue));
+                        user.QueueAction(async () =>
+                        {
+                            await user.SetAttributesAsync(ClientUpdateType.Hitpoints, (ulong) lifeValue);
+                            if (!user.IsAlive)
+                                await user.BeKillAsync(null);
+                        });
                         return true;
                     }
 

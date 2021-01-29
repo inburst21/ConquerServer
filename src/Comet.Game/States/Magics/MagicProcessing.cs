@@ -30,6 +30,7 @@ using Comet.Core;
 using Comet.Core.Mathematics;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Game.World.Maps;
 using Comet.Shared;
@@ -107,7 +108,7 @@ namespace Comet.Game.States.Magics
             if (map.IsLineSkillMap() && magic.Sort != MagicSort.Line)
                 return (false, x, y);
 
-            if (map.IsTrainingMap() && user != null)
+            if (!map.IsTrainingMap() && user != null)
             {
                 if (user.Mana < magic.UseMana)
                     return (false, x, y);
@@ -129,6 +130,11 @@ namespace Comet.Game.States.Magics
             {
                 if (!user.CheckWeaponSubType(magic.WeaponSubtype))
                     return (false, x, y);
+
+                if (magic.Type == TWOFOLDBLADES_ID 
+                    && user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType() != user.UserPackage[Item.ItemPosition.LeftHand]?.GetItemSubType())
+                    return (false, x, y);
+
             }
 
             if (user != null && user.TransformationMesh != 0)
@@ -140,7 +146,11 @@ namespace Comet.Game.States.Magics
             if (map.IsWingDisable() && magic.Sort == MagicSort.Attachstatus && magic.Status == StatusSet.FLY)
                 return (false, x, y);
             
-            if (magic.Ground == 0)
+            if (magic.Ground == 0 && magic.Sort != MagicSort.Groundsting
+                                  && magic.Sort != MagicSort.Vortex
+                                  && magic.Sort != MagicSort.Dashwhirl
+                                  && magic.Sort != MagicSort.Dashdeadmark
+                                  && magic.Sort != MagicSort.Mountwhirl)
             {
                 role = map.QueryAroundRole(m_pOwner, idTarget);
                 if (role == null)
@@ -177,7 +187,7 @@ namespace Comet.Game.States.Magics
         }
 
         public async Task<bool> ProcessMagicAttackAsync(ushort usMagicType, uint idTarget, ushort x, ushort y,
-            byte ucAutoActive = 0)
+            uint ucAutoActive = 0)
         {
             switch (m_state)
             {
@@ -208,9 +218,6 @@ namespace Comet.Game.States.Magics
                 await AbortMagicAsync(true);
                 return false;
             }
-
-            if (!magic.IsReady())
-                return false;
 
             /*if (magic.Ground > 0 && magic.Sort != MagicSort.Atkstatus)
                 m_idTarget = 0;
@@ -347,6 +354,12 @@ namespace Comet.Game.States.Magics
                         break;
                     case MagicSort.Addmana:
                         result = await ProcessAddManaAsync(magic);
+                        break;
+                    case MagicSort.Groundsting:
+                        result = await ProcessGroundstingAsync(magic);
+                        break;
+                    case MagicSort.Riding:
+                        result = await ProcessRidingAsync(magic);
                         break;
 
                     default:
@@ -736,6 +749,8 @@ namespace Comet.Game.States.Magics
                     if (target.Map.IsWingDisable())
                         return false;
                     if (target.QueryStatus(StatusSet.SHIELD) != null)
+                        return false;
+                    if (target.QueryStatus(StatusSet.RIDING) != null)
                         return false;
                     break;
 
@@ -1139,6 +1154,104 @@ namespace Comet.Game.States.Magics
             await target.AddAttributesAsync(ClientUpdateType.Mana, addMana);
 
             await AwardExpAsync(0, 0, Math.Max(addMana, AWARDEXP_BY_TIMES), magic);
+            return true;
+        }
+
+        private async Task<bool> ProcessGroundstingAsync(Magic magic)
+        {
+            if (magic == null || magic.Status == 0)
+                return false;
+
+            var targetLocked = CollectTargetBomb(0, (int) magic.Range);
+            var center = targetLocked.Center;
+            var msg = new MsgMagicEffect
+            {
+                AttackerIdentity = m_pOwner.Identity,
+                MagicIdentity = magic.Type,
+                MagicLevel = magic.Level,
+                MapX = (ushort) center.X,
+                MapY = (ushort) center.Y
+            };
+
+            List<Role> setTarget = new List<Role>();
+            foreach (var target in targetLocked.Roles)
+            {
+                if (magic.Ground != 0 && target.IsWing)
+                    continue;
+
+                if (m_pOwner.GetDistance(target) > magic.Distance)
+                    continue;
+
+                if (!target.IsPlayer() && !target.IsMonster())
+                    continue;
+
+                if (target is Monster targetMonster)
+                {
+                    if (targetMonster.IsGuard())
+                        continue;
+                }
+
+                int chance = 100 - Math.Min(20, Math.Max(0, target.BattlePower - m_pOwner.BattlePower)) * 5;
+                int damage = 1;
+                if (!await Kernel.ChanceCalcAsync(chance))
+                    damage = 0;
+
+                if (msg.Count >= 25)
+                {
+                    await m_pOwner.Map.BroadcastRoomMsgAsync(center.X, center.Y, msg);
+                    msg = new MsgMagicEffect
+                    {
+                        AttackerIdentity = m_pOwner.Identity,
+                        MagicIdentity = magic.Type,
+                        MagicLevel = magic.Level,
+                        MapX = (ushort)center.X,
+                        MapY = (ushort)center.Y
+                    };
+                }
+
+                msg.Append(target.Identity, damage, true);
+
+                if (damage > 0)
+                    setTarget.Add(target);
+            }
+
+            if (msg.Count > 0)
+                await m_pOwner.Map.BroadcastRoomMsgAsync(center.X, center.Y, msg);
+
+            foreach (var target in setTarget)
+                await target.AttachStatusAsync(m_pOwner, (int) magic.Status, magic.Power, (int) magic.StepSeconds, (int) magic.ActiveTimes, (byte) magic.Level);
+
+            await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
+            return true;
+        }
+
+        private async Task<bool> ProcessRidingAsync(Magic magic)
+        {
+            if (!(m_pOwner is Character user))
+                return false;
+
+            Item mount = user.UserPackage[Item.ItemPosition.Steed];
+            if (mount == null)
+                return false;
+
+            if (user.QueryStatus(StatusSet.RIDING) != null)
+            {
+                await user.DetachStatusAsync(StatusSet.RIDING);
+                return true;
+            }
+            
+            if (user.QueryStatus(StatusSet.FLY) != null)
+                return false;
+
+            if (user.Map.IsTrainingMap())
+                return false;
+
+            if (user.MapIdentity == 1036 && mount.Plus < 6)
+                return false;
+
+            await user.AttachStatusAsync(user, StatusSet.RIDING, 0, (int) magic.StepSeconds, 0, 0);
+            await user.SetAttributesAsync(ClientUpdateType.Vigor, (ulong) user.MaxVigor);
+            user.UpdateVigorTimer();
             return true;
         }
 

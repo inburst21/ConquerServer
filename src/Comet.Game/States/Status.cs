@@ -31,6 +31,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Magics;
 using Comet.Shared;
 
 #endregion
@@ -301,16 +302,17 @@ namespace Comet.Game.States
                     switch (Identity)
                     {
                         case StatusSet.POISONED: // poison
+                        {
                             if (!m_pOwner.IsAlive)
                                 return;
 
-                            loseLife = (int)Calculations.CutOverflow(Power, m_pOwner.Life - 1);
+                            loseLife = (int) Calculations.CutOverflow(Power, m_pOwner.Life - 1);
                             await m_pOwner.AddAttributesAsync(ClientUpdateType.Hitpoints, -1 * loseLife);
 
                             var msg2 = new MsgMagicEffect
                             {
                                 AttackerIdentity = m_pOwner.Identity,
-                                MagicIdentity = 10010
+                                MagicIdentity = MagicData.POISON_MAGIC_TYPE
                             };
                             msg2.Append(m_pOwner.Identity, loseLife, true);
                             await m_pOwner.BroadcastRoomMsgAsync(msg2, true);
@@ -318,6 +320,32 @@ namespace Comet.Game.States
                             if (!m_pOwner.IsAlive)
                                 await m_pOwner.BeKillAsync(null);
                             break;
+                        }
+
+                        case StatusSet.TOXIC_FOG:
+                        {
+                            if (!m_pOwner.IsAlive)
+                            {
+                                m_nTimes = 1;
+                                break;
+                            }
+
+                            loseLife = Calculations.AdjustData((int) m_pOwner.Life, Power);
+                            if (m_pOwner.Life - loseLife <= 0)
+                                loseLife = 0;
+
+
+                            await m_pOwner.BeAttackAsync(BattleSystem.MagicType.Normal, m_pOwner, loseLife, false);
+
+                            var msg = new MsgMagicEffect
+                            {
+                                AttackerIdentity = m_pOwner.Identity,
+                                MagicIdentity = MagicData.POISON_MAGIC_TYPE
+                            };
+                            msg.Append(m_pOwner.Identity, loseLife, true);
+                            await m_pOwner.Map.BroadcastRoomMsgAsync(m_pOwner.MapX, m_pOwner.MapY, msg);
+                            break;
+                        }
                     }
 
                     m_nTimes--;
@@ -389,7 +417,7 @@ namespace Comet.Game.States
             SUPERMAN = 19,
             REFLECTTYPE_THING = 20,
             DIF_REFLECT_THING = 21,
-            UNKNOWN22 = 22,
+            FREEZE = 22,
             PARTIALLY_INVISIBLE = 23,
             CYCLONE = 24,
             UNKNOWN25 = 25,

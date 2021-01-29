@@ -283,7 +283,7 @@ namespace Comet.Game.States.Items
 
         public byte Enchantment
         {
-            get => m_dbItem.AddLife;
+            get => (byte) (Position != ItemPosition.Steed ? m_dbItem.AddLife : 0);
             set => m_dbItem.AddLife = value;
         }
 
@@ -540,6 +540,9 @@ namespace Comet.Game.States.Items
         {
             get
             {
+                if (Position == ItemPosition.Steed)
+                    return 0;
+
                 int result = m_dbItemtype?.Dexterity ?? 0;
                 result += (m_dbItemAddition?.Dexterity ?? 0);
                 if (IsWeaponTwoHand())
@@ -560,7 +563,7 @@ namespace Comet.Game.States.Items
             }
         }
 
-        public int Blessing => m_dbItem?.ReduceDmg ?? 0;
+        public int Blessing => Position == ItemPosition.Steed ? 0 : m_dbItem?.ReduceDmg ?? 0;
 
         public int DragonGemEffect
         {
@@ -752,6 +755,16 @@ namespace Comet.Game.States.Items
         }
 
         public int AttackRange => m_dbItemtype?.AtkRange ?? 1;
+
+        public int Vigor
+        {
+            get
+            {
+                int result = m_dbItemtype.Dexterity;
+                result += m_dbItemAddition?.Dexterity ?? 0;
+                return result;
+            }
+        }
 
         #endregion
 

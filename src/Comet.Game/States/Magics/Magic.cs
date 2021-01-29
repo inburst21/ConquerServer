@@ -133,7 +133,7 @@ namespace Comet.Game.States.Magics
 
         public ushort MaxLevel => m_pMaxLevel;
         public MagicData.MagicSort Sort => (MagicData.MagicSort) m_dbMagictype.Sort;
-        public byte AutoActive => m_dbMagictype.AutoActive;
+        public uint AutoActive => m_dbMagictype.AutoActive;
         public byte Crime => m_dbMagictype.Crime;
         public byte Ground => m_dbMagictype.Ground;
         public byte Multi => m_dbMagictype.Multi;
@@ -151,7 +151,6 @@ namespace Comet.Game.States.Magics
         public uint NeedLevel => m_dbMagictype.NeedLevel;
         public BattleSystem.MagicType UseXp => (BattleSystem.MagicType) m_dbMagictype.UseXp;
         public uint WeaponSubtype => m_dbMagictype.WeaponSubtype;
-        public byte WeaponSubtypeNum => m_dbMagictype.WeaponSubtypeNum;
         public uint ActiveTimes => m_dbMagictype.ActiveTimes;
         public uint FloorAttr => m_dbMagictype.FloorAttr;
         public byte AutoLearn => m_dbMagictype.AutoLearn;
@@ -164,8 +163,7 @@ namespace Comet.Game.States.Magics
         public uint UseItemNum => m_dbMagictype.UseItemNum;
         public byte ElementType => m_dbMagictype.ElementType;
         public uint ElementPower => m_dbMagictype.ElementPower;
-        public uint DashRange => m_dbMagictype.MaximumDashRange;
-        public uint CpsCost => (uint)(m_dbMagictype.EmoneyPrice / 22.22d);
+        public uint CpsCost => (uint)(m_dbMagictype.ReqUplevTime / 22.22d);
 
         #endregion
 

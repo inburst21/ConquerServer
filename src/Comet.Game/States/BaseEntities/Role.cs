@@ -163,6 +163,19 @@ namespace Comet.Game.States.BaseEntities
                     await user.KickbackAsync();
                     return false;
                 }
+
+                if (user.QueryStatus(StatusSet.RIDING) != null)
+                {
+                    int distance = user.GetDistance(x, y);
+                    int vigorConsume = (-1 * distance);
+                    if (vigorConsume > 0 && vigorConsume > user.Vigor)
+                    {
+                        await user.KickbackAsync();
+                        return false;
+                    }
+                    await AddAttributesAsync(ClientUpdateType.Vigor, vigorConsume);
+                    user.UpdateVigorTimer();
+                }
             }
 
             Map.EnterBlock(this, x, y, MapX, MapY);
@@ -192,19 +205,41 @@ namespace Comet.Game.States.BaseEntities
 
         public async Task<bool> MoveTowardAsync(int direction, int mode, bool sync = false)
         {
-            direction %= 8;
-            ushort newX = (ushort)(MapX + GameMap.WalkXCoords[direction]);
-            ushort newY = (ushort)(MapY + GameMap.WalkYCoords[direction]);
-
-            bool isRunning = mode >= (int)RoleMoveMode.RunDir0 &&
-                             mode <= (int)RoleMoveMode.RunDir7;
-            if (isRunning && IsAlive)
+            Character user = this as Character;
+            ushort newX = 0, newY = 0;
+            
+            if (mode == (int) RoleMoveMode.Track)
             {
-                newX += (ushort)GameMap.WalkXCoords[direction];
-                newY += (ushort)GameMap.WalkYCoords[direction];
+                direction %= 24;
+                newX = (ushort)(MapX + GameMap.RideXCoords[direction]);
+                newY = (ushort)(MapY + GameMap.RideYCoords[direction]);
+            }
+            else
+            {
+                direction %= 8;
+                newX = (ushort)(MapX + GameMap.WalkXCoords[direction]);
+                newY = (ushort)(MapY + GameMap.WalkYCoords[direction]);
+
+                bool isRunning = mode >= (int)RoleMoveMode.RunDir0 &&
+                                 mode <= (int)RoleMoveMode.RunDir7;
+                if (isRunning && IsAlive)
+                {
+                    newX += (ushort)GameMap.WalkXCoords[direction];
+                    newY += (ushort)GameMap.WalkYCoords[direction];
+                }
             }
 
-            Character user = this as Character;
+            int vigor = 0;
+            if (user != null && QueryStatus(StatusSet.RIDING) != null)
+            {
+                vigor = GetDistance(newX, newY);
+                if (user.Vigor < vigor)
+                {
+                    await user.KickbackAsync();
+                    return false;
+                }
+            }
+
             if (!IsAlive && user != null && !user.IsGhost())
             {
                 await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
@@ -216,6 +251,12 @@ namespace Comet.Game.States.BaseEntities
                 await user.KickbackAsync();
                 await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red); 
                 return false;
+            }
+
+            if (vigor > 0)
+            {
+                await AddAttributesAsync(ClientUpdateType.Vigor, vigor);
+                user.UpdateVigorTimer();
             }
 
             Map.EnterBlock(this, newX, newY, MapX, MapY);
@@ -390,7 +431,7 @@ namespace Comet.Game.States.BaseEntities
         public MagicData MagicData { get; }
 
         public async Task<bool> ProcessMagicAttackAsync(ushort usMagicType, uint idTarget, ushort x, ushort y,
-            byte ucAutoActive = 0)
+            uint ucAutoActive = 0)
         {
             return await MagicData.ProcessMagicAttackAsync(usMagicType, idTarget, x, y, ucAutoActive);
         }

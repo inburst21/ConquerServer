@@ -27,7 +27,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
@@ -39,7 +38,6 @@ using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Microsoft.VisualStudio.Threading;
 
 #endregion
 
@@ -51,6 +49,8 @@ namespace Comet.Game.World.Maps
 
         public static readonly sbyte[] WalkXCoords = {0, -1, -1, -1, 0, 1, 1, 1, 0};
         public static readonly sbyte[] WalkYCoords = {1, 1, 0, -1, -1, -1, 0, 1, 0};
+        public static readonly sbyte[] RideXCoords = { 0, -2, -2, -2, 0, 2, 2, 2, 1, 0, -2, 0, 1, 0, 2, 0, 0, -2, 0, -1, 0, 2, 0, 1, 0 };
+        public static readonly sbyte[] RideYCoords = { 2, 2, 0, -2, -2, -2, 0, 2, 2, 0, -1, 0, -2, 0, 1, 0, 0, 1, 0, -2, 0, -1, 0, 2, 0 };
 
         private readonly DbMap m_dbMap;
         private readonly DbDynamap m_dbDynamap;

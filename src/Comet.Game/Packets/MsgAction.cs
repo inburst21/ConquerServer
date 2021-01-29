@@ -623,6 +623,7 @@ namespace Comet.Game.Packets
             RelationshipsFriend = 148,
             CharacterAvatar = 151,
             QueryTradeBuddy = 143,
+            NinjaStep = 156,
             Away = 161,
             //SetGhost = 145,
             FriendObservation = 310,

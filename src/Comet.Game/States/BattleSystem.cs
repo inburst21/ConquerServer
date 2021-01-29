@@ -97,7 +97,11 @@ namespace Comet.Game.States
                 return false;
             }
 
-            var result = await CalcPowerAsync(MagicType.None, m_owner, target);
+            int adjustAtk = 0;
+            if (m_owner.QueryStatus(StatusSet.FATAL_STRIKE) != null)
+                adjustAtk = m_owner.QueryStatus(StatusSet.FATAL_STRIKE).Power;
+
+            var result = await CalcPowerAsync(MagicType.None, m_owner, target, adjustAtk);
             InteractionEffect effect = result.effect;
             int damage = result.Damage;
 
@@ -124,6 +128,32 @@ namespace Comet.Game.States
 
             if (user != null)
                 await user.CheckCrimeAsync(target);
+
+            if (target is Monster targetMob 
+                && m_owner.QueryStatus(StatusSet.FATAL_STRIKE) != null
+                && !targetMob.IsGuard())
+            {
+                await m_owner.JumpPosAsync(target.MapX, target.MapY);
+
+                var ninjaStepMsg = new MsgAction
+                {
+                    Identity = m_owner.Identity,
+                    Action = MsgAction.ActionType.NinjaStep,
+                    Data = target.Identity,
+                    X = target.MapX,
+                    Y = target.MapY
+                };
+
+                if (user != null)
+                {
+                    await user.SendAsync(ninjaStepMsg);
+                    await user.Screen.UpdateAsync(ninjaStepMsg);
+                }
+                else
+                {
+                    await m_owner.Map.BroadcastRoomMsgAsync(m_owner.MapX, m_owner.MapY, ninjaStepMsg);
+                }
+            }
 
             DynamicNpc npc = target as DynamicNpc;
             if (npc?.IsAwardScore() == true && user != null)
@@ -234,7 +264,7 @@ namespace Comet.Game.States
             if (target.QueryStatus(StatusSet.SHIELD) != null)
                 defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
 
-            damage = attack - defense;
+            damage = Math.Max(1, attack - defense);
             if (targetUser != null)
             {
                 damage = (int) (damage * (1 - targetUser.Blessing / 100d));
@@ -354,6 +384,9 @@ namespace Comet.Game.States
             const int MAX_HITRATE = 99;
 
             if (attacker == null || target == null || attacker.Identity == target.Identity)
+                return true;
+
+            if (attacker.QueryStatus(StatusSet.FATAL_STRIKE) != null && target is Monster tgtMob && !tgtMob.IsGuard())
                 return false;
 
             int hitRate = attacker.Accuracy;
@@ -411,8 +444,16 @@ namespace Comet.Game.States
             if (target.IsWing && !m_owner.IsWing && !m_owner.IsBowman)
                 return false;
 
-            if (m_owner.GetDistance(target) > m_owner.GetAttackRange(target.SizeAddition))
-                return false;
+            if (m_owner.QueryStatus(StatusSet.FATAL_STRIKE) != null)
+            {
+                if (m_owner.GetDistance(target) > Screen.VIEW_SIZE)
+                    return false;
+            }
+            else
+            {
+                if (m_owner.GetDistance(target) > m_owner.GetAttackRange(target.SizeAddition))
+                    return false;
+            }
 
             if (!target.IsAttackable(m_owner))
                 return false;

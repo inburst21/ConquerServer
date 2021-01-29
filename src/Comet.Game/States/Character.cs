@@ -73,6 +73,7 @@ namespace Comet.Game.States
         private TimeOut m_luckyAbsorbStart = new TimeOut(2);
         private TimeOut m_luckyStep = new TimeOut(1);
         private TimeOut m_tWorldChat = new TimeOut();
+        private TimeOutMS m_tVigor = new TimeOutMS(1500);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -389,7 +390,7 @@ namespace Comet.Game.States
                 result += (uint)((Strength + Agility + Spirit) * 3);
 
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
-                    pos < Item.ItemPosition.EquipmentEnd;
+                    pos <= Item.ItemPosition.EquipmentEnd;
                     pos++)
                 {
                     result += (uint)(UserPackage[pos]?.Life ?? 0);
@@ -432,7 +433,7 @@ namespace Comet.Game.States
                 }
 
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
-                    pos < Item.ItemPosition.EquipmentEnd;
+                    pos <= Item.ItemPosition.EquipmentEnd;
                     pos++)
                 {
                     result += (uint)(UserPackage[pos]?.Mana ?? 0);
@@ -2182,11 +2183,20 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (GetDistance(target) > GetAttackRange(target.SizeAddition))
+            if (QueryStatus(StatusSet.FATAL_STRIKE) != null)
             {
-                BattleSystem.ResetBattle();
-                return false;
+                if (GetDistance(target) > Screen.VIEW_SIZE)
+                    return false;
             }
+            else
+            {
+                if (GetDistance(target) > GetAttackRange(target.SizeAddition))
+                {
+                    BattleSystem.ResetBattle();
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -4262,6 +4272,17 @@ namespace Comet.Game.States
                     await CheckPkStatusAsync();
                     break;
 
+                case ClientUpdateType.Vigor:
+                {
+                    Vigor = Math.Max(0, Math.Min(MaxVigor, (int) value + Vigor));
+                    await SendAsync(new MsgData
+                    {
+                        Action = MsgData.DataAction.SetMountMovePoint,
+                        Year = Vigor
+                    });
+                    return true;
+                }
+
                 default:
                     bool result = await base.AddAttributesAsync(type, value);
                     return result && await SaveAsync();
@@ -4336,6 +4357,17 @@ namespace Comet.Game.States
                 case ClientUpdateType.Reborn:
                     Metempsychosis = (byte) value;
                     break;
+
+                case ClientUpdateType.Vigor:
+                {
+                    Vigor = Math.Max(0, Math.Min(MaxVigor, (int)value));
+                    await SendAsync(new MsgData
+                    {
+                        Action = MsgData.DataAction.SetMountMovePoint,
+                        Year = Vigor
+                    });
+                    return true;
+                }
 
                 default:
                     bool result = await base.SetAttributesAsync(type, value);
@@ -4613,6 +4645,19 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Vigor
+
+        public int Vigor { get; set; } = 0;
+
+        public int MaxVigor => QueryStatus(StatusSet.RIDING) != null ? UserPackage[Item.ItemPosition.Steed]?.Vigor ?? 0 : 0;
+
+        public void UpdateVigorTimer()
+        {
+            m_tVigor.Update();
+        }
+
+        #endregion
+
         #region Chat
 
         public bool CanUseWorldChat()
@@ -4647,15 +4692,14 @@ namespace Comet.Game.States
             if (Connection != ConnectionStage.Ready)
                 return;
 
-            Character instance = Kernel.RoleManager.GetUser(Identity);
-            if (instance == null || !instance.Client.GUID.Equals(Client.GUID))
-            {
-                Client.Disconnect();
-                return;
-            }
-
             try
             {
+                if (MessageBox != null)
+                    await MessageBox.OnTimerAsync();
+
+                if (MessageBox != null && MessageBox.HasExpired)
+                    MessageBox = null;
+
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
                 {
                     if (MapIdentity == 6001)
@@ -4779,11 +4823,10 @@ namespace Comet.Game.States
                     });
                 }
 
-                if (MessageBox != null)
-                    await MessageBox.OnTimerAsync();
-
-                if (MessageBox != null && MessageBox.HasExpired)
-                    MessageBox = null;
+                if (m_tVigor.ToNextTime() && QueryStatus(StatusSet.RIDING) != null && Vigor < MaxVigor)
+                {
+                    await AddAttributesAsync(ClientUpdateType.Vigor, (long) Math.Max(10, Math.Min(200, MaxVigor * 0.005)));
+                }
 
                 if (!IsAlive)
                     return;

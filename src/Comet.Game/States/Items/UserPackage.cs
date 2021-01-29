@@ -192,7 +192,7 @@ namespace Comet.Game.States.Items
                 if (!await SpendItemAsync(item))
                     return false;
 
-                if (item.Life > 0)
+                if (item.Life > 0 && m_user.QueryStatus(StatusSet.POISON_STAR) == null)
                     m_user.QueueAction(() => m_user.AddAttributesAsync(ClientUpdateType.Hitpoints, item.Life));
                 if (item.Mana > 0)
                     m_user.QueueAction(() => m_user.AddAttributesAsync(ClientUpdateType.Mana, item.Mana));

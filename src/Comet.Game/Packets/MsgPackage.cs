@@ -69,6 +69,7 @@ namespace Comet.Game.Packets
             public Item.ItemColor Color;
             public uint SocketProgress;
             public uint CompositionProgress;
+            public int Inscribed;
         }
 
         public MsgPackage()
@@ -124,8 +125,9 @@ namespace Comet.Game.Packets
                     writer.Write((byte)0); // 21
                     writer.Write(item.Locked); // 22
                     writer.Write((byte)item.Color); // 23
-                    //writer.Write(item.SocketProgress); // 24
-                    //writer.Write(item.CompositionProgress); // 28
+                    writer.Write(item.SocketProgress); // 24
+                    writer.Write(item.CompositionProgress); // 28
+                    writer.Write(item.Inscribed);
                 }
             }
             else
@@ -227,7 +229,8 @@ namespace Comet.Game.Packets
                         Suspicious = false,
                         CompositionProgress = item.CompositionProgress,
                         SocketProgress = item.SocketProgress,
-                        Bound = item.IsBound
+                        Bound = item.IsBound,
+                        Inscribed = item.SyndicateIdentity != 0 ? 1 : 0
                     });
                 }
 

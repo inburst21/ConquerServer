@@ -276,6 +276,7 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case MsgInteractType.InitialMerchant:
                 case MsgInteractType.AcceptMerchant:
                 {
                     // ON ACCEPT: Sender = 1 Target = 1
