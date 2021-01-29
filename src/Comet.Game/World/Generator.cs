@@ -178,12 +178,6 @@ namespace Comet.Game.World
                     await monster.EnterMapAsync();
                 }
             }
-
-            foreach (var monster in m_dicMonsters.Values)
-            {
-                if (!monster.IsAlive && monster.CanLeaveMap())
-                    await monster.LeaveMapAsync();
-            }
         }
 
         public bool Add(Monster monster)

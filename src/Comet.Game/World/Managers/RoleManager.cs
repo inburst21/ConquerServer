@@ -276,13 +276,23 @@ namespace Comet.Game.World.Managers
                 await trap.OnTimerAsync();
             }
         }
+
+        public async Task OnAiTimerAsync()
+        {
+            foreach (var ai in m_roleSet.Values.Where(x => x is IRoleAi))
+            {
+                var roleAi = (IRoleAi) ai;
+                if (roleAi.IsActive)
+                    await ai.OnTimerAsync();
+            }
+        }
         
         public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
             Color? color = null)
         {
             foreach (var user in m_userSet.Values)
             {
-                await user.SendAsync(message, channel, color);
+                _ = user.SendAsync(message, channel, color).ConfigureAwait(false);
             }
         }
 
@@ -291,7 +301,7 @@ namespace Comet.Game.World.Managers
             foreach (var user in m_userSet.Values)
             {
                 if (user.Identity == ignore) continue;
-                await user.SendAsync(msg);
+                _ = user.SendAsync(msg).ConfigureAwait(false);
             }
         }
 

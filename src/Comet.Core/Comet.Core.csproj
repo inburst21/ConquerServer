@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2021.0129.15</AssemblyVersion>
-    <FileVersion>1.2021.0129.61</FileVersion>
+    <FileVersion>1.2021.0129.62</FileVersion>
     <Configurations>Debug;Release;Debug Windows (x64)</Configurations>
   </PropertyGroup>
 

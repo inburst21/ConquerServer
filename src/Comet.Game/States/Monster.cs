@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Core.Mathematics;
@@ -42,7 +43,7 @@ using Comet.Shared;
 
 namespace Comet.Game.States
 {
-    public class Monster : Role
+    public class Monster : Role, IRoleAi
     {
         private readonly Generator m_generator;
         private readonly DbMonstertype m_dbMonster;
@@ -1066,6 +1067,16 @@ namespace Comet.Game.States
 
         #region AI
 
+        private int m_playersOnSight;
+
+        public int PlayerOnSight
+        {
+            get => m_playersOnSight;
+            set => Interlocked.Exchange(ref m_playersOnSight, value);
+        }
+
+        public bool IsActive => IsGuard() || PlayerOnSight > 0 || StatusSet.Status.Count > 0;
+
         public bool IsCloseAttack()
         {
             return !IsBowman;
@@ -1482,7 +1493,11 @@ namespace Comet.Game.States
             }
 
             if (m_leaveMap.IsActive())
+            {
+                if (CanLeaveMap())
+                    await LeaveMapAsync();
                 return;
+            }
 
             if (m_tStatusCheck.ToNextTime())
             {

@@ -32,7 +32,7 @@ namespace Comet.Game.World.Threading
     public sealed class AiProcessor : TimerBase
     {
         public AiProcessor() 
-            : base(300, "Ai Thread")
+            : base(500, "Ai Thread")
         {
         }
 
@@ -43,11 +43,9 @@ namespace Comet.Game.World.Threading
             try
             {
                 ProcessedMonsters = 0;
+                //await Kernel.RoleManager.OnAiTimerAsync();
                 foreach (var map in Kernel.MapManager.GameMaps.Values)
-                {
                     ProcessedMonsters += await map.OnTimerAsync();
-                }
-
                 await Kernel.RoleManager.OnRoleTimerAsync();
             }
             catch (Exception ex)

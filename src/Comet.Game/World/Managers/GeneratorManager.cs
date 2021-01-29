@@ -84,6 +84,8 @@ namespace Comet.Game.World.Managers
             }
             sw.Stop();
             m_Timeouts[partition] = sw.ElapsedMilliseconds;
+
+            await Task.Delay(1000);
         }
 
         public async Task<bool> AddGeneratorAsync(Generator generator)

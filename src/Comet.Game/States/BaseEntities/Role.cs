@@ -985,6 +985,11 @@ namespace Comet.Game.States.BaseEntities
         #endregion
     }
 
+    public interface IRoleAi
+    {
+        bool IsActive { get; }
+    }
+
     public enum FacingDirection : byte
     {
         Begin = SouthEast,

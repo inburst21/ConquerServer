@@ -754,7 +754,7 @@ namespace Comet.Game.World.Maps
 
         #region Ai Timer
 
-        public async Task<int> OnTimerAsync()
+        /*public async Task<int> OnTimerAsync()
         {
             await Weather.OnTimerAsync();
 
@@ -781,6 +781,26 @@ namespace Comet.Game.World.Maps
             {
                 await role.OnTimerAsync();
                 result++;
+            }
+            return result;
+        }*/
+
+        public async Task<int> OnTimerAsync()
+        {
+            await Weather.OnTimerAsync();
+
+            if (m_users.Count == 0)
+                return 0;
+
+            int result = 0;
+            foreach (var ai in m_roles.Values.Where(x => x is IRoleAi))
+            {
+                var roleAi = (IRoleAi)ai;
+                if (roleAi.IsActive)
+                {
+                    await ai.OnTimerAsync();
+                    result++;
+                }
             }
             return result;
         }
