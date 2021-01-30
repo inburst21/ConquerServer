@@ -23,9 +23,12 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Game.States.Events;
 using Comet.Shared;
 
 #endregion
@@ -38,6 +41,8 @@ namespace Comet.Game.World.Threading
         private const int _ACTION_SYSTEM_EVENT_LIMIT = 9999;
 
         private readonly ConcurrentDictionary<uint, DbAction> m_dicActions;
+
+        private bool m_dailyReset = false;
 
         public AutomaticActionsProcessing() 
             : base(60000, "AutomaticActionsProcessing")
@@ -72,8 +77,63 @@ namespace Comet.Game.World.Threading
                 }
             }
 
+            if (DateTime.Now.Hour == 0 && DateTime.Now.Minute == 0 && !m_dailyReset)
+            {
+                _ = Task.Run(DailyResetAsync).ConfigureAwait(false);
+            }
+
             m_interval = CalculateInterval();
             return true;
+        }
+
+        private async Task DailyResetAsync()
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            uint today = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
+            var users = await DbCharacter.GetDailyResetAsync();
+            for (int i = users.Count - 1; i >= 0; i--)
+            {
+                try
+                {
+                    DbCharacter dbUser = users[i];
+                    Character user = Kernel.RoleManager.GetUser(dbUser.Identity);
+                    if (user != null)
+                    {
+                        // arena
+                        user.QualifierPoints = ArenaQualifier.GetInitialPoints(user.Level);
+                        user.QualifierDayWins = 0;
+                        user.QualifierDayLoses = 0;
+
+                        user.DayResetDate = today;
+
+                        users.RemoveAt(i);
+                    }
+                    else
+                    {
+                        // arena
+                        dbUser.AthletePoint = ArenaQualifier.GetInitialPoints(dbUser.Level);
+                        dbUser.AthleteDayWins = 0;
+                        dbUser.AthleteDayLoses = 0;
+
+                        dbUser.DayResetDate = today;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await Log.GmLog("daily_reset_err", ex.ToString());
+                }
+            }
+            await BaseRepository.SaveAsync(users);
+
+            await Kernel.FlowerManager.DailyResetAsync();
+
+            sw.Stop();
+            await BaseRepository.ScalarAsync($"INSERT INTO `daily_reset` (run_time, ms) VALUES (NOW(), {sw.ElapsedMilliseconds});");
+            await Log.WriteLogAsync(LogLevel.Message, $"Daily reset has run in {sw.ElapsedMilliseconds}ms.");
+
+            m_dailyReset = true;
         }
 
         private int CalculateInterval()

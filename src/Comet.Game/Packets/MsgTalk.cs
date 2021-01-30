@@ -599,6 +599,18 @@ namespace Comet.Game.Packets
                         });
                         return true;
                     }
+
+                    case "/msgqualifierinteractive":
+                    {
+                        int opt = int.Parse(param);
+                        MsgQualifyingInteractive msg = new MsgQualifyingInteractive
+                        {
+                            Interaction = MsgQualifyingInteractive.InteractionType.Dialog,
+                            Option = opt
+                        };
+                        await user.SendAsync(msg);
+                        return true;
+                    }
                 }
             }
 
@@ -917,6 +929,7 @@ namespace Comet.Game.Packets
             Service,
             Tip,
             World = 2021,
+            Qualifier = 2022,
             Register = 2100,
             Login,
             Shop,

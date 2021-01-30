@@ -161,7 +161,7 @@ namespace Comet.Game.World.Maps
 
         public ulong Flag { get; set; }
         public int PlayerCount => m_users.Count;
-
+        
         public async Task<bool> InitializeAsync()
         {
             if (m_dbMap == null && m_dbDynamap == null) return false;
@@ -674,7 +674,7 @@ namespace Comet.Game.World.Maps
 
         public bool GetRebornMap(ref uint idMap, ref Point target)
         {
-            idMap = m_dbMap.RebornMap;
+            idMap = m_dbMap?.RebornMap ?? m_dbDynamap.RebornMap;
             GameMap targetMap = Kernel.MapManager.GetMap(idMap);
             if (targetMap == null)
             {

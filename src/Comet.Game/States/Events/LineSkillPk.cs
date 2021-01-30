@@ -117,7 +117,7 @@ namespace Comet.Game.States.Events
             return Task.CompletedTask;
         }
 
-        public override Task OnBeAttackAsync(Role attacker, Role target, Magic magic = null)
+        public override Task OnBeAttackAsync(Role attacker, Role target, int damage, Magic magic)
         {
             if (!attacker.IsPlayer())
                 return Task.CompletedTask;
@@ -146,13 +146,7 @@ namespace Comet.Game.States.Events
             if (sender.UserPackage[Item.ItemPosition.LeftHand]?.IsShield() == true)
                 await sender.UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
 
-            sender.PkMode = PkModeType.FreePk;
-            await sender.SendAsync(new MsgAction
-            {
-                Identity = sender.Identity,
-                Action = MsgAction.ActionType.CharacterPkMode,
-                Command = (uint) sender.PkMode
-            });
+            await sender.SetPkModeAsync(PkModeType.FreePk);
 
             if (sender.SyndicateIdentity != 0)
             {
@@ -164,6 +158,11 @@ namespace Comet.Game.States.Events
             }
 
             _ = Log.GmLog("xianjinengbisai", $"Enter\t{sender.Identity},{sender.Name},{sender.Client.IPAddress}");
+        }
+
+        public override Task OnExitAsync(Character sender)
+        {
+            return sender.SetPkModeAsync(); // set to capture
         }
 
         public override async Task OnTimerAsync()

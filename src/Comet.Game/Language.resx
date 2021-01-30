@@ -129,6 +129,12 @@
   <data name="StrAnotherLoginSameIp" xml:space="preserve">
     <value>Atention! Your account is trying to login from inside of your network!</value>
   </data>
+  <data name="StrArenicMatchDraw" xml:space="preserve">
+    <value>{0} and {1} has both lost the Qualifier match on a Draw.</value>
+  </data>
+  <data name="StrArenicMatchEnd" xml:space="preserve">
+    <value>{0} has defeaded {1} in the Qualifier and is currently ranked No. {2}.</value>
+  </data>
   <data name="StrAwardVirtue" xml:space="preserve">
     <value>{0} has earned {1} virtue points for helping newbies.</value>
   </data>
@@ -236,6 +242,9 @@
   </data>
   <data name="StrEquipLockNotLocked" xml:space="preserve">
     <value>This equipment is not locked.</value>
+  </data>
+  <data name="StrEventCannotEnterTwoEvents" xml:space="preserve">
+    <value>You cannot enter on another event before leave the current one.</value>
   </data>
   <data name="StrExpPotionInUse" xml:space="preserve">
     <value>You are already using an EXP Potion with better power than this. Wait for the old one to finish.</value>

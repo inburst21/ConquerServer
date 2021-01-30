@@ -97,6 +97,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} and {1} has both lost the Qualifier match on a Draw..
+        /// </summary>
+        public static string StrArenicMatchDraw {
+            get {
+                return ResourceManager.GetString("StrArenicMatchDraw", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has defeaded {1} in the Qualifier and is currently ranked No. {2}..
+        /// </summary>
+        public static string StrArenicMatchEnd {
+            get {
+                return ResourceManager.GetString("StrArenicMatchEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has earned {1} virtue points for helping newbies..
         /// </summary>
         public static string StrAwardVirtue {
@@ -417,6 +435,15 @@ namespace Comet.Game {
         public static string StrEquipLockNotLocked {
             get {
                 return ResourceManager.GetString("StrEquipLockNotLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You cannot enter on another event before leave the current one..
+        /// </summary>
+        public static string StrEventCannotEnterTwoEvents {
+            get {
+                return ResourceManager.GetString("StrEventCannotEnterTwoEvents", resourceCulture);
             }
         }
         

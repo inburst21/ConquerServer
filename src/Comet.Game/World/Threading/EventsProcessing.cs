@@ -87,6 +87,7 @@ namespace Comet.Game.World.Threading
         {
             await RegisterEventAsync(new TimedGuildWar());
             await RegisterEventAsync(new LineSkillPk());
+            await RegisterEventAsync(new ArenaQualifier());
 
             await base.OnStartAsync();
         }

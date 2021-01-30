@@ -68,6 +68,7 @@ namespace Comet.Game
         public static SyndicateManager SyndicateManager = new SyndicateManager();
         public static MineManager MineManager = new MineManager();
         public static PigeonManager PigeonManager = new PigeonManager();
+        public static FlowerManager FlowerManager = new FlowerManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -120,6 +121,7 @@ namespace Comet.Game
             await EventManager.InitializeAsync();
             await MineManager.InitializeAsync();
             await PigeonManager.InitializeAsync();
+            await FlowerManager.InitializeAsync();
 
             await GeneratorManager.InitializeAsync();
 

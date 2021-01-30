@@ -252,24 +252,24 @@ namespace Comet.Game.Packets
                         await user.UserPackage.SpendItemAsync(flower);
                     }
 
-                    target.FlowersToday ??= new DbFlower{ UserIdentity = target.Identity };
+                    var flowersToday = Kernel.FlowerManager.QueryFlowers(user.Identity);
                     switch (type)
                     {
                         case FlowerType.RedRose:
                             target.FlowerRed += amount;
-                            target.FlowersToday.RedRose += amount;
+                            flowersToday.RedRose += amount;
                             break;
                         case FlowerType.WhiteRose:
                             target.FlowerWhite += amount;
-                            target.FlowersToday.WhiteRose += amount;
+                            flowersToday.WhiteRose += amount;
                                 break;
                         case FlowerType.Orchid:
                             target.FlowerOrchid += amount;
-                            target.FlowersToday.Orchids += amount;
+                            flowersToday.Orchids += amount;
                             break;
                         case FlowerType.Tulip:
                             target.FlowerTulip += amount;
-                            target.FlowersToday.Tulips += amount;
+                            flowersToday.Tulips += amount;
                             break;
                     }
 
@@ -293,15 +293,7 @@ namespace Comet.Game.Packets
                         SendFlowerEffect = effect
                     }, true);
                     
-                    //await target.SendAsync(new MsgFlower
-                    //{
-                    //    SenderName = user.Name,
-                    //    ReceiverName = target.Name,
-                    //    SendAmount = amount,
-                    //    SendFlowerType = type
-                    //});
-
-                    await BaseRepository.SaveAsync(target.FlowersToday);
+                    await BaseRepository.SaveAsync(flowersToday);
                     break;
                 }
                 default:

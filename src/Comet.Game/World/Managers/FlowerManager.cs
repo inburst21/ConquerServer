@@ -19,51 +19,94 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#region References
+
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+
+#endregion
 
 namespace Comet.Game.World.Managers
 {
-    public static class FlowerManager
+    public class FlowerManager
     {
-        public static async Task<List<FlowerRankingStruct>> GetFlowerRankingAsync(MsgFlower.FlowerType type, int from = 0, int limit = 10)
+        private ConcurrentDictionary<uint, DbFlower> m_dicFlowers = new ConcurrentDictionary<uint, DbFlower>();
+
+        public async Task<bool> InitializeAsync()
         {
-            DataTable query = await BaseRepository.SelectAsync($"CALL QueryFlowerRanking({(int) type},{limit},{from})");
-            List<FlowerRankingStruct> result = new List<FlowerRankingStruct>();
+            m_dicFlowers = new ConcurrentDictionary<uint, DbFlower>((await DbFlower.GetAsync()).ToDictionary(x => x.UserId));
+            return true;
+        }
 
-            foreach (DataRow row in query.Rows)
+        public List<FlowerRankingStruct> GetFlowerRankingAsync(MsgFlower.FlowerType type, int from = 0, int limit = 10)
+        {
+            int position = 1;
+            switch (type)
             {
-                var item = new FlowerRankingStruct
-                {
-                    Identity = uint.Parse(row["id"]?.ToString() ?? "0"),
-                    Name = row["name"].ToString(),
-                    Profession = ushort.Parse(row["profession"]?.ToString() ?? "0"),
+                case MsgFlower.FlowerType.RedRose:
+                    return m_dicFlowers.Values.Where(x => x.RedRose > 0).OrderByDescending(x => x.RedRose).Skip(from)
+                        .Take(limit).Select(x => new FlowerRankingStruct
+                        {
+                            Identity = x.UserId,
+                            Name = x.User.Name,
+                            Profession = x.User.Profession,
+                            Value = x.RedRose,
+                            Position = position++
+                        }).ToList();
 
-                };
+                case MsgFlower.FlowerType.WhiteRose:
+                    return m_dicFlowers.Values.Where(x => x.WhiteRose > 0).OrderByDescending(x => x.WhiteRose)
+                        .Skip(from).Take(limit).Select(x => new FlowerRankingStruct
+                        {
+                            Identity = x.UserId,
+                            Name = x.User.Name,
+                            Profession = x.User.Profession,
+                            Value = x.WhiteRose,
+                            Position = position++
+                        }).ToList();
 
-                switch (type)
-                {
-                    case MsgFlower.FlowerType.RedRose:
-                        item.Value = uint.Parse(row["rose"]?.ToString() ?? "0");
-                        break;
-                    case MsgFlower.FlowerType.WhiteRose:
-                        item.Value = uint.Parse(row["lily"]?.ToString() ?? "0");
-                        break;
-                    case MsgFlower.FlowerType.Orchid:
-                        item.Value = uint.Parse(row["orchid"]?.ToString() ?? "0");
-                        break;
-                    case MsgFlower.FlowerType.Tulip:
-                        item.Value = uint.Parse(row["tulip"]?.ToString() ?? "0");
-                        break;
-                }
+                case MsgFlower.FlowerType.Orchid:
+                    return m_dicFlowers.Values.Where(x => x.Orchids > 0).OrderByDescending(x => x.Orchids).Skip(from)
+                        .Take(limit).Select(x => new FlowerRankingStruct
+                        {
+                            Identity = x.UserId,
+                            Name = x.User.Name,
+                            Profession = x.User.Profession,
+                            Value = x.Orchids,
+                            Position = position++
+                        }).ToList();
 
-                result.Add(item);
+                case MsgFlower.FlowerType.Tulip:
+                    return m_dicFlowers.Values.Where(x => x.Tulips > 0).OrderByDescending(x => x.Tulips).Skip(from)
+                        .Take(limit).Select(x => new FlowerRankingStruct
+                        {
+                            Identity = x.UserId,
+                            Name = x.User.Name,
+                            Profession = x.User.Profession,
+                            Value = x.Tulips,
+                            Position = position++
+                        }).ToList();
             }
 
-            return result;
+            return new List<FlowerRankingStruct>();
+        }
+
+        public DbFlower QueryFlowers(in uint userIdentity)
+        {
+            if (m_dicFlowers.TryGetValue(userIdentity, out var value))
+                return value;
+            return m_dicFlowers.TryAdd(userIdentity, value = new DbFlower {UserId = userIdentity}) ? value : null;
+        }
+
+        public async Task DailyResetAsync()
+        {
+            await BaseRepository.DeleteAsync(m_dicFlowers.Values.ToList());
+            m_dicFlowers.Clear();
         }
 
         public struct FlowerRankingStruct

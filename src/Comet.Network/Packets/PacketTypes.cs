@@ -108,6 +108,7 @@ namespace Comet.Network.Packets
         MsgQualifyingRank = 2207,
         MsgQualifyingSeasonRankList = 2208,
         MsgQualifyingDetailInfo = 2209,
+        MsgArenicScore = 2210,
 
         MsgWalk = 10005,
         MsgAction = 10010,

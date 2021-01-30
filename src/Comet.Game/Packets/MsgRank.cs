@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
@@ -102,24 +103,25 @@ namespace Comet.Game.Packets
                     if (user.Gender != 2)
                         return;
 
+                    DbFlower flowerToday = Kernel.FlowerManager.QueryFlowers(user.Identity);
                     await user.SendAsync(new MsgFlower
                     {
                         Mode = MsgFlower.RequestMode.QueryIcon,
                         Identity =  user.Identity,
                         RedRoses = user.FlowerRed,
-                        RedRosesToday = user.FlowersToday.RedRose,
+                        RedRosesToday = flowerToday?.RedRose ?? 0,
                         WhiteRoses = user.FlowerWhite,
-                        WhiteRosesToday = user.FlowersToday.WhiteRose,
+                        WhiteRosesToday = flowerToday?.WhiteRose ?? 0,
                         Orchids = user.FlowerOrchid,
-                        OrchidsToday = user.FlowersToday.Orchids,
+                        OrchidsToday = flowerToday?.Orchids ?? 0,
                         Tulips = user.FlowerTulip,
-                        TulipsToday = user.FlowersToday.Tulips
+                        TulipsToday = flowerToday?.Tulips ?? 0
                     });
 
-                    var roseRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
-                    var lilyRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
-                    var orchidRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
-                    var tulipRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
+                    var roseRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
+                    var lilyRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
+                    var orchidRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
+                    var tulipRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
 
                     int myRose = roseRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
                     int myLily = lilyRank.FirstOrDefault(x => x.Identity == user.Identity).Position;

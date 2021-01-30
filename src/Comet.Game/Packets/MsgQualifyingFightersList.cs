@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.States.Events;
 using Comet.Network.Packets;
 
 #endregion
@@ -59,7 +60,7 @@ namespace Comet.Game.Packets
             writer.Write((ushort)PacketType.MsgQualifyingFightersList);
             writer.Write(Page);
             writer.Write(Unknown8);
-            writer.Write(MatchesCount);
+            writer.Write(MatchesCount = Fights.Count);
             writer.Write(FightersNum);
             writer.Write(Unknown20);
             writer.Write(Count = Fights.Count);
@@ -96,42 +97,58 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
-            MatchesCount = 1;
-            FightersNum = 2;
-            Fights.Add(new FightStruct
+            await client.SendAsync(CreateMsg(Page));
+        }
+
+        public static MsgQualifyingFightersList CreateMsg(int page = 0)
+        {
+            var qualifier = Kernel.EventThread.GetEvent<ArenaQualifier>();
+            var fights = qualifier?.QueryMatches(page * 6, 6);
+            if (fights == null)
+                return null;
+
+            MsgQualifyingFightersList msg = new MsgQualifyingFightersList
             {
-                Fighter0 = new FighterInfoStruct
+                Page = page,
+                FightersNum = qualifier.PlayersOnQueue
+            };
+
+            foreach (var fight in fights)
+            {
+                msg.Fights.Add(new FightStruct
                 {
-                    Identity = 1000506,
-                    Mesh = 2012001,
-                    Name = "Ninja",
-                    Rank = 1,
-                    Level = 6,
-                    Points = 4000,
-                    CurrentHonor = 5000,
-                    TotalHonor = 6000,
-                    WinsToday = 10,
-                    LossToday = 9,
-                    Profession = 55,
-                    Unknown = 1
-                },
-                Fighter1 = new FighterInfoStruct
-                {
-                    Identity = 1000002,
-                    Mesh = 591003,
-                    Name = "Felipe[PM]",
-                    Rank = 2,
-                    Level = 140,
-                    Points = 8000,
-                    CurrentHonor = 5000,
-                    TotalHonor = 6000,
-                    WinsToday = 10,
-                    LossToday = 9,
-                    Profession = 55,
-                    Unknown = 1
-                }
-            });
-            await client.SendAsync(this);
+                    Fighter0 = new FighterInfoStruct
+                    {
+                        Identity = fight.Player1.Identity,
+                        Name = fight.Player1.Name,
+                        Rank = fight.Player1.QualifierRank,
+                        Level = fight.Player1.Level,
+                        Profession = fight.Player1.Profession,
+                        Points = (int)fight.Player1.QualifierPoints,
+                        CurrentHonor = (int)fight.Player1.HonorPoints,
+                        LossToday = (int)fight.Player1.QualifierDayLoses,
+                        WinsToday = (int)fight.Player1.QualifierDayWins,
+                        Mesh = fight.Player1.Mesh,
+                        TotalHonor = (int)fight.Player1.HistoryHonorPoints
+                    },
+                    Fighter1 = new FighterInfoStruct
+                    {
+                        Identity = fight.Player2.Identity,
+                        Name = fight.Player2.Name,
+                        Rank = fight.Player2.QualifierRank,
+                        Level = fight.Player2.Level,
+                        Profession = fight.Player2.Profession,
+                        Points = (int)fight.Player2.QualifierPoints,
+                        CurrentHonor = (int)fight.Player2.HonorPoints,
+                        LossToday = (int)fight.Player2.QualifierDayLoses,
+                        WinsToday = (int)fight.Player2.QualifierDayWins,
+                        Mesh = fight.Player2.Mesh,
+                        TotalHonor = (int)fight.Player2.HistoryHonorPoints
+                    }
+                });
+            }
+
+            return msg;
         }
 
         public struct FightStruct

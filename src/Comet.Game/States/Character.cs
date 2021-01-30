@@ -506,6 +506,8 @@ namespace Comet.Game.States
                 ArgumentX = MapX,
                 ArgumentY = MapY
             }, true);
+
+            await UplevelEventAsync();
             return true;
         }
 
@@ -676,47 +678,7 @@ namespace Comet.Game.States
                     Identity = Identity
                 });
 
-                if (Level > 3 && Metempsychosis == 0)
-                {
-                    bool burstXp = false;
-                    switch (ProfessionSort)
-                    {
-                        case 1:
-                            if (!MagicData.CheckType(1110))
-                            {
-                                await MagicData.CreateAsync(1110, 0);
-                                burstXp = true;
-                            }
-                            break;
-                        case 2:
-                            if (!MagicData.CheckType(1025))
-                            {
-                                await MagicData.CreateAsync(1025, 0);
-                                burstXp = true;
-                            }
-                            break;
-                        case 4:
-                            if (!MagicData.CheckType(8002))
-                            {
-                                await MagicData.CreateAsync(8002, 0);
-                                burstXp = true;
-                            }
-                            break;
-                        case 10:
-                            if (!MagicData.CheckType(1010))
-                            {
-                                await MagicData.CreateAsync(1010, 0);
-                                burstXp = true;
-                            }
-                            break;
-                    }
-
-                    if (burstXp)
-                    {
-                        await SetXp(100);
-                        await BurstXp();
-                    }
-                }
+                await UplevelEventAsync();
             }
 
             if (Team != null && !Team.IsLeader(Identity) && virtue > 0)
@@ -736,6 +698,51 @@ namespace Comet.Game.States
             Experience = (ulong)amount;
             await SetAttributesAsync(ClientUpdateType.Experience, Experience);
             return true;
+        }
+
+        public async Task UplevelEventAsync()
+        {
+            if (Level > 3 && Metempsychosis == 0)
+            {
+                bool burstXp = false;
+                switch (ProfessionSort)
+                {
+                    case 1:
+                        if (!MagicData.CheckType(1110))
+                        {
+                            await MagicData.CreateAsync(1110, 0);
+                            burstXp = true;
+                        }
+                        break;
+                    case 2:
+                        if (!MagicData.CheckType(1025))
+                        {
+                            await MagicData.CreateAsync(1025, 0);
+                            burstXp = true;
+                        }
+                        break;
+                    case 4:
+                        if (!MagicData.CheckType(8002))
+                        {
+                            await MagicData.CreateAsync(8002, 0);
+                            burstXp = true;
+                        }
+                        break;
+                    case 10:
+                        if (!MagicData.CheckType(1010))
+                        {
+                            await MagicData.CreateAsync(1010, 0);
+                            burstXp = true;
+                        }
+                        break;
+                }
+
+                if (burstXp)
+                {
+                    await SetXp(100);
+                    await BurstXp();
+                }
+            }
         }
 
         public long CalculateExpBall(int amount = EXPBALL_AMOUNT)
@@ -992,6 +999,17 @@ namespace Comet.Game.States
         {
             get => m_dbObject?.KillPoints ?? 0;
             set => m_dbObject.KillPoints = value;
+        }
+
+        public Task SetPkModeAsync(PkModeType mode = PkModeType.Capture)
+        {
+            PkMode = mode;
+            return SendAsync(new MsgAction
+            {
+                Identity = Identity,
+                Action = MsgAction.ActionType.CharacterPkMode,
+                Command = (uint) PkMode
+            });
         }
 
         public async Task ProcessPkAsync(Character target)
@@ -2197,6 +2215,9 @@ namespace Comet.Game.States
                 }
             }
 
+            if (CurrentEvent != null && !CurrentEvent.IsAttackEnable(this))
+                return false;
+
             return true;
         }
 
@@ -2410,6 +2431,7 @@ namespace Comet.Game.States
             if ((PreviousProfession == 25 || FirstProfession == 25) && bReflectEnable && await Kernel.ChanceCalcAsync(5, 100))
             {
                 power = Math.Min(1700, power);
+                
                 await attacker.BeAttackAsync(magic, this, power, false);
                 await BroadcastRoomMsgAsync(new MsgInteract
                 {
@@ -2428,7 +2450,7 @@ namespace Comet.Game.States
             }
 
             if (CurrentEvent != null)
-                await CurrentEvent.OnBeAttackAsync(attacker, this);
+                await CurrentEvent.OnBeAttackAsync(attacker, this, (int) Math.Min(Life, power));
 
             if (power > 0)
             {
@@ -2471,6 +2493,16 @@ namespace Comet.Game.States
             await AttachStatusAsync(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
             m_ghost.Startup(4);
+
+            if (CurrentEvent is ArenaQualifier qualifier)
+            {
+                ArenaQualifier.QualifierMatch match = qualifier.FindMatchByMap(MapIdentity);
+                if (match != null)
+                {
+                    await match.FinishAsync(null, this);
+                    return;
+                }
+            }
 
             uint idMap = 0;
             Point posTarget = new Point();
@@ -3654,7 +3686,8 @@ namespace Comet.Game.States
 
         public async Task<bool> SignOutEventAsync()
         {
-            await CurrentEvent.OnExitAsync(this);
+            if (CurrentEvent != null)
+                await CurrentEvent.OnExitAsync(this);
 
             CurrentEvent = null;
             return true;
@@ -4640,9 +4673,7 @@ namespace Comet.Game.States
                     SyndicateMember.TulipDonation = value;
             }
         }
-
-        public DbFlower FlowersToday { get; set; }
-
+        
         #endregion
 
         #region Vigor
@@ -4672,7 +4703,67 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Arena Qualifier
+
+        public int QualifierRank => Kernel.EventThread.GetEvent<ArenaQualifier>()?.GetPlayerRanking(Identity) ?? 0;
+
+        public MsgQualifyingDetailInfo.ArenaStatus QualifierStatus { get; set; } = MsgQualifyingDetailInfo.ArenaStatus.NotSignedUp;
+
+        public uint QualifierPoints
+        {
+            get => m_dbObject.AthletePoint;
+            set => m_dbObject.AthletePoint = value;
+        }
+
+        public uint QualifierDayWins
+        {
+            get => m_dbObject.AthleteDayWins;
+            set => m_dbObject.AthleteDayWins = value;
+        }
+
+        public uint QualifierDayLoses
+        {
+            get => m_dbObject.AthleteDayLoses;
+            set => m_dbObject.AthleteDayLoses = value;
+        }
+
+        public uint QualifierDayGames => QualifierDayWins + QualifierDayLoses;
+
+        public uint QualifierHistoryWins
+        {
+            get => m_dbObject.AthleteHistoryWins;
+            set => m_dbObject.AthleteHistoryWins = value;
+        }
+
+        public uint QualifierHistoryLoses
+        {
+            get => m_dbObject.AthleteHistoryLoses;
+            set => m_dbObject.AthleteHistoryLoses = value;
+        }
+
+        public uint HonorPoints
+        {
+            get => m_dbObject.AthleteCurrentHonorPoints;
+            set => m_dbObject.AthleteCurrentHonorPoints = value;
+        }
+
+        public uint HistoryHonorPoints
+        {
+            get => m_dbObject.AthleteHistoryHonorPoints;
+            set => m_dbObject.AthleteHistoryHonorPoints = value;
+        }
+
+        public DbArenic DailyArenic { get; set; }
+
+        #endregion
+
         #region Timer
+
+        public uint DayResetDate
+        {
+            get => m_dbObject.DayResetDate;
+            set => m_dbObject.DayResetDate = value;
+        }
 
         public async Task OnBattleTimerAsync()
         {
@@ -4904,6 +4995,28 @@ namespace Comet.Game.States
 
             try
             {
+                if (CurrentEvent is ArenaQualifier qualifier)
+                {
+                    if (qualifier.IsInsideMatch(Identity))
+                    {
+                        var match = qualifier.FindMatchByMap(MapIdentity);
+                        if (match != null && match.IsRunning) // if not running probably opponent quit first?
+                            await match.FinishAsync(null, this, Identity);
+                    }
+                    else if (qualifier.FindInQueue(Identity) != null)
+                    {
+                        await qualifier.UnsubscribeAsync(Identity);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on leave qualifier disconnection");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
                 if (Booth != null)
                     await Booth.LeaveMapAsync();
             }
@@ -5009,9 +5122,6 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Error, "Error on save syndicate");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
-
-            if (FlowersToday != null)
-                await BaseRepository.SaveAsync(FlowersToday);
 
             if (!m_IsDeleted)
                 await SaveAsync();

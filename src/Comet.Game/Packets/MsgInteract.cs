@@ -121,8 +121,8 @@ namespace Comet.Game.Packets
 
                     if (SenderIdentity == client.Identity)
                     {
-                        client.Character.BattleSystem.CreateBattle(TargetIdentity);
-                        client.Character.SetAttackTarget(target);
+                        if (client.Character.SetAttackTarget(target))
+                            client.Character.BattleSystem.CreateBattle(TargetIdentity);
                     }
 
                     break;

@@ -108,6 +108,9 @@ namespace Comet.Game.States.Magics
             if (map.IsLineSkillMap() && magic.Sort != MagicSort.Line)
                 return (false, x, y);
 
+            if (user?.CurrentEvent != null && !user.CurrentEvent.IsAttackEnable(user) && magic.Sort != MagicSort.Attachstatus)
+                return (false, x, y);
+
             if (!map.IsTrainingMap() && user != null)
             {
                 if (user.Mana < magic.UseMana)

@@ -71,6 +71,8 @@ namespace Comet.Game.States.Events
         public virtual bool IsActive { get; } = false;
         public virtual bool IsEnded { get; } = false;
 
+        public virtual bool IsAttackEnable(Role sender) => true;
+
         public bool ToNextTime() => m_eventCheck.ToNextTime();
 
         public virtual bool IsAllowedToJoin(Role sender)
@@ -103,7 +105,7 @@ namespace Comet.Game.States.Events
             return Task.CompletedTask;
         }
 
-        public virtual Task OnBeAttackAsync(Role attacker, Role target, Magic magic = null)
+        public virtual Task OnBeAttackAsync(Role attacker, Role target, int damage = 0, Magic magic = null)
         {
             return Task.CompletedTask;
         }

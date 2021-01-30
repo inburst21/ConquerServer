@@ -29,6 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Comet.Shared;
 using ManagedLzma;
 using ManagedLzma.SevenZip.Reader;
@@ -67,7 +68,6 @@ namespace Comet.Game.World.Maps
 
         private readonly List<PassageData> m_passageData = new List<PassageData>();
         private Tile[,] m_cell;
-
         public GameMapData(uint idMapDoc)
         {
             m_idDoc = idMapDoc;

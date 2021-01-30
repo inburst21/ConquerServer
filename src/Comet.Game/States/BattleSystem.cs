@@ -461,9 +461,11 @@ namespace Comet.Game.States
             if (m_owner.Map.IsLineSkillMap())
                 return false;
 
-            if (m_owner.Map.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY) != false)
+            if (m_owner.Map.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY))
                 return false;
 
+            if (m_owner is Character atkUser && atkUser.CurrentEvent != null && !atkUser.CurrentEvent.IsAttackEnable(atkUser))
+                return false;
             return true;
         }
 

@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Network.Packets;
 
@@ -76,71 +77,43 @@ namespace Comet.Game.Packets
             {
                 case QueryRankType.QualifierRank:
                 {
-                    Players.Add(new PlayerDataStruct
+                    List<DbArenic> players = await DbArenic.GetRankAsync(PageNumber * 10, 10);
+                    int rank = PageNumber * 10;
+                    foreach (var player in players)
                     {
-                        Rank = 1,
-                        Name = "Ninja",
-                        Type = 0,
-                        Level = 6,
-                        Profession = 55,
-                        Points = 6546498,
-                        Unknown = 0
-                    });
-                    Players.Add(new PlayerDataStruct
-                    {
-                        Rank = 2,
-                        Name = "Felipe[PM]",
-                        Type = 0,
-                        Level = 6,
-                        Profession = 15,
-                        Points = 6546498,
-                        Unknown = 0
-                    });
-                    Players.Add(new PlayerDataStruct
-                    {
-                        Rank = 3,
-                        Name = "Fire[PM]",
-                        Type = 0,
-                        Level = 6,
-                        Profession = 145,
-                        Points = 6546498,
-                        Unknown = 0
-                    });
+                        Players.Add(new PlayerDataStruct
+                        {
+                            Rank = (ushort)rank++,
+                            Name = player.User.Name,
+                            Type = 0,
+                            Level = player.User.Level,
+                            Profession = player.User.Profession,
+                            Points = player.User.AthleteHistoryHonorPoints,
+                            Unknown = 0
+                        });
+                    }
+
                     await client.SendAsync(this);
                     break;
                 }
                 case QueryRankType.HonorHistory:
                 {
-                    Players.Add(new PlayerDataStruct
+                    List<DbCharacter> players = await DbCharacter.GetHonorRankAsync(PageNumber * 10, 10);
+                    int rank = PageNumber * 10;
+                    foreach (var player in players)
                     {
-                        Rank = 1,
-                        Name = "Ninja",
-                        Type = 6004,
-                        Level = 6,
-                        Profession = 55,
-                        Points = 6546498,
-                        Unknown = 0
-                    });
-                    Players.Add(new PlayerDataStruct
-                    {
-                        Rank = 2,
-                        Name = "Felipe[PM]",
-                        Type = 6004,
-                        Level = 6,
-                        Profession = 15,
-                        Points = 6546498,
-                        Unknown = 0
-                    });
-                    Players.Add(new PlayerDataStruct
-                    {
-                        Rank = 3,
-                        Name = "Fire[PM]",
-                        Type = 6004,
-                        Level = 6,
-                        Profession = 145,
-                        Points = 6546498,
-                        Unknown = 0
-                    });
+                        Players.Add(new PlayerDataStruct
+                        {
+                            Rank = (ushort) rank++,
+                            Name = player.Name,
+                            Type = 6004,
+                            Level = player.Level,
+                            Profession = player.Profession,
+                            Points = player.AthleteHistoryHonorPoints,
+                            Unknown = 0
+                        });
+                    }
+
                     await client.SendAsync(this);
                     break;
                 }

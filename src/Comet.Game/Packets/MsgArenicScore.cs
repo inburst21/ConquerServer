@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - DbFlower.cs
+// Comet - Comet.Game - MsgArenicScore.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -21,32 +21,34 @@
 
 #region References
 
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Comet.Game.States;
+using Comet.Network.Packets;
 
 #endregion
 
-namespace Comet.Game.Database.Models
+namespace Comet.Game.Packets
 {
-    [Table("flower")]
-    public class DbFlower
+    public sealed class MsgArenicScore : MsgBase<Client>
     {
-        [Key] [Column("id")] public uint Identity { get; set; }
-        [Column("player_id")] public uint UserId { get; set; }
-        [Column("flower_r")] public uint RedRose { get; set; }
-        [Column("flower_w")] public uint WhiteRose { get; set; }
-        [Column("flower_lily")] public uint Orchids { get; set; }
-        [Column("flower_tulip")] public uint Tulips { get; set; }
+        public uint Identity1 { get; set; }
+        public string Name1 { get; set; }
+        public int Damage1 { get; set; }
 
-        public virtual DbCharacter User { get; set; }
+        public uint Identity2 { get; set; }
+        public string Name2 { get; set; }
+        public int Damage2 { get; set; }
 
-        public static async Task<List<DbFlower>> GetAsync()
+        public override byte[] Encode()
         {
-            await using var ctx = new ServerDbContext();
-            return await ctx.Flowers.Include(x => x.User).ToListAsync();
+            PacketWriter writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgArenicScore);
+            writer.Write(Identity1);
+            writer.Write(Name1, 16);
+            writer.Write(Damage1);
+            writer.Write(Identity2);
+            writer.Write(Name2, 16);
+            writer.Write(Damage2);
+            return writer.ToArray();
         }
     }
 }

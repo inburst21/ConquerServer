@@ -103,6 +103,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbTotemAdd> TotemAdds { get; set; }
         public virtual DbSet<DbFlower> Flowers { get; set; }
         public virtual DbSet<DbNewbieInfo> NewbieInfo { get; set; }
+        public virtual DbSet<DbArenic> Arenics { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

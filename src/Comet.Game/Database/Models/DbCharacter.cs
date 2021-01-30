@@ -22,8 +22,13 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Shared;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -66,7 +71,7 @@ namespace Comet.Game.Database.Models
         [Column("life")] public virtual ushort HealthPoints { get; set; }
         [Column("mana")] public virtual ushort ManaPoints { get; set; }
         [Column("pk")] public virtual ushort KillPoints { get; set; }
-        [Column("creation_date")] public virtual DateTime Registered { get; set; }
+        [Column("creation_date")] public virtual DateTime? Registered { get; set; }
         [Column("donation")] public ulong Donation { get; set; }
         [Column("last_login")] public virtual DateTime LoginTime { get; set; }
         [Column("last_logout")] public virtual DateTime LogoutTime { get; set; }
@@ -113,5 +118,48 @@ namespace Comet.Game.Database.Models
         [Column("athlete_day_loses")] public uint AthleteDayLoses { get; set; }
         [Column("athlete_cur_honor_point")] public uint AthleteCurrentHonorPoints { get; set; }
         [Column("athlete_hisorty_honor_point")] public uint AthleteHistoryHonorPoints { get; set; }
+
+        [Column("day_reset_date")] public uint DayResetDate { get; set; }
+
+        public static async Task<List<DbCharacter>> GetAthletePointRankAsync(int from, int limit)
+        {
+            await using var ctx = new ServerDbContext();
+            return await ctx.Characters
+                .Where(x => x.AthletePoint > 0)
+                .OrderByDescending(x => x.AthletePoint)
+                .ThenByDescending(x => x.AthleteDayWins)
+                .ThenBy(x => x.AthleteDayLoses)
+                .Skip(from)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public static async Task<List<DbCharacter>> GetHonorRankAsync(int from, int limit)
+        {
+            await using var ctx = new ServerDbContext();
+            return await ctx.Characters
+                .Where(x => x.AthleteHistoryHonorPoints > 0)
+                .OrderByDescending(x => x.AthleteHistoryHonorPoints)
+                .ThenByDescending(x => x.AthleteHistoryWins)
+                .ThenBy(x => x.AthleteHistoryLoses)
+                .Skip(from)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public static async Task<List<DbCharacter>> GetDailyResetAsync()
+        {
+            try
+            {
+                uint now = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
+                await using var ctx = new ServerDbContext();
+                return await ctx.Characters.Where(x => x.Identity > 1000000 && x.DayResetDate != now).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+                return new List<DbCharacter>();
+            }
+        }
     }
 }

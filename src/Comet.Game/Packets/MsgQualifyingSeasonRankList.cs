@@ -21,8 +21,10 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Network.Packets;
 
@@ -66,54 +68,23 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
-            Members.Add(new QualifyingSeasonRankStruct
+            var rank = await DbArenic.GetSeasonRankAsync(DateTime.Now.AddDays(-1));
+            ushort pos = 1;
+            foreach (var obj in rank)
             {
-                Identity = 1000506,
-                Name = "Ninja",
-                Rank = 1,
-                Level = 6,
-                Win = 100,
-                Lose = 70,
-                Profession = 55,
-                Mesh = 2012001,
-                Score = 5898
-            });
-            Members.Add(new QualifyingSeasonRankStruct
-            {
-                Identity = 1000002,
-                Name = "Felipe[PM]",
-                Rank = 2,
-                Level = 140,
-                Win = 100,
-                Lose = 70,
-                Profession = 15,
-                Mesh = 591003,
-                Score = 5546
-            });
-            Members.Add(new QualifyingSeasonRankStruct
-            {
-                Identity = 1000003,
-                Name = "Archer[PM]",
-                Rank = 3,
-                Level = 140,
-                Win = 100,
-                Lose = 70,
-                Profession = 45,
-                Mesh = 12001,
-                Score = 4896
-            });
-            Members.Add(new QualifyingSeasonRankStruct
-            {
-                Identity = 1000505,
-                Name = "Fire[PM]",
-                Rank = 4,
-                Level = 140,
-                Win = 100,
-                Lose = 70,
-                Profession = 145,
-                Mesh = 11003,
-                Score = 4654
-            });
+                Members.Add(new QualifyingSeasonRankStruct
+                {
+                    Rank = pos++,
+                    Identity = obj.UserId,
+                    Name = obj.User.Name,
+                    Level = obj.User.Level,
+                    Profession = obj.User.Profession,
+                    Win = (int) obj.DayWins,
+                    Lose = (int) obj.DayLoses,
+                    Mesh = obj.User.Mesh,
+                    Score = (int) obj.AthletePoint
+                });
+            }
             await client.SendAsync(this);
         }
 
