@@ -46,7 +46,9 @@ namespace Comet.Game.States.Events
             TimedGuildWar,
             GuildPk,
             GuildContest,
-            LineSkillPk
+            LineSkillPk,
+            ArenaQualifier,
+            QuizShow
         }
 
         public const int RANK_REFRESH_RATE_MS = 10000;

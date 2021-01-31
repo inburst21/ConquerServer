@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
@@ -104,6 +105,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbFlower> Flowers { get; set; }
         public virtual DbSet<DbNewbieInfo> NewbieInfo { get; set; }
         public virtual DbSet<DbArenic> Arenics { get; set; }
+        public virtual DbSet<DbQuiz> Quiz { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

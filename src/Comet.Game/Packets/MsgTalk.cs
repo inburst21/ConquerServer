@@ -611,6 +611,18 @@ namespace Comet.Game.Packets
                         await user.SendAsync(msg);
                         return true;
                     }
+
+                    case "/msgflower":
+                    {
+                        int mode = int.Parse(param.Split(' ')[0]);
+                        int data = int.Parse(param.Split(' ')[1]);
+                        await user.SendAsync(new MsgFlower
+                        {
+                            Mode = (MsgFlower.RequestMode) mode,
+                            Identity = (uint) data
+                        });
+                        return true;
+                    }
                 }
             }
 

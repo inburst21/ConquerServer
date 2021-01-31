@@ -60,7 +60,7 @@ namespace Comet.Game.World.Threading
 
                 await dynaNpc.CheckFightTimeAsync();
 
-                if(ranking && m_events.Values.All(x => x.Map.Identity != dynaNpc.MapIdentity)) 
+                if(ranking && m_events.Values.All(x => x.Map?.Identity != dynaNpc.MapIdentity)) 
                     await dynaNpc.BroadcastRankingAsync();
             }
 
@@ -88,6 +88,7 @@ namespace Comet.Game.World.Threading
             await RegisterEventAsync(new TimedGuildWar());
             await RegisterEventAsync(new LineSkillPk());
             await RegisterEventAsync(new ArenaQualifier());
+            await RegisterEventAsync(new QuizShow());
 
             await base.OnStartAsync();
         }

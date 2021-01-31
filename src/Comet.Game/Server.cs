@@ -301,6 +301,10 @@ namespace Comet.Game
                         msg = new MsgGuideContribute();
                         break;
 
+                    case PacketType.MsgQuiz:
+                        msg = new MsgQuiz();
+                        break;
+
                     case PacketType.MsgFactionRankInfo:
                         msg = new MsgFactionRankInfo();
                         break;

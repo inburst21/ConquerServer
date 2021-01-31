@@ -28,6 +28,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.Relationship;
 using Comet.Game.World.Maps;
@@ -461,10 +462,11 @@ namespace Comet.Game.Packets
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
                     await user.SendMerchantAsync();
-                    // await client.Character.SynchroAttributesAsync(ClientUpdateType.VipLevel, client.Character.BaseVipLevel);
-
+                    
                     if (user.VipLevel > 0)
                         await user.AttachStatusAsync(user, StatusSet.ORANGE_HALO_GLOW, 0, int.MaxValue, 0, 0);
+
+                    Kernel.EventThread.GetEvent<QuizShow>()?.Enter(user);
 
                     await client.SendAsync(this);
                     break;

@@ -292,6 +292,11 @@ namespace Comet.Game.Packets
                         SendFlowerType = type,
                         SendFlowerEffect = effect
                     }, true);
+
+                    await user.SendAsync(new MsgFlower
+                    {
+                        Mode = RequestMode.QueryIcon
+                    });
                     
                     await BaseRepository.SaveAsync(flowersToday);
                     break;

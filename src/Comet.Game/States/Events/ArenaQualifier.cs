@@ -67,6 +67,8 @@ namespace Comet.Game.States.Events
 
         #region Event Override
 
+        public override EventType Identity => EventType.ArenaQualifier;
+
         public override async Task<bool> CreateAsync()
         {
             Map = Kernel.MapManager.GetMap(BASE_MAP_ID_U);

@@ -92,16 +92,16 @@ namespace Comet.Game.States
         /// <param name="socket"></param>
         public Character(DbCharacter character, Client socket)
         {
-            if (socket == null)
-                return; // ?
-
-            m_socket = socket;
-
             /*
              * Removed the base class because we'll be inheriting role stuff.
              */
             m_dbObject = character;
 
+            if (socket == null)
+                return; // ?
+
+            m_socket = socket;
+            
             m_mesh = m_dbObject.Mesh;
 
             m_posX = character.X;
