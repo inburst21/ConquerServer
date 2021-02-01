@@ -117,12 +117,12 @@ namespace Comet.Game.States.Events
                 return Task.CompletedTask;
 
 #if !DEBUG
-            if (attacker is Character player)
-                if (player.IsGm())
+            if (attacker is Character testPlayer)
+                if (testPlayer.IsGm())
                     return Task.CompletedTask;
 
-            if (target is Character tgtPlayer)
-                if (tgtPlayer.IsGm())
+            if (target is Character testTgtPlayer)
+                if (testTgtPlayer.IsGm())
                     return Task.CompletedTask;
 #endif
 
