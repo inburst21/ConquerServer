@@ -75,6 +75,7 @@ namespace Comet.Game.States
         private TimeOut m_luckyStep = new TimeOut(1);
         private TimeOut m_tWorldChat = new TimeOut();
         private TimeOutMS m_tVigor = new TimeOutMS(1500);
+        private TimeOut m_activityPointsAdd = new TimeOut(120);
 
         private ConcurrentDictionary<RequestType, uint> m_dicRequests = new ConcurrentDictionary<RequestType, uint>();
 
@@ -4824,6 +4825,17 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Activity Points
+
+        public async Task<bool> AddActivityPointsAsync(int amount)
+        {
+            await Statistic.AddOrUpdateAsync(1200, 0, 1, true);
+            await Log.GmLog($"activity_{Identity}", $"{Identity},{Name},{amount}");
+            return true;
+        }
+
+        #endregion
+
         #region Timer
 
         public uint DayResetDate
@@ -4857,6 +4869,15 @@ namespace Comet.Game.States
 
                 if (MessageBox != null && MessageBox.HasExpired)
                     MessageBox = null;
+
+                if (!m_activityPointsAdd.IsActive())
+                {
+                    m_activityPointsAdd.Update();
+                }
+                else if (m_activityPointsAdd.ToNextTime())
+                {
+                    await AddActivityPointsAsync(1);
+                }
 
                 if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
                 {
