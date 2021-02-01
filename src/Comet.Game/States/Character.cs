@@ -1748,7 +1748,7 @@ namespace Comet.Game.States
             {
                 if (Transformation != null)
                     return (int) Transformation.Defense2;
-                return Metempsychosis >= 1 && ProfessionLevel >= 3 ? 7000 : Calculations.DEFAULT_DEFENCE2;
+                return QueryStatus(StatusSet.VORTEX) != null ? 1 : Metempsychosis >= 1 && ProfessionLevel >= 3 ? 7000 : Calculations.DEFAULT_DEFENCE2;
             }
         }
 
@@ -2375,7 +2375,8 @@ namespace Comet.Game.States
                     Data = (int) dieWay
                 }, true);
 
-                await ProcessPkAsync(targetUser);
+                if (MagicData.QueryMagic != null && MagicData.QueryMagic.Sort != MagicData.MagicSort.Activateswitch)
+                    await ProcessPkAsync(targetUser);
 
                 if (targetUser.IsBlessed && !IsBlessed)
                 {
@@ -2493,6 +2494,7 @@ namespace Comet.Game.States
 
             await DetachStatusAsync(StatusSet.BLUE_NAME);
             await DetachAllStatusAsync();
+            await SetScapegoatAsync(false);
             await AttachStatusAsync(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
             await AttachStatusAsync(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 

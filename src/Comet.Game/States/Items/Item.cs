@@ -287,6 +287,12 @@ namespace Comet.Game.States.Items
             set => m_dbItem.AddLife = value;
         }
 
+        public byte AntiMonster
+        {
+            get => m_dbItem.AntiMonster;
+            set => m_dbItem.AntiMonster = value;
+        }
+
         public ItemColor Color
         {
             get => (ItemColor) m_dbItem.Color;

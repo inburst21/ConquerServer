@@ -302,6 +302,18 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case MsgInteractType.CounterKillSwitch:
+                {
+                    if (user.MagicData[6003] == null) // must have skill
+                        return;
+
+                    if (!user.IsAlive || user.IsWing)
+                        return;
+
+                    await user.SetScapegoatAsync(!user.Scapegoat);
+                    break;
+                }
+
                 default:
                     await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
                         $"Missing packet {Type}, Action {Action}, Length {Length}"));

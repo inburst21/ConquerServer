@@ -76,7 +76,6 @@ namespace Comet.Game.States
             }
             
             Character user = m_owner as Character;
-
             if (user?.IsBowman == true && !user.Map.IsTrainingMap() && !await user.SpendEquipItem(0050, 1, true))
             {
                 ResetBattle();
@@ -87,9 +86,10 @@ namespace Comet.Game.States
                 await user.CurrentEvent.OnAttackAsync(user);
 
             if (user != null && await user.AutoSkillAttackAsync(target))
-            {
                 return true;
-            }
+
+            if (await target.CheckScapegoatAsync(m_owner))
+                return true;
 
             if (await IsTargetDodgedAsync(m_owner, target))
             {

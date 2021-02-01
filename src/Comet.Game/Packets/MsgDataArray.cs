@@ -23,6 +23,7 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
@@ -38,7 +39,13 @@ namespace Comet.Game.Packets
     {
         public enum DataArrayMode : byte
         {
-            Composition = 0
+            Composition = 0,
+            CompositionSteedOriginal = 2,
+            CompositionSteedNew = 3,
+            QuickCompose = 4,
+            QuickComposeMount = 5,
+            UpgradeItemLevel = 6,
+            UpgradeItemQuality = 7
         }
 
         public MsgDataArray()
@@ -248,6 +255,54 @@ namespace Comet.Game.Packets
 #endif
                     break;
                 }
+
+                case DataArrayMode.CompositionSteedOriginal:
+                case DataArrayMode.CompositionSteedNew:
+                {
+                    if (!target.IsMount())
+                        return;
+
+                    for (int i = 1; i < Items.Count; i++)
+                    {
+                        Item source = user.UserPackage[Items[i]];
+                        if (source == null)
+                            continue;
+
+                        target.CompositionProgress += PlusAddLevelExp(source.Plus, false);
+                        while (target.CompositionProgress >= GetAddLevelExp(target.Plus, false) && target.Plus < 12)
+                        {
+                            if (target.Plus < 12)
+                            {
+                                target.CompositionProgress -= GetAddLevelExp(target.Plus, false);
+                                target.ChangeAddition();
+                            }
+                        }
+
+                        if (Action == DataArrayMode.CompositionSteedNew)
+                        {
+                            int color1 = (int) target.SocketProgress;
+                            int color2 = (int) source.SocketProgress;
+                            int B1 = color1 & 0xFF;
+                            int B2 = color2 & 0xFF;
+                            int G1 = (color1 >> 8) & 0xFF;
+                            int G2 = (color2 >> 8) & 0xFF;
+                            int R1 = (color1 >> 16) & 0xFF;
+                            int R2 = (color2 >> 16) & 0xFF;
+                            int newB = (int) Math.Floor(0.9 * B1) + (int) Math.Floor(0.1 * B2);
+                            int newG = (int) Math.Floor(0.9 * G1) + (int) Math.Floor(0.1 * G2);
+                            int newR = (int) Math.Floor(0.9 * R1) + (int) Math.Floor(0.1 * R2);
+                            target.ReduceDamage = (byte) newR;
+                            target.Enchantment = (byte) newB;
+                            target.AntiMonster = (byte) newG;
+                            target.SocketProgress = (uint)(newG | (newB << 8) | (newR << 16));
+                        }
+
+                        await user.UserPackage.SpendItemAsync(source);
+                    }
+
+                    break;
+                }
+
                 default:
                     await Log.WriteLogAsync(LogLevel.Error, $"Invalid MsgDataArray Action: {Action}." +
                                                        $"{user.Identity},{user.Name},{user.Level},{user.MapIdentity}[{user.Map.Name}],{user.MapX},{user.MapY}");
@@ -259,12 +314,12 @@ namespace Comet.Game.Packets
                 if (user.Gender == 1)
                 {
                     await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerMale, user.Name,
-                        target.Itemtype.Name, target.Plus));
+                        target.Itemtype.Name, target.Plus), MsgTalk.TalkChannel.TopLeft);
                 }
                 else
                 {
                     await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerFemale, user.Name,
-                        target.Itemtype.Name, target.Plus));
+                        target.Itemtype.Name, target.Plus), MsgTalk.TalkChannel.TopLeft);
                 }
             }
 

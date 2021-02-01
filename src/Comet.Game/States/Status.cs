@@ -346,6 +346,18 @@ namespace Comet.Game.States
                             await m_pOwner.Map.BroadcastRoomMsgAsync(m_pOwner.MapX, m_pOwner.MapY, msg);
                             break;
                         }
+
+                        case StatusSet.VORTEX:
+                        {
+                            if (!m_pOwner.IsAlive)
+                            {
+                                m_nTimes = 1;
+                                break;
+                            }
+
+                            await m_pOwner.ProcessMagicAttackAsync(6010, 0, m_pOwner.MapX, m_pOwner.MapY);
+                            break;
+                        }
                     }
 
                     m_nTimes--;

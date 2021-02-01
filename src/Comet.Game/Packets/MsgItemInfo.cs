@@ -71,6 +71,7 @@ namespace Comet.Game.Packets
             IsBound = item.IsBound;
             CompositionProgress = item.CompositionProgress;
             Inscribed = item.SyndicateIdentity != 0;
+            AntiMonster = item.AntiMonster;
         }
 
         public uint Identity { get; set; }
@@ -86,6 +87,7 @@ namespace Comet.Game.Packets
         public byte Plus { get; set; }
         public byte Bless { get; set; }
         public byte Enchantment { get; set; }
+        public int AntiMonster { get; set; }
         public bool IsSuspicious { get; set; }
         public Item.ItemColor Color { get; set; }
         public bool IsLocked { get; set; }
@@ -118,9 +120,9 @@ namespace Comet.Game.Packets
             writer.Write(Bless); // 29
             writer.Write(IsBound); // 30
             writer.Write(Enchantment); // 31
-            writer.Write(0); // 32
-            writer.Write((byte) 0); // 36
-            writer.Write(IsSuspicious); // 37
+            writer.Write(AntiMonster); // 32
+            writer.Write(IsSuspicious); // 36
+            writer.Write((byte) 0); // 37
             writer.Write(IsLocked); // 38
             writer.Write((byte) 0); // 39
             writer.Write((int) Color); // 40

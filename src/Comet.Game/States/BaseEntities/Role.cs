@@ -767,6 +767,36 @@ namespace Comet.Game.States.BaseEntities
 
         #endregion
 
+        #region Scapegoat
+
+        public bool Scapegoat { get; set; } = false;
+
+        public virtual async Task<bool> CheckScapegoatAsync(Role target)
+        {
+            Magic scapegoat = MagicData[6003];
+            if (scapegoat != null && Scapegoat && scapegoat.IsReady())
+            {
+                return await ProcessMagicAttackAsync(scapegoat.Type, target.Identity, target.MapX, target.MapY);
+            }
+            return false;
+        }
+
+        public Task SetScapegoatAsync(bool on)
+        {
+            Scapegoat = on;
+            return SendAsync(new MsgInteract
+            {
+                Action = MsgInteractType.CounterKillSwitch,
+                SenderIdentity = Identity,
+                TargetIdentity = Identity,
+                Data = on ? 1 : 0,
+                PosX = MapX,
+                PosY = MapY
+            });
+        }
+
+        #endregion
+
         #region Synchronization
 
         public virtual async Task<bool> AddAttributesAsync(ClientUpdateType type, long value)
