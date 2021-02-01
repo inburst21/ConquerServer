@@ -162,7 +162,7 @@ namespace Comet.Game.States.Syndicates
 
         public bool Deleted => m_syndicate.DelFlag != null;
 
-        public SyndicateMember Leader => m_leader;
+        public SyndicateMember Leader => m_dicMembers.Values.FirstOrDefault(x => x.Rank == SyndicateMember.SyndicateRank.GuildLeader);
 
         #region Position Count
 
@@ -202,8 +202,10 @@ namespace Comet.Game.States.Syndicates
 
             m_syndicate.Amount = (uint) MemberCount;
 
+            Level = 1;
+
             var totemAdds = await DbTotemAdd.GetAsync(Identity);
-            var items = await ItemRepository.GetBySyndicateAsync(Identity) ?? new List<DbItem>();
+            var items = await ItemRepository.GetBySyndicateAsync(Identity) ?? new List<DbItem>();            
             for (TotemPoleType totemPole = TotemPoleType.Headgear; totemPole < TotemPoleType.None; totemPole++)
             {
                 TotemPole pole = new TotemPole(totemPole, totemAdds.FirstOrDefault(x => x.TotemType == (int)totemPole));
@@ -2869,7 +2871,7 @@ namespace Comet.Game.States.Syndicates
         public async Task SendMembersAsync(int page, Character target)
         {
             const int MAX_PER_PAGE_I = 12;
-            int startAt = page * MAX_PER_PAGE_I; // just in case I need to change the value in runtime
+            int startAt = page; // just in case I need to change the value in runtime
             int current = 0;
 
             MsgSynMemberList msg = new MsgSynMemberList
