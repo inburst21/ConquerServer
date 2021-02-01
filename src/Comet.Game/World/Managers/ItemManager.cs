@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States.Items;
+using Comet.Shared;
 
 #endregion
 
@@ -81,16 +82,12 @@ namespace Comet.Game.World.Managers
             {
                 key = type / 100000 * 100000 + type % 1000 + 55000 - type % 10;
             }
-            //else if (Item.GetItemSubType(type) >= 130 && Item.GetItemSubType(type) < 140)
-            //{
-            //    key = type / 1000 * 1000 + (type % 100 / 10 * 10);
-            //}
             else
             {
                 key = type / 1000 * 1000 + (type % 1000 - type % 10);
             }
 
-            return key << (32 + level);
+            return (key + ((ulong) level << 32));
         }
     }
 }

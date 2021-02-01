@@ -79,6 +79,10 @@ namespace Comet.Network.Packets
 
         MsgFlower = 1150,
         MsgRank = 1151,
+
+        MsgFamily = 1312,
+        MsgFamilyOccupy = 1313,
+
         MsgNpcInfo = 2030,
         MsgNpc = 2031,
         MsgTaskDialog = 2032,
