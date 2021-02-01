@@ -2461,7 +2461,7 @@ namespace Comet.Game.States
                 _ = BroadcastTeamLifeAsync().ConfigureAwait(false);
             }
 
-            if (IsAlive)
+            if (IsAlive && await Kernel.ChanceCalcAsync(5))
                 await SendGemEffect2Async();
 
             if (!Map.IsTrainingMap())
@@ -4829,7 +4829,7 @@ namespace Comet.Game.States
 
         public async Task<bool> AddActivityPointsAsync(int amount)
         {
-            await Statistic.AddOrUpdateAsync(1200, 0, 1, true);
+            await Statistic.AddOrUpdateAsync(1200, 0, Statistic.GetValue(1200) + 1, true);
             await Log.GmLog($"activity_{Identity}", $"{Identity},{Name},{amount}");
             return true;
         }

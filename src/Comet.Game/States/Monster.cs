@@ -428,6 +428,9 @@ namespace Comet.Game.States
                         string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone,
                             attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
                 }
+
+                if (user != null)
+                    await user.AddActivityPointsAsync(1);
             }
             else if (await Kernel.ChanceCalcAsync((int) (55 * multiply), 42500))
             {
@@ -446,9 +449,10 @@ namespace Comet.Game.States
             }
             else if (await Kernel.ChanceCalcAsync((int) (100 * multiply), 45500))
             {
-                uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121};
+                uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121, 0};
                 uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
-                await DropItemAsync(dGem, user); // normal gems
+                if (dGem > 0)
+                    await DropItemAsync(dGem, user); // normal gems
             }
             else if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
             {
@@ -638,29 +642,51 @@ namespace Comet.Game.States
             if (possibleDrops.Count > 0)
             {
                 byte drop = possibleDrops[await Kernel.NextAsync(0, possibleDrops.Count) % possibleDrops.Count];
+                bool dropTalisman = await Kernel.ChanceCalcAsync(10);
                 switch (drop)
                 {
                     case 0:
-                        drops.RemoveAll(x => !Item.IsHelmet(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsHelmet(x.Type) && !Item.IsTalisman(x.Type));
+                        else 
+                            drops.RemoveAll(x => !Item.IsHelmet(x.Type));
                         break;
                     case 1:
-                        drops.RemoveAll(x => !Item.IsNeck(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsNeck(x.Type) && !Item.IsTalisman(x.Type));
+                        else
+                            drops.RemoveAll(x => !Item.IsNeck(x.Type));
                         break;
                     case 2:
-                        drops.RemoveAll(x => !Item.IsArmor(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsArmor(x.Type) && !Item.IsTalisman(x.Type));
+                        else
+                            drops.RemoveAll(x => !Item.IsArmor(x.Type));
                         drops.RemoveAll(x => Item.GetItemSubType(x.Type) == 137);
                         break;
                     case 3:
-                        drops.RemoveAll(x => !Item.IsRing(x.Type) && !Item.IsBangle(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsRing(x.Type) && !Item.IsBangle(x.Type) && !Item.IsTalisman(x.Type));
+                        else
+                            drops.RemoveAll(x => !Item.IsRing(x.Type) && !Item.IsBangle(x.Type));
                         break;
                     case 4:
-                        drops.RemoveAll(x => !Item.IsWeapon(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsWeapon(x.Type) && !Item.IsTalisman(x.Type));
+                        else
+                            drops.RemoveAll(x => !Item.IsWeapon(x.Type));
                         break;
                     case 5:
-                        drops.RemoveAll(x => !Item.IsShield(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsShield(x.Type) && !Item.IsTalisman(x.Type));
+                        else
+                            drops.RemoveAll(x => !Item.IsShield(x.Type));
                         break;
                     case 6:
-                        drops.RemoveAll(x => !Item.IsShoes(x.Type));
+                        if (dropTalisman)
+                            drops.RemoveAll(x => !Item.IsShoes(x.Type) && !Item.IsTalisman(x.Type));
+                        else
+                            drops.RemoveAll(x => !Item.IsShoes(x.Type));
                         break;
                     default:
                         drops.Clear();
