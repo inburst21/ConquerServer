@@ -78,6 +78,21 @@ namespace Comet.Game.States.Events
             return true;
         }
 
+        public override bool IsAllowedToJoin(Role sender)
+        {
+            if (!(sender is Character user))
+                return false;
+
+            foreach (var participant in m_participants.Values)
+            {
+                Character player = Kernel.RoleManager.GetUser(participant.Identity);
+                if (player.Client.MacAddress.Equals(user.Client.MacAddress))
+                    return false;
+            }
+
+            return true;
+        }
+
         public override Task<int> GetDamageLimitAsync(Role attacker, Role target, int power)
         {
             return Task.FromResult(1);
@@ -112,7 +127,7 @@ namespace Comet.Game.States.Events
 #endif
 
             var user = GetUser(attacker as Character);
-            if (attacker is Character player && target is Character tgtPlayer && !player.Client.IPAddress.Equals(tgtPlayer.Client.IPAddress))
+            if (attacker is Character player && target is Character tgtPlayer && !player.Client.MacAddress.Equals(tgtPlayer.Client.MacAddress))
                 user.AttacksSuccess++;
             return Task.CompletedTask;
         }
@@ -267,14 +282,14 @@ namespace Comet.Game.States.Events
 
         private double CalculatePoints(int attacks, int dealt, int recv)
         {
-            if (dealt == 0)
-                return 0;
+            //if (dealt == 0)
+            //    return 0;
 
-            attacks = Math.Max(1, attacks);
-            dealt = Math.Max(1, dealt);
-            recv = Math.Max(1, recv);
-            double currPoints = Math.Max(dealt / (double) attacks + dealt / (double) recv, 0.01d);
-            return currPoints;
+            //attacks = Math.Max(1, attacks);
+            //dealt = Math.Max(1, dealt);
+            //recv = Math.Max(1, recv);
+            //double currPoints = Math.Max(dealt / (double) attacks + dealt / (double) recv, 0.01d);
+            return dealt;
         }
         
         private Participant GetUser(uint idUser)
