@@ -252,20 +252,21 @@ namespace Comet.Game.States.Events
 
             int expBallAmount = 0;
             var question = m_quizQuestions[idxQuestion - 1];
-
+            ushort points = 0;
             if (question.Result == reply)
             {
                 expBallAmount = TOTAL_EXP_REWARD / MAX_QUESTION;
-                player.Points += (ushort) Math.Max(1, m_questionTimer.GetRemain());
+                player.Points += points = (ushort) Math.Max(1, m_questionTimer.GetRemain());
                 player.TimeTaken += (ushort)m_questionTimer.GetRemain();
             }
             else
             {
                 expBallAmount = TOTAL_EXP_REWARD / MAX_QUESTION * 4;
-                player.Points += 1;
+                player.Points += points = 1;
                 player.TimeTaken += TIME_PER_QUESTION;
             }
 
+            user.QuizPoints += points;
             player.Experience += (ushort) expBallAmount;
             await user.AwardExperienceAsync(user.CalculateExpBall(expBallAmount));
 

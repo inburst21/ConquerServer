@@ -117,6 +117,9 @@ namespace Comet.Game.Packets
 
                 case TaskInteraction.Answer:
                 {
+                    if (OptionIndex == 0)
+                        return;
+
                     if (OptionIndex == byte.MaxValue)
                     {
                         user.CancelInteraction();

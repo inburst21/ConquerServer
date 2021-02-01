@@ -63,6 +63,7 @@ namespace Comet.Game.Packets
         public ushort PageNumber { get; set; }
 
         public List<string> Strings { get; set; } = new List<string>();
+        public List<QueryStruct> Infos { get; set; } = new List<QueryStruct>();
 
         public override void Decode(byte[] bytes)
         {
@@ -80,15 +81,31 @@ namespace Comet.Game.Packets
         {
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgRank);
-            writer.Write((uint) Mode);
-            writer.Write(Identity);
-            writer.Write((byte) RankMode);
-            writer.Write(Subtype);
-            writer.Write(PageNumber);
-            writer.Write((ushort) Strings.Count);
-            foreach (var t in Strings)
+            writer.Write((uint) Mode); // 4
+            writer.Write(Identity); // 8
+            writer.Write((byte) RankMode); // 12
+            writer.Write(Subtype); // 13
+            writer.Write(PageNumber); // 14
+            if (Mode != RequestType.QueryInfo)
             {
-                writer.Write(t);
+                writer.Write((ushort) Strings.Count);
+                foreach (var t in Strings)
+                {
+                    writer.Write(t);
+                }
+            }
+            else
+            {
+                writer.Write(Infos.Count);
+                foreach (var info in Infos)
+                {
+                    writer.Write(info.Type);
+                    writer.Write(info.Amount);
+                    writer.Write(info.Identity);
+                    writer.Write(info.Identity);
+                    writer.Write(info.Name, 16);
+                    writer.Write(info.Name, 16);
+                }
             }
             return writer.ToArray();
         }
@@ -103,7 +120,7 @@ namespace Comet.Game.Packets
                     if (user.Gender != 2)
                         return;
 
-                    DbFlower flowerToday = Kernel.FlowerManager.QueryFlowers(user.Identity);
+                    FlowerManager.FlowerRankObject flowerToday = await Kernel.FlowerManager.QueryFlowersAsync(user);
                     await user.SendAsync(new MsgFlower
                     {
                         Mode = MsgFlower.RequestMode.QueryIcon,
@@ -118,15 +135,165 @@ namespace Comet.Game.Packets
                         TulipsToday = flowerToday?.Tulips ?? 0
                     });
 
-                    var roseRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
-                    var lilyRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
-                    var orchidRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
-                    var tulipRank = Kernel.FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
+                    await user.SendAsync(new MsgRank
+                    {
+                        Mode = RequestType.QueryIcon,
+                        Strings = new List<string>{ "" }
+                    });
 
-                    int myRose = roseRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
-                    int myLily = lilyRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
-                    int myOrchid = orchidRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
-                    int myTulip = tulipRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                    if (user.CanRefreshFlowerRank)
+                    {
+                        var roseRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
+                        var lilyRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
+                        var orchidRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
+                        var tulipRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
+
+                        var roseRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.RedRose, 0, 100);
+                        var lilyRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.WhiteRose, 0, 100);
+                        var orchidRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.Orchid, 0, 100);
+                        var tulipRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.Tulip, 0, 100);
+
+                        int myRose = roseRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                        int myLily = lilyRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                        int myOrchid = orchidRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                        int myTulip = tulipRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
+
+                        int myRoseToday = roseRankToday.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                        int myLilyToday = lilyRankToday.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                        int myOrchidToday = orchidRankToday.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                        int myTulipToday = tulipRankToday.FirstOrDefault(x => x.Identity == user.Identity).Position;
+
+                        uint rankType = 0;
+                        uint amount = 0;
+                        if (myRoseToday < myRose && myRoseToday > 0 && myRoseToday <= 100)
+                        {
+                            // today rank
+                            if (myRoseToday < 3)
+                                rankType = 30010001;
+                            else if (myRoseToday < 10)
+                                rankType = 30020001;
+                            else if (myRoseToday < 25)
+                                rankType = 30040001;
+                            else
+                                rankType = 30110001;
+                            amount = flowerToday?.RedRose ?? 0;
+                        }
+                        else if (myRose > 0 && myRose <= 100)
+                        {
+                            // lifetime
+                            if (myRose < 3)
+                                rankType = 30010002;
+                            else if (myRose < 10)
+                                rankType = 30020002;
+                            else if (myRose < 25)
+                                rankType = 30040002;
+                            else
+                                rankType = 30110002;
+                            amount = user.FlowerRed;
+                        }
+
+                        if (myLilyToday < myLily && myLilyToday > 0 && myLilyToday <= 100)
+                        {
+                            // today rank
+                            if (myLilyToday < 3)
+                                rankType = 30010101;
+                            else if (myLilyToday < 10)
+                                rankType = 30020101;
+                            else if (myLilyToday < 25)
+                                rankType = 30040101;
+                            else
+                                rankType = 30110101;
+                            amount = flowerToday?.WhiteRose ?? 0;
+                        }
+                        else if (myLily > 0 && myLily <= 100)
+                        {
+                            // lifetime
+                            if (myLily < 3)
+                                rankType = 30010102;
+                            else if (myLily < 10)
+                                rankType = 30020102;
+                            else if (myLily < 25)
+                                rankType = 30040102;
+                            else
+                                rankType = 30110102;
+                            amount = user.FlowerWhite;
+                        }
+
+                        if (myOrchidToday < myOrchid && myOrchidToday > 0 && myOrchidToday <= 100)
+                        {
+                            // today rank
+                            if (myOrchidToday < 3)
+                                rankType = 30010301;
+                            else if (myOrchidToday < 10)
+                                rankType = 30020301;
+                            else if (myOrchidToday < 25)
+                                rankType = 30040301;
+                            else
+                                rankType = 30110301;
+                            amount = flowerToday?.Orchids ?? 0;
+                        }
+                        else if (myOrchid > 0 && myOrchid <= 100)
+                        {
+                            // lifetime
+                            if (myOrchid < 3)
+                                rankType = 30010302;
+                            else if (myOrchid < 10)
+                                rankType = 30020302;
+                            else if (myOrchid < 25)
+                                rankType = 30040302;
+                            else
+                                rankType = 30110302;
+                            amount = user.FlowerOrchid;
+                        }
+
+                        if (myTulipToday < myTulip && myTulipToday > 0 && myTulipToday <= 100)
+                        {
+                            // today rank
+                            if (myTulipToday < 3)
+                                rankType = 30010401;
+                            else if (myTulipToday < 10)
+                                rankType = 30020401;
+                            else if (myTulipToday < 25)
+                                rankType = 30040401;
+                            else
+                                rankType = 30110401;
+                            amount = flowerToday?.Tulips ?? 0;
+                        }
+                        else if (myTulip > 0 && myTulip <= 100)
+                        {
+                            // lifetime
+                            if (myTulip < 3)
+                                rankType = 30010402;
+                            else if (myTulip < 10)
+                                rankType = 30020402;
+                            else if (myTulip < 25)
+                                rankType = 30040402;
+                            else
+                                rankType = 30110402;
+                            amount = user.FlowerTulip;
+                        }
+
+                        if (rankType != user.FlowerCharm)
+                        {
+                            user.FlowerCharm = rankType;
+                            await user.Screen.SynchroScreenAsync();
+                        }
+
+                        // Strings.Add($"{rankType} {amount} {user.Identity} {user.Identity} {user.Name} {user.Name}");
+                        Infos.Add(new QueryStruct
+                        {
+                            Type = rankType,
+                            Amount = amount,
+                            Identity = user.Identity,
+                            Name = user.Name
+                        });
+                        await user.SendAsync(this);
+                    }
+
+                    await user.SendAsync(new MsgRank
+                    {
+                        Mode = RequestType.QueryIcon
+                    });
 
                     break;
                 }
@@ -137,6 +304,14 @@ namespace Comet.Game.Packets
                     return;
                 }
             }
+        }
+
+        public struct QueryStruct
+        {
+            public ulong Type;
+            public ulong Amount;
+            public uint Identity;
+            public string Name;
         }
     }
 }

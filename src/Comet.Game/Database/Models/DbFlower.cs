@@ -46,7 +46,9 @@ namespace Comet.Game.Database.Models
         public static async Task<List<DbFlower>> GetAsync()
         {
             await using var ctx = new ServerDbContext();
-            return await ctx.Flowers.Include(x => x.User).ToListAsync();
+            return await ctx.Flowers
+                .Include(x => x.User)
+                .ToListAsync();
         }
     }
 }

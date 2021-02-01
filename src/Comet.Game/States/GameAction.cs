@@ -3782,6 +3782,7 @@ namespace Comet.Game.States
                 #region Vip (>, >=, <, <=, =, ==)
 
                 case "vip":
+                {
                     int vipValue = int.Parse(value);
                     if (opt.Equals(">"))
                         return user.VipLevel > vipValue;
@@ -3794,6 +3795,7 @@ namespace Comet.Game.States
                     if (opt.Equals("=") || opt.Equals("=="))
                         return user.VipLevel == vipValue;
                     break;
+                }
 
                 #endregion
 
@@ -3810,16 +3812,26 @@ namespace Comet.Game.States
                         return user.VipLevel < svipValue;
                     if (opt.Equals("<="))
                         return user.VipLevel <= svipValue;
-                    if (opt.Equals("=") || opt.Equals("=="))
+                    if (opt.Equals("=="))
                         return user.VipLevel == svipValue;
-                    if (opt.Equals("set"))
+                    if (opt.Equals("set") || opt.Equals("="))
                     {
-                        int minutes = 0;
-                        if (string.IsNullOrEmpty(last) || int.TryParse(last, out minutes))
+                        if (string.IsNullOrEmpty(last) || int.TryParse(last, out var minutes))
                             minutes = 1440; // 24 hours
-                        user.VipLevel = uint.Parse(value);
-                        user.VipExpiration = user.VipExpiration < DateTime.Now ? DateTime.Now.AddMinutes(minutes) : user.VipExpiration.AddMinutes(minutes);
-                        return await user.SaveAsync();
+                        uint vipValue = uint.Parse(value);
+                        if (vipValue == user.VipLevel)
+                        {
+                            user.VipExpiration = user.VipExpiration < DateTime.Now
+                                ? DateTime.Now.AddMinutes(minutes)
+                                : user.VipExpiration.AddMinutes(minutes);
+                        }
+                        else
+                        {
+                            user.VipExpiration = DateTime.Now.AddMinutes(minutes);
+                        }
+
+                        await user.SetAttributesAsync(ClientUpdateType.VipLevel, vipValue);
+                        return true;
                     }
 
                     break;
@@ -6510,7 +6522,9 @@ namespace Comet.Game.States
                     $"{user?.OnlineTime.TotalDays:0} days, {user?.OnlineTime.Hours:00} hours, {user?.OnlineTime.Minutes} minutes and {user?.OnlineTime.Seconds} seconds")
                 .Replace("%session_time",
                     $"{user?.SessionOnlineTime.TotalDays:0} days, {user?.SessionOnlineTime.Hours:00} hours, {user?.SessionOnlineTime.Minutes} minutes and {user?.SessionOnlineTime.Seconds} seconds")
-                .Replace("%businessman_days", $"{user?.BusinessManDays}");
+                .Replace("%businessman_days", $"{user?.BusinessManDays}")
+                .Replace("%user_vip", user?.BaseVipLevel.ToString())
+                .Replace("%user_svip", user?.VipLevel.ToString());
 
             if (result.Contains("%levelup_exp"))
             {
@@ -6520,6 +6534,14 @@ namespace Comet.Game.States
 
             if (user != null)
             {
+                if (result.Contains("%vip_expire"))
+                {
+                    string s = Language.StrExpired;
+                    if (user.VipExpiration > DateTime.Now)
+                        s = user.VipExpiration.ToString("f");
+                    result = result.Replace("%vip_expire", s);
+                }
+
                 while (result.Contains("%stc("))
                 {
                     int start = result.IndexOf("%stc(", StringComparison.InvariantCultureIgnoreCase);

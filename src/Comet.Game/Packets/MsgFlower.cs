@@ -252,7 +252,7 @@ namespace Comet.Game.Packets
                         await user.UserPackage.SpendItemAsync(flower);
                     }
 
-                    var flowersToday = Kernel.FlowerManager.QueryFlowers(user.Identity);
+                    var flowersToday = await Kernel.FlowerManager.QueryFlowersAsync(user);
                     switch (type)
                     {
                         case FlowerType.RedRose:

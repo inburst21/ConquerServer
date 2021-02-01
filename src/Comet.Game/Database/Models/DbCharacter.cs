@@ -119,6 +119,8 @@ namespace Comet.Game.Database.Models
         [Column("athlete_cur_honor_point")] public uint AthleteCurrentHonorPoints { get; set; }
         [Column("athlete_hisorty_honor_point")] public uint AthleteHistoryHonorPoints { get; set; }
 
+        [Column("quiz_point")] public uint QuizPoints { get; set; }
+
         [Column("day_reset_date")] public uint DayResetDate { get; set; }
 
         public static async Task<List<DbCharacter>> GetAthletePointRankAsync(int from, int limit)

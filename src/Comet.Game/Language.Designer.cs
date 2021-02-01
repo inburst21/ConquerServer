@@ -448,6 +448,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Expired.
+        /// </summary>
+        public static string StrExpired {
+            get {
+                return ResourceManager.GetString("StrExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You are already using an EXP Potion with better power than this. Wait for the old one to finish..
         /// </summary>
         public static string StrExpPotionInUse {

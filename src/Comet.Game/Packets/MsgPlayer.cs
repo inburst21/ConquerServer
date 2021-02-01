@@ -67,19 +67,18 @@ namespace Comet.Game.Packets
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
-            //FlowerRanking = 30010001;
-
-            //QuizPoints = 50000;
+            FlowerRanking = user.FlowerCharm;
+            QuizPoints = user.QuizPoints;
             //EnlightenPoints = 200;
             //UserTitle = 1;
-            //SharedBattlePower = 15;
+            if (user.Syndicate != null)
+                SharedBattlePower = (uint) user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
 
-            FamilyIdentity = 1;
-            FamilyRank = 100;
+            //FamilyIdentity = 1;
+            //FamilyRank = 100;
 
             Name = user.Name;
-            Mate = user.MateName;
-            FamilyName = "Family";
+            FamilyName = "";
         }
 
         public MsgPlayer(Monster monster)
@@ -109,7 +108,6 @@ namespace Comet.Game.Packets
             }
 
             Name = monster.Name;
-            Mate = "";
             FamilyName = "";
         }
 
@@ -185,7 +183,6 @@ namespace Comet.Game.Packets
         public uint UserTitle { get; set; }
 
         public string Name { get; set; }
-        public string Mate { get; set; }
         public string FamilyName { get; set; }
 
         /// <summary>

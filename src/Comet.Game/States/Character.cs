@@ -59,6 +59,7 @@ namespace Comet.Game.States
         private Client m_socket;
         private readonly DbCharacter m_dbObject;
 
+        private TimeOut m_flowerRankRefresh = new TimeOut(10);
         private TimeOutMS m_energyTm = new TimeOutMS(ADD_ENERGY_STAND_MS);
         private TimeOut m_autoHeal = new TimeOut(AUTOHEALLIFE_TIME);
         private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
@@ -2458,6 +2459,9 @@ namespace Comet.Game.States
                 _ = BroadcastTeamLifeAsync().ConfigureAwait(false);
             }
 
+            if (IsAlive)
+                await SendGemEffect2Async();
+
             if (!Map.IsTrainingMap())
                 await DecEquipmentDurabilityAsync(true, (int) magic, (ushort) (power > MaxLife / 4 ? 10 : 1));
 
@@ -2666,6 +2670,44 @@ namespace Comet.Game.States
                     break;
                 case Item.SocketGem.SuperMoonGem:
                     strEffect = "moon";
+                    break;
+            }
+
+            await SendEffectAsync(strEffect, true);
+        }
+
+        public async Task SendGemEffect2Async()
+        {
+            var setGem = new List<int>();
+
+            for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos < Item.ItemPosition.EquipmentEnd; pos++)
+            {
+                Item item = UserPackage[pos];
+                if (item == null)
+                    continue;
+
+                if (item.Blessing > 0)
+                    setGem.Add(item.Blessing);
+            }
+
+            int nGems = setGem.Count;
+            if (nGems <= 0)
+                return;
+
+            string strEffect = "";
+            switch (setGem[await Kernel.NextAsync(0, nGems)])
+            {
+                case 1:
+                    strEffect = "Aegis1";
+                    break;
+                case 3:
+                    strEffect = "Aegis2";
+                    break;
+                case 5:
+                    strEffect = "Aegis3";
+                    break;
+                case 7:
+                    strEffect = "Aegis4";
                     break;
             }
 
@@ -4402,6 +4444,15 @@ namespace Comet.Game.States
                     return true;
                 }
 
+                case ClientUpdateType.VipLevel:
+                {
+                    value = VipLevel = (uint) Math.Max(0, Math.Min(6, value));
+
+                    if (VipLevel > 0)
+                        await AttachStatusAsync(this, StatusSet.ORANGE_HALO_GLOW, 0, (int) (VipExpiration - DateTime.Now).TotalSeconds, 0, 0);
+                    break;
+                }
+
                 default:
                     bool result = await base.SetAttributesAsync(type, value);
                     return result && await SaveAsync();
@@ -4622,7 +4673,21 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Quiz
+
+        public uint QuizPoints
+        {
+            get => m_dbObject.QuizPoints;
+            set => m_dbObject.QuizPoints = value;
+        }
+
+        #endregion
+
         #region Flower
+
+        public bool CanRefreshFlowerRank => m_flowerRankRefresh.ToNextTime();
+
+        public uint FlowerCharm { get; set; }
 
         public DateTime? SendFlowerTime
         {
