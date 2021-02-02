@@ -232,6 +232,12 @@ namespace Comet.Game.Packets
                         Bound = item.IsBound,
                         Inscribed = item.SyndicateIdentity != 0 ? 1 : 0
                     });
+
+                    if (Items.Count >= 20)
+                    {
+                        await user.SendAsync(this);
+                        Items.Clear();
+                    }
                 }
 
                 if (Items.Count > 0)

@@ -34,7 +34,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <AssemblyVersion>1.2021.0201.25</AssemblyVersion>
-    <FileVersion>1.2021.0201.121</FileVersion>
+    <FileVersion>1.2021.0201.122</FileVersion>
     <Configurations>Debug;Release;Debug Windows (x64)</Configurations> 
   </PropertyGroup>
 
