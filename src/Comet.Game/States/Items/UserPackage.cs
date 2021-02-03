@@ -73,6 +73,11 @@ namespace Comet.Game.States.Items
 
         public Item this[string name] => m_dicInventory.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
+        public Item GetEquipmentById(uint idItem)
+        {
+            return m_dicEquipment.Values.FirstOrDefault(x => x.Identity == idItem);
+        }
+
         public async Task<bool> CreateAsync()
         {
             var items = await ItemRepository.GetAsync(m_user.Identity);

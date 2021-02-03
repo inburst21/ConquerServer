@@ -212,6 +212,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.ShopSell:
+                {
                     if (Identity == 2888)
                         return;
 
@@ -235,6 +236,7 @@ namespace Comet.Game.Packets
 
                     await user.AwardMoney(price);
                     break;
+                }
 
                 case ItemActionType.InventoryDropItem:
                 case ItemActionType.InventoryRemove:
@@ -634,6 +636,81 @@ namespace Comet.Game.Packets
                         break;
                 }
 
+                case ItemActionType.TalismanProgress:
+                {
+                    item = user.UserPackage.GetEquipmentById(Identity);
+                    Item target = user.UserPackage[Command];
+
+                    if (item == null || target == null)
+                        return;
+
+                    if (target.IsBound && !item.IsBound)
+                        return;
+
+                    if (!item.IsTalisman())
+                        return;
+
+                    if (target.IsTalisman() || target.IsMount() || !target.IsEquipment())
+                        return;
+
+                    if (target.GetQuality() < 6)
+                        return;
+
+                    item.SocketProgress += target.CalculateSocketProgress();
+                    if (item.SocketOne == Item.SocketGem.NoSocket && item.SocketProgress >= 8000)
+                    {
+                        item.SocketProgress = 0;
+                        item.SocketOne = Item.SocketGem.EmptySocket;
+                    }
+                    else if (item.SocketOne != Item.SocketGem.NoSocket && item.SocketTwo == Item.SocketGem.NoSocket && item.SocketProgress >= 20000)
+                    {
+                        item.SocketProgress = 0;
+                        item.SocketTwo = Item.SocketGem.EmptySocket;
+                    }
+
+                    await user.UserPackage.RemoveFromInventoryAsync(target, UserPackage.RemovalType.Delete);
+                    await item.SaveAsync();
+                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                    await user.SendAsync(this);
+                    break;
+                }
+
+                case ItemActionType.TalismanProgressEmoney:
+                {
+                    item = user.UserPackage.GetEquipmentById(Identity);
+
+                    if (item == null)
+                        return;
+
+                    if (item.SocketOne == Item.SocketGem.NoSocket)
+                    {
+                        if (item.SocketProgress < 2400)
+                            return;
+
+                        if (!await user.SpendConquerPoints((int) (5600 * (1 - item.SocketProgress / 8000f)), true))
+                            return;
+
+                        item.SocketProgress = 0;
+                        item.SocketOne = Item.SocketGem.EmptySocket;
+                    }
+                    else if (item.SocketOne != Item.SocketGem.NoSocket && item.SocketTwo == Item.SocketGem.NoSocket)
+                    {
+                        if (item.SocketProgress < 2400)
+                            return;
+
+                        if (!await user.SpendConquerPoints((int) (14000 * (1 - item.SocketProgress / 20000f)), true))
+                            return;
+
+                        item.SocketProgress = 0;
+                        item.SocketTwo = Item.SocketGem.EmptySocket;
+                    }
+
+                    await item.SaveAsync();
+                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                    await user.SendAsync(this);
+                    break;
+                }
+
                 default:
                     await client.SendAsync(this);
                     if (client.Character.IsGm())
@@ -676,6 +753,8 @@ namespace Comet.Game.Packets
             ClientPing = 27,
             EquipmentEnchant,
             BoothSellPoints,
+            TalismanProgress = 35,
+            TalismanProgressEmoney = 36,
             InventoryDropItem = 37,
             InventoryDropSilver = 38
         }

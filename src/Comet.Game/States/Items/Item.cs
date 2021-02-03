@@ -1445,6 +1445,29 @@ namespace Comet.Game.States.Items
 
         #region Query info
 
+        public uint CalculateSocketProgress()
+        {
+            uint total = 0;
+            total += TALISMAN_SOCKET_QUALITY_ADDITION[Type % 10];
+            total += TALISMAN_SOCKET_PLUS_ADDITION[Plus];
+            if (IsWeapon())
+            {
+                if (SocketTwo > 0)
+                    total += TALISMAN_SOCKET_HOLE_ADDITION0[2];
+                else if (SocketOne > 0)
+                    total += TALISMAN_SOCKET_HOLE_ADDITION0[1];
+            }
+            else
+            {
+                if (SocketTwo > 0)
+                    total += TALISMAN_SOCKET_HOLE_ADDITION1[2];
+                else if (SocketOne > 0)
+                    total += TALISMAN_SOCKET_HOLE_ADDITION1[1];
+            }
+
+            return total;
+        }
+
         public bool IsCountable()
         {
             return IsArrowSort();
@@ -2105,6 +2128,17 @@ namespace Comet.Game.States.Items
         #endregion
 
         #region Constants
+
+        private readonly uint[] TALISMAN_SOCKET_QUALITY_ADDITION = { 0, 0, 0, 0, 0, 0, 5, 10, 40, 1000 };
+
+        private readonly uint[] TALISMAN_SOCKET_PLUS_ADDITION =
+        {
+            0, 6, 30, 80, 240, 740, 2220, 6660, 20000, 60000, 62000,
+            66000, 72000
+        };
+
+        private readonly uint[] TALISMAN_SOCKET_HOLE_ADDITION0 = { 0, 160, 960 };
+        private readonly uint[] TALISMAN_SOCKET_HOLE_ADDITION1 = { 0, 2000, 8000 };
 
         /// <summary>
         /// Item is owned by the holder. Cannot be traded or dropped.
