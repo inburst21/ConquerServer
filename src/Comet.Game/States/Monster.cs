@@ -449,8 +449,8 @@ namespace Comet.Game.States
             }
             else if (await Kernel.ChanceCalcAsync((int) (100 * multiply), 45500))
             {
-                uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 7000121, 0};
-                uint dGem = normalGem[await Kernel.NextAsync(0, normalGem.Length) % normalGem.Length];
+                uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 700121};
+                uint dGem = normalGem[await Kernel.NextAsync(normalGem.Length) % normalGem.Length];
                 if (dGem > 0)
                     await DropItemAsync(dGem, user); // normal gems
             }
