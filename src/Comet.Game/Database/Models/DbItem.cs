@@ -179,5 +179,7 @@ namespace Comet.Game.Database.Models
 
         [Column("save_time")] public virtual DateTime? SaveTime { get; set; }
 
+        [Column("accumulate_num")] public virtual uint AccumulateNum { get; set; }
+
     }
 }

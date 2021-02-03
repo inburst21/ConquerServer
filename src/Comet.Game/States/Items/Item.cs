@@ -332,6 +332,14 @@ namespace Comet.Game.States.Items
             set => m_dbItem.Syndicate = value;
         }
 
+        public uint AccumulateNum
+        {
+            get => m_dbItem.AccumulateNum;
+            set => m_dbItem.AccumulateNum = value;
+        }
+
+        public uint MaxAccumulateNum => 1;
+
         #endregion
 
         #region Requirements
@@ -1436,6 +1444,16 @@ namespace Comet.Game.States.Items
         #endregion
 
         #region Query info
+
+        public bool IsCountable()
+        {
+            return IsArrowSort();
+        }
+
+        public bool IsPileEnable()
+        {
+            return IsExpend() && MaxAccumulateNum > 1;
+        }
 
         public bool IsBroken()
         {

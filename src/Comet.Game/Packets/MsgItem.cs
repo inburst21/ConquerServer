@@ -252,7 +252,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ItemActionType.EquipmentRemove:
-                    if (!await user.UserPackage.UnequipAsync((Item.ItemPosition) Command))
+                    if (!await user.UserPackage.UnEquipAsync((Item.ItemPosition) Command))
                         await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
                     break;
 

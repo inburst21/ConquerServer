@@ -159,7 +159,7 @@ namespace Comet.Game.States.Events
         {
             await sender.DetachAllStatusAsync();
             if (sender.UserPackage[Item.ItemPosition.LeftHand]?.IsShield() == true)
-                await sender.UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
+                await sender.UserPackage.UnEquipAsync(Item.ItemPosition.LeftHand);
 
             await sender.SetPkModeAsync(PkModeType.FreePk);
 

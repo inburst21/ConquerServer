@@ -1173,7 +1173,7 @@ namespace Comet.Game.States
             if (item.IsArrowSort() && item.Durability == 0)
             {
                 Item.ItemPosition pos = item.Position;
-                await UserPackage.UnequipAsync(item.Position, UserPackage.RemovalType.Delete);
+                await UserPackage.UnEquipAsync(item.Position, UserPackage.RemovalType.Delete);
                 Item other = UserPackage.GetItemByType(item.Type);
                 if (other != null)
                     await UserPackage.EquipItemAsync(other, pos);
@@ -2867,10 +2867,10 @@ namespace Comet.Game.States
             }
 
             if (UserPackage[Item.ItemPosition.LeftHand]?.IsArrowSort() == false)
-                await UserPackage.UnequipAsync(Item.ItemPosition.LeftHand);
+                await UserPackage.UnEquipAsync(Item.ItemPosition.LeftHand);
 
             if (UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true && ProfessionSort != 4)
-                await UserPackage.UnequipAsync(Item.ItemPosition.RightHand);
+                await UserPackage.UnEquipAsync(Item.ItemPosition.RightHand);
 
             return true;
         }

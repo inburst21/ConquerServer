@@ -268,7 +268,7 @@ namespace Comet.Game.Packets
                         if (source == null)
                             continue;
 
-                        target.CompositionProgress += PlusAddLevelExp(source.Plus, false);
+                        target.CompositionProgress += PlusAddLevelExp(source.Plus, true);
                         while (target.CompositionProgress >= GetAddLevelExp(target.Plus, false) && target.Plus < 12)
                         {
                             if (target.Plus < 12)

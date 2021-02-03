@@ -1964,6 +1964,9 @@ namespace Comet.Game.States
                     case 13: // mount color
                         newItem.Data = (uint) value;
                         break;
+                    case 17: // Accumulate Num
+                        newItem.AccumulateNum = (uint) value;
+                        break;
                 }
             }
 
@@ -3980,7 +3983,7 @@ namespace Comet.Game.States
                             }
 
                             if (user.UserPackage[Item.ItemPosition.Garment] != null)
-                                await user.UserPackage.UnequipAsync(Item.ItemPosition.Garment);
+                                await user.UserPackage.UnEquipAsync(Item.ItemPosition.Garment);
 
                             user.Body = (BodyType) usNewBody;
                             await user.SynchroAttributesAsync(ClientUpdateType.Mesh, user.Mesh, true);
