@@ -246,8 +246,11 @@ namespace Comet.Game.States
             else
                 attack = attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
 
-            if (adjustAtk > 0)
+            if (adjustAtk > 0 && adjustAtk < 32000)
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
+
+            if (attacker is Character && target is Character && attacker.IsBowman)
+                attack = (int)(attack * 0.1125f);
 
             Character targetUser = target as Character;
             int defense = target.Defense;
@@ -265,15 +268,16 @@ namespace Comet.Game.States
                 defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
 
             damage = Math.Max(1, attack - defense);
+
+            if (adjustAtk > 32000)
+                damage = Calculations.CutTrail(0, Calculations.AdjustDataEx(damage, adjustAtk));
+
             if (targetUser != null)
             {
                 damage = (int) (damage * (1 - targetUser.Blessing / 100d));
                 damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
-
-            if (attacker is Character && target is Character && attacker.IsBowman)
-                damage = (int)(damage * 0.1125f);
-
+            
             if (attacker.QueryStatus(StatusSet.STIG) != null)
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIG).Power);
 

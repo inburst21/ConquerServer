@@ -69,8 +69,8 @@ namespace Comet.Game.Packets
 
             FlowerRanking = user.FlowerCharm;
             QuizPoints = user.QuizPoints;
-            //EnlightenPoints = 200;
-            //UserTitle = 1;
+            UserTitle = user.UserTitle;
+            
             if (user.Syndicate != null)
                 SharedBattlePower = (uint) user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
 
@@ -209,6 +209,8 @@ namespace Comet.Game.Packets
                 writer.Write(SyndicatePosition); // 16
             }
 
+            writer.Write((ushort)0);
+
             if (StatuaryLife > 0)
             {
                 writer.Write(StatuaryLife); // 24
@@ -219,8 +221,6 @@ namespace Comet.Game.Packets
             {
                 writer.Write(Status); // 24
             }
-
-            writer.Write((ushort)0);
 
             writer.Write(Helmet); // 30
             writer.Write(Garment); // 34

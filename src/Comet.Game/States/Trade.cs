@@ -82,7 +82,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (item.IsMonopoly())
+            if (item.IsMonopoly() || item.IsBound)
             {
                 await sender.SendAsync(Language.StrNotToTrade);
                 await sender.SendAsync(RemoveMsg(idItem));
@@ -97,6 +97,13 @@ namespace Comet.Game.States
             }
 
             if (item.IsLocked() && !sender.IsValidTradePartner(target.Identity))
+            {
+                await sender.SendAsync(Language.StrNotToTrade);
+                await sender.SendAsync(RemoveMsg(idItem));
+                return false;
+            }
+
+            if (item.SyndicateIdentity != 0)
             {
                 await sender.SendAsync(Language.StrNotToTrade);
                 await sender.SendAsync(RemoveMsg(idItem));

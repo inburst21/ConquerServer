@@ -4668,10 +4668,49 @@ namespace Comet.Game.States
             set => m_dbObject.VipLevel = value;
         }
 
+        public bool HasVip => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now;
+
         public DateTime VipExpiration
         {
             get => m_dbObject.VipExpiration ?? DateTime.MinValue;
             set => m_dbObject.VipExpiration = value;
+        }
+
+        #endregion
+
+        #region User Title
+
+        private ConcurrentDictionary<uint, DbUserTitle> m_userTitles = new ConcurrentDictionary<uint, DbUserTitle>();
+
+        public async Task LoadTitlesAsync()
+        {
+            var titles = await DbUserTitle.GetAsync(Identity);
+            foreach (var title in titles)
+            {
+                m_userTitles.TryAdd(title.TitleId, title);
+            }
+            await SendTitlesAsync();
+        }
+
+        public bool HasTitle(uint idTitle) => m_userTitles.ContainsKey(idTitle);
+
+        public List<DbUserTitle> GetUserTitles() => m_userTitles.Values.Where(x => x.DelTime > DateTime.Now).ToList();
+
+        public byte UserTitle
+        {
+            get => m_dbObject.TitleSelect;
+            set => m_dbObject.TitleSelect = value;
+        }
+
+        public async Task SendTitlesAsync()
+        {
+            foreach (var title in GetUserTitles().Select(x => (byte) x.TitleId))
+                await SendAsync(new MsgTitle
+                {
+                    Action = MsgTitle.TitleAction.Add,
+                    Title = title,
+                    Identity = Identity
+                });
         }
 
         #endregion

@@ -50,8 +50,6 @@ namespace Comet.Game.Packets
     {
         public MsgAction()
         {
-            Type = PacketType.MsgAction;
-
             Timestamp = (uint) Environment.TickCount;
         }
 
@@ -125,7 +123,7 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort) Type);
+            writer.Write((ushort)PacketType.MsgAction);
             writer.Write(Identity);
             writer.Write(Command);
             writer.Write(Argument);
@@ -202,7 +200,7 @@ namespace Comet.Game.Packets
                     await user.UserPackage.SendAsync();
                     await user.Statistic.InitializeAsync();
                     await user.TaskDetail.InitializeAsync();
-
+                    await user.LoadTitlesAsync();
                     await client.SendAsync(this);
                     break;
 

@@ -237,6 +237,10 @@ namespace Comet.Game
                         msg = new MsgSynMemberInfo();
                         break;
 
+                    case PacketType.MsgTitle:
+                        msg = new MsgTitle();
+                        break;
+
                     case PacketType.MsgTaskStatus:
                         msg = new MsgTaskStatus();
                         break;

@@ -872,14 +872,14 @@ namespace Comet.Game.States.Magics
 
             if (!target.IsAlive && target.IsPlayer())
             {
-                if (status != 0)
+                if (status != -1)
                     return false;
 
                 if (target.Map.IsPkField())
                     return false;
             }
 
-            if (status == 0 && target is Character user)
+            if (status == -1 && target is Character user)
             {
                 await user.RebornAsync(false, true);
                 await user.Map.SendMapInfoAsync(user);
@@ -1235,6 +1235,7 @@ namespace Comet.Game.States.Magics
                 MapY = (ushort) center.Y
             };
 
+            bool msgSent = false;
             List<Role> setTarget = new List<Role>();
             foreach (var target in targetLocked.Roles)
             {
@@ -1269,6 +1270,7 @@ namespace Comet.Game.States.Magics
                         MapX = (ushort)center.X,
                         MapY = (ushort)center.Y
                     };
+                    msgSent = true;
                 }
 
                 msg.Append(target.Identity, damage, true);
@@ -1277,7 +1279,7 @@ namespace Comet.Game.States.Magics
                     setTarget.Add(target);
             }
 
-            if (msg.Count > 0)
+            if (msg.Count > 0 || !msgSent)
                 await m_pOwner.Map.BroadcastRoomMsgAsync(center.X, center.Y, msg);
 
             foreach (var target in setTarget)
@@ -1621,7 +1623,7 @@ namespace Comet.Game.States.Magics
 
                 pMagic.Experience += (uint)nExp;
 
-                if ((pMagic.AutoActive & 8) == 0)
+                //if ((pMagic.AutoActive & 8) == 0)
                     await pMagic.FlushAsync();
 
                 await UpLevelMagic(true, pMagic);
@@ -1637,7 +1639,7 @@ namespace Comet.Game.States.Magics
 
                 pMagic.Experience += (uint)nExp;
 
-                if ((pMagic.AutoActive & 8) == 0)
+                //if ((pMagic.AutoActive & 8) == 0)
                     await pMagic.FlushAsync();
                 await UpLevelMagic(true, pMagic);
 

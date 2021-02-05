@@ -74,6 +74,8 @@ namespace Comet.Network.Packets
         MsgDice = 1113,
         MsgSyncAction = 1114,
 
+        MsgTitle = 1130,
+
         MsgTaskStatus = 1134,
         MsgTaskDetailInfo = 1135,
 

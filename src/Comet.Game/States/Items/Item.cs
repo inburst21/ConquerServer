@@ -1557,7 +1557,7 @@ namespace Comet.Game.States.Items
 
         public bool IsDisappearWhenDropped()
         {
-            return IsMonopoly();
+            return IsMonopoly() || IsBound;
         }
 
         public bool CanBeDropped()
@@ -1720,7 +1720,7 @@ namespace Comet.Game.States.Items
 
         public static bool IsHelmet(uint type)
         {
-            return type >= 110000 && type < 120000 || type >= 140000 && type < 150000;
+            return type >= 110000 && type < 120000 || type >= 140000 && type < 150000 || type >= 123000 && type < 124000;
         }
 
         public bool IsNeck()

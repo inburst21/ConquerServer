@@ -66,11 +66,11 @@ namespace Comet.Game.Packets
             PreviousClass = character.PreviousProfession;
             FirstClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
-            //QuizPoints = 5000;
+            QuizPoints = character.QuizPoints;
             //EnlightenPoints = 200;
             //EnlightenExp = 2;
             VipLevel = character.BaseVipLevel;
-            //UserTitle = 1;
+            UserTitle = 0;
             CharacterName = character.Name;
             SpouseName = character.MateName;
         }
