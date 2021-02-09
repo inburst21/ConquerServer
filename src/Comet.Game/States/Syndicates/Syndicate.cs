@@ -2657,7 +2657,7 @@ namespace Comet.Game.States.Syndicates
             {
                 OwnerIdentity = Identity,
                 BattleAddition = power,
-                TimeLimit = DateTime.Now.AddDays(7),
+                TimeLimit = DateTime.Now.AddDays(30),
                 TotemType = (uint) type
             }))
             {

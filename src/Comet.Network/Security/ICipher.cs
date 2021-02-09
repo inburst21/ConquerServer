@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using Comet.Network.Sockets;
 
 #endregion
 
@@ -31,8 +32,8 @@ namespace Comet.Network.Security
 
     /// <summary>
     /// Defines generalized methods for ciphers used by 
-    /// <see cref="Comet.Network.Sockets.TcpServerActor"/> and 
-    /// <see cref="Comet.Network.Sockets.TcpServerListener"/> for encrypting and decrypting
+    /// <see cref="TcpServerActor"/> and 
+    /// <see cref="TcpServerListener{TActor}"/> for encrypting and decrypting
     /// data to and from the game client. Can be used to switch between ciphers easily for
     /// seperate states of the game client connection.
     /// </summary>
