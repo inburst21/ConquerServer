@@ -650,6 +650,7 @@ namespace Comet.Game.States
                             drops.RemoveAll(x => !Item.IsHelmet(x.Type) && !Item.IsTalisman(x.Type));
                         else 
                             drops.RemoveAll(x => !Item.IsHelmet(x.Type));
+                        drops.RemoveAll(x => Item.GetItemSubType(x.Type) == 115);
                         break;
                     case 1:
                         if (dropTalisman)
@@ -1300,14 +1301,6 @@ namespace Comet.Game.States
                 {
                     if (m_tAction.ToNextTime())
                     {
-                        //if (Map.IsSuperPosition(MapX, MapY))
-                        //{
-                        //    m_bAheadPath = false;
-                        //    DetectPath(FacingDirection.Invalid);
-                        //    m_bAheadPath = true;
-                        //    if (m_nextDir != FacingDirection.Invalid) await PathMoveAsync(RoleMoveMode.Shift);
-                        //}
-
                         await ChangeModeAsync(AiStage.Move);
                         return;
                     }
@@ -1512,10 +1505,7 @@ namespace Comet.Game.States
                 && m_disappear.IsActive()
                 && m_disappear.IsTimeOut())
             {
-                //if (QueryStatus(StatusSet.FADE) == null)
-                {
-                    await AttachStatusAsync(this, StatusSet.INVISIBLE, 0, int.MaxValue, 0, 0);
-                }
+                await AttachStatusAsync(this, StatusSet.INVISIBLE, 0, int.MaxValue, 0, 0);
             }
 
             if (m_leaveMap.IsActive())
@@ -1529,27 +1519,31 @@ namespace Comet.Game.States
             {
                 foreach (var stts in StatusSet.Status.Values)
                 {
-                    QueueAction(stts.OnTimerAsync);
-                    if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
+                    QueueAction(async () =>
                     {
-                        await StatusSet.DelObjAsync(stts.Identity);
-                    }
+                        await stts.OnTimerAsync();
+
+                        if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
+                        {
+                            await StatusSet.DelObjAsync(stts.Identity);
+                        }
+                    });
                 }
             }
 
             switch (m_stage)
             {
                 case AiStage.Escape:
-                    await EscapeAsync();
+                    QueueAction(async () => await EscapeAsync());
                     break;
                 case AiStage.Attack:
-                    await AttackAsync();
+                    QueueAction(async () => await AttackAsync());
                     break;
                 case AiStage.Move:
-                    await FowardAsync();
+                    QueueAction(async () => await FowardAsync());
                     break;
                 case AiStage.Idle:
-                    await IdleAsync();
+                    QueueAction(async () => await IdleAsync());
                     break;
             }
         }

@@ -152,9 +152,51 @@ namespace Comet.Game.States
 
         public bool IsUserCast => CasterId == m_pOwner.Identity || CasterId == 0;
 
-        public Task OnTimerAsync()
+        public async Task OnTimerAsync()
         {
-            return Task.CompletedTask;
+            if (!IsValid || !m_tKeep.ToNextTime())
+                return;
+
+            try
+            {
+                switch (Identity)
+                {
+                    case StatusSet.LUCKY_DIFFUSE:
+                    {
+                        if (!(m_pOwner is Character user))
+                            return;
+
+                        if (!m_tInterval.ToNextTime(1000))
+                            return;
+
+                        await user.ChangeLuckyTimerAsync(3);
+                        break;
+                    }
+                    case StatusSet.LUCKY_ABSORB:
+                    {
+                        if (!(m_pOwner is Character user))
+                            return;
+
+                        if (!m_tInterval.ToNextTime(1000))
+                            return;
+                        
+                        Role sender = user.QueryRole(CasterId);
+                        if (sender == null || sender.GetDistance(user) > 3)
+                        {
+                            m_tKeep.Clear(); // cancel
+                            return;
+                        }
+
+                        await user.ChangeLuckyTimerAsync(1);
+                        break;
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
         }
 
         public async Task<bool> CreateAsync(Role pRole, int nStatus, int nPower, int nSecs, int nTimes, uint caster = 0, byte level = 0, bool save = false)

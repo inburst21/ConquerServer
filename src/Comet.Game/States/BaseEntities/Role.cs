@@ -681,7 +681,7 @@ namespace Comet.Game.States.BaseEntities
 
                 if (bChangeData)
                 {
-                    await pStatus.ChangeDataAsync(nPower, nSecs, nTimes, pSender.Identity);
+                    await pStatus.ChangeDataAsync(nPower, nSecs, nTimes, pSender?.Identity ?? 0);
                 }
                 return true;
             }

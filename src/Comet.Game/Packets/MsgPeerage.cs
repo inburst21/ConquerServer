@@ -49,41 +49,77 @@ namespace Comet.Game.Packets
         public NobilityAction Action { get; set; }
         public ulong Data { get; set; }
 
-        public uint DataHigh
+        public uint DataLow
         {
-            get => (uint) (Data - (Data >> 32));
-            set => Data = (ulong) value << 32 | DataLow;
+            get => (uint)(Data - ((ulong) DataHigh << 32));
+            set => Data = (ulong) DataHigh << 32 | value;
         }
 
         public ushort DataLow1
         {
-            get => (ushort) (DataHigh - (DataHigh >> 16));
-            set => DataHigh = (uint) value << 16 | DataHigh2;
+            get => (ushort)(DataLow - (DataLow2 << 16));
+            set => DataLow = (uint)(DataLow2 << 16 | value);
         }
 
         public ushort DataLow2
         {
-            get => (ushort) (DataHigh >> 16);
-            set => DataHigh = ((uint)DataHigh1 << 16 | value);
+            get => (ushort)(DataLow >> 16);
+            set => DataLow = (uint)(value << 16) | DataLow;
         }
 
-        public uint DataLow
+        public uint DataHigh
         {
-            get => (uint) (Data >> 32);
-            set => Data = (ulong) DataHigh << 32 | value;
+            get => (uint)(Data >> 32);
+            set => Data = ((ulong) value << 32) | Data;
         }
 
         public ushort DataHigh1
         {
-            get => (ushort)(DataLow - (DataLow >> 16));
-            set => DataLow = (uint)value << 16 | DataLow2;
+            get => (ushort)(DataHigh - (DataHigh2 << 16));
+            set => DataHigh = (uint)(DataHigh2 << 16 | value);
         }
 
         public ushort DataHigh2
         {
-            get => (ushort)(DataLow >> 16);
-            set => DataLow = ((uint)DataLow1 << 16 | value);
+            get => (ushort)(DataHigh >> 16);
+            set => DataHigh = (uint)(value << 16) | DataHigh;
         }
+
+        //public uint DataHigh
+        //{
+        //    get => (uint) (Data - (Data >> 32));
+        //    set => Data = (ulong) value << 32 | DataLow;
+        //}
+
+        //public ushort DataLow1
+        //{
+        //    get => (ushort) (DataHigh - (DataHigh >> 16));
+        //    set => DataHigh = (uint) value << 16 | DataHigh2;
+        //}
+
+        //public ushort DataLow2
+        //{
+        //    get => (ushort) (DataHigh >> 16);
+        //    set => DataHigh = ((uint)DataHigh1 << 16 | value);
+        //}
+
+        //public uint DataLow
+        //{
+        //    get => (uint) (Data >> 32);
+        //    set => Data = (ulong) DataHigh << 32 | value;
+        //}
+
+        //public ushort DataHigh1
+        //{
+        //    get => (ushort)(DataLow - (DataLow >> 16));
+        //    set => DataLow = (uint)value << 16 | DataLow2;
+        //}
+
+        //public ushort DataHigh2
+        //{
+        //    get => (ushort)(DataLow >> 16);
+        //    set => DataLow = ((uint)DataLow1 << 16 | value);
+        //}
 
         public uint Data1 { get; set; }
         public uint Data2 { get; set; }

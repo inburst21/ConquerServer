@@ -84,10 +84,13 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            await client.Character.ProcessOnMoveAsync();
-            await client.Character.MoveTowardAsync(Direction, Mode);
-            await client.SendAsync(this);
-            await client.Character.Screen.UpdateAsync(this);
+            client.Character.QueueAction(async () =>
+            {
+                await client.Character.ProcessOnMoveAsync();
+                await client.Character.MoveTowardAsync(Direction, Mode);
+                await client.SendAsync(this);
+                await client.Character.Screen.UpdateAsync(this);
+            });
         }
     }
 

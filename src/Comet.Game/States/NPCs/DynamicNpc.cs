@@ -176,6 +176,11 @@ namespace Comet.Game.States.NPCs
             return Type == WEAPONGOAL_NPC || Type == MAGICGOAL_NPC;
         }
 
+        public bool IsCityGate()
+        {
+            return Type == ROLE_CITY_GATE_NPC;
+        }
+
         #endregion
 
         #region Task and Data
@@ -251,7 +256,7 @@ namespace Comet.Game.States.NPCs
 
         public override bool IsAttackable(Role attacker)
         {
-            if (!IsSynFlag() && !IsCtfFlag() && !IsGoal())
+            if (!IsSynFlag() && !IsCtfFlag() && !IsGoal() && !IsCityGate())
                 return false;
 
             Character attackerUser = attacker as Character;

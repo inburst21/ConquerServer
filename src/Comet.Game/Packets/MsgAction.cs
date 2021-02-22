@@ -488,14 +488,17 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        await user.ProcessOnMoveAsync();
-                        await user.JumpPosAsync(newX, newY);
+                        user.QueueAction(async () =>
+                        {
+                            await user.ProcessOnMoveAsync();
+                            await user.JumpPosAsync(newX, newY);
 
-                        X = user.MapX;
-                        Y = user.MapY;
+                            X = user.MapX;
+                            Y = user.MapY;
 
-                        await user.SendAsync(this);
-                        await user.Screen.UpdateAsync(this);
+                            await user.SendAsync(this);
+                            await user.Screen.UpdateAsync(this);
+                        });
                     }
 
                     break;
