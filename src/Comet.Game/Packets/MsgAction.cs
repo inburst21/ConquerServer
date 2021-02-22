@@ -460,9 +460,12 @@ namespace Comet.Game.Packets
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
                     await user.SendMerchantAsync();
-                    
+
                     if (user.VipLevel > 0)
-                        await user.AttachStatusAsync(user, StatusSet.ORANGE_HALO_GLOW, 0, int.MaxValue, 0, 0);
+                    {
+                        if (!user.HasTitle(Character.UserTitles.Vip))
+                            await user.AddTitle(Character.UserTitles.Vip, user.VipExpiration);
+                    }
 
                     Kernel.EventThread.GetEvent<QuizShow>()?.Enter(user);
 

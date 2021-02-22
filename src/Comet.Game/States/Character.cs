@@ -4694,6 +4694,13 @@ namespace Comet.Game.States
 
         #region User Title
 
+        public enum UserTitles
+        {
+            None,
+            Vip,
+            ElitePkChampionHigh = 10
+        }
+
         private ConcurrentDictionary<uint, DbUserTitle> m_userTitles = new ConcurrentDictionary<uint, DbUserTitle>();
 
         public async Task LoadTitlesAsync()
@@ -4706,7 +4713,7 @@ namespace Comet.Game.States
             await SendTitlesAsync();
         }
 
-        public bool HasTitle(uint idTitle) => m_userTitles.ContainsKey(idTitle);
+        public bool HasTitle(UserTitles idTitle) => m_userTitles.ContainsKey((uint) idTitle);
 
         public List<DbUserTitle> GetUserTitles() => m_userTitles.Values.Where(x => x.DelTime > DateTime.Now).ToList();
 
@@ -4714,6 +4721,29 @@ namespace Comet.Game.States
         {
             get => m_dbObject.TitleSelect;
             set => m_dbObject.TitleSelect = value;
+        }
+
+        public async Task<bool> AddTitle(UserTitles idTitle, DateTime expiration)
+        {
+            if (expiration < DateTime.Now)
+                return false;
+
+            if (HasTitle(idTitle))
+            {
+                m_userTitles.TryRemove((uint) idTitle, out var old);
+                await BaseRepository.DeleteAsync(old);
+            }
+
+            DbUserTitle title = new DbUserTitle
+            {
+                PlayerId = Identity,
+                TitleId = (uint) idTitle,
+                DelTime = expiration,
+                Status = 0,
+                Type = 0
+            };
+            await BaseRepository.SaveAsync(title);
+            return m_userTitles.TryAdd((uint) idTitle, title);
         }
 
         public async Task SendTitlesAsync()

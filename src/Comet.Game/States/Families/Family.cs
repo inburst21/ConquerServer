@@ -8,5 +8,6 @@ namespace Comet.Game.States.Families
 {
     public sealed class Family
     {
+
     }
 }
