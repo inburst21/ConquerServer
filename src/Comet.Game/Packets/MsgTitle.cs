@@ -80,7 +80,7 @@ namespace Comet.Game.Packets
 
                 case TitleAction.Select:
                 {
-                    if (Title != 0 && !user.HasTitle(Title))
+                    if (Title != 0 && !user.HasTitle((Character.UserTitles) Title))
                         return;
 
                     user.UserTitle = Title;

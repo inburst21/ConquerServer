@@ -466,6 +466,33 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has abdicated the leadership of the family to {1}..
+        /// </summary>
+        public static string StrFamilyAbdicate {
+            get {
+                return ResourceManager.GetString("StrFamilyAbdicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has created family {1} successfully..
+        /// </summary>
+        public static string StrFamilyCreate {
+            get {
+                return ResourceManager.GetString("StrFamilyCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This is a new family..
+        /// </summary>
+        public static string StrFamilyDefaultAnnounce {
+            get {
+                return ResourceManager.GetString("StrFamilyDefaultAnnounce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Your wife is online..
         /// </summary>
         public static string StrFemaleMateLogin {

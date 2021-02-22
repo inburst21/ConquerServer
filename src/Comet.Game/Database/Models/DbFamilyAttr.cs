@@ -22,8 +22,12 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -40,5 +44,11 @@ namespace Comet.Game.Database.Models
         [Column("join_date")] public DateTime JoinDate { get; set; }
         [Column("auto_exercise")] public byte AutoExercise { get; set; }
         [Column("exp_date")] public uint ExpDate { get; set; }
+
+        public static async Task<List<DbFamilyAttr>> GetAsync(uint idFamily)
+        {
+            await using var ctx = new ServerDbContext();
+            return await ctx.FamilyAttrs.Where(x => x.FamilyIdentity == idFamily).ToListAsync();
+        }
     }
 }

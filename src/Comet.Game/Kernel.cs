@@ -30,6 +30,7 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.States.Families;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Threading;
@@ -69,6 +70,7 @@ namespace Comet.Game
         public static MineManager MineManager = new MineManager();
         public static PigeonManager PigeonManager = new PigeonManager();
         public static FlowerManager FlowerManager = new FlowerManager();
+        public static FamilyManager FamilyManager = new FamilyManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -118,6 +120,7 @@ namespace Comet.Game
             await MagicManager.InitializeAsync();
             await PeerageManager.InitializeAsync();
             await SyndicateManager.InitializeAsync();
+            await FamilyManager.InitializeAsync();
             await EventManager.InitializeAsync();
             await MineManager.InitializeAsync();
             await PigeonManager.InitializeAsync();

@@ -107,6 +107,9 @@ namespace Comet.Game.Database
         public virtual DbSet<DbArenic> Arenics { get; set; }
         public virtual DbSet<DbQuiz> Quiz { get; set; }
         public virtual DbSet<DbUserTitle> UserTitle { get; set; }
+        public virtual DbSet<DbFamily> Families { get; set; }
+        public virtual DbSet<DbFamilyAttr> FamilyAttrs { get; set; }
+        public virtual DbSet<DbFamilyBattleEffectShareLimit> FamilyBattleEffectShareLimits { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

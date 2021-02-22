@@ -292,6 +292,15 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case TalkChannel.Family:
+                {
+                    if (sender.FamilyIdentity == 0)
+                        return;
+
+                    await sender.Family.SendAsync(this, sender.Identity);
+                    break;
+                }
+
                 case TalkChannel.Ghost:
                 {
                     if (sender.IsAlive)
@@ -931,7 +940,7 @@ namespace Comet.Game.Packets
             Action,
             Team,
             Guild,
-            Spouse = 2006,
+            Family = 2006,
             System,
             Yell,
             Friend,

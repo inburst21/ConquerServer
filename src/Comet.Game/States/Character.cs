@@ -35,6 +35,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
+using Comet.Game.States.Families;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Game.States.NPCs;
@@ -4914,6 +4915,132 @@ namespace Comet.Game.States
         {
             await Statistic.AddOrUpdateAsync(1200, 0, Statistic.GetValue(1200) + 1, true);
             await Log.GmLog($"activity_{Identity}", $"{Identity},{Name},{amount}");
+            return true;
+        }
+
+        #endregion
+
+        #region Family
+
+        public Family Family { get; set; }
+        public FamilyMember FamilyMember => Family.GetMember(Identity);
+
+        public uint FamilyIdentity => Family?.Identity ?? 0;
+        public string FamilyName => Family?.Name ?? Language.StrNone;
+
+        public Family.FamilyRank FamilyPosition => FamilyMember?.Rank ?? Family.FamilyRank.None;
+
+        public async Task LoadFamilyAsync()
+        {
+            Family = Kernel.FamilyManager.FindByUser(Identity);
+            if (Family == null)
+            {
+                if (MateIdentity != 0)
+                {
+                    Family family = Kernel.FamilyManager.FindByUser(MateIdentity);
+                    FamilyMember mateFamily = family?.GetMember(MateIdentity);
+                    if (mateFamily == null || mateFamily.Rank == Family.FamilyRank.Spouse)
+                        return;
+
+                    await family.AppendMemberAsync(null, this, Family.FamilyRank.Spouse);
+                }
+                return;
+            }
+
+            await SendFamilyAsync();
+            await Family.SendRelationsAsync(this);
+        }
+
+        public Task SendFamilyAsync()
+        {
+            if (Family == null)
+                return Task.CompletedTask;
+
+            MsgFamily msg = new MsgFamily
+            {
+                Identity = FamilyIdentity,
+                Action = MsgFamily.FamilyAction.Query
+            };
+            msg.Strings.Add($"{Family.Identity} {Family.MembersCount} {Family.MembersCount} {Family.Money} {Family.Rank} {(int) FamilyPosition} 0 {Family.BattlePowerTower} 0 0 1 {FamilyMember.Proffer}");
+            msg.Strings.Add(FamilyName);
+            msg.Strings.Add(Name);
+            return SendAsync(msg);
+        }
+
+        public Task SendFamilyOccupyAsync()
+        {
+            if (Family == null)
+                return Task.CompletedTask;
+
+            MsgFamily msg = new MsgFamily
+            {
+                Identity = FamilyIdentity,
+                Action = MsgFamily.FamilyAction.QueryOccupy
+            };
+            // uid#reward#nextreward#occupydays#name#currentmap#dominationmap#
+            msg.Strings.Add($"0 0 0 0 0 0 0");
+            return SendAsync(msg);
+        }
+
+        public async Task SendNoFamilyAsync()
+        {
+            MsgFamily msg = new MsgFamily
+            {
+                Identity = FamilyIdentity,
+                Action = MsgFamily.FamilyAction.Query
+            };
+            msg.Strings.Add($"0 0 0 0 0 0 0 0 0 0 0 0");
+            msg.Strings.Add("");
+            msg.Strings.Add(Name);
+            await SendAsync(msg);
+
+            msg.Action = MsgFamily.FamilyAction.Quit;
+            await SendAsync(msg);
+        }
+
+        public async Task<bool> CreateFamilyAsync(string name, uint proffer)
+        {
+            if (Family != null)
+                return false;
+
+            if (!Kernel.IsValidName(name))
+                return false;
+
+            if (name.Length > 15)
+                return false;
+
+            if (Kernel.FamilyManager.GetFamily(name) != null)
+                return false;
+
+            if (!await SpendMoneyAsync((int) proffer, true))
+                return false;
+
+            Family = await Family.CreateAsync(this, name, proffer / 2);
+            if (Family == null)
+                return false;
+
+            await SendFamilyAsync();
+            await Family.SendRelationsAsync(this);
+            return true;
+        }
+
+        public async Task<bool> DisbandFamilyAsync()
+        {
+            if (Family == null)
+                return false;
+
+            if (FamilyPosition != Family.FamilyRank.ClanLeader)
+                return false;
+
+            if (Family.MembersCount > 1)
+                return false;
+
+            await FamilyMember.DeleteAsync();
+            await Family.SoftDeleteAsync();
+
+            Family = null;
+
+            await SendNoFamilyAsync();
             return true;
         }
 

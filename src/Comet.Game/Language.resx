@@ -252,6 +252,15 @@
   <data name="StrExpPotionInUse" xml:space="preserve">
     <value>You are already using an EXP Potion with better power than this. Wait for the old one to finish.</value>
   </data>
+  <data name="StrFamilyAbdicate" xml:space="preserve">
+    <value>{0} has abdicated the leadership of the family to {1}.</value>
+  </data>
+  <data name="StrFamilyCreate" xml:space="preserve">
+    <value>{0} has created family {1} successfully.</value>
+  </data>
+  <data name="StrFamilyDefaultAnnounce" xml:space="preserve">
+    <value>This is a new family.</value>
+  </data>
   <data name="StrFemaleMateLogin" xml:space="preserve">
     <value>Your wife is online.</value>
   </data>

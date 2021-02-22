@@ -31,6 +31,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
+using Comet.Game.States.Families;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
@@ -147,6 +148,12 @@ namespace Comet.Game.States
                         break;
                     case TaskActionType.ActionNpcFindNextTable:
                         result = await ExecuteActionNpcFindNextTable(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionNpcFamilyCreate:
+                        result = await ExecuteActionNpcFamilyCreateAsync(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionNpcFamilyDestroy:
+                        result = await ExecuteActionNpcFamilyDestroyAsync(action, param, user, role, item, input);
                         break;
 
                     case TaskActionType.ActionMapMovenpc:
@@ -532,6 +539,22 @@ namespace Comet.Game.States
                         break;
                     case TaskActionType.ActionEventExit:
                         result = await ExecuteActionEventExit(action, param, user, role, item, input);
+                        break;
+
+                    case TaskActionType.ActionFamilyAttr:
+                        result = await ExecuteActionFamilyAttrAsync(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionFamilyMemberAttr:
+                        result = await ExecuteActionFamilyMemberAttrAsync(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionFamilyWarActivityCheck:
+                        result = await ExecuteActionFamilyWarActivityCheckAsync(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionFamilyWarAuthorityCheck:
+                        result = await ExecuteActionFamilyWarAuthorityCheckAsync(action, param, user, role, item, input);
+                        break;
+                    case TaskActionType.ActionFamilyWarRegisterCheck:
+                        result = await ActionFamilyWarRegisterCheck(action, param, user, role, item, input);
                         break;
 
                     case TaskActionType.ActionTrapCreate:
@@ -1155,6 +1178,26 @@ namespace Comet.Game.States
             npc.SetData("data2", usMapY);
             await npc.SaveAsync();
             return true;
+        }
+
+        private static async Task<bool> ExecuteActionNpcFamilyCreateAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user == null || user.Family != null)
+                return false;
+
+            if (user.Level < 50 || user.Silvers < 500000)
+                return false;
+
+            return await user.CreateFamilyAsync(input, 500000);
+        }
+
+        private static async Task<bool> ExecuteActionNpcFamilyDestroyAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (user?.Family == null)
+                return false;
+            return await user.DisbandFamilyAsync();
         }
 
         #endregion
@@ -6378,7 +6421,7 @@ namespace Comet.Game.States
                 if (nAmount-- <= 0)
                     break;
 
-                await GameAction.ExecuteActionAsync(idAction, player, role, item, input);
+                await ExecuteActionAsync(idAction, player, role, null, input);
             }
 
             return true;
@@ -6422,6 +6465,136 @@ namespace Comet.Game.States
                 return false;
 
             await user.SignOutEventAsync();
+            return true;
+        }
+
+        #endregion
+
+        #region Family
+
+        private static async Task<bool> ExecuteActionFamilyAttrAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param, 3);
+            if (splitParam.Length < 3)
+                return false;
+
+            string field = splitParam[0],
+                opt = splitParam[1];
+            long value = long.Parse(splitParam[2]);
+            
+            long data = -1;
+            if (user?.Family != null)
+            {
+                if (field.Equals("money"))
+                {
+                    if (opt.Equals("+="))
+                    {
+                        if (value < 0)
+                        {
+                            ulong temp = (ulong) (value * -1);
+                            if (user.Family.Money < temp)
+                                return false;
+                            user.Family.Money -= temp;
+                        }
+                        else
+                        {
+                            ulong temp = (ulong) value;
+                            user.Family.Money += temp;
+                        }
+                        return await user.Family.SaveAsync();
+                    }
+
+                    data = (long) user.Family.Money;
+                }
+                else if (field.Equals("rank"))
+                {
+                    if (opt.Equals("="))
+                    {
+                        user.Family.Rank = (byte)Math.Min(4, value);
+                        return await user.Family.SaveAsync();
+                    }
+
+                    data = user.Family.Rank;
+                }
+                else if (field.Equals("star_tower"))
+                {
+                    if (opt.Equals("="))
+                    {
+                        user.Family.BattlePowerTower = (byte) Math.Min(4, value);
+                        return await user.Family.SaveAsync();
+                    }
+
+                    data = user.Family.BattlePowerTower;
+                }
+            }
+                
+            switch (opt)
+            {
+                case "==": return data == value;
+                case ">=": return data >= value;
+                case "<=": return data <= value;
+                case ">": return data > value;
+                case "<": return data < value;
+            }
+            return false;
+        }
+
+        private static async Task<bool> ExecuteActionFamilyMemberAttrAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            string[] splitParam = SplitParam(param, 3);
+            if (splitParam.Length < 3)
+                return false;
+
+            string field = splitParam[0],
+                opt = splitParam[1];
+            long value = long.Parse(splitParam[2]);
+            long data = 0;
+
+            if (user?.Family != null)
+            {
+                if (field.Equals("rank"))
+                {
+                    data = (long) user.FamilyPosition;
+                }
+            }
+
+            switch (opt)
+            {
+                case "==": return data == value;
+                case ">=": return data >= value;
+                case "<=": return data <= value;
+                case ">": return data > value;
+                case "<": return data < value;
+            }
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionFamilyWarActivityCheckAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            uint idNpc = action.Data;
+
+            DynamicNpc npc = Kernel.RoleManager.GetRole<DynamicNpc>(idNpc);
+            GameMap map = npc?.Map;
+            if (map == null)
+                return false;
+
+
+
+            return true;
+        }
+
+        private static async Task<bool> ExecuteActionFamilyWarAuthorityCheckAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            return true;
+        }
+
+        private static async Task<bool> ActionFamilyWarRegisterCheck(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
             return true;
         }
 
@@ -6715,6 +6888,8 @@ namespace Comet.Game.States
         ActionNpcModify = 206,
         ActionNpcResetsynowner = 207,
         ActionNpcFindNextTable = 208,
+        ActionNpcFamilyCreate = 218,
+        ActionNpcFamilyDestroy = 219,
         ActionNpcLimit = 299,
 
         // Map
@@ -6943,6 +7118,15 @@ namespace Comet.Game.States
         ActionPolicewantedOrder = 3011,
         ActionPolicewantedCheck = 3012,
         ActionWantedLimit = 3099,
+
+        // Family
+        ActionFamilyFirst = 3500,
+        ActionFamilyAttr = 3501,
+        ActionFamilyMemberAttr = 3510,
+        ActionFamilyWarActivityCheck = 3521,
+        ActionFamilyWarAuthorityCheck = 3523,
+        ActionFamilyWarRegisterCheck = 3524,
+        ActionFamilyLast = 3599,
 
         //Magic
         ActionMagicFirst = 4000,

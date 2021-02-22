@@ -257,6 +257,10 @@ namespace Comet.Game
                         msg = new MsgFlower();
                         break;
 
+                    case PacketType.MsgFamily:
+                        msg = new MsgFamily();
+                        break;
+
                     case PacketType.MsgFamilyOccupy:
                         msg = new MsgFamilyOccupy();
                         break;

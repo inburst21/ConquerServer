@@ -338,6 +338,8 @@ namespace Comet.Game.Packets
                     await client.Character.SendSyndicateAsync();
                     if (client.Character.Syndicate != null)
                         await client.Character.Syndicate.SendRelationAsync(client.Character);
+
+                    await client.Character.LoadFamilyAsync();
                     await client.SendAsync(this);
                     break;
 

@@ -22,8 +22,11 @@
 #region References
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -59,5 +62,11 @@ namespace Comet.Game.Database.Models
         [Column("challenge")] public uint Challenge { get; set; }
         [Column("occupy")] public uint Occupy { get; set; }
         [Column("del_flag")] public DateTime? DeleteDate { get; set; }
+
+        public static async Task<List<DbFamily>> GetAsync()
+        {
+            await using var ctx = new ServerDbContext();
+            return await ctx.Families.ToListAsync();
+        }
     }
 }

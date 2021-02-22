@@ -89,6 +89,7 @@ namespace Comet.Game.World.Threading
             await RegisterEventAsync(new LineSkillPk());
             await RegisterEventAsync(new ArenaQualifier());
             await RegisterEventAsync(new QuizShow());
+            await RegisterEventAsync(new FamilyWar());
 
             await base.OnStartAsync();
         }
