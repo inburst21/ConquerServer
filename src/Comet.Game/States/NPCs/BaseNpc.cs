@@ -72,7 +72,7 @@ namespace Comet.Game.States.NPCs
             ROLE_CALL_PET = 28, // ÕÙ»½ÊÞ	(only use for client)
             EUDEMON_TRAINPLACE_NPC = 29, // »ÃÊÞÑ±ÑøËù
             AUCTION_NPC = 30, // ÅÄÂòNPC	ÎïÆ·ÁìÈ¡NPC  LW
-            ROLE_MINE_NPC = 31, // ¿óÊ¯NPC		
+            ROLE_FAMILY_WAR_FLAG = 31,
             ROLE_CTFBASE_NPC = 40,
             ROLE_3DFURNITURE_NPC = 101, // 3D¼Ò¾ßNPC 
             SYN_NPC_WARLETTER = 110; //Ôö¼ÓÐÂµÄ£Î£Ð£ÃÀàÐÍ¡¡×¨ÃÅÓÃÀ´¡¡ÏÂÕ½ÊéµÄ¡¡°ïÅÉ£Î£Ð£Ã
@@ -313,6 +313,11 @@ namespace Comet.Game.States.NPCs
         public bool IsSynNpc()
         {
             return OwnerType == 2;
+        }
+
+        public bool IsFamilyNpc()
+        {
+            return OwnerType == 4;
         }
 
         public bool IsSynFlag()

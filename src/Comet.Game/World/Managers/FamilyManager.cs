@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
@@ -69,12 +70,22 @@ namespace Comet.Game.World.Managers
             return m_dicFamilies.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
 
+        public Family GetOccupyOwner(uint idMap)
+        {
+            return m_dicFamilies.Values.FirstOrDefault(x => x.FamilyMap == idMap);
+        }
+
         /// <summary>
         /// Find the family a user is in.
         /// </summary>
         public Family FindByUser(uint idUser)
         {
             return m_dicFamilies.Values.FirstOrDefault(x => x.GetMember(idUser) != null);
+        }
+
+        public List<Family> QueryFamilies(Func<Family, bool> predicate)
+        {
+            return m_dicFamilies.Values.Where(predicate).ToList();
         }
     }
 }

@@ -234,6 +234,11 @@ namespace Comet.Game.World.Maps
             return m_roles.TryGetValue(target, out var value) && value is T role ? role : null;
         }
 
+        public T QueryRole<T>(Func<T, bool> pred) where T : Role
+        {
+            return m_roles.Values.Where(x => x is T).Cast<T>().FirstOrDefault(pred);
+        }
+
         public Role QueryAroundRole(Role sender, uint target)
         {
             int currentBlockX = GetBlockX(sender.MapX);
@@ -247,6 +252,11 @@ namespace Comet.Game.World.Maps
                 .Where(x => x is DynamicNpc)
                 .Cast<DynamicNpc>()
                 .FirstOrDefault(x => x.Task0 == task && (x.Mesh - x.Mesh % 10) == (lookface - lookface % 10));
+        }
+
+        public List<Character> QueryPlayers(Func<Character, bool> pred)
+        {
+            return m_users.Values.Where(pred).ToList();
         }
 
         #endregion

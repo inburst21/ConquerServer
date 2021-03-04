@@ -228,6 +228,36 @@ namespace Comet.Game.World.Managers
             return m_roleSet.TryGetValue(idRole, out var role) ? role as T : null;
         }
 
+        public T GetRole<T>(Func<T, bool> predicate) where T : Role
+        {
+            return m_roleSet.Values
+                .Where(x => x is T)
+                .Cast<T>()
+                .FirstOrDefault(x => predicate != null && predicate(x));
+        }
+
+        public T FindRole<T>(uint idRole) where T : Role
+        {
+            foreach (var map in Kernel.MapManager.GameMaps.Values)
+            {
+                T result = map.QueryRole<T>(idRole);
+                if (result != null)
+                    return result;
+            }
+            return null;
+        }
+
+        public T FindRole<T>(Func<T, bool> predicate) where T : Role
+        {
+            foreach (var map in Kernel.MapManager.GameMaps.Values)
+            {
+                T result = map.QueryRole(predicate);
+                if (result != null)
+                    return result;
+            }
+            return null;
+        }
+
         /// <summary>
         ///     Attention, DO NOT USE to remove <see cref="Character" />.
         /// </summary>

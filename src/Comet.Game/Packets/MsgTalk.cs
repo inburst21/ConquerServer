@@ -632,6 +632,63 @@ namespace Comet.Game.Packets
                         });
                         return true;
                     }
+
+                    case "/msgfamilyoccupy":
+                    {
+                        MsgFamilyOccupy.FamilyPromptType fType = MsgFamilyOccupy.FamilyPromptType.RequestNpc;
+                        uint subType = 0;
+                        bool war = false,
+                            a = false,
+                            b = false,
+                            c = false;
+
+                        string[] splitParam = param.Split(' ');
+                        if (splitParam.Length < 2)
+                            return true;
+
+                        fType = (MsgFamilyOccupy.FamilyPromptType) int.Parse(splitParam[0]);
+                        subType = uint.Parse(splitParam[1]);
+                        if (splitParam.Length >= 3)
+                            war = int.Parse(splitParam[2]) != 0;
+                        if (splitParam.Length >= 4)
+                            a = int.Parse(splitParam[3]) != 0;
+                        if (splitParam.Length >= 5)
+                            b = int.Parse(splitParam[4]) != 0;
+                        if (splitParam.Length >= 6)
+                            c = int.Parse(splitParam[5]) != 0;
+
+                        await user.SendAsync(new MsgFamilyOccupy
+                        {
+                            Action = fType,
+                            CityName = user.Map.Name,
+                            DailyPrize = 722455,
+                            WeeklyPrize = 722454,
+                            GoldFee = 1000000,
+                            OccupyDays = 10,
+                            Identity = 1000,
+                            OccupyName = user.SyndicateName,
+                            RequestNpc = 10026,
+                            WarRunning = war,
+                            CanRemoveChallenge = b,
+                            CanApplyChallenge = a,
+                            UnknownBool3 = c,
+                            SubAction = subType
+                        });
+                        return true;
+                    }
+
+                    case "/msgfamily":
+                    {
+                        MsgFamily msg = new MsgFamily
+                        {
+                            Identity = user.FamilyIdentity,
+                            Action = MsgFamily.FamilyAction.QueryOccupy
+                        };
+                        // uid#reward#nextreward#occupydays#name#currentmap#dominationmap#
+                        msg.Strings.Add(param);
+                        await user.SendAsync(msg);
+                        return true;
+                    }
                 }
             }
 

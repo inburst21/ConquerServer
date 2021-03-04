@@ -74,11 +74,11 @@ namespace Comet.Game.Packets
             if (user.Syndicate != null)
                 SharedBattlePower = (uint) user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
 
-            //FamilyIdentity = 1;
-            //FamilyRank = 100;
+            FamilyIdentity = user.FamilyIdentity;
+            FamilyRank = (uint) user.FamilyPosition;
 
             Name = user.Name;
-            FamilyName = "";
+            FamilyName = user.FamilyName;
         }
 
         public MsgPlayer(Monster monster)
@@ -254,10 +254,10 @@ namespace Comet.Game.Packets
             writer.Write(MountColor); // 112
             writer.Write((byte) 0); // 116
             writer.Write(EnlightenPoints); // 117
-            writer.BaseStream.Seek(9, SeekOrigin.Current); // 119
-            writer.Write(FamilyIdentity); // 128
-            writer.Write(FamilyRank); // 132
-            writer.BaseStream.Seek(5, SeekOrigin.Current); // 136
+            writer.BaseStream.Seek(10, SeekOrigin.Current); // 119
+            writer.Write(FamilyIdentity); // 129
+            writer.Write(FamilyRank); // 133
+            writer.BaseStream.Seek(4, SeekOrigin.Current); // 137 FamilyBP
             writer.Write(UserTitle); // 141
             writer.BaseStream.Seek(8, SeekOrigin.Current); // 145
             writer.Write(new List<string> // 95

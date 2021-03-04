@@ -554,7 +554,7 @@ namespace Comet.Game.States
                         result = await ExecuteActionFamilyWarAuthorityCheckAsync(action, param, user, role, item, input);
                         break;
                     case TaskActionType.ActionFamilyWarRegisterCheck:
-                        result = await ActionFamilyWarRegisterCheck(action, param, user, role, item, input);
+                        result = await ActionFamilyWarRegisterCheckAsync(action, param, user, role, item, input);
                         break;
 
                     case TaskActionType.ActionTrapCreate:
@@ -6574,14 +6574,87 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionFamilyWarActivityCheckAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
-            uint idNpc = action.Data;
+            if (user?.Family == null)
+                return false;
 
-            DynamicNpc npc = Kernel.RoleManager.GetRole<DynamicNpc>(idNpc);
-            GameMap map = npc?.Map;
+            DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
+            if (npc == null)
+                return false;
+
+            if (npc.Data1 != user.Family.ChallengeMap && npc.Data1 != user.Family.FamilyMap)
+                return false;
+
+            FamilyWar war = Kernel.EventThread.GetEvent<FamilyWar>();
+            if (war == null)
+                return false;
+            if (!war.IsInTime)
+                return false;
+
+            GameMap map = Kernel.MapManager.GetMap((uint) npc.Data1);
             if (map == null)
                 return false;
 
+            Dictionary<uint, Family> families = new Dictionary<uint, Family>();
+            foreach (var player in map.QueryPlayers(x =>
+                x.FamilyIdentity != 0 && (x.Family.FamilyMap == map.Identity || x.Family.ChallengeMap == map.Identity) && x.IsAlive))
+            {
+                if (!families.ContainsKey(player.FamilyIdentity))
+                    families.Add(player.FamilyIdentity, player.Family);
+            }
 
+            if (families.Count == 1)
+            {
+                Family winner = families[0];
+                if (winner.ChallengeMap != npc.Data1)
+                {
+                    // this map is now transfered
+                    // the clan will lose the old one
+                    Family old = Kernel.FamilyManager.GetOccupyOwner((uint) npc.Data1);
+                    if (old != null)
+                    {
+                        old.FamilyMap = 0;
+                        old.OccupyDate = 0;
+                        await old.SaveAsync();
+                    }
+
+                    winner.FamilyMap = map.Identity;
+                    if (winner.OccupyDate == 0)
+                        winner.OccupyDate = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
+                    await winner.SaveAsync();
+                }
+            }
+            else if (families.Count > 1)
+            {
+                uint currentTime = uint.Parse(DateTime.Now.ToString("HHmmss"));
+                if (currentTime < 204500 || currentTime > 205459)
+                    return false;
+
+                Family current = Kernel.FamilyManager.GetOccupyOwner((uint)npc.Data1);
+                if (families.All(x => x.Key != current?.Identity))
+                {
+                    Character higherBpPlayer = map.QueryPlayers(x =>
+                            x.FamilyIdentity != 0 &&
+                            (x.Family.FamilyMap == map.Identity || x.Family.ChallengeMap == map.Identity) && x.IsAlive)
+                        .OrderByDescending(x => x.BattlePower)
+                        .FirstOrDefault();
+
+                    if (higherBpPlayer == null)
+                        return true; // wont be null, but doesnt hurt to check
+
+                    if (current != null)
+                    {
+                        current.FamilyMap = 0;
+                        current.OccupyDate = 0;
+                        await current.SaveAsync();
+                    }
+
+                    higherBpPlayer.Family.FamilyMap = map.Identity;
+                    higherBpPlayer.Family.OccupyDate = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
+                    await higherBpPlayer.Family.SaveAsync();
+                } // return true even if false because the winner is the clan whose is already dominating. wont change
+
+            }
+            else return false;
 
             return true;
         }
@@ -6589,12 +6662,30 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionFamilyWarAuthorityCheckAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
+            if (user?.Family == null)
+                return false;
+
+            DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
+            if (npc == null)
+                return false;
+
+            if (npc.Data1 != user.Family.ChallengeMap)
+                return false;
             return true;
         }
 
-        private static async Task<bool> ActionFamilyWarRegisterCheck(DbAction action, string param, Character user,
+        private static async Task<bool> ActionFamilyWarRegisterCheckAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
+            if (user?.Family == null)
+                return false;
+
+            DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
+            if (npc == null)
+                return false;
+
+            if (npc.Data1 != user.Family.FamilyMap)
+                return false;
             return true;
         }
 

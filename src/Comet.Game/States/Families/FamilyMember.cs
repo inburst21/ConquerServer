@@ -68,6 +68,7 @@ namespace Comet.Game.States.Families
                 MateIdentity = player.MateIdentity,
                 Level = player.Level,
                 LookFace = player.Mesh,
+                Profession = player.Profession,
 
                 FamilyIdentity = family.Identity,
                 FamilyName = family.Name
@@ -92,6 +93,7 @@ namespace Comet.Game.States.Families
                 MateIdentity = dbUser.Mate, 
                 Level = dbUser.Level,
                 LookFace = dbUser.Mesh,
+                Profession = dbUser.Profession,
 
                 FamilyIdentity = family.Identity,
                 FamilyName = family.Name
@@ -109,6 +111,7 @@ namespace Comet.Game.States.Families
         public byte Level { get; private set; }
         public uint MateIdentity { get; private set; }
         public uint LookFace { get; private set; }
+        public ushort Profession { get; private set; }
 
         public Family.FamilyRank Rank
         {
@@ -125,6 +128,8 @@ namespace Comet.Game.States.Families
         }
 
         public Character User => Kernel.RoleManager.GetUser(Identity);
+
+        public bool IsOnline => User != null;
 
         #endregion
 

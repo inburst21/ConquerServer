@@ -4923,7 +4923,7 @@ namespace Comet.Game.States
         #region Family
 
         public Family Family { get; set; }
-        public FamilyMember FamilyMember => Family.GetMember(Identity);
+        public FamilyMember FamilyMember => Family?.GetMember(Identity);
 
         public uint FamilyIdentity => Family?.Identity ?? 0;
         public string FamilyName => Family?.Name ?? Language.StrNone;
@@ -4951,6 +4951,26 @@ namespace Comet.Game.States
             await Family.SendRelationsAsync(this);
         }
 
+        private string FamilyOccupyString
+        {
+            get
+            {
+                FamilyWar war = Kernel.EventThread.GetEvent<FamilyWar>();
+                if (war == null || Family == null)
+                    return "0 0 0 0 0 0 0 0";
+                return "0 " +
+                       $"{Family.OccupyDays} " +
+                       $"{war.GetNextReward(this, Family.FamilyMap)} " +
+                       $"{war.GetNextWeekReward(this, Family.FamilyMap)} " +
+                       $"{(war.IsChallenged(Family.FamilyMap) ? 1 : 0)} " +
+                       $"{(war.HasRewardToClaim(this) ? 1 : 0)} " +
+                       $"{(war.HasExpToClaim(this) ? 1 : 0)}";
+            }
+        }
+
+        public string FamilyDominatedMap => Family != null ? Kernel.EventThread.GetEvent<FamilyWar>()?.GetMap(Family.FamilyMap)?.Name ?? "" : "";
+        public string FamilyChallengedMap => Family != null ? Kernel.EventThread.GetEvent<FamilyWar>()?.GetMap(Family.ChallengeMap)?.Name ?? "" : "";
+
         public Task SendFamilyAsync()
         {
             if (Family == null)
@@ -4964,6 +4984,9 @@ namespace Comet.Game.States
             msg.Strings.Add($"{Family.Identity} {Family.MembersCount} {Family.MembersCount} {Family.Money} {Family.Rank} {(int) FamilyPosition} 0 {Family.BattlePowerTower} 0 0 1 {FamilyMember.Proffer}");
             msg.Strings.Add(FamilyName);
             msg.Strings.Add(Name);
+            msg.Strings.Add(FamilyOccupyString);
+            msg.Strings.Add(FamilyDominatedMap);
+            msg.Strings.Add(FamilyChallengedMap);
             return SendAsync(msg);
         }
 
@@ -4977,8 +5000,8 @@ namespace Comet.Game.States
                 Identity = FamilyIdentity,
                 Action = MsgFamily.FamilyAction.QueryOccupy
             };
-            // uid#reward#nextreward#occupydays#name#currentmap#dominationmap#
-            msg.Strings.Add($"0 0 0 0 0 0 0");
+            // uid occupydays reward nextreward challenged rewardtoclaim exptoclaim
+            msg.Strings.Add(FamilyOccupyString);
             return SendAsync(msg);
         }
 
@@ -4989,7 +5012,7 @@ namespace Comet.Game.States
                 Identity = FamilyIdentity,
                 Action = MsgFamily.FamilyAction.Query
             };
-            msg.Strings.Add($"0 0 0 0 0 0 0 0 0 0 0 0");
+            msg.Strings.Add(FamilyOccupyString);
             msg.Strings.Add("");
             msg.Strings.Add(Name);
             await SendAsync(msg);
@@ -5566,6 +5589,7 @@ namespace Comet.Game.States
         Trade,
         Marriage,
         TradePartner,
-        Guide
+        Guide,
+        Family
     }
 }

@@ -70,7 +70,7 @@ namespace Comet.Game.Packets
             //EnlightenPoints = 200;
             //EnlightenExp = 2;
             VipLevel = character.BaseVipLevel;
-            UserTitle = 0;
+            UserTitle = character.UserTitle;
             CharacterName = character.Name;
             SpouseName = character.MateName;
         }
