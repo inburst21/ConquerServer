@@ -294,6 +294,13 @@ namespace Comet.Game.Packets
                     GameMap map = Kernel.MapManager.GetMap((uint)npc.Data1);
                     if (map == null) return;
 
+                    if ((DateTime.Now - user.FamilyMember.JoinDate).TotalDays < 1)
+                    {
+                        Action = FamilyPromptType.CannotClaim;
+                        await user.SendAsync(this);
+                        return;
+                    }
+
                     if (!war.HasExpToClaim(user))
                     {
                         Action = FamilyPromptType.WrongExpClaimTime;
