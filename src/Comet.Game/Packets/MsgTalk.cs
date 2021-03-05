@@ -689,6 +689,28 @@ namespace Comet.Game.Packets
                         await user.SendAsync(msg);
                         return true;
                     }
+
+                    case "/msguserattrib":
+                    {
+                        string[] splitParam = param.Split(' ');
+                        if (splitParam.Length == 2)
+                        {
+                            int actType = int.Parse(splitParam[0]);
+                            ulong value0 = ulong.Parse(splitParam[1]);
+                            var msg = new MsgUserAttrib(user.Identity, (ClientUpdateType)actType, value0);
+                            await user.SendAsync(msg);
+                        }
+                        else if (splitParam.Length == 3)
+                        {
+                            int actType = int.Parse(splitParam[0]);
+                            uint value0 = uint.Parse(splitParam[1]);
+                            uint value1 = uint.Parse(splitParam[2]);
+                            var msg = new MsgUserAttrib(user.Identity, (ClientUpdateType) actType, value0, value1);
+                            await user.SendAsync(msg);
+                        }
+
+                        return true;
+                    }
                 }
             }
 

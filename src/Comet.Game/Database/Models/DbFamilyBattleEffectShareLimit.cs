@@ -21,8 +21,11 @@
 
 #region References
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 #endregion
 
@@ -33,5 +36,11 @@ namespace Comet.Game.Database.Models
     {
         [Key] [Column("id")] public uint Identity { get; set; }
         [Column("share_limit")] public ushort ShareLimit { get; set; }
+
+        public static async Task<List<DbFamilyBattleEffectShareLimit>> GetAsync()
+        {
+            await using var ctx = new ServerDbContext();
+            return await ctx.FamilyBattleEffectShareLimits.ToListAsync();
+        }
     }
 }

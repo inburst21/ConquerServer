@@ -41,7 +41,7 @@ namespace Comet.Game.Packets
         public byte Profession { get; set; }
         public ushort PkPoints { get; set; }
         public ushort SyndicateIdentity { get; set; }
-        public byte SyndicateRank { get; set; }
+        public ushort SyndicateRank { get; set; }
         public string Mate { get; set; }
         public bool IsEnemy { get; set; }
 
@@ -61,7 +61,6 @@ namespace Comet.Game.Packets
             writer.Write(Profession);
             writer.Write(PkPoints);
             writer.Write(SyndicateIdentity);
-            writer.Write((byte)0);
             writer.Write(SyndicateRank);
             writer.Write(Mate, 16);
             writer.Write(IsEnemy);

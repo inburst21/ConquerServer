@@ -234,6 +234,22 @@ namespace Comet.Game.States.Families
 
         #region Members
 
+        public int SharedBattlePowerFactor
+        {
+            get
+            {
+                switch (BattlePowerTower)
+                {
+                    case 1: return 40;
+                    case 2: return 50;
+                    case 3: return 60;
+                    case 4: return 70;
+                    default:
+                        return 30;
+                }
+            }
+        }
+
         public FamilyMember GetMember(uint idMember)
         {
             return m_members.TryGetValue(idMember, out var value) ? value : null;

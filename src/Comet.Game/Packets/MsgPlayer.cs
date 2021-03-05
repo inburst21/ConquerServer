@@ -70,12 +70,15 @@ namespace Comet.Game.Packets
             FlowerRanking = user.FlowerCharm;
             QuizPoints = user.QuizPoints;
             UserTitle = user.UserTitle;
+
+            Away = user.IsAway;
             
             if (user.Syndicate != null)
                 SharedBattlePower = (uint) user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
 
             FamilyIdentity = user.FamilyIdentity;
             FamilyRank = (uint) user.FamilyPosition;
+            FamilyBattlePower = user.FamilyBattlePower;
 
             Name = user.Name;
             FamilyName = user.FamilyName;
@@ -179,6 +182,7 @@ namespace Comet.Game.Packets
 
         public uint FamilyIdentity { get; set; }
         public uint FamilyRank { get; set; }
+        public int FamilyBattlePower { get; set; }
 
         public uint UserTitle { get; set; }
 
@@ -257,7 +261,7 @@ namespace Comet.Game.Packets
             writer.BaseStream.Seek(10, SeekOrigin.Current); // 119
             writer.Write(FamilyIdentity); // 129
             writer.Write(FamilyRank); // 133
-            writer.BaseStream.Seek(4, SeekOrigin.Current); // 137 FamilyBP
+            writer.Write(FamilyBattlePower); // 137
             writer.Write(UserTitle); // 141
             writer.BaseStream.Seek(8, SeekOrigin.Current); // 145
             writer.Write(new List<string> // 95

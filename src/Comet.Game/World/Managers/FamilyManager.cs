@@ -36,6 +36,7 @@ namespace Comet.Game.World.Managers
     public sealed class FamilyManager
     {
         private ConcurrentDictionary<uint, Family> m_dicFamilies = new ConcurrentDictionary<uint, Family>();
+        private ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit> m_familyBpLimit = new ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit>();
 
         public async Task<bool> InitializeAsync()
         {
@@ -52,6 +53,11 @@ namespace Comet.Game.World.Managers
                 family.LoadRelations();
             }
 
+            foreach (var limit in await DbFamilyBattleEffectShareLimit.GetAsync())
+            {
+                if (!m_familyBpLimit.ContainsKey(limit.Identity))
+                    m_familyBpLimit.TryAdd(limit.Identity, limit);
+            }
             return true;
         }
 
@@ -86,6 +92,11 @@ namespace Comet.Game.World.Managers
         public List<Family> QueryFamilies(Func<Family, bool> predicate)
         {
             return m_dicFamilies.Values.Where(predicate).ToList();
+        }
+
+        public DbFamilyBattleEffectShareLimit GetSharedBattlePowerLimit(int level)
+        {
+            return m_familyBpLimit.Values.FirstOrDefault(x => x.Identity == level);
         }
     }
 }

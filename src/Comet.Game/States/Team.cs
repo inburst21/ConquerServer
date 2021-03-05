@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
@@ -103,6 +104,8 @@ namespace Comet.Game.States
                 Action = MsgTeam.TeamAction.LeaveTeam
             });
             user.Team = null;
+
+            await SyncFamilyBattlePowerAsync();
             return true;
         }
 
@@ -119,6 +122,8 @@ namespace Comet.Game.States
 
             m_dicPlayers.TryRemove(idTarget, out _);
             target.Team = null;
+
+            await SyncFamilyBattlePowerAsync();
             return true;
         }
 
@@ -133,6 +138,8 @@ namespace Comet.Game.States
             await target.SendAsync(string.Format(Language.StrPickupSilvers, MoneyEnable ? Language.StrOpen : Language.StrClose));
             await target.SendAsync(string.Format(Language.StrTeamItems, ItemEnable ? Language.StrOpen : Language.StrClose));
             await target.SendAsync(string.Format(Language.StrTeamGems, JewelEnable ? Language.StrOpen : Language.StrClose));
+
+            await SyncFamilyBattlePowerAsync();
             return true;
         }
 
@@ -280,6 +287,40 @@ namespace Comet.Game.States
 
                 await user.AwardBattleExpAsync(addExp, true);
                 await user.SendAsync(string.Format(Language.StrTeamExperience, addExp));
+            }
+        }
+
+        public int FamilyBattlePower(Character user, out uint idProvider)
+        {
+            idProvider = 0;
+            if (!m_dicPlayers.ContainsKey(user.Identity))
+                return 0;
+
+            if (user.FamilyIdentity == 0)
+                return 0;
+
+            Character clanMember = m_dicPlayers.Values
+                .OrderByDescending(x => x.PureBattlePower)
+                .FirstOrDefault(x => x.Identity != user.Identity && x.MapIdentity == user.MapIdentity && x.FamilyIdentity == user.FamilyIdentity);
+            
+            if (clanMember == null || clanMember.PureBattlePower <= user.PureBattlePower)
+                return 0;
+
+            var limit = Kernel.FamilyManager.GetSharedBattlePowerLimit(user.PureBattlePower);
+            if (limit == null)
+                return 0;
+
+            idProvider = clanMember.Identity;
+            int value = (int) ((clanMember.PureBattlePower - user.PureBattlePower) * (user.Family.SharedBattlePowerFactor / 100d));
+            value = Math.Min(Math.Max(0, value), limit.ShareLimit);
+            return value;
+        }
+
+        public async Task SyncFamilyBattlePowerAsync()
+        {
+            foreach (var member in m_dicPlayers.Values)
+            {
+                await member.SynchroFamilyBattlePowerAsync();
             }
         }
     }

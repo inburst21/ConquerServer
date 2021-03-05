@@ -207,14 +207,11 @@ namespace Comet.Game.Packets
 
                     DynamicNpc npc = user.Map.QueryRole<DynamicNpc>(RequestNpc);
                     Family owner = war.GetFamilyOwner(RequestNpc);
+                    Identity = RequestNpc;
                     if (owner != null)
                     {
-                        Identity = owner.Identity;
+                        OccupyDays = owner.OccupyDays;
                         OccupyName = owner.Name;
-                    }
-                    else
-                    {
-                        Identity = RequestNpc;
                     }
 
                     if (owner?.Identity == user.FamilyIdentity)
@@ -244,7 +241,6 @@ namespace Comet.Game.Packets
                     }
 
                     GoldFee = war.GetGoldFee(RequestNpc);
-                    OccupyDays = owner?.OccupyDays ?? 0;
                     await user.SendAsync(this);
                     break;
                 }

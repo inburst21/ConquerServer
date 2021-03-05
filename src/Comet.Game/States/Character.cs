@@ -1641,6 +1641,8 @@ namespace Comet.Game.States
                 int result = Level + Metempsychosis * 5 + (int) NobilityRank;
                 if (SyndicateIdentity > 0)
                     result += Syndicate.GetSharedBattlePower(SyndicateRank);
+                if (FamilyIdentity > 0 && Team != null)
+                    result += FamilyBattlePower;
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.BattlePower ?? 0;
@@ -1649,6 +1651,19 @@ namespace Comet.Game.States
 #else
                 return 1;
 #endif
+            }
+        }
+
+        public int PureBattlePower
+        {
+            get
+            {
+                int result = Level + Metempsychosis * 5 + (int) NobilityRank;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.BattlePower ?? 0;
+                }
+                return result;
             }
         }
 
@@ -3831,6 +3846,9 @@ namespace Comet.Game.States
                     if (@event != null)
                         await SignInEventAsync(@event);
                 }
+
+                if (Team != null)
+                    await Team.SyncFamilyBattlePowerAsync();
             }
             else
             {
@@ -3857,6 +3875,10 @@ namespace Comet.Game.States
                     await SignOutEventAsync();
                 }
             }
+
+            if (Team != null)
+                await Team.SyncFamilyBattlePowerAsync();
+
             await Screen.ClearAsync();
         }
 
@@ -5090,6 +5112,19 @@ namespace Comet.Game.States
             await SendNoFamilyAsync();
             return true;
         }
+
+        public Task SynchroFamilyBattlePowerAsync()
+        {
+            if (Team == null || Family == null)
+                return Task.CompletedTask;
+
+            int bp = Team.FamilyBattlePower(this, out var provider);
+            MsgUserAttrib msg = new MsgUserAttrib(Identity, ClientUpdateType.FamilySharedBattlePower, provider);
+            msg.Append(ClientUpdateType.FamilySharedBattlePower, (ulong) bp);
+            return SendAsync(msg);
+        }
+
+        public int FamilyBattlePower => Team?.FamilyBattlePower(this, out _) ?? 0;
 
         #endregion
 

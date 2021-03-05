@@ -41,7 +41,16 @@ namespace Comet.Game.Packets
 
             Identity = idRole;
             Amount++;
-            Attributes.Add(new UserAttribute((uint) type, value));
+            Attributes.Add(new UserAttribute((uint)type, value));
+        }
+
+        public MsgUserAttrib(uint idRole, ClientUpdateType type, uint value0, uint value1)
+        {
+            Type = PacketType.MsgUserAttrib;
+
+            Identity = idRole;
+            Amount++;
+            Attributes.Add(new UserAttribute((uint)type, value0, value1));
         }
 
         public uint Identity { get; set; }
@@ -83,6 +92,12 @@ namespace Comet.Game.Packets
                 Data = data;
             }
 
+            public UserAttribute(uint type, uint left, uint right)
+            {
+                Type = type;
+                Data = (ulong) left << 32 | right;
+            }
+
             public readonly uint Type;
             public readonly ulong Data;
         }
@@ -120,6 +135,8 @@ namespace Comet.Game.Packets
         Merchant = 38,
         VipLevel = 39,
         QuizPoints = 40,
+        EnlightenPoints = 41,
+        FamilySharedBattlePower = 42,
         TotemPoleBattlePower = 44,
 
         Vigor = 10000

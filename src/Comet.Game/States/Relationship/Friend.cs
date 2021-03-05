@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+using Comet.Game.States.Syndicates;
 using Comet.Shared;
 
 #endregion
@@ -86,7 +87,9 @@ namespace Comet.Game.States.Relationship
                 Level = user?.Level ?? 0,
                 Mate = user?.MateName ?? Language.StrNone,
                 Profession = user?.Profession ?? 0,
-                Lookface = user?.Mesh ?? 0
+                Lookface = user?.Mesh ?? 0,
+                SyndicateIdentity = user?.SyndicateIdentity ?? 0,
+                SyndicateRank = (ushort) (user?.SyndicateRank ?? SyndicateMember.SyndicateRank.None)
             });
         }
 
