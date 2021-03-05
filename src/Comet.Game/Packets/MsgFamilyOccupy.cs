@@ -75,6 +75,7 @@ namespace Comet.Game.Packets
         public uint OccupyDays; // 96
         public uint DailyPrize; // 100
         public uint WeeklyPrize; // 104
+        public uint IsChallenged; // 112
         public uint GoldFee; // 120
         public bool CanClaimRevenue;
         public bool CanClaimExperience;
@@ -119,7 +120,7 @@ namespace Comet.Game.Packets
             writer.Write(DailyPrize);
             writer.Write(WeeklyPrize);
             writer.Write(0);
-            writer.Write(0);
+            writer.Write(IsChallenged); // Challenged by other clans
             writer.Write(0);
             writer.Write(GoldFee);
             writer.Write(0);
@@ -223,6 +224,8 @@ namespace Comet.Game.Packets
 
                         CanClaimRevenue = owner.LeaderIdentity == user.Identity && war.HasRewardToClaim(user);
                         CanClaimExperience = war.HasExpToClaim(user);
+
+                        IsChallenged = war.GetChallengers((uint) npc.Data1).Count > 0 ? 1u : 0u;
                     }
                     else
                     {
