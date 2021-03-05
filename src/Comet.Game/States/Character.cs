@@ -4942,13 +4942,36 @@ namespace Comet.Game.States
                     if (mateFamily == null || mateFamily.Rank == Family.FamilyRank.Spouse)
                         return;
 
-                    await family.AppendMemberAsync(null, this, Family.FamilyRank.Spouse);
+                    if (!await family.AppendMemberAsync(null, this, Family.FamilyRank.Spouse))
+                        return;
                 }
-                return;
+            }
+            else
+            {
+                await SendFamilyAsync();
+                await Family.SendRelationsAsync(this);
             }
 
-            await SendFamilyAsync();
-            await Family.SendRelationsAsync(this);
+            if (Family == null)
+                return;
+
+            FamilyWar war = Kernel.EventThread.GetEvent<FamilyWar>();
+            if (war == null)
+                return;
+
+            if (Family.ChallengeMap == 0)
+                return;
+
+            GameMap map = Kernel.MapManager.GetMap(Family.ChallengeMap);
+            if (map == null)
+                return;
+
+            await SendAsync(string.Format(Language.StrPrepareToChallengeFamilyLogin, map.Name), MsgTalk.TalkChannel.Talk, Color.White);
+
+            if (war.GetChallengers(map.Identity).Count == 0)
+                return;
+
+            await SendAsync(string.Format(Language.StrPrepareToDefendFamilyLogin, map.Name), MsgTalk.TalkChannel.Talk, Color.White);
         }
 
         private string FamilyOccupyString
@@ -4958,10 +4981,11 @@ namespace Comet.Game.States
                 FamilyWar war = Kernel.EventThread.GetEvent<FamilyWar>();
                 if (war == null || Family == null)
                     return "0 0 0 0 0 0 0 0";
+                uint idNpc = war.GetDominatingNpc(Family)?.Identity ?? 0;
                 return "0 " +
                        $"{Family.OccupyDays} " +
-                       $"{war.GetNextReward(this, Family.FamilyMap)} " +
-                       $"{war.GetNextWeekReward(this, Family.FamilyMap)} " +
+                       $"{war.GetNextReward(this, idNpc)} " +
+                       $"{war.GetNextWeekReward(this, idNpc)} " +
                        $"{(war.IsChallenged(Family.FamilyMap) ? 1 : 0)} " +
                        $"{(war.HasRewardToClaim(this) ? 1 : 0)} " +
                        $"{(war.HasExpToClaim(this) ? 1 : 0)}";

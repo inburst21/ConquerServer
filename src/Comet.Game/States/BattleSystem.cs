@@ -567,6 +567,22 @@ namespace Comet.Game.States
 
         public static int CalcDamageUser2Monster(Character attacker, Role target, int damage)//(int nAtk, int nDef, int nAtkLev, int nDefLev)
         {
+            if (GetNameType(attacker.Level, target.Level) == NAME_GREEN)
+            {
+                int nDeltaLev = attacker.Level - target.Level;
+                if (nDeltaLev >= 3
+                    && nDeltaLev <= 5)
+                    damage = (int) (damage * 1.5);
+                else if (nDeltaLev > 5
+                         && nDeltaLev <= 10)
+                    damage *= 2;
+                else if (nDeltaLev > 10
+                         && nDeltaLev <= 20)
+                    damage = (int) (damage * 2.5);
+                else if (nDeltaLev > 20)
+                    damage *= 3;
+            }
+
             var disdain = Kernel.RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
             int factor = disdain.MaxAtk;
 

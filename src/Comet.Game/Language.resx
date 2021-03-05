@@ -264,6 +264,12 @@
   <data name="StrFemaleMateLogin" xml:space="preserve">
     <value>Your wife is online.</value>
   </data>
+  <data name="StrFetchFamilyNpcExpSuccess" xml:space="preserve">
+    <value>{0} has claimed the prize for domination of {1} and obtained Level {2} {3:0.00}% EXP.</value>
+  </data>
+  <data name="StrFetchFamilyNpcIncomeSuccess" xml:space="preserve">
+    <value>The Clan Leader {0} has claimed the revenue of {1}!</value>
+  </data>
   <data name="StrFlowerGmPromptAll" xml:space="preserve">
     <value>{0} has sent {1} {2} to {3}.</value>
   </data>
@@ -462,6 +468,9 @@
   <data name="StrNotEnoughEmoney" xml:space="preserve">
     <value>You don't have enough Conquer Points.</value>
   </data>
+  <data name="StrNotEnoughFamilyMoneyToChallenge" xml:space="preserve">
+    <value>There is not enough in the Clan Fund to apply for the Clan War.</value>
+  </data>
   <data name="StrNotEnoughLevel" xml:space="preserve">
     <value>You haven't reached the required level.</value>
   </data>
@@ -557,6 +566,18 @@
   </data>
   <data name="StrPigeonUrgentErrNoEmoney" xml:space="preserve">
     <value>Sorry, you do not have enough CPs to submit an urgent message for broadcast.</value>
+  </data>
+  <data name="StrPrepareToChallengeFamily" xml:space="preserve">
+    <value>The Clan Leader has sent a request to challenge {0}. Prepare yourself!</value>
+  </data>
+  <data name="StrPrepareToChallengeFamilyLogin" xml:space="preserve">
+    <value>The Clan Leader has signed up for the Clan War for the domination of {0}. Prepare yourself!</value>
+  </data>
+  <data name="StrPrepareToDefendFamily" xml:space="preserve">
+    <value>{0} is challenged by other Clan. Prepare yourself!</value>
+  </data>
+  <data name="StrPrepareToDefendFamilyLogin" xml:space="preserve">
+    <value>Other Clan wants to get the domination of {0} from your clan. Please get ready!</value>
   </data>
   <data name="StrShieldActiveP" xml:space="preserve">
     <value>Shield for {0} seconds, your defense will be increased by {1} percent.</value>

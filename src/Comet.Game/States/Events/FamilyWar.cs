@@ -21,6 +21,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Families;
 using Comet.Game.States.NPCs;
@@ -60,13 +63,13 @@ namespace Comet.Game.States.Events
 
         private readonly List<double> m_expRewards = new List<double>
         { 
-            1,
-            1.5d,
-            2,
-            2.5d,
-            3,
-            3.5d,
-            5
+            0.01,
+            0.015d,
+            0.02,
+            0.025d,
+            0.03,
+            0.035d,
+            0.05
         };
 
         public FamilyWar()
@@ -81,7 +84,8 @@ namespace Comet.Game.States.Events
 
         public override bool IsAllowedToJoin(Role sender)
         {
-            return IsInTime;
+            return uint.Parse(DateTime.Now.ToString("HHmmss")) >= 203000
+                   && uint.Parse(DateTime.Now.ToString("HHmmss")) < 203500;
         }
 
         #endregion
@@ -89,6 +93,12 @@ namespace Comet.Game.States.Events
         private int GetRewardIdx(uint occupyDays)
         {
             return (int) Math.Max(0, Math.Min(4, occupyDays / 7));
+        }
+
+        private int GetExpRewardIdx(uint occupyDays)
+        {
+            occupyDays = Math.Max(1, occupyDays);
+            return (int) ((occupyDays - 1) % m_expRewards.Count);
         }
 
         public uint GetNextReward(Character sender, uint idNpc = 0)
@@ -110,11 +120,11 @@ namespace Comet.Game.States.Events
                 return 0;
             
             // I want the ID of my next reward. This means that I'll get the reward to my Family Map.
-            npc = Kernel.RoleManager.FindRole<DynamicNpc>(sender.Family.FamilyMap);
+            npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Data1 == sender.Family.FamilyMap);
             if (npc == null || !m_prizePool.ContainsKey(npc.Identity))
                 return 0;
 
-            return m_prizePool[idNpc][GetRewardIdx(sender.Family.OccupyDays)];
+            return m_prizePool[npc.Identity][GetRewardIdx(sender.Family.OccupyDays)];
         }
 
         public uint GetNextWeekReward(Character sender, uint idNpc)
@@ -163,10 +173,7 @@ namespace Comet.Game.States.Events
 
         public GameMap GetMap(uint idNpc)
         {
-            var npc = Kernel.RoleManager.FindRole<DynamicNpc>(idNpc);
-            if (npc == null)
-                return null;
-            return Kernel.MapManager.GetMap((uint) npc.Data1);
+            return Kernel.MapManager.GetMap(idNpc);
         }
 
         public List<Family> GetChallengers(uint idNpc)
@@ -229,11 +236,27 @@ namespace Comet.Game.States.Events
             return true;
         }
 
+        public async Task SetExpRewardAwardedAsync(Character user)
+        {
+            var currStc = user.Statistic.GetStc(100020);
+            if (currStc == null)
+            {
+                if (!await user.Statistic.AddOrUpdateAsync(100020, 0, 0, true))
+                    return;
+
+                currStc = user.Statistic.GetStc(100020);
+                if (currStc == null)
+                    return;
+            }
+
+            await user.Statistic.AddOrUpdateAsync(100020, 0, currStc.Data + 1, true);
+        }
+
         public double GetNextExpReward(Character user)
         {
             if (!HasExpToClaim(user))
                 return 0;
-            return m_expRewards[(int) (user.Family.OccupyDays-1%m_expRewards.Count)];
+            return m_expRewards[GetExpRewardIdx(user.Family.OccupyDays)];
         }
 
         public bool HasRewardToClaim(Character user)
@@ -248,10 +271,31 @@ namespace Comet.Game.States.Events
             if (npc == null)
                 return false;
 
-            var last = user.Statistic.GetStc(100020, 1)?.Timestamp;
-            if (last.HasValue)
-                return ValidateRewardTime(last.Value);
+            if (DateTime.TryParseExact(npc.DataStr, "O", Thread.CurrentThread.CurrentCulture, DateTimeStyles.AssumeLocal, out var date) && !ValidateRewardTime(date))
+                return false;
             return true;
+        }
+
+        public async Task SetRewardAwardedAsync(Character user)
+        {
+            var npc = GetDominatingNpc(user.Family);
+            if (npc == null)
+                return;
+
+            var currStc = user.Statistic.GetStc(100020, 1);
+            if (currStc == null)
+            {
+                if (!await user.Statistic.AddOrUpdateAsync(100020, 1, 0, true))
+                    return;
+
+                currStc = user.Statistic.GetStc(100020, 1);
+                if (currStc == null)
+                    return;
+            }
+
+            npc.DataStr = DateTime.Now.ToString("O");
+            await npc.SaveAsync();
+            await user.Statistic.AddOrUpdateAsync(100020, 1, currStc.Data + 1, true);
         }
     }
 }

@@ -6604,8 +6604,8 @@ namespace Comet.Game.States
 
             if (families.Count == 1)
             {
-                Family winner = families[0];
-                if (winner.ChallengeMap != npc.Data1)
+                Family winner = families.Values.ToList()[0];
+                if (winner.ChallengeMap != npc.Data1 || winner.FamilyMap != npc.Data1)
                 {
                     // this map is now transfered
                     // the clan will lose the old one
@@ -6970,6 +6970,7 @@ namespace Comet.Game.States
         ActionBrocastmsg = 125,
         ActionMessagebox = 126,
         ActionExecutequery = 127,
+        ActionVipFunctionCheck = 144, // data is flag data << 1UL
         ActionSysLimit = 199,
 
         //NPC

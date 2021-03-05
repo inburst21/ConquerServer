@@ -98,8 +98,8 @@ namespace Comet.Game.Packets
                 }
                 case QueryRankType.HonorHistory:
                 {
-                    List<DbCharacter> players = await DbCharacter.GetHonorRankAsync(PageNumber * 10, 10);
-                    int rank = PageNumber * 10;
+                    List<DbCharacter> players = await DbCharacter.GetHonorRankAsync((PageNumber - 1) * 10, 10);
+                    int rank = ((PageNumber - 1) * 10) + 1;
                     foreach (var player in players)
                     {
                         Players.Add(new PlayerDataStruct

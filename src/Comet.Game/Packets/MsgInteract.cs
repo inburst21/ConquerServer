@@ -107,7 +107,7 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            if (Action != (MsgInteractType) 38)
+            if (Action != (MsgInteractType) 38 && Action != MsgInteractType.AcceptGuildMember)
                 client.Character.BattleSystem.ResetBattle();
 
             Character user = client.Character;

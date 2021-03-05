@@ -502,6 +502,24 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has claimed the prize for domination of {1} and obtained Level {2} {3:0.00}% EXP..
+        /// </summary>
+        public static string StrFetchFamilyNpcExpSuccess {
+            get {
+                return ResourceManager.GetString("StrFetchFamilyNpcExpSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The Clan Leader {0} has claimed the revenue of {1}!.
+        /// </summary>
+        public static string StrFetchFamilyNpcIncomeSuccess {
+            get {
+                return ResourceManager.GetString("StrFetchFamilyNpcIncomeSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a {0} has sent {1} {2} to {3}..
         /// </summary>
         public static string StrFlowerGmPromptAll {
@@ -1096,6 +1114,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a There is not enough in the Clan Fund to apply for the Clan War..
+        /// </summary>
+        public static string StrNotEnoughFamilyMoneyToChallenge {
+            get {
+                return ResourceManager.GetString("StrNotEnoughFamilyMoneyToChallenge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a You haven&apos;t reached the required level..
         /// </summary>
         public static string StrNotEnoughLevel {
@@ -1380,6 +1407,42 @@ namespace Comet.Game {
         public static string StrPigeonUrgentErrNoEmoney {
             get {
                 return ResourceManager.GetString("StrPigeonUrgentErrNoEmoney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The Clan Leader has sent a request to challenge {0}. Prepare yourself!.
+        /// </summary>
+        public static string StrPrepareToChallengeFamily {
+            get {
+                return ResourceManager.GetString("StrPrepareToChallengeFamily", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The Clan Leader has signed up for the Clan War for the domination of {0}. Prepare yourself!.
+        /// </summary>
+        public static string StrPrepareToChallengeFamilyLogin {
+            get {
+                return ResourceManager.GetString("StrPrepareToChallengeFamilyLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a {0} is challenged by other Clan. Prepare yourself!.
+        /// </summary>
+        public static string StrPrepareToDefendFamily {
+            get {
+                return ResourceManager.GetString("StrPrepareToDefendFamily", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Other Clan wants to get the domination of {0} from your clan. Please get ready!.
+        /// </summary>
+        public static string StrPrepareToDefendFamilyLogin {
+            get {
+                return ResourceManager.GetString("StrPrepareToDefendFamilyLogin", resourceCulture);
             }
         }
         
