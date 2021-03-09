@@ -209,6 +209,7 @@ namespace Comet.Game.Packets
 
                     targetUser.SetRequest(RequestType.Marriage, user.Identity);
                     await targetUser.SendAsync(this);
+                    await targetUser.SendRelationAsync(user);
                     break;
                 }
 

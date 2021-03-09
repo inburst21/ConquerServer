@@ -100,6 +100,7 @@ namespace Comet.Game.Packets
                     Identity = user.Identity;
                     Name = user.Name;
                     await target.SendAsync(this);
+                    await target.SendRelationAsync(user);
                     break;
 
                 case TradeBuddyAction.RejectRequest:

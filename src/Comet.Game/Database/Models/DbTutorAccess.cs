@@ -42,7 +42,7 @@ namespace Comet.Game.Database.Models
         [Column("God_time")] public virtual ushort Blessing { get; set; }
         [Column("Addlevel")] public virtual ushort Composition { get; set; }
 
-        public async Task<DbTutorAccess> GetAsync(uint idGuide)
+        public static async Task<DbTutorAccess> GetAsync(uint idGuide)
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.TutorAccess.FirstOrDefaultAsync(x => x.GuideIdentity == idGuide);

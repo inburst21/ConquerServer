@@ -54,7 +54,7 @@ namespace Comet.Game.Database.Models
         /// </summary>
         [Column("Battle_lev_share")] public virtual byte BattleLevelShare { get; set; }
 
-        public async Task<List<DbTutorType>> GetAsync()
+        public static async Task<List<DbTutorType>> GetAsync()
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.TutorTypes.ToListAsync();

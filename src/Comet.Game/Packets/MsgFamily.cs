@@ -147,6 +147,7 @@ namespace Comet.Game.Packets
                     Strings.Add(user.FamilyName);
                     Strings.Add(user.Name);
                     await target.SendAsync(this);
+                    await target.SendRelationAsync(user);
                     break;
                 }
 
@@ -194,7 +195,7 @@ namespace Comet.Game.Packets
                     Identity = user.Identity;
                     Strings.Add(user.Name);
                     await leader.SendAsync(this);
-
+                    await leader.SendRelationAsync(user);
                     break;
                 }
 
@@ -497,7 +498,7 @@ namespace Comet.Game.Packets
             public string LeaderName;
         }
 
-        public enum FamilyAction : byte
+        public enum FamilyAction
         {
             Query = 1,
             QueryMemberList = 4,

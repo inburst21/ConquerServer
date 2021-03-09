@@ -118,6 +118,13 @@ namespace Comet.Game.World.Managers
                         else message = string.Format(Language.StrPeeragePromptLady, user.Name);
                         break;
                 }
+
+                if (user.Team != null)
+                    await user.Team.SyncFamilyBattlePowerAsync();
+
+                if (user.ApprenticeCount > 0)
+                    await user.SynchroApprenticesSharedBattlePowerAsync();
+
                 await Kernel.RoleManager.BroadcastMsgAsync(message, MsgTalk.TalkChannel.Center, Color.Red);
             }
         }

@@ -167,6 +167,8 @@ namespace Comet.Game.Packets
                     user.SetRequest(RequestType.TeamApply, target.Identity);
                     Identity = user.Identity;
                     await target.SendAsync(this);
+                    await target.SendRelationAsync(user);
+
                     await user.SendAsync(Language.StrTeamApplySent);
                     break;
 
@@ -261,8 +263,11 @@ namespace Comet.Game.Packets
                     }
 
                     user.SetRequest(RequestType.TeamInvite, target.Identity);
+
                     Identity = user.Identity;
                     await target.SendAsync(this);
+                    await target.SendRelationAsync(user);
+
                     await user.SendAsync(Language.StrInviteSent);
                     break;
 

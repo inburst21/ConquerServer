@@ -112,6 +112,8 @@ namespace Comet.Game.Packets
             writer.Write(Unknown38);
             writer.Write((byte) SyndicatePosition);
             writer.Write(Unknown40);
+            writer.Write(0);
+            writer.Write(0);
             writer.Write(IsOnline);
             writer.Write(Fill41);
             writer.Write(Unknown52);

@@ -36,6 +36,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
 using Comet.Game.States.Families;
+using Comet.Game.States.Guide;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Game.States.NPCs;
@@ -746,6 +747,12 @@ namespace Comet.Game.States
                     await BurstXp();
                 }
             }
+
+            if (Team != null)
+                await Team.SyncFamilyBattlePowerAsync();
+
+            if (ApprenticeCount > 0)
+                await SynchroApprenticesSharedBattlePowerAsync();
         }
 
         public long CalculateExpBall(int amount = EXPBALL_AMOUNT)
@@ -1641,8 +1648,7 @@ namespace Comet.Game.States
                 int result = Level + Metempsychosis * 5 + (int) NobilityRank;
                 if (SyndicateIdentity > 0)
                     result += Syndicate.GetSharedBattlePower(SyndicateRank);
-                if (FamilyIdentity > 0 && Team != null)
-                    result += FamilyBattlePower;
+                result += Math.Max(FamilyBattlePower, Guide?.SharedBattlePower ?? 0);
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.BattlePower ?? 0;
@@ -4166,13 +4172,16 @@ namespace Comet.Game.States
         /// </summary>
         /// <param name="amount">The amount of minutes to be added.</param>
         /// <returns>If the heaven blessing has been added successfully.</returns>
-        public async Task<bool> AddBlessing(uint amount)
+        public async Task<bool> AddBlessingAsync(uint amount)
         {
             DateTime now = DateTime.Now;
             if (m_dbObject.HeavenBlessing != null && m_dbObject.HeavenBlessing > now)
                 m_dbObject.HeavenBlessing = m_dbObject.HeavenBlessing.Value.AddHours(amount);
             else
                 m_dbObject.HeavenBlessing = now.AddHours(amount);
+
+            if (Guide != null)
+                await Guide.AwardTutorGodTimeAsync((ushort) (amount / 10));
 
             await SendBlessAsync();
             return true;
@@ -4990,6 +4999,10 @@ namespace Comet.Game.States
 
             await SendAsync(string.Format(Language.StrPrepareToChallengeFamilyLogin, map.Name), MsgTalk.TalkChannel.Talk, Color.White);
 
+            map = Kernel.MapManager.GetMap(Family.FamilyMap);
+            if (map == null)
+                return;
+
             if (war.GetChallengers(map.Identity).Count == 0)
                 return;
 
@@ -5125,6 +5138,191 @@ namespace Comet.Game.States
         }
 
         public int FamilyBattlePower => Team?.FamilyBattlePower(this, out _) ?? 0;
+
+        #endregion
+
+        #region Tutor
+
+        private DbTutorAccess m_tutorAccess;
+
+        public ulong MentorExpTime
+        {
+            get => m_tutorAccess?.Experience ?? 0;
+            set
+            {
+                m_tutorAccess ??= new DbTutorAccess
+                {
+                    GuideIdentity = Identity
+                };
+                m_tutorAccess.Experience = value;
+            }
+        }
+
+        public ushort MentorAddLevexp
+        {
+            get => m_tutorAccess?.Composition ?? 0;
+            set
+            {
+                m_tutorAccess ??= new DbTutorAccess
+                {
+                    GuideIdentity = Identity
+                };
+                m_tutorAccess.Composition = value;
+            }
+        }
+
+        public ushort MentorGodTime
+        {
+            get => m_tutorAccess?.Blessing ?? 0;
+            set
+            {
+                m_tutorAccess ??= new DbTutorAccess
+                {
+                    GuideIdentity = Identity
+                };
+                m_tutorAccess.Blessing = value;
+            }
+        }
+
+        public Tutor Guide;
+
+        private ConcurrentDictionary<uint, Tutor> m_apprentices = new ConcurrentDictionary<uint, Tutor>();
+
+        public int ApprenticeCount => m_apprentices.Count;
+
+        public async Task LoadGuideAsync()
+        {
+            DbTutor tutor = await DbTutor.GetAsync(Identity);
+            if (tutor != null)
+            {
+                Guide = await Tutor.CreateAsync(tutor);
+                if (Guide != null)
+                {
+                    await Guide.SendAsync(MsgGuideInfo.RequestMode.Mentor);
+                    
+                    Character guide = Guide.Guide;
+                    if (guide != null)
+                    {
+                        await Guide.SendAsync(MsgGuideInfo.RequestMode.Apprentice);
+                        await SynchroAttributesAsync(ClientUpdateType.ExtraBattlePower, (uint) Guide.SharedBattlePower, (uint) guide.BattlePower);
+                        await guide.SendAsync(string.Format(Language.StrGuideStudentLogin, Name));
+                    }
+                }
+            }
+
+            var apprentices = await DbTutor.GetStudentsAsync(Identity);
+            foreach (var dbApprentice in apprentices)
+            {
+                Tutor apprentice = await Tutor.CreateAsync(dbApprentice);
+                if (apprentice != null)
+                {
+                    m_apprentices.TryAdd(dbApprentice.StudentId, apprentice);
+                    await apprentice.SendAsync(MsgGuideInfo.RequestMode.Apprentice);
+
+                    Character student = apprentice.Student;
+                    if (student != null)
+                    {
+                        await apprentice.SendAsync(MsgGuideInfo.RequestMode.Mentor);
+                        await student.SynchroAttributesAsync(ClientUpdateType.ExtraBattlePower, (uint) apprentice.SharedBattlePower, (uint) BattlePower);
+                        await student.SendAsync(string.Format(Language.StrGuideTutorLogin, Name));
+                    }
+                }
+            }
+
+            m_tutorAccess = await DbTutorAccess.GetAsync(Identity);
+        }
+
+        public static async Task<bool> CreateTutorRelationAsync(Character guide, Character apprentice)
+        {
+            if (guide.Level < apprentice.Level || guide.Metempsychosis < apprentice.Metempsychosis)
+                return false;
+
+            int deltaLevel = guide.Level - apprentice.Level;
+            if (apprentice.Metempsychosis == 0)
+            {
+                if (deltaLevel > 30)
+                    return false;
+            }
+            else if (apprentice.Metempsychosis == 1)
+            {
+                if (deltaLevel > 20)
+                    return false;
+            }
+            else
+            {
+                if (deltaLevel > 10)
+                    return false;
+            }
+
+            DbTutorType type = Kernel.RoleManager.GetTutorType(guide.Level);
+            if (type == null || guide.ApprenticeCount >= type.StudentNum)
+                return false;
+
+            if (apprentice.Guide != null)
+                return false;
+
+            if (guide.m_apprentices.ContainsKey(apprentice.Identity))
+                return false;
+
+            DbTutor dbTutor = new DbTutor
+            {
+                GuideId = guide.Identity,
+                StudentId = apprentice.Identity,
+                Date = DateTime.Now
+            };
+            if (!await BaseRepository.SaveAsync(dbTutor))
+                return false;
+
+            var tutor = await Tutor.CreateAsync(dbTutor);
+            
+            apprentice.Guide = tutor;
+            await tutor.SendAsync(MsgGuideInfo.RequestMode.Mentor);
+            guide.m_apprentices.TryAdd(apprentice.Identity, tutor);
+            await tutor.SendAsync(MsgGuideInfo.RequestMode.Apprentice);
+
+            await apprentice.SynchroAttributesAsync(ClientUpdateType.ExtraBattlePower, (uint) tutor.SharedBattlePower, (uint) guide.BattlePower);
+            return true;
+        }
+
+        public async Task SynchroApprenticesSharedBattlePowerAsync()
+        {
+            foreach (var apprentice in m_apprentices.Values.Where(x => x.Student != null))
+            {
+                await apprentice.Student.SynchroAttributesAsync(ClientUpdateType.ExtraBattlePower,
+                    (uint) apprentice.SharedBattlePower, (uint) (apprentice.Guide?.BattlePower ?? 0));
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current user is the tutor of the target ID.
+        /// </summary>
+        public bool IsTutor(uint idApprentice)
+        {
+            return m_apprentices.ContainsKey(idApprentice);
+        }
+
+        public bool IsApprentice(uint idGuide)
+        {
+            return Guide?.GuideIdentity == idGuide;
+        }
+
+        #endregion
+
+        #region Relation Packet
+
+        public Task SendRelationAsync(Character target)
+        {
+            return SendAsync(new MsgRelation
+            {
+                SenderIdentity = target.Identity,
+                Level = target.Level,
+                BattlePower = target.BattlePower,
+                IsSpouse = target.Identity == MateIdentity,
+                IsTradePartner = IsTradePartner(target.Identity),
+                IsTutor = IsTutor(target.Identity),
+                TargetIdentity = Identity
+            });
+        }
 
         #endregion
 
@@ -5388,6 +5586,20 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Error on notifying friends disconnection");
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+            }
+
+            try
+            {
+                foreach (var apprentice in m_apprentices.Values.Where(x => x.Student != null))
+                {
+                    await apprentice.SendAsync(MsgGuideInfo.RequestMode.Mentor);
+                    await apprentice.Student.SynchroAttributesAsync(ClientUpdateType.ExtraBattlePower, 0, 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, "Error on team dismiss");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
 

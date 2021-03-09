@@ -102,6 +102,7 @@ namespace Comet.Network.Packets
         MsgGuideInfo = 2066,
         MsgGuideContribute = 2067,
         MsgQuiz = 2068,
+        MsgRelation = 2071,
 
         MsgFactionRankInfo = 2101,
         MsgSynMemberList = 2102,

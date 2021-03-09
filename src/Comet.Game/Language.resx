@@ -315,6 +315,39 @@
   <data name="StrGuardYouPay" xml:space="preserve">
     <value>You`ll pay for what you`ve done!</value>
   </data>
+  <data name="StrGuideDeclined" xml:space="preserve">
+    <value>The target declined your request.</value>
+  </data>
+  <data name="StrGuideSendStudent" xml:space="preserve">
+    <value>You have sent the apprenticeship request.</value>
+  </data>
+  <data name="StrGuideSendTutor" xml:space="preserve">
+    <value>You have sent the apprentice request.</value>
+  </data>
+  <data name="StrGuideStudentHighLevel" xml:space="preserve">
+    <value>The target`s level is too high to be your apprentice.</value>
+  </data>
+  <data name="StrGuideStudentHighLevel1" xml:space="preserve">
+    <value>The target`s level is too low to be your mentor.</value>
+  </data>
+  <data name="StrGuideStudentLogin" xml:space="preserve">
+    <value>Your student, {0}, has logged in.</value>
+  </data>
+  <data name="StrGuideTooManyStudents" xml:space="preserve">
+    <value>You have too many apprentices, and cannot take another.</value>
+  </data>
+  <data name="StrGuideTooManyStudents1" xml:space="preserve">
+    <value>The target has too many apprentices. Please try another.</value>
+  </data>
+  <data name="StrGuideTutorLogin" xml:space="preserve">
+    <value>Your mentor, {0}, has logged in.</value>
+  </data>
+  <data name="StrGuideTutorLowLevel" xml:space="preserve">
+    <value>You can't take an apprentice until level 70.</value>
+  </data>
+  <data name="StrGuideTutorLowLevel1" xml:space="preserve">
+    <value>A person under level 70 cannot be your mentor.</value>
+  </data>
   <data name="StrInvalidCoordinate" xml:space="preserve">
     <value>Invalid coordinate.</value>
   </data>

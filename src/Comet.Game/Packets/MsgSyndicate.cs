@@ -123,6 +123,7 @@ namespace Comet.Game.Packets
                         leader.SetRequest(RequestType.Syndicate, user.Identity);
                         Identity = user.Identity;
                         await leader.SendAsync(this);
+                        await leader.SendRelationAsync(user);
                     }
 
                     break;
@@ -154,6 +155,7 @@ namespace Comet.Game.Packets
                         ConditionMetempsychosis = user.Syndicate.MetempsychosisRequirement;
                         ConditionProfession = (int) user.Syndicate.ProfessionRequirement;
                         await target.SendAsync(this);
+                        await target.SendRelationAsync(user);
                     }
 
                     break;

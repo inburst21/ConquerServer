@@ -22,6 +22,7 @@
 #region References
 
 using System.Threading.Tasks;
+using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Network.Packets;
 
@@ -33,7 +34,7 @@ namespace Comet.Game.Packets
     {
         public enum Request
         {
-            RequestApprentice = 1,
+            InviteApprentice = 1,
             RequestMentor = 2,
             LeaveMentor = 3,
             ExpellApprentice = 4,
@@ -65,7 +66,7 @@ namespace Comet.Game.Packets
             Param = reader.ReadUInt32();
             Param2 = reader.ReadUInt32();
             Online = reader.ReadBoolean();
-            Name = reader.ReadString(MAX_NAME_SIZE);
+            Name = reader.ReadString(reader.ReadByte());
         }
 
         public override byte[] Encode()
@@ -77,7 +78,8 @@ namespace Comet.Game.Packets
             writer.Write(Param);
             writer.Write(Param2);
             writer.Write(Online);
-            writer.Write(Name, MAX_NAME_SIZE);
+            writer.Write((byte) Name.Length);
+            writer.Write(Name);
             return writer.ToArray();
         }
 
@@ -86,6 +88,174 @@ namespace Comet.Game.Packets
             Character user = client.Character;
             switch (Action)
             {
+                case Request.InviteApprentice:
+                {
+                    Character target = Kernel.RoleManager.GetUser(Param);
+                    if (target == null)
+                        return;
+
+                    if (user.Level < target.Level || user.Metempsychosis < target.Metempsychosis)
+                    {
+                        await user.SendAsync(Language.StrGuideStudentHighLevel);
+                        return;
+                    }
+
+                    int deltaLevel = user.Level - target.Level;
+                    if (target.Metempsychosis == 0)
+                    {
+                        if (deltaLevel > 30)
+                        {
+                            await user.SendAsync(Language.StrGuideStudentHighLevel);
+                            return;
+                        }
+                    }
+                    else if (target.Metempsychosis == 1)
+                    {
+                        if (deltaLevel > 20)
+                        {
+                            await user.SendAsync(Language.StrGuideStudentHighLevel);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (deltaLevel > 10)
+                        {
+                            await user.SendAsync(Language.StrGuideStudentHighLevel);
+                            return;
+                        }
+                    }
+
+                    DbTutorType type = Kernel.RoleManager.GetTutorType(user.Level);
+                    if (type == null || user.ApprenticeCount >= type.StudentNum)
+                    {
+                        await user.SendAsync(Language.StrGuideTooManyStudents);
+                        return;
+                    }
+
+                    target.SetRequest(RequestType.Guide, user.Identity);
+
+                    await target.SendAsync(new MsgGuide
+                    {
+                        Identity = user.Identity,
+                        Param = user.Identity,
+                        Param2 = (uint) user.BattlePower,
+                        Action = Request.AcceptRequestApprentice,
+                        Online = true,
+                        Name = user.Name
+                    });
+                    await target.SendRelationAsync(user);
+
+                    await user.SendAsync(Language.StrGuideSendTutor);
+                    break;
+                }
+
+                case Request.RequestMentor:
+                {
+                    Character target = Kernel.RoleManager.GetUser(Param);
+                    if (target == null)
+                        return;
+
+                    if (target.Level < user.Level || target.Metempsychosis < user.Metempsychosis)
+                    {
+                        await user.SendAsync(Language.StrGuideStudentHighLevel1);
+                        return;
+                    }
+
+                    int deltaLevel = target.Level - user.Level;
+                    if (target.Metempsychosis == 0)
+                    {
+                        if (deltaLevel > 30)
+                        {
+                            await user.SendAsync(Language.StrGuideStudentHighLevel1);
+                            return;
+                        }
+                    }
+                    else if (target.Metempsychosis == 1)
+                    {
+                        if (deltaLevel > 20)
+                        {
+                            await user.SendAsync(Language.StrGuideStudentHighLevel1);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (deltaLevel > 10)
+                        {
+                            await user.SendAsync(Language.StrGuideStudentHighLevel1);
+                            return;
+                        }
+                    }
+
+                    DbTutorType type = Kernel.RoleManager.GetTutorType(target.Level);
+                    if (type == null || target.ApprenticeCount >= type.StudentNum)
+                    {
+                        await user.SendAsync(Language.StrGuideTooManyStudents1);
+                        return;
+                    }
+
+                    target.SetRequest(RequestType.Guide, user.Identity);
+
+                    await target.SendAsync(new MsgGuide
+                    {
+                        Identity = user.Identity,
+                        Param = user.Identity,
+                        Param2 = (uint) user.BattlePower,
+                        Action = Request.AcceptRequestApprentice,
+                        Online = true,
+                        Name = user.Name
+                    });
+                    await target.SendRelationAsync(user);
+
+                    await user.SendAsync(Language.StrGuideSendTutor);
+                    break;
+                }
+
+                case Request.AcceptRequestApprentice:
+                {
+                    if (Param2 == 0)
+                    {
+                        await user.SendAsync(Language.StrGuideDeclined);
+                        return;
+                    }
+
+                    Character target = Kernel.RoleManager.GetUser(Identity);
+                    if (target == null)
+                        return;
+
+                    if (user.QueryRequest(RequestType.Guide) == Identity)
+                    {
+                        user.PopRequest(RequestType.Guide);
+                        await Character.CreateTutorRelationAsync(target, user);
+                        return;
+                    }
+
+                    break;
+                }
+
+                case Request.AcceptRequestMentor:
+                {
+                    if (Param2 == 0)
+                    {
+                        await user.SendAsync(Language.StrGuideDeclined);
+                        return;
+                    }
+
+                    Character target = Kernel.RoleManager.GetUser(Identity);
+                    if (target == null)
+                        return;
+
+                    if (user.QueryRequest(RequestType.Guide) == Identity)
+                    {
+                        user.PopRequest(RequestType.Guide);
+                        await Character.CreateTutorRelationAsync(user, target);
+                        return;
+                    }
+
+                    break;
+                }
+
                 default:
                     if (user.IsPm())
                         await user.SendAsync($"Unhandled MsgGuide:{Action}", MsgTalk.TalkChannel.Talk);

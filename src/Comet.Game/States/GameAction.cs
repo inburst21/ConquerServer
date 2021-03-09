@@ -5516,7 +5516,7 @@ namespace Comet.Game.States
             {
                 case "+=":
                 {
-                    return await user.AddBlessing(minutes);
+                    return await user.AddBlessingAsync(minutes);
                 }
             }
 

@@ -44,7 +44,7 @@ namespace Comet.Game.Database.Models
         [Column("Exp")] public virtual uint Experience { get; set; }
         [Column("Addlevel")] public virtual uint PlusStone { get; set; }
 
-        public async Task<List<DbTutorContributions>> GetStudentsAsync(uint idGuide)
+        public static async Task<List<DbTutorContributions>> GetStudentsAsync(uint idGuide)
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.TutorContributions
@@ -52,7 +52,7 @@ namespace Comet.Game.Database.Models
                 .ToListAsync();
         }
 
-        public async Task<DbTutorContributions> GetGuideAsync(uint idStudent)
+        public static async Task<DbTutorContributions> GetGuideAsync(uint idStudent)
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.TutorContributions

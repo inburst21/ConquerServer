@@ -24,6 +24,7 @@
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -51,7 +52,8 @@ namespace Comet.Game.Packets
         public uint Experience;
         public ushort HeavenBlessing;
         public ushort Composing;
-        public uint Unknown;
+        public ushort Test1;
+        public ushort Test2;
 
         public override void Decode(byte[] bytes)
         {
@@ -64,7 +66,8 @@ namespace Comet.Game.Packets
             Experience = reader.ReadUInt32();
             HeavenBlessing = reader.ReadUInt16();
             Composing = reader.ReadUInt16();
-            Unknown = reader.ReadUInt32();
+            Test1 = reader.ReadUInt16();
+            Test2 = reader.ReadUInt16();
         }
 
         public override byte[] Encode()
@@ -77,13 +80,45 @@ namespace Comet.Game.Packets
             writer.Write(Experience);
             writer.Write(HeavenBlessing);
             writer.Write(Composing);
-            writer.Write(Unknown);
+            writer.Write(Test1);
+            writer.Write(Test2);
             return writer.ToArray();
         }
 
-        public override Task ProcessAsync(Client client)
+        public override async Task ProcessAsync(Client client)
         {
-            return client.SendAsync(this);
+            Character user = client.Character;
+            if (user == null)
+                return;
+
+            switch (Mode)
+            {
+                case RequestType.Show:
+                {
+                    Experience = (uint)user.MentorExpTime;
+                    Composing = user.MentorAddLevexp;
+                    HeavenBlessing = user.MentorGodTime;
+
+                    Test1 = 300;
+                    Test2 = 600;
+                    await client.SendAsync(this);
+                    break;
+                }
+                default:
+                {
+                    await client.SendAsync(this);
+                    if (client.Character.IsPm())
+                    {
+                        await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                            $"Missing packet {Type}, Action {Mode}, Length {Length}"));
+                    }
+
+                    await Log.WriteLogAsync(LogLevel.Warning,
+                        "Missing packet {0}, Action {1}, Length {2}\n{3}",
+                        Type, Mode, Length, PacketDump.Hex(Encode()));
+                    break;
+                }
+            }
         }
     }
 }

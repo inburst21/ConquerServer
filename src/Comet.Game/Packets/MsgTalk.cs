@@ -705,10 +705,54 @@ namespace Comet.Game.Packets
                             int actType = int.Parse(splitParam[0]);
                             uint value0 = uint.Parse(splitParam[1]);
                             uint value1 = uint.Parse(splitParam[2]);
-                            var msg = new MsgUserAttrib(user.Identity, (ClientUpdateType) actType, value0, value1);
+                            var msg = new MsgUserAttrib(user.Identity, (ClientUpdateType) actType, value0);
+                            msg.Append((ClientUpdateType) actType, value1);
                             await user.SendAsync(msg);
                         }
 
+                        return true;
+                    }
+
+                    case "/msgguideinfo":
+                    {
+
+                        string[] splitParam = param.Split(' ');
+
+                        bool isOnline = false;
+
+                        MsgGuideInfo.RequestMode mode = MsgGuideInfo.RequestMode.Mentor;
+
+                        if (splitParam.Length >= 1) 
+                            mode = (MsgGuideInfo.RequestMode) int.Parse(splitParam[0]);
+
+                        if (splitParam.Length > 1)
+                            isOnline = splitParam[1].Equals("1");
+
+                        await user.SendAsync(new MsgGuideInfo
+                        {
+                            Identity = 1999999u,
+                            SenderIdentity = user.Identity,
+                            Blessing = 70,
+                            Composition = 150,
+                            Experience = 6540,
+                            EnroleDate = 20210101,
+                            IsOnline = isOnline,
+                            Level = 133,
+                            Mesh = 1002,
+                            Mode = mode,
+                            SharedBattlePower = 55,
+                            Profession = 15,
+                            PkPoints = 32000,
+                            Syndicate = 0,
+                            SyndicatePosition = SyndicateMember.SyndicateRank.None,
+                            Names = new List<string>
+                            {
+                                "Mentor",
+                                "Apprentice",
+                                "AppSpouse"
+                            },
+                            Unknown24 = 999999
+                        });
                         return true;
                     }
                 }

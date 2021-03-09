@@ -48,7 +48,7 @@ namespace Comet.Game.Database.Models
 
         public virtual DbCharacter Student { get; set; }
 
-        public async Task<DbTutor> GetAsync(uint idStudent)
+        public static async Task<DbTutor> GetAsync(uint idStudent)
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.Tutor
@@ -57,7 +57,7 @@ namespace Comet.Game.Database.Models
                 .FirstOrDefaultAsync(x => x.StudentId == idStudent);
         }
 
-        public async Task<List<DbTutor>> GetStudentsAsync(uint idTutor)
+        public static async Task<List<DbTutor>> GetStudentsAsync(uint idTutor)
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.Tutor

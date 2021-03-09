@@ -45,7 +45,7 @@ namespace Comet.Game.Database.Models
         /// </summary>
         [Column("Battle_lev_limit")] public virtual ushort BattleLevelLimit { get; set; }
 
-        public async Task<List<DbTutorBattleLimitType>> GetAsync()
+        public static async Task<List<DbTutorBattleLimitType>> GetAsync()
         {
             await using ServerDbContext ctx = new ServerDbContext();
             return await ctx.TutorBattleLimitTypes.ToListAsync();

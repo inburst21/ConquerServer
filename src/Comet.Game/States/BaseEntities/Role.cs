@@ -863,6 +863,22 @@ namespace Comet.Game.States.BaseEntities
             }
         }
 
+        public async Task SynchroAttributesAsync(ClientUpdateType type, uint value1, uint value2, bool screen = false)
+        {
+            MsgUserAttrib msg = new MsgUserAttrib(Identity, type, value1);
+            msg.Append(type, value2);
+            if (this is Character && !screen)
+                await SendAsync(msg);
+
+            if (screen)
+            {
+                if (this is Character user)
+                    await user.BroadcastRoomMsgAsync(msg, true);
+                else if (Map != null)
+                    await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
+            }
+        }
+
         #endregion
 
         #region Timers

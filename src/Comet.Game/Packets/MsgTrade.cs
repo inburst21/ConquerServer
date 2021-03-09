@@ -117,6 +117,7 @@ namespace Comet.Game.Packets
 
                     Data = user.Identity;
                     await target.SendAsync(this);
+                    await target.SendRelationAsync(user);
                     user.SetRequest(RequestType.Trade, target.Identity);
                     await user.SendAsync(Language.StrTradeRequestSent);
                     break;

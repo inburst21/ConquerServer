@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter;
 using Comet.Core;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
@@ -59,6 +60,8 @@ namespace Comet.Game.World.Managers
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
         private readonly List<DbDisdain> m_disdains = new List<DbDisdain>();
+        private readonly List<DbTutorType> m_tutorType = new List<DbTutorType>();
+        private readonly List<DbTutorBattleLimitType> m_tutorBattleLimitTypes = new List<DbTutorBattleLimitType>();
 
         private TimeOutMS m_userUpdate = new TimeOutMS(500);
 
@@ -109,6 +112,10 @@ namespace Comet.Game.World.Managers
             m_superman = (await DbSuperman.GetAsync()).ToDictionary(superman => superman.UserIdentity);
 
             m_disdains.AddRange(await DbDisdain.GetAsync());
+
+            m_tutorType.AddRange(await DbTutorType.GetAsync());
+
+            m_tutorBattleLimitTypes.AddRange(await DbTutorBattleLimitType.GetAsync());
 
             m_userUpdate.Update();
         }
@@ -420,6 +427,16 @@ namespace Comet.Game.World.Managers
         public DbDisdain GetDisdain(int delta)
         {
             return m_disdains.Aggregate((x, y) => Math.Abs(x.DeltaLev - delta) < Math.Abs(y.DeltaLev - delta) ? x : y);
+        }
+
+        public DbTutorBattleLimitType GetTutorBattleLimitType(int delta)
+        {
+            return m_tutorBattleLimitTypes.Aggregate((x, y) => Math.Abs(x.Id - delta) < Math.Abs(y.Id - delta) ? x : y);
+        }
+
+        public DbTutorType GetTutorType(int level)
+        {
+            return m_tutorType.FirstOrDefault(x => level >= x.UserMinLevel && level <= x.UserMaxLevel);
         }
     }
 }

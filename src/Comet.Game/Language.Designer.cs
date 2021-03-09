@@ -655,6 +655,105 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target declined your request..
+        /// </summary>
+        public static string StrGuideDeclined {
+            get {
+                return ResourceManager.GetString("StrGuideDeclined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have sent the apprenticeship request..
+        /// </summary>
+        public static string StrGuideSendStudent {
+            get {
+                return ResourceManager.GetString("StrGuideSendStudent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have sent the apprentice request..
+        /// </summary>
+        public static string StrGuideSendTutor {
+            get {
+                return ResourceManager.GetString("StrGuideSendTutor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target`s level is too high to be your apprentice..
+        /// </summary>
+        public static string StrGuideStudentHighLevel {
+            get {
+                return ResourceManager.GetString("StrGuideStudentHighLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target`s level is too low to be your mentor..
+        /// </summary>
+        public static string StrGuideStudentHighLevel1 {
+            get {
+                return ResourceManager.GetString("StrGuideStudentHighLevel1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your student, {0}, has logged in..
+        /// </summary>
+        public static string StrGuideStudentLogin {
+            get {
+                return ResourceManager.GetString("StrGuideStudentLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You have too many apprentices, and cannot take another..
+        /// </summary>
+        public static string StrGuideTooManyStudents {
+            get {
+                return ResourceManager.GetString("StrGuideTooManyStudents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target has too many apprentices. Please try another..
+        /// </summary>
+        public static string StrGuideTooManyStudents1 {
+            get {
+                return ResourceManager.GetString("StrGuideTooManyStudents1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your mentor, {0}, has logged in..
+        /// </summary>
+        public static string StrGuideTutorLogin {
+            get {
+                return ResourceManager.GetString("StrGuideTutorLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a You can&apos;t take an apprentice until level 70..
+        /// </summary>
+        public static string StrGuideTutorLowLevel {
+            get {
+                return ResourceManager.GetString("StrGuideTutorLowLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A person under level 70 cannot be your mentor..
+        /// </summary>
+        public static string StrGuideTutorLowLevel1 {
+            get {
+                return ResourceManager.GetString("StrGuideTutorLowLevel1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Invalid coordinate..
         /// </summary>
         public static string StrInvalidCoordinate {

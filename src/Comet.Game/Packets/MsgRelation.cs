@@ -6,7 +6,7 @@
 // This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
 // found here: https://gitlab.com/spirited/comet
 // 
-// Comet - Comet.Game - Mentor.cs
+// Comet - Comet.Game - MsgRelation.cs
 // Description:
 // 
 // Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
@@ -19,40 +19,37 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System.Threading.Tasks;
+#region References
 
-namespace Comet.Game.States.Guide
+using Comet.Game.States;
+using Comet.Network.Packets;
+
+#endregion
+
+namespace Comet.Game.Packets
 {
-    public sealed class Mentor
+    public sealed class MsgRelation : MsgBase<Client>
     {
-        private Character m_owner;
+        public uint SenderIdentity;
+        public uint TargetIdentity;
+        public int Level;
+        public int BattlePower;
+        public bool IsSpouse;
+        public bool IsTutor;
+        public bool IsTradePartner;
 
-        /// <summary>
-        /// Used to create new relation.
-        /// </summary>
-        public Mentor()
+        public override byte[] Encode()
         {
-            
-        }
-
-        /// <summary>
-        /// Used to initialize existing relation.
-        /// </summary>
-        /// <param name="owner"></param>
-        public Mentor(Character owner)
-        {
-            m_owner = owner;
-        }
-
-        public async Task<bool> CreateAsync(Character userGuide, Character userStudent)
-        {
-
-            return true;
-        }
-
-        public async Task<bool> InitializeAsync()
-        {
-            return true;
+            PacketWriter writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgRelation);
+            writer.Write(SenderIdentity);
+            writer.Write(TargetIdentity);
+            writer.Write(Level);
+            writer.Write(BattlePower);
+            writer.Write(IsSpouse ? 1 : 0);
+            writer.Write(IsTutor ? 1 : 0);
+            writer.Write(IsTradePartner ? 1 : 0);
+            return writer.ToArray();
         }
     }
 }
