@@ -34,11 +34,10 @@ namespace Comet.Game.Packets
     {
         public enum RequestType
         {
-            Show = 5,
             ClaimExperience = 1,
-            ClaimSomeExperience = 2,
-            ClaimHeavenBlessing = 3,
-            ClaimPlus = 4
+            ClaimHeavenBlessing = 2,
+            ClaimItemAdd = 3,
+            Query = 4
         }
 
         public MsgGuideContribute()
@@ -78,10 +77,10 @@ namespace Comet.Game.Packets
             writer.Write(Identity);
             writer.Write(Padding);
             writer.Write(Experience);
-            writer.Write(HeavenBlessing);
-            writer.Write(Composing);
             writer.Write(Test1);
             writer.Write(Test2);
+            writer.Write(HeavenBlessing);
+            writer.Write(Composing);
             return writer.ToArray();
         }
 
@@ -93,14 +92,11 @@ namespace Comet.Game.Packets
 
             switch (Mode)
             {
-                case RequestType.Show:
+                case RequestType.Query:
                 {
                     Experience = (uint)user.MentorExpTime;
                     Composing = user.MentorAddLevexp;
                     HeavenBlessing = user.MentorGodTime;
-
-                    Test1 = 300;
-                    Test2 = 600;
                     await client.SendAsync(this);
                     break;
                 }

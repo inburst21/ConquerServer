@@ -83,6 +83,10 @@ namespace Comet.Game.States.Guide
             else
             {
                 DbTutorAccess tutorAccess = await DbTutorAccess.GetAsync(m_access.TutorIdentity);
+                tutorAccess ??= new DbTutorAccess
+                {
+                    GuideIdentity = GuideIdentity
+                };
                 tutorAccess.Experience += addExpTime;
                 await BaseRepository.SaveAsync(tutorAccess);
             }
@@ -101,6 +105,10 @@ namespace Comet.Game.States.Guide
             else
             {
                 DbTutorAccess tutorAccess = await DbTutorAccess.GetAsync(m_access.TutorIdentity);
+                tutorAccess ??= new DbTutorAccess
+                {
+                    GuideIdentity = GuideIdentity
+                };
                 tutorAccess.Blessing += addGodTime;
                 await BaseRepository.SaveAsync(tutorAccess);
             }
@@ -119,6 +127,10 @@ namespace Comet.Game.States.Guide
             else
             {
                 DbTutorAccess tutorAccess = await DbTutorAccess.GetAsync(m_access.TutorIdentity);
+                tutorAccess ??= new DbTutorAccess
+                {
+                    GuideIdentity = GuideIdentity
+                };
                 tutorAccess.Composition += addTime;
                 await BaseRepository.SaveAsync(tutorAccess);
             }

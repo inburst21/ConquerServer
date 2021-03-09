@@ -212,6 +212,16 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case Request.LeaveMentor:
+                {
+                    break;
+                }
+
+                case Request.DumpApprentice:
+                {
+                    break;
+                }
+
                 case Request.AcceptRequestApprentice:
                 {
                     if (Param2 == 0)
