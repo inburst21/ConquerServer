@@ -179,7 +179,7 @@ namespace Comet.Game.Packets
                     }
                     else
                     {
-                        if (!await user.SpendConquerPoints((int)(Data/50000), true))
+                        if (!await user.SpendConquerPointsAsync((int)(Data/50000), true))
                             return;
                     }
 

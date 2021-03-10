@@ -300,8 +300,8 @@ namespace Comet.Game.States.Events
 
                 if (user != null)
                 {
-                    await user.AwardMoney(money);
-                    await user.AwardConquerPoints(emoney);
+                    await user.AwardMoneyAsync(money);
+                    await user.AwardConquerPointsAsync(emoney);
                     await user.SendAsync(string.Format(Language.StrSynWarRewardNotify, money, emoney));
                 }
                 else

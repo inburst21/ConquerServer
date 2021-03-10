@@ -274,16 +274,16 @@ namespace Comet.Game.States
             await SendCloseAsync();
 
             await User1.SpendMoneyAsync((int) m_money1);
-            await User2.AwardMoney((int) m_money1);
+            await User2.AwardMoneyAsync((int) m_money1);
 
             await User2.SpendMoneyAsync((int) m_money2);
-            await User1.AwardMoney((int) m_money2);
+            await User1.AwardMoneyAsync((int) m_money2);
 
-            await User1.SpendConquerPoints((int) m_emoney1);
-            await User2.AwardConquerPoints((int) m_emoney1);
+            await User1.SpendConquerPointsAsync((int) m_emoney1);
+            await User2.AwardConquerPointsAsync((int) m_emoney1);
 
-            await User2.SpendConquerPoints((int) m_emoney2);
-            await User1.AwardConquerPoints((int) m_emoney2);
+            await User2.SpendConquerPointsAsync((int) m_emoney2);
+            await User1.AwardConquerPointsAsync((int) m_emoney2);
 
             List<DbTradeItem> dbItemsRecordTrack = new List<DbTradeItem>(41);
             foreach (var item in m_dicItems1.Values)

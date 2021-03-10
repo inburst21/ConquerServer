@@ -299,8 +299,7 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.PresentEmoney:
                 {
-
-
+                    await user.DoCardsAsync();
                     break;
                 }
 

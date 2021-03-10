@@ -187,7 +187,7 @@ namespace Comet.Game.Packets
                             if (itemtype.EmoneyPrice == 0)
                                 return;
 
-                            if (!await user.SpendConquerPoints((int) (itemtype.EmoneyPrice * amount), true))
+                            if (!await user.SpendConquerPointsAsync((int) (itemtype.EmoneyPrice * amount), true))
                                 return;
                             break;
                         default:
@@ -234,7 +234,7 @@ namespace Comet.Game.Packets
                     if (!await user.UserPackage.SpendItemAsync(item))
                         return;
 
-                    await user.AwardMoney(price);
+                    await user.AwardMoneyAsync(price);
                     break;
                 }
 
@@ -304,7 +304,7 @@ namespace Comet.Game.Packets
 
                     user.StorageMoney -= Command;
 
-                    await user.AwardMoney((int) Command);
+                    await user.AwardMoneyAsync((int) Command);
 
                     Action = ItemActionType.BankQuery;
                     Command = user.StorageMoney;
@@ -687,7 +687,7 @@ namespace Comet.Game.Packets
                         if (item.SocketProgress < 2400)
                             return;
 
-                        if (!await user.SpendConquerPoints((int) (5600 * (1 - item.SocketProgress / 8000f)), true))
+                        if (!await user.SpendConquerPointsAsync((int) (5600 * (1 - item.SocketProgress / 8000f)), true))
                             return;
 
                         item.SocketProgress = 0;
@@ -698,7 +698,7 @@ namespace Comet.Game.Packets
                         if (item.SocketProgress < 2400)
                             return;
 
-                        if (!await user.SpendConquerPoints((int) (14000 * (1 - item.SocketProgress / 20000f)), true))
+                        if (!await user.SpendConquerPointsAsync((int) (14000 * (1 - item.SocketProgress / 20000f)), true))
                             return;
 
                         item.SocketProgress = 0;

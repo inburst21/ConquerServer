@@ -80,7 +80,7 @@ namespace Comet.Game.World.Managers
                 return false;
             }
 
-            if (!await sender.SpendConquerPoints(PIGEON_PRICE, true))
+            if (!await sender.SpendConquerPointsAsync(PIGEON_PRICE, true))
             {
                 if (showError)
                     await sender.SendAsync(Language.StrPigeonUrgentErrNoEmoney);
@@ -131,7 +131,7 @@ namespace Comet.Game.World.Managers
             switch (request.Mode)
             {
                 case MsgPigeon.PigeonMode.Urgent:
-                    if (!await sender.SpendConquerPoints(PIGEON_ADDITION, false))
+                    if (!await sender.SpendConquerPointsAsync(PIGEON_ADDITION, false))
                     {
                         await sender.SendAsync(Language.StrPigeonUrgentErrNoEmoney);
                         return;
@@ -141,7 +141,7 @@ namespace Comet.Game.World.Managers
                     newPos = Math.Max(0, position - 5);
                     break;
                 case MsgPigeon.PigeonMode.SuperUrgent:
-                    if (!await sender.SpendConquerPoints(PIGEON_TOP_ADDITION, false))
+                    if (!await sender.SpendConquerPointsAsync(PIGEON_TOP_ADDITION, false))
                     {
                         await sender.SendAsync(Language.StrPigeonUrgentErrNoEmoney);
                         return;

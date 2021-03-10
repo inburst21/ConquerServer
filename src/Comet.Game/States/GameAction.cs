@@ -3464,7 +3464,7 @@ namespace Comet.Game.States
                         return user.Silvers == moneyValue;
                     if (opt.Equals("+="))
                     {
-                        return await user.ChangeMoney(moneyValue);
+                        return await user.ChangeMoneyAsync(moneyValue);
                     }
 
                     if (opt.Equals("set"))
@@ -3495,7 +3495,7 @@ namespace Comet.Game.States
                         return user.ConquerPoints == emoneyValue;
                     if (opt.Equals("+="))
                     {
-                        return await user.ChangeConquerPoints(emoneyValue);
+                        return await user.ChangeConquerPointsAsync(emoneyValue);
                     }
 
                     if (opt.Equals("set"))
@@ -3593,7 +3593,7 @@ namespace Comet.Game.States
                         return user.Experience == expValue;
                     if (opt.Equals("+="))
                     {
-                        return await user.AwardExperienceAsync((long) expValue);
+                        return await user.AwardExperienceAsync((long) expValue, last.Equals("nocontribute"));
                     }
 
                     if (opt.Equals("set"))
@@ -5658,7 +5658,7 @@ namespace Comet.Game.States
                 {
                     if (opt.Equals("+="))
                     {
-                        await member.ChangeMoney(value);
+                        await member.ChangeMoneyAsync(value);
                     }
                     else if (opt.Equals("<"))
                     {
@@ -5677,7 +5677,7 @@ namespace Comet.Game.States
                 {
                     if (opt.Equals("+="))
                     {
-                        await member.ChangeConquerPoints(value);
+                        await member.ChangeConquerPointsAsync(value);
                     }
                     else if (opt.Equals("<"))
                     {

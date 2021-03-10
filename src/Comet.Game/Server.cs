@@ -205,6 +205,14 @@ namespace Comet.Game
                         msg = new MsgGemEmbed();
                         break;
 
+                    case PacketType.MsgGodExp:
+                        msg = new MsgGodExp();
+                        break;
+
+                    case PacketType.MsgPing:
+                        msg = new MsgPing();
+                        break;
+
                     case PacketType.MsgConnect:
                         msg = new MsgConnect();
                         break;

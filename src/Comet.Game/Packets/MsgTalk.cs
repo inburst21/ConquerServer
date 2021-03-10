@@ -402,11 +402,11 @@ namespace Comet.Game.Packets
                         return true;
                     case "/awardmoney":
                         if (int.TryParse(param, out int moneyAmount))
-                            await user.AwardMoney(moneyAmount);
+                            await user.AwardMoneyAsync(moneyAmount);
                         return true;
                     case "/awardemoney":
                         if (int.TryParse(param, out int emoneyAmount))
-                            await user.AwardConquerPoints(emoneyAmount);
+                            await user.AwardConquerPointsAsync(emoneyAmount);
                         return true;
                     case "/awardmagic":
                     case "/awardskill":

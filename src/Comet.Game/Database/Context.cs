@@ -110,6 +110,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbFamily> Families { get; set; }
         public virtual DbSet<DbFamilyAttr> FamilyAttrs { get; set; }
         public virtual DbSet<DbFamilyBattleEffectShareLimit> FamilyBattleEffectShareLimits { get; set; }
+        public virtual DbSet<DbCard> Cards { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called

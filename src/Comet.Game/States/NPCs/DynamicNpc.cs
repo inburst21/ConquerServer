@@ -304,7 +304,7 @@ namespace Comet.Game.States.NPCs
                 {
                     owner.Money -= money;
                     await owner.SaveAsync();
-                    await user.AwardMoney(money);
+                    await user.AwardMoneyAsync(money);
 
                     if (user.SyndicateIdentity > 0)
                     {

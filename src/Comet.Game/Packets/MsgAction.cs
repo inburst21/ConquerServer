@@ -442,6 +442,9 @@ namespace Comet.Game.Packets
                     if (bonusCount > 0)
                         await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, SColor.Red);
 
+                    if (await user.CardsCountAsync() > 0)
+                        await user.SendAsync(new MsgAction { Action = ActionType.ClientCommand, Command = 1197u, Identity = user.Identity });
+
                     if (user.Gender == 1 && 
                         (user.SendFlowerTime == null 
                          || int.Parse(DateTime.Now.ToString("yyyyMMdd")) > int.Parse(user.SendFlowerTime.Value.ToString("yyyyMMdd"))))

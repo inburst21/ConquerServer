@@ -282,7 +282,9 @@ namespace Comet.Game.States
                 addExp = (long) Math.Min(dbExp.Exp, (ulong) addExp);
                 addExp = Math.Max(1, Math.Min(user.Level * 360, addExp));
 
-                if (user.IsMate(killer))
+                addExp = (int)Math.Min(addExp, user.Level * 360);
+
+                if (user.IsMate(killer) || user.IsApprentice(idKiller))
                     addExp *= 2;
 
                 await user.AwardBattleExpAsync(addExp, true);

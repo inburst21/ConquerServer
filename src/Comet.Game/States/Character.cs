@@ -531,6 +531,12 @@ namespace Comet.Game.States
 
             const int BATTLE_EXP_TAX = 5;
 
+            if (Level >= 120)
+                nExp /= 2;
+
+            if (Metempsychosis >= 2)
+                nExp /= 3;
+
             if (Level < 130)
                 nExp *= BATTLE_EXP_TAX;
 
@@ -538,25 +544,21 @@ namespace Comet.Game.States
             if (HasMultipleExp)
                 multiplier += ExperienceMultiplier - 1;
 
-            if (Level >= 70 && ProfessionSort == 13 && ProfessionLevel >= 3)
+            if (!IsNewbie() && ProfessionSort == 13 && ProfessionLevel >= 3)
                 multiplier += 1;
 
+            DbLevelExperience levExp = Kernel.RoleManager.GetLevelExperience(Level);
             if (IsBlessed)
-                multiplier += .2;
-
-            if (VipLevel >= 7)
-                multiplier += 1.5d;
-            else if (VipLevel >= 6)
-                multiplier += 1d;
-            else if (VipLevel >= 4)
-                multiplier += .75d;
-            else if (VipLevel >= 2)
-                multiplier += .5;
-
-            if (bGemEffect)
             {
-                multiplier += (1 + (RainbowGemBonus / 100d));
+                if (levExp != null)
+                    OnlineTrainingExp += (uint) (levExp.UpLevTime * (nExp / (float) levExp.Exp)* 0.2);
             }
+
+            if (Guide != null && levExp != null)
+                await Guide.AwardTutorExperienceAsync((uint)(levExp.MentorUpLevTime * ((float)nExp / levExp.Exp)));
+            
+            if (bGemEffect)
+                multiplier += (1 + (RainbowGemBonus / 100d));
 
             if (IsLucky && await Kernel.ChanceCalcAsync(10, 10000))
             {
@@ -568,13 +570,7 @@ namespace Comet.Game.States
             multiplier += 1 + BattlePower / 100d;
 
             nExp = (long)(nExp * Math.Max(1, multiplier));
-
-            if (Level >= 120)
-                nExp /= 2;
-
-            if (Metempsychosis >= 2)
-                nExp /= 3;
-
+            
             await AwardExperienceAsync(nExp);
         }
 
@@ -586,7 +582,7 @@ namespace Comet.Game.States
             return nExp;
         }
 
-        public async Task<bool> AwardExperienceAsync(long amount)
+        public async Task<bool> AwardExperienceAsync(long amount, bool noContribute = false)
         {
             if (Level > Kernel.RoleManager.GetLevelLimit())
                 return true;
@@ -596,6 +592,7 @@ namespace Comet.Game.States
             uint pointAmount = 0;
             byte newLevel = Level;
             ushort virtue = 0;
+            long usedExp = amount;
             while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
             {
                 DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(newLevel);
@@ -619,6 +616,8 @@ namespace Comet.Game.States
                 break;
             }
 
+            usedExp -= amount;
+            
             uint metLev = 0;
             var leveXp = Kernel.RoleManager.GetLevelExperience(newLevel);
             if (leveXp != null)
@@ -626,6 +625,9 @@ namespace Comet.Game.States
                 float fExp = amount / (float)leveXp.Exp;
                 metLev = (uint)(newLevel * 10000 + fExp * 1000);
             }
+
+            if (!noContribute && Guide != null && leveXp != null)
+                await Guide.AwardTutorExperienceAsync((uint)(leveXp.MentorUpLevTime * ((float)usedExp / leveXp.Exp))).ConfigureAwait(false);
 
             byte checkLevel = 130; //(byte)(m_dbObject.Reincarnation > 0 ? 110 : 130);
             if (newLevel >= checkLevel && Metempsychosis > 0 && m_dbObject.MeteLevel > metLev)
@@ -927,11 +929,11 @@ namespace Comet.Game.States
             set => m_dbObject.StorageMoney = value;
         }
 
-        public async Task<bool> ChangeMoney(int amount, bool notify = false)
+        public async Task<bool> ChangeMoneyAsync(int amount, bool notify = false)
         {
             if (amount > 0)
             {
-                await AwardMoney(amount);
+                await AwardMoneyAsync(amount);
                 return true;
             }
             if (amount < 0)
@@ -941,7 +943,7 @@ namespace Comet.Game.States
             return false;
         }
 
-        public async Task AwardMoney(int amount)
+        public async Task AwardMoneyAsync(int amount)
         {
             Silvers = (uint) (Silvers + amount);
             await SaveAsync();
@@ -963,28 +965,28 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> ChangeConquerPoints(int amount, bool notify = false)
+        public async Task<bool> ChangeConquerPointsAsync(int amount, bool notify = false)
         {
             if (amount > 0)
             {
-                await AwardConquerPoints(amount);
+                await AwardConquerPointsAsync(amount);
                 return true;
             }
             if (amount < 0)
             {
-                return await SpendConquerPoints(amount * -1, notify);
+                return await SpendConquerPointsAsync(amount * -1, notify);
             }
             return false;
         }
 
-        public async Task AwardConquerPoints(int amount)
+        public async Task AwardConquerPointsAsync(int amount)
         {
             ConquerPoints = (uint)(ConquerPoints + amount);
             await SaveAsync();
             await SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints);
         }
 
-        public async Task<bool> SpendConquerPoints(int amount, bool notify = false)
+        public async Task<bool> SpendConquerPointsAsync(int amount, bool notify = false)
         {
             if (amount > ConquerPoints)
             {
@@ -1029,7 +1031,7 @@ namespace Comet.Game.States
                 if (!Map.IsDeadIsland() && !target.IsEvil())
                 {
                     int nAddPk = 10;
-                    if (target.Level < 70)
+                    if (target.IsNewbie() && !IsNewbie())
                     {
                         nAddPk = 20;
                     }
@@ -1043,9 +1045,8 @@ namespace Comet.Game.States
                             nAddPk /= 2;
                     }
 
-                    int synPkPoints = 0;
                     int deltaLevel = Level - target.Level;
-
+                    var synPkPoints = 0;
                     if (deltaLevel > 30)
                         synPkPoints = 1;
                     else if (deltaLevel > 20)
@@ -1075,15 +1076,12 @@ namespace Comet.Game.States
                         if (SyndicateIdentity == target.SyndicateIdentity)
                         {
                             await Syndicate.SendAsync(
-                                string.Format(Language.StrSyndicateSameKill, SyndicateRankName, Name,
-                                    target.SyndicateRankName, target.Name, Map.Name), 0, Color.White);
+                                string.Format(Language.StrSyndicateSameKill, SyndicateRankName, Name, target.SyndicateRankName, target.Name, Map.Name), 0, Color.White);
                         }
                         else
                         {
                             await Syndicate.SendAsync(string.Format(Language.StrSyndicateKill, SyndicateRankName, Name, target.Name, target.SyndicateRankName, target.SyndicateName, Map.Name));
-                            await target.SendAsync(
-                                string.Format(Language.StrSyndicateBeKill, Name, SyndicateRankName, SyndicateName, target.SyndicateRankName, target.Name, Map.Name)
-                            );
+                            await target.Syndicate.SendAsync(string.Format(Language.StrSyndicateBeKill, Name, SyndicateRankName, SyndicateName, target.SyndicateRankName, target.Name, Map.Name));
                         }
                     }
 
@@ -1110,14 +1108,14 @@ namespace Comet.Game.States
                                          && !Map.IsSynMap()
                                          && !Map.IsFamilyMap())
                 {
-                    await SetCrimeStatusAsync(25);
+                    await SetCrimeStatusAsync(30);
                 }
                 return true;
             }
 
             if (target is Monster mob && (mob.IsGuard() || mob.IsPkKiller()))
             {
-                await SetCrimeStatusAsync(25);
+                await SetCrimeStatusAsync(15);
                 return true;
             }
 
@@ -1386,13 +1384,13 @@ namespace Comet.Game.States
             {
                 if (!await target.SpendMoneyAsync((int) item.Value, true))
                     return false;
-                await AwardMoney(value);
+                await AwardMoneyAsync(value);
             }
             else
             {
-                if (!await target.SpendConquerPoints((int) item.Value, true))
+                if (!await target.SpendConquerPointsAsync((int) item.Value, true))
                     return false;
-                await AwardConquerPoints(value);
+                await AwardConquerPointsAsync(value);
             }
 
             Booth.RemoveItem(idItem);
@@ -1540,7 +1538,7 @@ namespace Comet.Game.States
 
             if (mapItem.IsMoney())
             {
-                await AwardMoney((int) mapItem.Money);
+                await AwardMoneyAsync((int) mapItem.Money);
                 if (mapItem.Money > 1000)
                 {
                     await SendAsync(new MsgAction
@@ -3056,6 +3054,53 @@ namespace Comet.Game.States
             return await BonusRepository.CountAsync(m_dbObject.AccountIdentity);
         }
 
+        public async Task<bool> DoCardsAsync()
+        {
+            var cards = await DbCard.GetAsync(m_dbObject.AccountIdentity);
+            if (cards.Count == 0)
+                return false;
+
+            int inventorySpace = cards.Count(x => x.ItemType != 0);
+            if (inventorySpace > 0 && !UserPackage.IsPackSpare(inventorySpace))
+            {
+                await SendAsync(string.Format(Language.StrNotEnoughSpaceN, inventorySpace));
+                return false;
+            }
+
+            int money = 0;
+            int emoney = 0;
+            int emoneyMono = 0;
+            foreach (var card in cards)
+            {
+                if (card.ItemType != 0)
+                    await UserPackage.AwardItemAsync(card.ItemType);
+
+                if (card.Money != 0)
+                    money += (int) card.Money;
+
+                if (card.ConquerPoints != 0)
+                    emoney += (int) card.ConquerPoints;
+
+                if (card.ConquerPointsMono != 0)
+                    emoneyMono += (int) card.ConquerPointsMono;
+
+                card.Flag |= 0x1;
+                card.Timestamp = DateTime.Now;
+            }
+
+            if (money > 0)
+                await AwardMoneyAsync(money);
+
+            if (emoney > 0)
+                await AwardConquerPointsAsync(emoney);
+            return true;
+        }
+
+        public Task<int> CardsCountAsync()
+        {
+            return DbCard.CountAsync(m_dbObject.AccountIdentity);
+        }
+
         #endregion
 
         #region Monster Kills
@@ -3609,7 +3654,7 @@ namespace Comet.Game.States
             if (!await Syndicate.CreateAsync(name, price, this))
             {
                 Syndicate = null;
-                await AwardMoney(price);
+                await AwardMoneyAsync(price);
                 return false;
             }
 
@@ -3617,7 +3662,7 @@ namespace Comet.Game.States
             {
                 await Syndicate.DeleteAsync();
                 Syndicate = null;
-                await AwardMoney(price);
+                await AwardMoneyAsync(price);
                 return false;
             }
             
@@ -5308,6 +5353,22 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Online Training
+
+        public uint GodTimeExp
+        {
+            get => m_dbObject.OnlineGodExpTime;
+            set => m_dbObject.OnlineGodExpTime = value;
+        }
+
+        public uint OnlineTrainingExp
+        {
+            get => m_dbObject.BattleGodExpTime;
+            set => m_dbObject.BattleGodExpTime = value;
+        }
+
+        #endregion
+
         #region Relation Packet
 
         public Task SendRelationAsync(Character target)
@@ -5405,7 +5466,8 @@ namespace Comet.Game.States
                     m_blessPoints++;
                     if (m_blessPoints >= 10)
                     {
-                        await AwardExperienceAsync(CalculateExpBall(60));
+                        GodTimeExp += 60;
+
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 5);
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0);
                         m_blessPoints = 0;

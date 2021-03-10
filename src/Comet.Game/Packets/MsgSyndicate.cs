@@ -221,7 +221,7 @@ namespace Comet.Game.Packets
                         return;
 
                     int amount = (int)Identity;
-                    if (!await user.SpendConquerPoints(amount))
+                    if (!await user.SpendConquerPointsAsync(amount))
                     {
                         await user.SendAsync(Language.StrNotEnoughEmoney);
                         return;
