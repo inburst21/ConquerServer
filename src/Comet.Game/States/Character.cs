@@ -3086,8 +3086,9 @@ namespace Comet.Game.States
 
                 card.Flag |= 0x1;
                 card.Timestamp = DateTime.Now;
-                await BaseRepository.SaveAsync(card);
             }
+
+            await BaseRepository.SaveAsync(cards);
 
             if (money > 0)
                 await AwardMoneyAsync(money);

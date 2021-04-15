@@ -306,12 +306,12 @@ namespace Comet.Game.States.Items
             {
                 if (value)
                 {
-                    m_dbItem.Monopoly |= 1;
+                    m_dbItem.Monopoly |= ITEM_MONOPOLY_MASK;
                 }
                 else
                 {
                     int monopoly = m_dbItem.Monopoly;
-                    monopoly &= ~1;
+                    monopoly &= ~ITEM_MONOPOLY_MASK;
                     m_dbItem.Monopoly = (byte) monopoly;
                 }
             }
@@ -1959,7 +1959,7 @@ namespace Comet.Game.States.Items
                 SenderIdentity = PlayerIdentity,
                 TargetIdentity = Identity,
                 PosX = MaximumDurability,
-                Command = (int) Data
+                Command = (int) Data * 2
             };
             await m_user.SendAsync(msg);
         }

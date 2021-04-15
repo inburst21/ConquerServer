@@ -22,11 +22,13 @@
 #region References
 
 using System;
+using System.Net.Sockets;
 using System.Runtime.Caching;
 using System.Security.Cryptography;
 using Comet.Network.RPC;
 using Comet.Shared;
 using Comet.Shared.Models;
+using Newtonsoft.Json;
 
 #endregion
 
@@ -39,6 +41,10 @@ namespace Comet.Game
     /// </summary>
     public class Remote : IRpcServerTarget
     {
+        public Socket Socket { get; private set; }
+        public string AgentName { get; private set; }
+
+
         /// <summary>
         ///     Called to ensure that the connection to the RPC server has been successful,
         ///     and that any wire security placed on the connection has been initialized and
@@ -47,6 +53,7 @@ namespace Comet.Game
         /// <param name="agentName">Name of the client connecting</param>
         public void Connected(string agentName)
         {
+            AgentName = agentName;
             Log.WriteLogAsync(LogLevel.Message, "{0} has connected", agentName).ConfigureAwait(false);
         }
 
@@ -68,14 +75,12 @@ namespace Comet.Game
             // Store in the login cache with an absolute timeout
             var timeoutPolicy = new CacheItemPolicy {AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60)};
             Kernel.Logins.Set(token.ToString(), args, timeoutPolicy);
-
-            // Log.WriteLogAsync(LogLevel.Debug, $"TransferAuth: {args.AccountID}, {args.IPAddress}").ConfigureAwait(false);
             return token;
         }
 
         public void TransferMacAddress(TransferMacAddrArgs args)
         {
-
+            Log.WriteLogAsync(LogLevel.Debug, $"TransferMacAddress data: {Environment.NewLine}{JsonConvert.SerializeObject(args)}").ConfigureAwait(false);
         }
     }
 }

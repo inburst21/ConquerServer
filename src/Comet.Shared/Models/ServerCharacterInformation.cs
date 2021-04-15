@@ -19,19 +19,26 @@
 // So far, the Universe is winning.
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#region References
+
 using System;
 using System.Collections.Generic;
+
+#endregion
 
 namespace Comet.Shared.Models
 {
     public class ServerCharacterInformation
     {
+        public uint ServerIdentity { get; set; }
         public string ServerName { get; set; }
         public List<CharacterInformation> Characters { get; set; }
 
         public class CharacterInformation
         {
-            public uint Id { get; set; }
+            public uint ServerIdentity { get; set; }
+            public uint UserIdentity { get; set; }
+            public uint AccountIdentity { get; set; }
             public string Name { get; set; }
             public uint MateId { get; set; }
             public byte Level { get; set; }
@@ -51,6 +58,11 @@ namespace Comet.Shared.Models
             public byte NobilityRank { get; set; }
             public uint SupermanCount { get; set; }
             public DateTime? DeletedAt { get; set; }
+            public ulong Money { get; set; }
+            public uint WarehouseMoney { get; set; }
+            public uint ConquerPoints { get; set; }
+            public uint FamilyIdentity { get; set; }
+            public ushort FamilyRank { get; set; }
         }
     }
 }

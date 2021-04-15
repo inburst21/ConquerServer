@@ -340,36 +340,7 @@ namespace Comet.Game.States
                 {
                     uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
 
-                    //if (user != null)
-                    //{
-                    //    double multiplier;
-                    //    switch (user?.VipLevel)
-                    //    {
-                    //        case 2:
-                    //            multiplier = 0.25d;
-                    //            break;
-                    //        case 3:
-                    //        case 4:
-                    //            multiplier = 0.5d;
-                    //            break;
-                    //        case 5:
-                    //        case 6:
-                    //            multiplier = .75d;
-                    //            break;
-                    //        case 7:
-                    //            multiplier = 1d;
-                    //            break;
-                    //        default:
-                    //            multiplier = 0.1d;
-                    //            break;
-                    //    }
-
-                    //    await user.AwardMoney((int) Math.Max(1, moneyTmp * multiplier));
-                    //}
-                    //else
-                    //{
-                        await DropMoneyAsync(moneyTmp, 0);
-                    //}
+                    await DropMoneyAsync(moneyTmp, 0);
                 }
             }
 
@@ -396,56 +367,22 @@ namespace Comet.Game.States
             if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 10500))
             {
                 uint cpsBagType = (uint)await Kernel.NextAsync(729910, 729912);
-                //if (user != null)
-                //{
-                //    Item cpBag = new Item(user);
-                //    if (await cpBag.CreateAsync(Kernel.ItemManager.GetItemtype(cpsBagType)) && await user.UserPackage.AddItemAsync(cpBag))
-                //    {
-                //        await user.UserPackage.UseItemAsync(cpBag.Identity, Item.ItemPosition.Inventory);
-                //    }
-                //}
-                //else
-                //{
                 await DropItemAsync(cpsBagType, null);
-                //}
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
             else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2700000))
             {
-                //if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1) && await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL))
-                //{
-                //    if (await user.UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
-                //        await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
-
-                //    await Kernel.RoleManager.BroadcastMsgAsync(
-                //        string.Format(Language.StrDragonBallDropped, $"[VIP] {attacker.Name}", attacker.Map.Name),
-                //        MsgTalk.TalkChannel.TopLeft);
-                //}
-                //else
-                //{
-                    await DropItemAsync(Item.TYPE_DRAGONBALL, user);
-                    await Kernel.RoleManager.BroadcastMsgAsync(
-                        string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone,
-                            attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
-                //}
+                await DropItemAsync(Item.TYPE_DRAGONBALL, user);
+                await Kernel.RoleManager.BroadcastMsgAsync(
+                    string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone,
+                        attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
 
                 if (user != null)
                     await user.AddActivityPointsAsync(1);
             }
             else if (await Kernel.ChanceCalcAsync((int) (55 * multiply), 42500))
             {
-                //if (user?.VipLevel >= 7 && user.UserPackage.IsPackSpare(1))
-                //{
-                //    if (await user.UserPackage.AwardItemAsync(Item.TYPE_METEOR))
-                //    {
-                //        if (await user.UserPackage.MultiSpendItemAsync(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true))
-                //            await user.UserPackage.AwardItemAsync(Item.TYPE_METEOR_SCROLL);
-                //    }
-                //}
-                //else
-                //{
-                    await DropItemAsync(Item.TYPE_METEOR, user);
-                //}
+                await DropItemAsync(Item.TYPE_METEOR, user);
             }
             else if (await Kernel.ChanceCalcAsync((int) (100 * multiply), 45500))
             {
@@ -534,61 +471,6 @@ namespace Comet.Game.States
 
                     if (drop.Info.Addition > 0 && owner?.Guide != null)
                         await owner.Guide.AwardOpportunityAsync(1);
-
-                    //if (owner?.VipLevel > 3)
-                    //{
-                    //    bool send = false;
-                    //    string itemInfo = "";
-
-                    //    if (drop.Info.SocketNum > 0)
-                    //    {
-                    //        itemInfo += $" {drop.Info.SocketNum}-Socketed";
-                    //        send = true;
-                    //    }
-
-                    //    switch (drop.Itemtype%10)
-                    //    {
-                    //        case 9:
-                    //            itemInfo += $"Super{drop.Name}";
-                    //            send = true;
-                    //            break;
-                    //        case 8:
-                    //            itemInfo += $"Elite{drop.Name}";
-                    //            send = true;
-                    //            break;
-                    //        case 7:
-                    //            itemInfo += $"Unique{drop.Name}";
-                    //            send = true;
-                    //            break;
-                    //        case 6:
-                    //            itemInfo += $"Refined{drop.Name}";
-                    //            send = true;
-                    //            break;
-                    //        default:
-                    //            itemInfo = drop.Name;
-                    //            break;
-                    //    }
-
-                    //    if (drop.Info.Addition > 0)
-                    //    {
-                    //        itemInfo += $"(+{drop.Info.Addition})";
-                    //        send = true;
-                    //    }
-
-                    //    if (drop.Info.ReduceDamage > 0)
-                    //    {
-                    //        itemInfo += $" -{drop.Info.ReduceDamage}% Damage";
-                    //        send = true;
-                    //    }
-
-                    //    if (owner.VipLevel >= 7 && send)
-                    //    {
-                    //        itemInfo += $" at ({drop.MapX},{drop.MapY})";
-                    //    }
-
-                    //    if (send)
-                    //        await owner.SendAsync(string.Format(Language.StrVipDropItem, itemInfo));
-                    //}
                 }
                 else
                 {

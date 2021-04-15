@@ -255,7 +255,7 @@ namespace Comet.Game.States
                 UserIpAddress = User1.Client.IPAddress,
                 UserMacAddress = User1.Client.MacAddress,
                 TargetIpAddress = User2.Client.IPAddress,
-                TargetMacAddress = User1.Client.MacAddress,
+                TargetMacAddress = User2.Client.MacAddress,
                 MapIdentity = User1.MapIdentity,
                 TargetEmoney = m_emoney2,
                 TargetMoney = m_money2,
