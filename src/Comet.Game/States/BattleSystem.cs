@@ -469,7 +469,9 @@ namespace Comet.Game.States
                 return false;
 
             if (m_owner is Character atkUser && atkUser.CurrentEvent != null && !atkUser.CurrentEvent.IsAttackEnable(atkUser))
+            {
                 return false;
+            }
             return true;
         }
 

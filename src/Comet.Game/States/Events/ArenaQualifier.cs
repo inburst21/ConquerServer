@@ -102,7 +102,7 @@ namespace Comet.Game.States.Events
 
         public override bool IsAttackEnable(Role sender)
         {
-            return FindMatchByMap(sender.MapIdentity)?.IsAttackEnable ?? false;
+            return FindMatchByMap(sender.MapIdentity)?.IsAttackEnable ?? true; // return true, because if not in event already it must be able to attack
         }
 
         public override Task OnEnterAsync(Character sender)
