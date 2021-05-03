@@ -615,7 +615,7 @@ namespace Comet.Game.States.Events
                 await sender.SetAttributesAsync(ClientUpdateType.Hitpoints, sender.MaxLife);
                 await sender.SetAttributesAsync(ClientUpdateType.Mana, sender.MaxMana);
                 await sender.SetAttributesAsync(ClientUpdateType.Stamina, sender.MaxEnergy);
-                await sender.ClsXpVal();
+                await sender.ClsXpValAsync();
             }
 
             public async Task DestroyAsync(uint idDisconnect = 0, bool notStarted = false)

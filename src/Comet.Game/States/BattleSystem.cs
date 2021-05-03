@@ -76,7 +76,7 @@ namespace Comet.Game.States
             }
             
             Character user = m_owner as Character;
-            if (user?.IsBowman == true && !user.Map.IsTrainingMap() && !await user.SpendEquipItem(0050, 1, true))
+            if (user?.IsBowman == true && !user.Map.IsTrainingMap() && !await user.SpendEquipItemAsync(0050, 1, true))
             {
                 ResetBattle();
                 return false;
@@ -828,7 +828,7 @@ namespace Comet.Game.States
             return Calculations.CutTrail(0, nExp);
         }
 
-        public async Task OtherMemberAwardExp(Role target, long nBonusExp)
+        public async Task OtherMemberAwardExpAsync(Role target, long nBonusExp)
         {
             if (m_owner.Map.IsTrainingMap())
                 return;

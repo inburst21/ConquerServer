@@ -31,6 +31,7 @@ using Comet.Game.States;
 using Comet.Game.States.Events;
 using Comet.Game.States.NPCs;
 using Comet.Shared;
+using Comet.Shared.Comet.Shared;
 
 #endregion
 

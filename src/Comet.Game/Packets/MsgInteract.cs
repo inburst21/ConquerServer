@@ -171,7 +171,7 @@ namespace Comet.Game.Packets
                     if (targetItem == null)
                         return;
 
-                    Command = (ushort) targetItem.Data;
+                    Command = (ushort) (targetItem.Data * 2);
                     await client.SendAsync(this);
                     break;
 

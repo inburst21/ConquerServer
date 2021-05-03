@@ -181,7 +181,7 @@ namespace Comet.Game.States.Items
                     return true;
                 }
 
-                await m_user.SetExperienceMultiplier(3600);
+                await m_user.SetExperienceMultiplierAsync(3600);
                 await SpendItemAsync(item);
                 return true;
             }

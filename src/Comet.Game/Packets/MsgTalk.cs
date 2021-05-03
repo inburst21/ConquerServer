@@ -531,8 +531,8 @@ namespace Comet.Game.Packets
                         return true;
 
                     case "/xp":
-                        await user.AddXp(100);
-                        await user.BurstXp();
+                        await user.AddXpAsync(100);
+                        await user.BurstXpAsync();
                         return true;
 
                     case "/sp":

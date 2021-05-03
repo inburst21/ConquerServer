@@ -246,7 +246,7 @@ namespace Comet.Game.States
                 m_transformation = new TimeOut(nKeepSecs);
                 m_transformation.Startup(nKeepSecs);
                 if (bSynchro)
-                    await SynchroTransform();
+                    await SynchroTransformAsync();
             }
             else
             {
@@ -254,7 +254,7 @@ namespace Comet.Game.States
             }
 
             if (bBack)
-                await SynchroTransform();
+                await SynchroTransformAsync();
 
             return false;
         }
@@ -265,12 +265,12 @@ namespace Comet.Game.States
             Transformation = null;
             m_transformation.Clear();
             
-            await SynchroTransform();
+            await SynchroTransformAsync();
             await MagicData.AbortMagicAsync(true);
             BattleSystem.ResetBattle();
         }
 
-        public async Task<bool> SynchroTransform()
+        public async Task<bool> SynchroTransformAsync()
         {
             MsgUserAttrib msg = new MsgUserAttrib(Identity, ClientUpdateType.Mesh, Mesh);
             if (TransformationMesh != 98 && TransformationMesh != 99)
@@ -291,7 +291,7 @@ namespace Comet.Game.States
             if (Gender == 2)
                 trans = 99;
             TransformationMesh = trans;
-            await SynchroTransform();
+            await SynchroTransformAsync();
         }
 
         #endregion
@@ -745,8 +745,8 @@ namespace Comet.Game.States
 
                 if (burstXp)
                 {
-                    await SetXp(100);
-                    await BurstXp();
+                    await SetXpAsync(100);
+                    await BurstXpAsync();
                 }
             }
 
@@ -1143,7 +1143,7 @@ namespace Comet.Game.States
 
         public UserPackage UserPackage { get; }
 
-        public async Task<bool> SpendEquipItem(uint dwItem, uint dwAmount, bool bSynchro)
+        public async Task<bool> SpendEquipItemAsync(uint dwItem, uint dwAmount, bool bSynchro)
         {
             if (dwItem <= 0)
                 return false;
@@ -2412,7 +2412,7 @@ namespace Comet.Game.States
             }
             else if (target is Monster monster)
             {
-                await AddXp(1);
+                await AddXpAsync(1);
 
                 if (QueryStatus(StatusSet.CYCLONE) != null || QueryStatus(StatusSet.SUPERMAN) != null)
                 {
@@ -2573,7 +2573,7 @@ namespace Comet.Game.States
 
                 if (attacker.Identity != Identity && attacker is Character atkrUser)
                 {
-                    await CreateEnemy(atkrUser);
+                    await CreateEnemyAsync(atkrUser);
 
                     if (!IsBlessed)
                     {
@@ -2636,7 +2636,7 @@ namespace Comet.Game.States
             }
             else if (attacker is Character atkUser && Map.IsDeadIsland())
             {
-                await CreateEnemy(atkUser);
+                await CreateEnemyAsync(atkUser);
             }
             else if (attacker is Monster monster)
             {
@@ -2775,7 +2775,7 @@ namespace Comet.Game.States
             await SetAttributesAsync(ClientUpdateType.Stamina, DEFAULT_USER_ENERGY);
             await SetAttributesAsync(ClientUpdateType.Hitpoints, MaxLife);
             await SetAttributesAsync(ClientUpdateType.Mana, MaxMana);
-            await SetXp(0);
+            await SetXpAsync(0);
 
             if (CurrentEvent != null)
             {
@@ -3199,7 +3199,7 @@ namespace Comet.Game.States
             return idx > 0 && idx <= m_setTaskId.Count ? m_setTaskId[idx - 1] : 0u;
         }
 
-        public async Task<bool> TestTask(DbTask task)
+        public async Task<bool> TestTaskAsync(DbTask task)
         {
             if (task == null) return false;
 
@@ -3237,7 +3237,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task AddTaskMask(int idx)
+        public async Task AddTaskMaskAsync(int idx)
         {
             if (idx < 0 || idx >= 32)
                 return;
@@ -3246,7 +3246,7 @@ namespace Comet.Game.States
             await SaveAsync();
         }
 
-        public async Task ClearTaskMask(int idx)
+        public async Task ClearTaskMaskAsync(int idx)
         {
             if (idx < 0 || idx >= 32)
                 return;
@@ -3443,7 +3443,7 @@ namespace Comet.Game.States
             return m_dicEnemies.TryAdd(friend.Identity, friend);
         }
 
-        public async Task<bool> CreateEnemy(Character target)
+        public async Task<bool> CreateEnemyAsync(Character target)
         {
             if (IsEnemy(target.Identity))
                 return false;
@@ -3468,7 +3468,7 @@ namespace Comet.Game.States
             return m_dicEnemies.TryGetValue(idTarget, out var friend) ? friend : null;
         }
 
-        public async Task<bool> DeleteEnemy(uint idTarget)
+        public async Task<bool> DeleteEnemyAsync(uint idTarget)
         {
             if (!IsFriend(idTarget) || !m_dicEnemies.TryRemove(idTarget, out var target))
                 return false;
@@ -3761,7 +3761,7 @@ namespace Comet.Game.States
             VarData[1] += 1;
         }
 
-        public async Task SendSecondaryPasswordInterface()
+        public async Task SendSecondaryPasswordInterfaceAsync()
         {
             await GameAction.ExecuteActionAsync(100, this, null, null, string.Empty);
         }
@@ -4144,9 +4144,9 @@ namespace Comet.Game.States
             return SaveAsync();
         }
 
-        public async Task LeaveAutoExerciseAsync()
+        public Task LeaveAutoExerciseAsync()
         {
-            
+            return Task.CompletedTask;
         }
 
         public (int Level, ulong Experience) GetCurrentOnlineTGExp()
@@ -4186,7 +4186,7 @@ namespace Comet.Game.States
             }
         }
 
-        public async Task<bool> SetExperienceMultiplier(uint nSeconds, float nMultiplier = 2f)
+        public async Task<bool> SetExperienceMultiplierAsync(uint nSeconds, float nMultiplier = 2f)
         {
             m_dbObject.ExperienceExpires = DateTime.Now.AddSeconds(nSeconds);
             m_dbObject.ExperienceMultiplier = nMultiplier;
@@ -4274,11 +4274,11 @@ namespace Comet.Game.States
 
         public byte XpPoints = 0;
 
-        public async Task ProcXpVal()
+        public async Task ProcXpValAsync()
         {
             if (!IsAlive)
             {
-                await ClsXpVal();
+                await ClsXpValAsync();
                 return;
             }
 
@@ -4288,19 +4288,19 @@ namespace Comet.Game.States
 
             if (XpPoints >= 100)
             {
-                await BurstXp();
-                await SetXp(0);
+                await BurstXpAsync();
+                await SetXpAsync(0);
                 m_xpPoints.Update();
             }
             else
             {
                 if (Map != null && Map.IsBoothEnable())
                     return;
-                await AddXp(1);
+                await AddXpAsync(1);
             }
         }
 
-        public async Task<bool> BurstXp()
+        public async Task<bool> BurstXpAsync()
         {
             if (XpPoints < 100)
                 return false;
@@ -4313,21 +4313,21 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task SetXp(byte nXp)
+        public async Task SetXpAsync(byte nXp)
         {
             if (nXp > 100)
                 return;
             await SetAttributesAsync(ClientUpdateType.XpCircle, nXp);
         }
 
-        public async Task AddXp(byte nXp)
+        public async Task AddXpAsync(byte nXp)
         {
             if (nXp <= 0 || !IsAlive || QueryStatus(StatusSet.START_XP) != null)
                 return;
             await AddAttributesAsync(ClientUpdateType.XpCircle, nXp);
         }
 
-        public async Task ClsXpVal()
+        public async Task ClsXpValAsync()
         {
             XpPoints = 0;
             await StatusSet.DelObjAsync(StatusSet.START_XP);
@@ -4802,7 +4802,7 @@ namespace Comet.Game.States
             set => m_dbObject.TitleSelect = value;
         }
 
-        public async Task<bool> AddTitle(UserTitles idTitle, DateTime expiration)
+        public async Task<bool> AddTitleAsync(UserTitles idTitle, DateTime expiration)
         {
             if (expiration < DateTime.Now)
                 return false;
@@ -5566,7 +5566,7 @@ namespace Comet.Game.States
 
                 if (m_xpPoints.ToNextTime())
                 {
-                    await ProcXpVal();
+                    await ProcXpValAsync();
                 }
 
                 if (m_autoHeal.ToNextTime() && IsAlive)

@@ -91,7 +91,7 @@ namespace Comet.Shared
             }
             catch (Exception ex)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error on reply from API [{BASE_URL}] Auth, [{m_token}],[{auth.Expiration}]");
+                await Log.WriteLogAsync(LogLevel.Error, $"Error on reply from API [{BASE_URL}] Auth, [{m_token}],[{auth.Expiration}] {ex.Message}");
                 return false;
             }
 

@@ -164,7 +164,7 @@ namespace Comet.Game.Packets
                     }
 
                     user.ClearTaskId();
-                    await GameAction.ExecuteActionAsync(await user.TestTask(task) ? task.IdNext : task.IdNextfail, user,
+                    await GameAction.ExecuteActionAsync(await user.TestTaskAsync(task) ? task.IdNext : task.IdNextfail, user,
                         targetRole, user.UserPackage[user.InteractingItem], Text);
                     break;
                 }

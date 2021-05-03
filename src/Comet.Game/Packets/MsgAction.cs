@@ -468,7 +468,7 @@ namespace Comet.Game.Packets
                     if (user.VipLevel > 0)
                     {
                         if (!user.HasTitle(Character.UserTitles.Vip))
-                            await user.AddTitle(Character.UserTitles.Vip, user.VipExpiration);
+                            await user.AddTitleAsync(Character.UserTitles.Vip, user.VipExpiration);
                     }
 
                     Kernel.EventThread.GetEvent<QuizShow>()?.Enter(user);

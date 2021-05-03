@@ -273,7 +273,7 @@ namespace Comet.Game.States.NPCs
             for (int i = 0; i < 8; i++)
             {
                 DbTask task = Kernel.EventManager.GetTask(GetTask($"task{i}"));
-                if (task != null && await user.TestTask(task))
+                if (task != null && await user.TestTaskAsync(task))
                     return task.IdNext;
             }
             return 0;

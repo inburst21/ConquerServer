@@ -238,7 +238,7 @@ namespace Comet.Game.States.Magics
                 if (magic.UseStamina > 0)
                     await user.AddAttributesAsync(ClientUpdateType.Stamina, magic.UseStamina * -1);
                 if (magic.UseItem > 0)
-                    await user.SpendEquipItem(magic.UseItem, Math.Max(magic.UseItemNum, 1), true);
+                    await user.SpendEquipItemAsync(magic.UseItem, Math.Max(magic.UseItemNum, 1), true);
             }
 
             if (magic.UseXp == BattleSystem.MagicType.Normal && user != null)
@@ -257,7 +257,7 @@ namespace Comet.Game.States.Magics
                     }
 
                     await user.DetachStatusAsync(StatusSet.START_XP);
-                    await user.ClsXpVal();
+                    await user.ClsXpValAsync();
                 }
             }
 
@@ -467,7 +467,7 @@ namespace Comet.Game.States.Magics
             if (!targetRole.IsAlive)
             {
                 int nBonusExp = (int)(targetRole.MaxLife * 20 / 100);
-                await m_pOwner.BattleSystem.OtherMemberAwardExp(targetRole, nBonusExp);
+                await m_pOwner.BattleSystem.OtherMemberAwardExpAsync(targetRole, nBonusExp);
                 await m_pOwner.KillAsync(targetRole, GetDieMode());
             }
             else
@@ -951,8 +951,8 @@ namespace Comet.Game.States.Magics
                         continue;
 
                     msg.Append(member.Identity, DISPATCHXP_NUMBER, true);
-                    await member.SetXp(DISPATCHXP_NUMBER);
-                    await member.BurstXp();
+                    await member.SetXpAsync(DISPATCHXP_NUMBER);
+                    await member.BurstXpAsync();
                     await member.SendAsync(string.Format(Language.StrDispatchXp, user.Name));
                 }
             }

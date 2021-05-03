@@ -58,8 +58,6 @@ namespace Comet.Game.States.Events
 
         public override EventType Identity { get; } = EventType.GuildContest;
 
-        public GameMap Map { get; private set; }
-
         public override bool IsAllowedToJoin(Role sender)
         {
             if (!(sender is Character user))

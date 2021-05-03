@@ -30,6 +30,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.Events;
 using Comet.Shared;
+using Comet.Shared.Comet.Shared;
 
 #endregion
 

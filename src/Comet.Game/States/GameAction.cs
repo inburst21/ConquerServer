@@ -3901,13 +3901,13 @@ namespace Comet.Game.States
                         return user.XpPoints == xpValue;
                     if (opt.Equals("+="))
                     {
-                        await user.AddXp((byte) xpValue);
+                        await user.AddXpAsync((byte) xpValue);
                         return true;
                     }
 
                     if (opt.Equals("set"))
                     {
-                        await user.SetXp((byte) xpValue);
+                        await user.SetXpAsync((byte) xpValue);
                         return true;
                     }
 
@@ -4065,8 +4065,8 @@ namespace Comet.Game.States
 
             if (param.Equals("xp", StringComparison.InvariantCultureIgnoreCase))
             {
-                await user.SetXp(100);
-                await user.BurstXp();
+                await user.SetXpAsync(100);
+                await user.BurstXpAsync();
                 return true;
             }
 
@@ -4501,12 +4501,12 @@ namespace Comet.Game.States
                 case "chk":
                     return user.CheckTaskMask(flag);
                 case "add":
-                    await user.AddTaskMask(flag);
+                    await user.AddTaskMaskAsync(flag);
                     return true;
                 case "cls":
                 case "clr":
                 case "clear":
-                    await user.ClearTaskMask(flag);
+                    await user.ClearTaskMaskAsync(flag);
                     return true;
             }
 
@@ -4805,7 +4805,7 @@ namespace Comet.Game.States
 
             uint time = uint.Parse(pszParam[1]);
             float multiply = int.Parse(pszParam[0]) / 100f;
-            await user.SetExperienceMultiplier(time, multiply);
+            await user.SetExperienceMultiplierAsync(time, multiply);
             return true;
         }
 

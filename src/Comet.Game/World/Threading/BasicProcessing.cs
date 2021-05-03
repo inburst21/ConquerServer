@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Shared;
+using Comet.Shared.Comet.Shared;
 using Comet.Shared.Models;
 
 #endregion
