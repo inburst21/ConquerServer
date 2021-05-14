@@ -50,7 +50,7 @@ namespace Comet.Network.Services
         /// <param name="capacity">Capacity of the bounded channel.</param>
         public RandomnessService(int capacity = 10000)
         {
-            BufferChannel = Channel.CreateBounded<Double>(capacity);
+            BufferChannel = Channel.CreateBounded<double>(capacity);
             Generator = new Random();
         }
 

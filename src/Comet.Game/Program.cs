@@ -103,11 +103,8 @@ namespace Comet.Game
             // start remaining background services
             tasks = new List<Task>
             {
-                Kernel.Services.WorldProcessor.StartAsync(CancellationToken.None)
             };
             Task.WaitAll(tasks.ToArray());
-
-            // await ConvertItemsAsync();
 
             // Start the RPC server listener
             await Log.WriteLogAsync(LogLevel.Message, "Launching server listeners...");

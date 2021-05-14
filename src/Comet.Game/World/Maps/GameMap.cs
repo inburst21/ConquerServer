@@ -569,11 +569,19 @@ namespace Comet.Game.World.Maps
 
         #region Position Check
 
+        /// <summary>
+        /// Determinate if a coordinate has already been occupied by another object.
+        /// </summary>
+        /// <returns>False if the block is empty.</returns>
         public bool IsSuperPosition(int x, int y)
         {
             return GetBlock(GetBlockX(x), GetBlockY(y))?.RoleSet.Values.Any(a => a.MapX == x && a.MapY == y && a.IsAlive) != false;
         }
 
+        /// <summary>
+        /// Determinate if a coordinate is valid inside of a map.
+        /// </summary>
+        /// <returns></returns>
         public bool IsValidPoint(int x, int y)
         {
             return x >= 0 && x < Width && y >= 0 && y < Height;
@@ -763,37 +771,6 @@ namespace Comet.Game.World.Maps
         #endregion
 
         #region Ai Timer
-
-        /*public async Task<int> OnTimerAsync()
-        {
-            await Weather.OnTimerAsync();
-
-            if (m_users.Count == 0)
-                return 0;
-
-            List<Role> roles = new List<Role>();
-            for (int x = 0; x < BlocksX; x++)
-            {
-                for (int y = 0; y < BlocksY; y++)
-                {
-                    GameBlock block = m_blocks[x, y];
-                    if (block.IsActive)
-                    {
-                        roles.AddRange(Query9Blocks(x, y).Where(z => z is Monster));
-                    }
-                }
-            }
-
-            roles.AddRange(m_roles.Values.Where(x => x is Monster mob && mob.IsGuard()));
-
-            int result = 0;
-            foreach (var role in roles.Distinct())
-            {
-                await role.OnTimerAsync();
-                result++;
-            }
-            return result;
-        }*/
 
         public async Task<int> OnTimerAsync()
         {

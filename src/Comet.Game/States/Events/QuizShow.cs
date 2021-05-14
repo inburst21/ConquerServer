@@ -106,6 +106,18 @@ namespace Comet.Game.States.Events
                         temp.RemoveAt(idx);
                     }
 
+                    foreach (var user in Kernel.RoleManager.QueryRoleByType<Character>())
+                    {
+                        if (!m_users.TryGetValue(user.Identity, out var res))
+                        {
+                            Enter(user);
+                        }
+                        else
+                        {
+                            res.Canceled = false;
+                        }
+                    }
+
                     _ = Kernel.RoleManager.BroadcastMsgAsync(new MsgQuiz
                     {
                         Action = MsgQuiz.QuizAction.Start,
@@ -122,11 +134,7 @@ namespace Comet.Game.States.Events
                 if (m_owner.Data0 == 4) // start
                 {
                     Status = QuizStatus.Running;
-                    m_questionIdx = -1;
-                    foreach (var user in Kernel.RoleManager.QueryRoleByType<Character>())
-                    {
-                        Enter(user);
-                    }
+                    m_questionIdx = -1;                    
                 }
             }
             else
@@ -250,13 +258,13 @@ namespace Comet.Game.States.Events
             if (player.CurrentQuestion != m_questionIdx)
                 return;
 
-            int expBallAmount = 0;
             var question = m_quizQuestions[idxQuestion - 1];
-            ushort points = 0;
+            ushort points;
+            int expBallAmount;
             if (question.Result == reply)
             {
                 expBallAmount = TOTAL_EXP_REWARD / MAX_QUESTION;
-                player.Points += points = (ushort) Math.Max(1, m_questionTimer.GetRemain());
+                player.Points += points = (ushort)Math.Max(1, m_questionTimer.GetRemain());
                 player.TimeTaken += (ushort)m_questionTimer.GetRemain();
             }
             else
@@ -280,7 +288,6 @@ namespace Comet.Game.States.Events
             var top3 = GetTop3();
             foreach (var top in top3)
             {
-                //msg.Strings.Add($"{top.Name} {top.Points} {top.TimeTaken}");
                 msg.Scores.Add(new MsgQuiz.QuizRank
                 {
                     Name = top.Name,

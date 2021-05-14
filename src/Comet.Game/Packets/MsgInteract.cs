@@ -125,7 +125,6 @@ namespace Comet.Game.Packets
                         if (client.Character.SetAttackTarget(target))
                             client.Character.BattleSystem.CreateBattle(TargetIdentity);
                     }
-
                     break;
 
                 case MsgInteractType.MagicAttack:
@@ -162,7 +161,7 @@ namespace Comet.Game.Packets
                     PosY = Convert.ToUInt16(yy);
 
                     if (client.Character.IsAlive)
-                        client.Character.QueueAction(() => client.Character.ProcessMagicAttackAsync(magicType, TargetIdentity, PosX, PosY));
+                        await client.Character.ProcessMagicAttackAsync(magicType, TargetIdentity, PosX, PosY);
 
                     break;
 

@@ -301,8 +301,11 @@ namespace Comet.Game.World.Managers
             {
                 if (item.CanDisappear())
                 {
-                    await item.DisappearAsync();
-                    m_mapItemSet.TryRemove(item.Identity, out _);
+                    Kernel.Services.Processor.Queue(item.Map.Partition, async () =>
+                    {
+                        await item.DisappearAsync();
+                        m_mapItemSet.TryRemove(item.Identity, out _);
+                    });
                 }
             }
 

@@ -80,6 +80,7 @@ namespace Comet.Game
         public static AiProcessor AiThread = new AiProcessor();
         public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
         public static EventsProcessing EventThread = new EventsProcessing();
+        public static GeneratorProcessing GeneratorThread = new GeneratorProcessing();
 
         static Kernel()
         {
@@ -133,6 +134,7 @@ namespace Comet.Game
             await AiThread.StartAsync();
             await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
+            await GeneratorThread.StartAsync();
 
             return true;
         }
@@ -143,9 +145,9 @@ namespace Comet.Game
             await AiThread.CloseAsync();
             await AutomaticActions.CloseAsync();
             await EventThread.CloseAsync();
+            await GeneratorThread.CloseAsync();
 
             await Services.Processor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);
-            await Services.WorldProcessor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);
 
             await RoleManager.KickOutAllAsync("Server is now closing", true).ConfigureAwait(true);
 
@@ -162,8 +164,7 @@ namespace Comet.Game
         public static class Services
         {
             public static RandomnessService Randomness = new RandomnessService();
-            public static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount);
-            public static WorldProcessor WorldProcessor = new WorldProcessor(Environment.ProcessorCount);
+            public static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount / 2);
         }
 
         public static async Task<bool> ChanceCalcAsync(int chance, int outOf)

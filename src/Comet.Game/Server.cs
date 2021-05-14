@@ -55,7 +55,11 @@ namespace Comet.Game
         /// <param name="config">The server's read configuration file</param>
         public Server(ServerConfiguration config) : base(config.GameNetwork.MaxConn, 4096, false, true, 8)
         {
-            Processor = new PacketProcessor<Client>(ProcessAsync);
+#if DEBUG
+            Processor = new PacketProcessor<Client>(ProcessAsync, 1);
+#else
+            Processor = new PacketProcessor<Client>(ProcessAsync, 2); // ?? not sure if really needed
+#endif
             Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -71,8 +75,6 @@ namespace Comet.Game
         {
             var partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
-
-            // await Log.WriteLogAsync(LogLevel.Message, $"Client[{client.GUID}] {client.IPAddress} has connected");
 
             await client.DiffieHellman.ComputePublicKeyAsync();
 
@@ -364,9 +366,7 @@ namespace Comet.Game
                         break;
 
                     default:
-                        await Log.WriteLogAsync(LogLevel.Warning,
-                            "Missing packet {0}, Length {1}\n{2}",
-                            type, length, PacketDump.Hex(packet));
+                        await Log.WriteLogAsync(LogLevel.Warning, "Missing packet {0}, Length {1}\n{2}", type, length, PacketDump.Hex(packet));
                         if (actor.Character?.IsGm() == true)
                         {
                             await actor.SendAsync(new MsgTalk(actor.Identity, MsgTalk.TalkChannel.Service,
@@ -378,7 +378,10 @@ namespace Comet.Game
 
                 // Decode packet bytes into the structure and process
                 msg.Decode(packet);
-                await msg.ProcessAsync(actor);
+                // Packet has been decrypted and now will be queued in the region processor
+                if (actor.Character?.Map != null)
+                    Kernel.Services.Processor.Queue(actor.Character.Map.Partition, () => msg.ProcessAsync(actor));
+                else await msg.ProcessAsync(actor);
             }
             catch (Exception e)
             {
@@ -402,40 +405,35 @@ namespace Comet.Game
 
             Processor.DeselectPartition(actor.Partition);
 
+            bool fromCreation = false;
             if (actor.Creation != null)
+            {
                 Kernel.Registration.Remove(actor.Creation.Token);
+                fromCreation = true;
+            }
 
             if (actor.Character != null)
             {
                 Log.WriteLogAsync(LogLevel.Message, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
                 actor.Character.Connection = Character.ConnectionStage.Disconnected;
-                Kernel.RoleManager.ForceLogoutUser(actor.Character.Identity);
-                actor.Character.OnDisconnectAsync().ConfigureAwait(true);
 
-                try
+                Kernel.Services.Processor.Queue(actor.Character.Map?.Partition ?? 0, async () =>
                 {
-                    actor.Disconnect();
-                }
-                catch { }
+                    Kernel.RoleManager.ForceLogoutUser(actor.Character.Identity);
+                    await actor.Character.OnDisconnectAsync();
+                });
             }
             else
             {
-                Log.WriteLogAsync(LogLevel.Message, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
+                if (fromCreation)
+                {
+                    Log.WriteLogAsync(LogLevel.Message, $"{actor.AccountIdentity} has created a new character and has logged out.").ConfigureAwait(false);
+                }
+                else
+                {
+                    Log.WriteLogAsync(LogLevel.Message, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
+                }                
             }
         }        
-    }
-
-    public class ExchangeModel
-    {
-        public ExchangeModel(Client client)
-        {
-            Client = client;
-            GUID = client.GUID;
-            RequestExpire = DateTime.Now.AddSeconds(10);
-        }
-
-        public Client Client { get; }
-        public string GUID { get; }
-        public DateTime RequestExpire { get; set; }
     }
 }

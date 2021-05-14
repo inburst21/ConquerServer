@@ -38,7 +38,7 @@ namespace Comet.Game.World
 {
     public sealed class Generator
     {
-        private const int _MAX_PER_GEN = 25;
+        private const int _MAX_PER_GEN = 15;
         private const int _MIN_TIME_BETWEEN_GEN = 10;
         private static uint m_idGenerator = 2000000;
 
@@ -134,8 +134,7 @@ namespace Comet.Game.World
                 Y = m_dbGen.BoundY + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCy)
             };
 
-            if (!m_pMap.IsValidPoint(result.X, result.Y) || !m_pMap.IsStandEnable(result.X, result.Y) ||
-                m_pMap.IsSuperPosition(result.X, result.Y))
+            if (!m_pMap.IsValidPoint(result.X, result.Y) || !m_pMap.IsStandEnable(result.X, result.Y) || m_pMap.IsSuperPosition(result.X, result.Y))
             {
                 return default;
             }
@@ -162,22 +161,26 @@ namespace Comet.Game.World
             return mob;
         }
 
-        public async Task GenerateAsync()
+        public Task GenerateAsync()
         {
             if (!IsActive)
-                return;
+                return Task.CompletedTask;
 
             int generate = Math.Min(m_dbGen.MaxPerGen - Generated, _MAX_PER_GEN);
             if (generate > 0)
             {
                 while (generate-- > 0)
                 {
-                    Monster monster = await GenerateMonsterAsync();
-                    if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
-                        continue;
-                    await monster.EnterMapAsync();
+                    Kernel.Services.Processor.Queue(m_pMap.Partition, async () =>
+                    {
+                        Monster monster = await GenerateMonsterAsync();
+                        if (monster == null || !m_dicMonsters.TryAdd(monster.Identity, monster))
+                            return;
+                        await monster.EnterMapAsync();
+                    });                    
                 }
             }
+            return Task.CompletedTask;
         }
 
         public bool Add(Monster monster)

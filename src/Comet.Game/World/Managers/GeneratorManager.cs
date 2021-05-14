@@ -26,6 +26,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
@@ -38,17 +39,26 @@ namespace Comet.Game.World.Managers
 {
     public sealed class GeneratorManager
     {
-        private ConcurrentDictionary<int, List<Generator>> m_generators =
-            new ConcurrentDictionary<int, List<Generator>>();
+        private ConcurrentDictionary<int, List<Generator>> m_generators = new ConcurrentDictionary<int, List<Generator>>();
 
-        private readonly long[] m_Timeouts;
+        private long m_Timeout;
 
         public GeneratorManager()
         {
-            m_Timeouts = new long[Kernel.Services.WorldProcessor.Count];
         }
 
-        public string ElapsedStatus => $"({string.Join(',', m_Timeouts)})";
+        public string ElapsedMilliseconds => m_Timeout.ToString();
+        //{
+        //    get
+        //    {
+        //        StringBuilder result = new StringBuilder();
+        //        for (int i = 0; i < m_Timeouts.Length; i++)
+        //        {
+        //            result.AppendFormat("\t\t\t\tThread[0x{0:X4}]: {1}ms{2}", i, m_Timeouts[i], i >= m_Timeouts.Length - 1 ? "" : Environment.NewLine);
+        //        }
+        //        return result.ToString();
+        //    }
+        //}
 
         public async Task<bool> InitializeAsync()
         {
@@ -71,21 +81,20 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task OnTimerAsync(int partition)
+        public async Task OnTimerAsync()
         {
-            if (!m_generators.ContainsKey(partition))
-                return;
-
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            foreach (var gen in m_generators[partition])
+            foreach (var partition in m_generators.Keys)
             {
-                await gen.GenerateAsync();
+                foreach (var gen in m_generators[partition])
+                {
+                    await gen.GenerateAsync();
+                }
             }
             sw.Stop();
-            m_Timeouts[partition] = sw.ElapsedMilliseconds;
-
-            await Task.Delay(1000);
+            m_Timeout = sw.ElapsedMilliseconds;
+            // await Task.Delay(1000);
         }
 
         public async Task<bool> AddGeneratorAsync(Generator generator)
@@ -125,31 +134,6 @@ namespace Comet.Game.World.Managers
         public List<Generator> GetByMonsterType(uint idType)
         {
             return (from partition in m_generators.Keys from gen in m_generators[partition] where gen.RoleType == idType select gen).ToList();
-        }
-
-        public async Task RefreshGeneratorsFromChannelAsync(int partition)
-        {
-            if (!m_generators.ContainsKey(partition))
-                return;
-
-            foreach (var gen in m_generators[partition])
-            {
-                GameMap map = Kernel.MapManager.GetMap(gen.MapIdentity);
-                if (map.Partition != partition)
-                    break;
-                await gen.ClearGeneratorAsync().ConfigureAwait(true);
-            }
-        }
-
-        public async Task RefreshGeneratorsAsync()
-        {
-            foreach (var partition in m_generators.Keys)
-            {
-                foreach (var gen in m_generators[partition])
-                {
-                    await gen.ClearGeneratorAsync().ConfigureAwait(true);
-                }
-            }
         }
     }
 }

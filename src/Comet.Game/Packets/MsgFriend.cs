@@ -131,6 +131,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case MsgFriendAction.RemoveEnemy:
+                    await user.DeleteEnemyAsync(Identity);
                     break;
             }
         }

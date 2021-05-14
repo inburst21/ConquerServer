@@ -36,8 +36,7 @@ namespace Comet.Game.Packets
             SetServerTime = 0,
             SetMountMovePoint = 2,
             AntiCheatAnswerMsgTypeCount = 3,
-            AntiCheatAskMsgTypeCount = 4,
-
+            AntiCheatAskMsgTypeCount = 4
         }
 
         public MsgData()

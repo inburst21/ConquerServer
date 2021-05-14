@@ -34,15 +34,12 @@ namespace Comet.Game.World.Threading
 {
     public sealed class SystemProcessor : TimerBase
     {
-        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server [{9}] - {1} - Players: {3} (max:{4}) - {2} - Threads[S:{5:0000},G:{6:0000},U:{7:0000},A:{8:0000}]ms";
+        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server [{8}] - {1} - Players: {3} (max:{4}) - {2} - Threads[S:{5:0000},U:{6:0000},A:{7:0000}]ms";
 
-#if !DEBUG
         private TimeOut m_analytics = new TimeOut(300);
-#else
-        private TimeOut m_analytics = new TimeOut(3600);
-#endif
-
+#if USE_API
         private TimeOut m_apiSync = new TimeOut(60);
+#endif
 
         private DateTime m_serverStartTime;
 
@@ -64,9 +61,7 @@ namespace Comet.Game.World.Threading
         {
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
                 Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers,
-                //Kernel.SystemThread.ElapsedMilliseconds, Kernel.WorldThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
-                Kernel.SystemThread.ElapsedMilliseconds, Kernel.GeneratorManager.ElapsedStatus, Kernel.UserThread.ElapsedMilliseconds,
-                //Kernel.WorldThread.ElapsedMilliseconds, Kernel.Version);
+                Kernel.SystemThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
                 Kernel.AiThread.ElapsedMilliseconds, Kernel.Version);
 
             if (m_analytics.ToNextTime())
@@ -107,10 +102,8 @@ namespace Comet.Game.World.Threading
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
-            //await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.WorldThread.ElapsedMilliseconds:N0}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorManager.ElapsedStatus}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Environment.NewLine}{Kernel.GeneratorManager.ElapsedMilliseconds}ms");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
-            //await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.WorldThread.ElapsedMilliseconds:N0}ms ({Kernel.WorldThread.ProcessedMonsters} AI Agents)");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms ({Kernel.AiThread.ProcessedMonsters} AI Agents)");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Identities Remaining: ");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"\tMonster: {IdentityGenerator.Monster.IdentitiesCount()}");

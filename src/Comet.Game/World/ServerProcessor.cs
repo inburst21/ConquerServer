@@ -38,12 +38,6 @@ namespace Comet.Game.World
 {
     public class ServerProcessor : BackgroundService
     {
-#if DEBUG && WINDOWS
-        [DllImport("Kernel32", EntryPoint = "GetCurrentThreadId", ExactSpelling = true)]
-        protected static extern Int32 GetCurrentWin32ThreadId();
-        protected readonly ProcessThread[] m_Thread;
-        protected readonly Func<Task>[] m_LastExecuted;
-#endif
         protected readonly Task[] m_BackgroundTasks;
         protected readonly Channel<Func<Task>>[] m_Channels;
         protected readonly Partition[] m_Partitions;
@@ -54,12 +48,8 @@ namespace Comet.Game.World
 
         public ServerProcessor(int processorCount)
         {
-            Count = processorCount;
+            Count = Math.Max(1, processorCount);
 
-#if DEBUG && WINDOWS
-            m_Thread = new ProcessThread[Count];
-            m_LastExecuted = new Func<Task>[Count];
-#endif
             m_BackgroundTasks = new Task[Count];
             m_Channels = new Channel<Func<Task>>[Count];
             m_Partitions = new Partition[Count];
@@ -89,22 +79,14 @@ namespace Comet.Game.World
         
         protected virtual async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
-#if DEBUG && WINDOWS
-            m_Thread[partition] = (from ProcessThread entry in Process.GetCurrentProcess().Threads
-                                   where entry.Id == GetCurrentWin32ThreadId()
-                                   select entry).First();
-#endif
             while (!m_CancelReads.IsCancellationRequested)
             {
                 var action = await channel.Reader.ReadAsync(m_CancelReads);
                 if (action != null)
                 {
-#if DEBUG && WINDOWS
-                    m_LastExecuted[partition] = action;
-#endif
                     try
                     {
-                        await action.Invoke();
+                        await action.Invoke(); //.ConfigureAwait(true); // THE QUEUE MUST BE EXECUTED IN ORDER, NO CONCURRENCY
                     }
                     catch (Exception ex) 
                     {

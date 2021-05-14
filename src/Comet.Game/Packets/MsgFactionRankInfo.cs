@@ -74,12 +74,12 @@ namespace Comet.Game.Packets
                 writer.Write(member.Tulip); // 44
                 writer.Write(member.TotalDonation); // 48
                 writer.Write(member.UsableDonation);
-                writer.Write(120);
-                writer.Write(130);
-                writer.Write(140);
-                writer.Write(150);
+                writer.Write(0);
+                writer.Write(0);
+                writer.Write(0);
+                writer.Write(0);
                 writer.Write(member.PlayerName, 16); // 52
-                writer.Write(160);
+                writer.Write(0);
             }
             return writer.ToArray();
         }

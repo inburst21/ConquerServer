@@ -136,7 +136,13 @@ namespace Comet.Game.States
                 Mode = DropType.DropTrap
             }, false);
 
-            await Map.RemoveAsync(Identity);
+            if (Map != null)
+            {
+                Kernel.Services.Processor.Queue(Map.Partition, async () =>
+                {
+                    await Map.RemoveAsync(Identity);
+                });
+            }
 
             if (Identity >= MAGICTRAPID_FIRST && Identity <= MAGICTRAPID_LAST)
                 IdentityGenerator.Traps.ReturnIdentity(Identity);

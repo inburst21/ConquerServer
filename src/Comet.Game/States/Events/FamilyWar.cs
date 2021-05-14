@@ -72,6 +72,8 @@ namespace Comet.Game.States.Events
             0.05
         };
 
+        private int m_lastUpdate;
+
         public FamilyWar()
             : base("Clan War", 1000)
         {
@@ -86,6 +88,20 @@ namespace Comet.Game.States.Events
         {
             return uint.Parse(DateTime.Now.ToString("HHmmss")) >= 203000
                    && uint.Parse(DateTime.Now.ToString("HHmmss")) < 203500;
+        }
+
+        public override async Task OnTimerAsync()
+        {
+            if (int.Parse(DateTime.Now.ToString("HHmm")) == 2100 && m_lastUpdate != int.Parse(DateTime.Now.ToString("yyyyMMdd")))
+            {
+                foreach (var family in Kernel.FamilyManager.QueryFamilies(x => x.ChallengeMap != 0))
+                {
+                    family.ChallengeMap = 0;
+                    await family.SaveAsync();
+                }
+
+                m_lastUpdate = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
+            }
         }
 
         #endregion

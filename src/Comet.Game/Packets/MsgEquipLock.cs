@@ -80,7 +80,7 @@ namespace Comet.Game.Packets
             Item item = client.Character.UserPackage.FindByIdentity(Identity);
             if (item == null)
             {
-                _ = client.Character.SendAsync(Language.StrItemNotFound);
+                await client.Character.SendAsync(Language.StrItemNotFound);
                 return;
             }
 
@@ -89,13 +89,13 @@ namespace Comet.Game.Packets
                 case LockMode.RequestLock:
                     if (item.IsLocked() && !item.IsUnlocking())
                     {
-                        _ = client.Character.SendAsync(Language.StrEquipLockAlreadyLocked);
+                        await client.Character.SendAsync(Language.StrEquipLockAlreadyLocked);
                         return;
                     }
 
                     if (!item.IsEquipment())
                     {
-                        _ = client.Character.SendAsync(Language.StrEquipLockCantLock);
+                        await client.Character.SendAsync(Language.StrEquipLockCantLock);
                         return;
                     }
 
@@ -107,13 +107,13 @@ namespace Comet.Game.Packets
 
                     if (!item.IsLocked())
                     {
-                        _ = client.Character.SendAsync(Language.StrEquipLockNotLocked);
+                        await client.Character.SendAsync(Language.StrEquipLockNotLocked);
                         return;
                     }
 
                     if (item.IsUnlocking())
                     {
-                        _ = client.Character.SendAsync(Language.StrEquipLockAlreadyUnlocking);
+                        await client.Character.SendAsync(Language.StrEquipLockAlreadyUnlocking);
                         return;
                     }
 

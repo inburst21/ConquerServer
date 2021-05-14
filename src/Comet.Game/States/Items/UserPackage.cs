@@ -199,9 +199,9 @@ namespace Comet.Game.States.Items
                     return false;
 
                 if (item.Life > 0 && m_user.QueryStatus(StatusSet.POISON_STAR) == null)
-                    m_user.QueueAction(() => m_user.AddAttributesAsync(ClientUpdateType.Hitpoints, item.Life));
+                    m_user.QueueAction(() => m_user.AddAttributesAsync(ClientUpdateType.Hitpoints, item.Life)); // may be on queue, may not
                 if (item.Mana > 0)
-                    m_user.QueueAction(() => m_user.AddAttributesAsync(ClientUpdateType.Mana, item.Mana));
+                    m_user.QueueAction(() => m_user.AddAttributesAsync(ClientUpdateType.Mana, item.Mana)); // may be on queue, may not
 
                 return false;
             }

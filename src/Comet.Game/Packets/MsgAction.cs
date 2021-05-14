@@ -190,7 +190,7 @@ namespace Comet.Game.Packets
                                 client.Character.VipExpiration.ToString("U")), MsgTalk.TalkChannel.Talk);
 
                     if (user.Life == 0)
-                        user.QueueAction(() => user.SetAttributesAsync(ClientUpdateType.Hitpoints, 10));
+                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, 10);
 
                     user.Connection = Character.ConnectionStage.Ready; // set user ready to be processed.
                     break;
@@ -495,17 +495,14 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        user.QueueAction(async () =>
-                        {
-                            await user.ProcessOnMoveAsync();
-                            await user.JumpPosAsync(newX, newY);
+                        await user.ProcessOnMoveAsync();
+                        await user.JumpPosAsync(newX, newY);
 
-                            X = user.MapX;
-                            Y = user.MapY;
+                        X = user.MapX;
+                        Y = user.MapY;
 
-                            await user.SendAsync(this);
-                            await user.Screen.UpdateAsync(this);
-                        });
+                        await user.SendAsync(this);
+                        await user.Screen.UpdateAsync(this);
                     }
 
                     break;

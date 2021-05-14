@@ -220,24 +220,23 @@ namespace Comet.Game.States
             return false;
         }
 
-        public Task DoAttackAsync()
+        public async Task DoAttackAsync()
         {
             if (m_actTarget == null)
-                return Task.CompletedTask;
+                return;
 
             if (!m_tAttackMs.ToNextTime(AttackSpeed))
-                return Task.CompletedTask;
+                return;
 
             if (m_idUseMagic != 0)
             {
-                QueueAction(() => ProcessMagicAttackAsync((ushort) m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY));
+                await ProcessMagicAttackAsync((ushort)m_idUseMagic, m_actTarget.Identity, m_actTarget.MapX, m_actTarget.MapY);
             }
             else
             {
                 BattleSystem.CreateBattle(m_actTarget.Identity);
-                QueueAction(BattleSystem.ProcessAttackAsync);
+                await BattleSystem.ProcessAttackAsync();
             }
-            return Task.CompletedTask;
         }
 
         public override bool IsAttackable(Role attacker)
@@ -344,33 +343,13 @@ namespace Comet.Game.States
                 }
             }
 
-            float multiply = 1f;
-            switch (user?.VipLevel)
-            {
-                case 1:
-                case 2:
-                    multiply = 1.125f;
-                    break;
-                case 3:
-                case 4:
-                    multiply = 1.25f;
-                    break;
-                case 5:
-                case 6:
-                    multiply = 1.5f;
-                    break;
-                case 7:
-                    multiply = 1.725f;
-                    break;
-            }
-
-            if (await Kernel.ChanceCalcAsync((int) (50 * multiply), 10500))
+            if (await Kernel.ChanceCalcAsync(50, 16500))
             {
                 uint cpsBagType = (uint)await Kernel.NextAsync(729910, 729912);
                 await DropItemAsync(cpsBagType, null);
                 await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
-            else if (await Kernel.ChanceCalcAsync((int) (625 * multiply), 2700000))
+            else if (await Kernel.ChanceCalcAsync(625, 54_000_000))
             {
                 await DropItemAsync(Item.TYPE_DRAGONBALL, user);
                 await Kernel.RoleManager.BroadcastMsgAsync(
@@ -380,18 +359,18 @@ namespace Comet.Game.States
                 if (user != null)
                     await user.AddActivityPointsAsync(1);
             }
-            else if (await Kernel.ChanceCalcAsync((int) (55 * multiply), 42500))
+            else if (await Kernel.ChanceCalcAsync(50, 42500))
             {
                 await DropItemAsync(Item.TYPE_METEOR, user);
             }
-            else if (await Kernel.ChanceCalcAsync((int) (100 * multiply), 45500))
+            else if (await Kernel.ChanceCalcAsync(100, 45500))
             {
                 uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 700121};
                 uint dGem = normalGem[await Kernel.NextAsync(normalGem.Length) % normalGem.Length];
                 if (dGem > 0)
                     await DropItemAsync(dGem, user); // normal gems
             }
-            else if ((m_dbMonster.Id == 15 || m_dbMonster.Id == 74) && await Kernel.ChanceCalcAsync(2f))
+            else if (m_dbMonster.StcType == 17 && await Kernel.ChanceCalcAsync(2f))
             {
                 await DropItemAsync(1080001, user); // emerald
             }
@@ -1396,7 +1375,7 @@ namespace Comet.Game.States
             if (m_leaveMap.IsActive())
             {
                 if (CanLeaveMap())
-                    await LeaveMapAsync();
+                    QueueAction(LeaveMapAsync);
                 return;
             }
 
