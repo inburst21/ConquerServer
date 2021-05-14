@@ -1,10 +1,10 @@
-# Comet
+# World Conquer Online - Comet
 
 Comet is a simple, educational game networking project targeting the Conquer Online game client.
 
 The project is split between two servers: an account server and game server. The account server authenticates players, while the game server services players in the game world. This simple two-server architecture acts as a good introduction into server programming and concurrency patterns. The server is interoperable with the Conquer Online game client, but a modified client will not be provided.
 
-![Example Picture](/doc/Images/Example.jpg)
+This project is still in Beta and target the client version 5180 of the Official English client.
 
 ## Getting Started
 
@@ -12,7 +12,7 @@ Get started by cloning the repository. Select a branch based on the patch you wi
 
 Before setting up the project, download and install the following:
 
-* [.NET Core 3.1 or higher](https://dotnet.microsoft.com/download) - Primary language compiler
+* [.NET 5 or higher](https://dotnet.microsoft.com/download) - Primary language compiler
 * [MariaDB](https://mariadb.org/) - Recommended flavor of MySQL for project databases 
 * [Visual Studio Code](https://code.visualstudio.com/) - Recommended editor for modifying and building project files
 
