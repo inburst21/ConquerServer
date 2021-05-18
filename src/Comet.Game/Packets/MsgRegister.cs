@@ -29,6 +29,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
+using Comet.Shared;
 
 #endregion
 
@@ -141,9 +142,12 @@ namespace Comet.Game.Packets
                 Mesh = Mesh,
                 Silver = 1000,
                 Level = 1,
-                MapID = 1002,
-                X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
-                Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
+                //MapID = 1002,
+                //X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
+                //Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
+                MapID = 1010,
+                X = 61,
+                Y = 109,
                 Strength = allot.Strength,
                 Agility = allot.Agility,
                 Vitality = allot.Vitality,
@@ -183,14 +187,22 @@ namespace Comet.Game.Packets
                 // Save the character and continue with login
                 await CharactersRepository.CreateAsync(character);
                 Kernel.Registration.Remove(client.Creation.Token);
-                await client.SendAsync(RegisterOk);
-
-                await GenerateInitialEquipmentAsync(character);
             }
             catch
             {
                 await client.SendAsync(RegisterTryAgain);
+                return;
             }
+
+            try
+            {
+                await GenerateInitialEquipmentAsync(character);                
+            }
+            catch (Exception e)
+            {
+                await Log.WriteLogAsync(LogLevel.Exception, $"Exception thrown when generating initial status for user. Msg: {e.Message}");
+            }
+            await client.SendAsync(RegisterOk);
         }
 
         private async Task GenerateInitialEquipmentAsync(DbCharacter user)

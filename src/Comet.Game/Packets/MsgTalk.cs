@@ -944,12 +944,6 @@ namespace Comet.Game.Packets
                         return true;
                     }
 
-                    case "/resetchannel":
-                    {
-                        //Kernel.Services.Processor.Queue();
-                        return true;
-                    }
-
                     case "/cancelevent":
                     {
                         GameEvent.EventType type = (GameEvent.EventType) int.Parse(param);

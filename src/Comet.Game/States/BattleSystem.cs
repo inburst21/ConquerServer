@@ -407,7 +407,7 @@ namespace Comet.Game.States
                 dodge /= 2;
 
             if (target.QueryStatus(StatusSet.DODGE) != null)
-                dodge = Calculations.AdjustData(dodge, attacker.QueryStatus(StatusSet.DODGE).Power);
+                dodge = Calculations.AdjustData(dodge, target.QueryStatus(StatusSet.DODGE).Power);
 
             int minHitRate = MIN_HITRATE;
             if (attacker.IsBowman && target.IsShieldUser)
