@@ -43,6 +43,9 @@ namespace Comet.Game.Database
         // Connection String Configuration
         public static ServerConfiguration.DatabaseConfiguration Configuration;
         
+        private static string ConnectionString { get; set; }
+        private static ServerVersion ServerVersion { get; set; }
+
         // Table Definitions
         public virtual DbSet<DbCharacter> Characters { get; set; }
         public virtual DbSet<DbMap> Maps { get; set; }
@@ -112,6 +115,12 @@ namespace Comet.Game.Database
         public virtual DbSet<DbFamilyBattleEffectShareLimit> FamilyBattleEffectShareLimits { get; set; }
         public virtual DbSet<DbCard> Cards { get; set; }
 
+        public static void Initialize()
+        {
+            ConnectionString = $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}";
+            ServerVersion = ServerVersion.AutoDetect(ConnectionString);
+        }
+
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
         ///     for each instance of the context that is created. For this project, the MySQL
@@ -122,8 +131,7 @@ namespace Comet.Game.Database
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseLazyLoadingProxies(false);
-            options.UseMySql(
-                $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}");
+            options.UseMySql(ConnectionString, ServerVersion, null);
         }
 
         /// <summary>

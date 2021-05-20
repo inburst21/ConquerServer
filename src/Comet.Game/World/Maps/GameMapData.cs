@@ -26,16 +26,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Comet.Shared;
-using ManagedLzma;
-using ManagedLzma.SevenZip.Reader;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.VisualStudio.Threading;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 
 #endregion
 
@@ -118,13 +111,12 @@ namespace Comet.Game.World.Maps
                     return false;
                 }
 
-                Stream stream;
-                if (Path.GetExtension(realPath).Equals(".7z"))
-                {
-                    stream = ReadFrom7Zip(realPath);
-                }
-                else
-                    stream = File.OpenRead(realPath);
+                Stream stream = File.OpenRead(realPath);
+                //if (Path.GetExtension(realPath).Equals(".7z"))
+                //{
+                //    stream = ReadFrom7Zip(realPath);
+                //}
+                //else
 
                 BinaryReader reader = new BinaryReader(stream, Encoding.ASCII);
 
@@ -301,35 +293,35 @@ namespace Comet.Game.World.Maps
             }
         }
 
-        private MemoryStream ReadFrom7Zip(string fileName)
-        {
-            var file = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-            var mdReader = new ManagedLzma.SevenZip.FileModel.ArchiveFileModelMetadataReader();
-            mdReader.EnablePosixFileAttributeExtension = true; // enables an unofficial extension; should be safe to always set to true if you need to deal with those kind of files
-            var mdModel = mdReader.ReadMetadata(file);
+        //private MemoryStream ReadFrom7Zip(string fileName)
+        //{
+        //    var file = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+        //    var mdReader = new ManagedLzma.SevenZip.FileModel.ArchiveFileModelMetadataReader();
+        //    mdReader.EnablePosixFileAttributeExtension = true; // enables an unofficial extension; should be safe to always set to true if you need to deal with those kind of files
+        //    var mdModel = mdReader.ReadMetadata(file);
 
-            MemoryStream output = new MemoryStream();
-            for (int sectionIndex = 0; sectionIndex < mdModel.Metadata.DecoderSections.Length; sectionIndex++)
-            {
-                var dsReader = new DecodedSectionReader(file, mdModel.Metadata, sectionIndex, PasswordStorage.Create(""));
-                var mdFiles = mdModel.GetFilesInSection(sectionIndex);
-                while (dsReader.CurrentStreamIndex < dsReader.StreamCount)
-                {
-                    var mdFile = mdFiles[dsReader.CurrentStreamIndex];
-                    if (mdFile != null)
-                    {
-                        var substream = dsReader.OpenStream();
-                        if (mdFile.Offset != 0)
-                            return new MemoryStream();
-                        substream.CopyTo(output);
-                    }
-                    dsReader.NextStream();
-                }
-            }
+        //    MemoryStream output = new MemoryStream();
+        //    for (int sectionIndex = 0; sectionIndex < mdModel.Metadata.DecoderSections.Length; sectionIndex++)
+        //    {
+        //        var dsReader = new DecodedSectionReader(file, mdModel.Metadata, sectionIndex, PasswordStorage.Create(""));
+        //        var mdFiles = mdModel.GetFilesInSection(sectionIndex);
+        //        while (dsReader.CurrentStreamIndex < dsReader.StreamCount)
+        //        {
+        //            var mdFile = mdFiles[dsReader.CurrentStreamIndex];
+        //            if (mdFile != null)
+        //            {
+        //                var substream = dsReader.OpenStream();
+        //                if (mdFile.Offset != 0)
+        //                    return new MemoryStream();
+        //                substream.CopyTo(output);
+        //            }
+        //            dsReader.NextStream();
+        //        }
+        //    }
 
-            output.Position = 0;
-            return output;
-        }
+        //    output.Position = 0;
+        //    return output;
+        //}
 
         /// <summary>
         /// This method has been created to avoid the case sensitive Linux path system, which would case us some trouble.

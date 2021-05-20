@@ -73,12 +73,13 @@ namespace Comet.Game
                 return;
             }
 
-            Kernel.Configuration = config.GameNetwork;
+            Kernel.Configuration = config.GameNetwork;           
 
             // Initialize the database
             await Log.WriteLogAsync(LogLevel.Message, "Initializing server...");
             MsgConnect.StrictAuthentication = config.Authentication.StrictAuthPass;
             ServerDbContext.Configuration = config.Database;
+            ServerDbContext.Initialize();
             if (!await ServerDbContext.PingAsync())
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Invalid database configuration");
@@ -117,17 +118,6 @@ namespace Comet.Game
             _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
                 .ConfigureAwait(false);
 
-#if USE_API
-            Kernel.Api = new MyApi(Kernel.Configuration.ServerName, config.ApiAuth.Username, config.ApiAuth.Password);
-            await Kernel.Api.PostAsync(new ServerInformation
-            {
-                ServerName = Kernel.Configuration.ServerName,
-                ServerStatus = ServerInformation.RealmStatus.Online,
-                PlayerAmount = 0,
-                MaxPlayerAmount = Kernel.Configuration.MaxConn
-            }, MyApi.SYNC_INFORMATION_URL);
-#endif
-
             // Output all clear and wait for user input
             await Log.WriteLogAsync(LogLevel.Message, "Listening for new connections");
             Console.WriteLine();
@@ -135,17 +125,6 @@ namespace Comet.Game
             bool result = await CommandCenterAsync();
             if (!result)
                 await Log.WriteLogAsync(LogLevel.Error, "Game server has exited without success.");
-
-#if USE_API
-            await Kernel.Api.PostAsync(new ServerInformation
-            {
-                ServerName = Kernel.Configuration.ServerName,
-                ServerStatus = ServerInformation.RealmStatus.Maintenance,
-                PlayerAmount = 0,
-                MaxPlayerAmount = Kernel.Configuration.MaxConn
-
-            }, MyApi.SYNC_INFORMATION_URL);
-#endif
 
             await Kernel.CloseAsync();
         }

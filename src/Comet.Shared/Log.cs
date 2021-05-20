@@ -56,6 +56,7 @@ namespace Comet.Shared
         public string Path;
         public string Filename;
         public DateTime Date;
+        [Obsolete("Removed because we ain't gonna use locks in logs.", true)]
         public object Handle;
     }
 
@@ -83,7 +84,7 @@ namespace Comet.Shared
                 file = "GameAction";
 
             message = string.Format(message, values);
-            message = $"{DateTime.Now:HH:mm:ss.fff} [{level}] - {message}";
+            message = $"{DateTime.Now:HH:mm:ss.fff} [{level,-10}] - {message}";
 
             await WriteToFile(file, LogFolder.SystemLog, message);
 
@@ -161,7 +162,6 @@ namespace Comet.Shared
             {
                 Date = now,
                 Filename = $"{now:YYYYMMdd)} - {file}.log",
-                Handle = new object(),
                 Path = $"{GetDirectory(folder)}{Path.DirectorySeparatorChar}{file}.log",
                 Folder = folder
             };

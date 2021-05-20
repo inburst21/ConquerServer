@@ -37,10 +37,6 @@ namespace Comet.Game.World.Threading
         public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server [{8}] - {1} - Players: {3} (max:{4}) - {2} - Threads[S:{5:0000},U:{6:0000},A:{7:0000}]ms";
 
         private TimeOut m_analytics = new TimeOut(300);
-#if USE_API
-        private TimeOut m_apiSync = new TimeOut(60);
-#endif
-
         private DateTime m_serverStartTime;
 
         public SystemProcessor()
@@ -52,7 +48,6 @@ namespace Comet.Game.World.Threading
         {
             m_serverStartTime = DateTime.Now;
             m_analytics.Update();
-            m_apiSync.Update();
 
             return base.OnStartAsync();
         }
@@ -69,26 +64,6 @@ namespace Comet.Game.World.Threading
                 await DoAnalyticsAsync();
             }
 
-#if USE_API
-            try
-            {
-                if (m_apiSync.ToNextTime())
-                {
-                    await Kernel.Api.PostAsync(new ServerInformation
-                    {
-                        ServerName = Kernel.Configuration.ServerName,
-                        ServerStatus = ServerInformation.RealmStatus.Online,
-                        PlayerAmount = Kernel.RoleManager.OnlinePlayers,
-                        MaxPlayerAmount = Kernel.RoleManager.MaxOnlinePlayers
-
-                    }, MyApi.SYNC_INFORMATION_URL);
-                }
-            }
-            catch
-            {
-                await Log.WriteLogAsync(LogLevel.Debug, "Failed to Write to the API.");
-            }
-#endif
             return true;
         }
 
@@ -102,7 +77,7 @@ namespace Comet.Game.World.Threading
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Environment.NewLine}{Kernel.GeneratorManager.ElapsedMilliseconds}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorManager.ElapsedMilliseconds}ms");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms ({Kernel.AiThread.ProcessedMonsters} AI Agents)");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Identities Remaining: ");

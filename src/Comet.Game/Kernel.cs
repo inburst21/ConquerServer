@@ -30,6 +30,7 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.States;
 using Comet.Game.States.Families;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
@@ -113,8 +114,8 @@ namespace Comet.Game
 
         public static async Task<bool> StartupAsync()
         {
-            await MapManager.LoadDataAsync();
-            await MapManager.LoadMapsAsync();
+            await MapManager.LoadDataAsync().ConfigureAwait(true);
+            await MapManager.LoadMapsAsync().ConfigureAwait(true);
 
             await ItemManager.InitializeAsync();
             await RoleManager.InitializeAsync();
@@ -126,6 +127,7 @@ namespace Comet.Game
             await MineManager.InitializeAsync();
             await PigeonManager.InitializeAsync();
             await FlowerManager.InitializeAsync();
+            await QuestInfo.InitializeAsync();
 
             await GeneratorManager.InitializeAsync();
 

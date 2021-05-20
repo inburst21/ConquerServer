@@ -59,9 +59,11 @@ namespace Comet.Game.World.Managers
                 GameMapData mapData = new GameMapData(idMap);
                 if (mapData.Load(name.Replace("\\", Path.DirectorySeparatorChar.ToString())))
                 {
+#if DEBUG
                     await Log.WriteLogAsync(LogLevel.Message, $"Map [{idMap},{name}] loaded...");
+#endif
+                    m_mapData.TryAdd(idMap, mapData);
                 }
-                m_mapData.TryAdd(idMap, mapData);
             }
 
             reader.Close();

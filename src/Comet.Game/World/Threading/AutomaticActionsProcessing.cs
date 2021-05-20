@@ -43,7 +43,7 @@ namespace Comet.Game.World.Threading
 
         private readonly ConcurrentDictionary<uint, DbAction> m_dicActions;
 
-        private bool m_dailyReset = false;
+        private int m_dailyReset = 0;
 
         public AutomaticActionsProcessing() 
             : base(60000, "AutomaticActionsProcessing")
@@ -78,7 +78,7 @@ namespace Comet.Game.World.Threading
                 }
             }
 
-            if (DateTime.Now.Hour == 0 && DateTime.Now.Minute == 0 && !m_dailyReset)
+            if (DateTime.Now.Hour == 0 && DateTime.Now.Minute == 0 && m_dailyReset != int.Parse(DateTime.Now.ToString("yyyyMMdd")))
             {
                 _ = Task.Run(DailyResetAsync).ConfigureAwait(false);
             }
@@ -99,42 +99,27 @@ namespace Comet.Game.World.Threading
                 try
                 {
                     DbCharacter dbUser = users[i];
-                    Character user = Kernel.RoleManager.GetUser(dbUser.Identity);
-                    if (user != null)
-                    {
-                        // arena
-                        user.QualifierPoints = ArenaQualifier.GetInitialPoints(user.Level);
-                        user.QualifierDayWins = 0;
-                        user.QualifierDayLoses = 0;
+                    // arena
+                    dbUser.AthletePoint = ArenaQualifier.GetInitialPoints(dbUser.Level);
+                    dbUser.AthleteDayWins = 0;
+                    dbUser.AthleteDayLoses = 0;
 
-                        user.DayResetDate = today;
-
-                        users.RemoveAt(i);
-                    }
-                    else
-                    {
-                        // arena
-                        dbUser.AthletePoint = ArenaQualifier.GetInitialPoints(dbUser.Level);
-                        dbUser.AthleteDayWins = 0;
-                        dbUser.AthleteDayLoses = 0;
-
-                        dbUser.DayResetDate = today;
-                    }
+                    dbUser.DayResetDate = today;
                 }
                 catch (Exception ex)
                 {
                     await Log.GmLog("daily_reset_err", ex.ToString());
                 }
             }
-            await BaseRepository.SaveAsync(users);
+            await BaseRepository.SaveAsync(users).ConfigureAwait(false);
 
-            await Kernel.FlowerManager.DailyResetAsync();
+            await Kernel.FlowerManager.DailyResetAsync().ConfigureAwait(false);
 
             sw.Stop();
             await BaseRepository.ScalarAsync($"INSERT INTO `daily_reset` (run_time, ms) VALUES (NOW(), {sw.ElapsedMilliseconds});");
             await Log.WriteLogAsync(LogLevel.Message, $"Daily reset has run in {sw.ElapsedMilliseconds}ms.");
 
-            m_dailyReset = true;
+            m_dailyReset = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
         }
 
         private int CalculateInterval()

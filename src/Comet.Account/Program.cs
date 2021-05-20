@@ -69,6 +69,7 @@ namespace Comet.Account
             // Initialize the database
             await Log.WriteLogAsync(LogLevel.Message, "Initializing server...");
             ServerDbContext.Configuration = config.Database;
+            ServerDbContext.Initialize();
             if (!ServerDbContext.Ping())
             {
                 await Log.WriteLogAsync(LogLevel.Message, "Invalid database configuration");
@@ -120,47 +121,6 @@ namespace Comet.Account
 
                 switch (full[0].ToLower())
                 {
-                    case "createbots":
-                    {
-                        if (!int.TryParse(full[1], out int amount))
-                            continue;
-
-                        for (int i = 0; i < amount; i++)
-                        {
-                            string username = $"bot{i}";
-                            string salt = AccountsRepository.GenerateSalt();
-                            string password = AccountsRepository.HashPassword($"test", salt);
-                            int type = 1;
-                            int vip = 0;
-
-                            if (await AccountsRepository.FindAsync(username) != null)
-                            {
-                                Console.WriteLine($"The required username {username} is already in use.");
-                                continue;
-                            }
-
-                            DbAccount account = new DbAccount
-                            {
-                                AuthorityID = (ushort) type,
-                                Username = username,
-                                Password = password,
-                                IPAddress = "127.0.0.1",
-                                Salt = salt,
-                                StatusID = 1,
-                                VipLevel = (byte) vip,
-                                MacAddress = ""
-                            };
-
-                            await using var db = new ServerDbContext();
-                            db.Accounts.Add(account);
-                            await db.SaveChangesAsync();
-
-                            await Log.WriteLogAsync("bot", LogLevel.Debug, $"Bot {i} ({username}) has been created.");
-                        }
-
-                        continue;
-                    }
-
                     case "newuser":
                     {
                         if (full.Length < 3)

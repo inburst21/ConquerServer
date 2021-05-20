@@ -38,12 +38,21 @@ namespace Comet.Account.Database
         // Connection String Configuration
         public static ServerConfiguration.DatabaseConfiguration Configuration;
 
+        public static void Initialize()
+        {
+            ConnectionString = $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}";
+            ServerVersion = ServerVersion.AutoDetect(ConnectionString);
+        }
+
         // Table Definitions
         public virtual DbSet<DbAccount> Accounts { get; set; }
         public virtual DbSet<DbAccountAuthority> AccountAuthorities { get; set; }
         public virtual DbSet<DbAccountStatus> AccountStatuses { get; set; }
         public virtual DbSet<DbLogin> Logins { get; set; }
         public virtual DbSet<DbRealm> Realms { get; set; }
+
+        private static string ConnectionString { get; set; }
+        private static ServerVersion ServerVersion { get; set; }
 
         /// <summary>
         ///     Configures the database to be used for this context. This method is called
@@ -55,7 +64,7 @@ namespace Comet.Account.Database
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseLazyLoadingProxies(false);
-            options.UseMySql($"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}");
+            options.UseMySql(ConnectionString, ServerVersion, null);
         }
 
         /// <summary>
