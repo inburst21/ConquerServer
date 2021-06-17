@@ -25,6 +25,11 @@ namespace Comet.Game.Packets
                         await Kernel.RoleManager.KickOutAsync(account.Identity, "Account banned!");
                         break;
                     }
+                case ServerAction.Maintenance:
+                    {
+                        // TODO maintenance manager
+                        break;
+                    }
             }
         }
     }

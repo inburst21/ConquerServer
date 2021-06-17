@@ -32,6 +32,7 @@ using Comet.Core.Mathematics;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
+using Comet.Game.Internal;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
@@ -45,6 +46,7 @@ using Comet.Game.States.Syndicates;
 using Comet.Game.World;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Internal;
 using Comet.Shared;
 
 #endregion
@@ -5613,6 +5615,28 @@ namespace Comet.Game.States
 
             if (!IsAlive)
                 m_dbObject.HealthPoints = 1;
+
+            { // scope to don't create variable externally
+                var msg = new MsgAccServerPlayerExchange
+                {
+                    ServerName = Kernel.Configuration.ServerName
+                };
+                msg.Data.Add(MsgAccServerPlayerExchange.CreatePlayerData(this));
+                await Kernel.AccountServer.SendAsync(msg);
+
+                await Kernel.AccountServer.SendAsync(new MsgAccServerPlayerStatus
+                {
+                    ServerName = Kernel.Configuration.ServerName,
+                    Status = new List<MsgAccServerPlayerStatus<AccountServer>.PlayerStatus>
+                    {
+                        new MsgAccServerPlayerStatus<AccountServer>.PlayerStatus
+                        {
+                            Identity = Client.AccountIdentity,
+                            Online = false
+                        }
+                    }
+                });
+            }
 
             try
             {

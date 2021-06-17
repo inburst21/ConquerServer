@@ -50,6 +50,7 @@ namespace Comet.Account.Database
         public virtual DbSet<DbAccountStatus> AccountStatuses { get; set; }
         public virtual DbSet<DbLogin> Logins { get; set; }
         public virtual DbSet<DbRealm> Realms { get; set; }
+        public virtual DbSet<DbRecordUser> RecordUsers { get; set; }
 
         private static string ConnectionString { get; set; }
         private static ServerVersion ServerVersion { get; set; }

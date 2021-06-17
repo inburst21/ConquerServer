@@ -32,12 +32,14 @@ using Comet.Core;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
+using Comet.Game.Internal;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Internal;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
 
@@ -164,6 +166,24 @@ namespace Comet.Game.World.Managers
             await user.Character.SetLoginAsync();
             
             await Log.WriteLogAsync(LogLevel.Info, $"{user.Character.Name} has logged in.");
+
+            await Kernel.AccountServer.SendAsync(new MsgAccServerPlayerStatus
+            {
+                ServerName = Kernel.Configuration.ServerName,
+                Status = new List<MsgAccServerPlayerStatus<AccountServer>.PlayerStatus>
+                {
+                    new MsgAccServerPlayerStatus<AccountServer>.PlayerStatus { Identity = user.AccountIdentity, Online = true }
+                }
+            });
+
+            { // scope to don't create variable externally
+                var msg = new MsgAccServerPlayerExchange
+                {
+                    ServerName = Kernel.Configuration.ServerName
+                };
+                msg.Data.Add(MsgAccServerPlayerExchange.CreatePlayerData(user.Character));
+                await Kernel.AccountServer.SendAsync(msg);
+            }
 
             if (OnlinePlayers > MaxOnlinePlayers)
                 MaxOnlinePlayers = OnlinePlayers;

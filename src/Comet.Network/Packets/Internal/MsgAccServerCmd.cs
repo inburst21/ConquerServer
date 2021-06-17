@@ -34,7 +34,8 @@ namespace Comet.Network.Packets.Internal
         public enum ServerAction
         {
             Disconnect,
-            Ban
+            Ban,
+            Maintenance
         }
     }
 }
