@@ -131,7 +131,7 @@ namespace Comet.Game.World.Managers
 
             if (m_userSet.TryGetValue(user.Character.Identity, out var concurrent))
             {
-                await Log.WriteLogAsync(LogLevel.Message,
+                await Log.WriteLogAsync(LogLevel.Info,
                     $"User {user.Character.Identity} {user.Character.Name} tried to login an already connected client.");
 
                 if (user.IPAddress != concurrent.Client.IPAddress)
@@ -163,7 +163,7 @@ namespace Comet.Game.World.Managers
 
             await user.Character.SetLoginAsync();
             
-            await Log.WriteLogAsync(LogLevel.Message, $"{user.Character.Name} has logged in.");
+            await Log.WriteLogAsync(LogLevel.Info, $"{user.Character.Name} has logged in.");
 
             if (OnlinePlayers > MaxOnlinePlayers)
                 MaxOnlinePlayers = OnlinePlayers;
@@ -182,7 +182,7 @@ namespace Comet.Game.World.Managers
             {
                 await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
-                await Log.WriteLogAsync(LogLevel.Message, $"User {user.Name} has been kicked: {reason}");
+                await Log.WriteLogAsync(LogLevel.Info, $"User {user.Name} has been kicked: {reason}");
             }
         }
 
@@ -196,8 +196,13 @@ namespace Comet.Game.World.Managers
                 await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
 
-                await Log.WriteLogAsync(LogLevel.Message, $"User {user.Name} has been kicked (kickoutall): {reason}");
+                await Log.WriteLogAsync(LogLevel.Info, $"User {user.Name} has been kicked (kickoutall): {reason}");
             }
+        }
+
+        public Character GetUserByAccount(uint idAccount)
+        {
+            return m_userSet.Values.FirstOrDefault(x => x.Client.AccountIdentity == idAccount);
         }
 
         public Character GetUser(uint idUser)
@@ -213,6 +218,11 @@ namespace Comet.Game.World.Managers
         public List<Character> QueryUserSetByMap(uint idMap)
         {
             return m_userSet.Values.Where(x => x.MapIdentity == idMap).ToList();
+        }
+
+        public List<Character> QueryUserSet()
+        {
+            return m_userSet.Values.ToList();
         }
 
         /// <summary>

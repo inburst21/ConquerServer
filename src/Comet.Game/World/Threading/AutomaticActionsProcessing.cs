@@ -117,7 +117,7 @@ namespace Comet.Game.World.Threading
 
             sw.Stop();
             await BaseRepository.ScalarAsync($"INSERT INTO `daily_reset` (run_time, ms) VALUES (NOW(), {sw.ElapsedMilliseconds});");
-            await Log.WriteLogAsync(LogLevel.Message, $"Daily reset has run in {sw.ElapsedMilliseconds}ms.");
+            await Log.WriteLogAsync(LogLevel.Info, $"Daily reset has run in {sw.ElapsedMilliseconds}ms.");
 
             m_dailyReset = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
         }

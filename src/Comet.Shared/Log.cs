@@ -33,7 +33,7 @@ namespace Comet.Shared
 {
     public enum LogLevel
     {
-        Message,
+        Info,
         Debug,
         Warning,
         Error,
@@ -92,7 +92,7 @@ namespace Comet.Shared
             {
                 switch (level)
                 {
-                    case LogLevel.Message:
+                    case LogLevel.Info:
                         Console.ForegroundColor = ConsoleColor.White;
                         break;
                     case LogLevel.Debug:

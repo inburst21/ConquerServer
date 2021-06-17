@@ -21,9 +21,11 @@
 
 #region References
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Account.Database.Models;
+using Comet.Account.States;
 using Comet.Network.Services;
 
 #endregion
@@ -39,6 +41,7 @@ namespace Comet.Account
     public static class Kernel
     {
         public static Dictionary<string, DbRealm> Realms;
+        public static ConcurrentDictionary<uint, Client> Clients = new ConcurrentDictionary<uint, Client>();
 
         // Background services
         public static class Services

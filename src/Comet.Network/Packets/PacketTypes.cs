@@ -123,6 +123,19 @@ namespace Comet.Network.Packets
         MsgWalk = 10005,
         MsgAction = 10010,
         MsgPlayer = 10014,
-        MsgUserAttrib = 10017
+        MsgUserAttrib = 10017,
+
+        // Account server packets
+        MsgAccServerStart = 30000,
+
+        MsgAccServerExchange,
+        MsgAccServerAction,
+        MsgAccServerLoginExchange,
+        MsgAccServerLoginExchangeEx,
+        MsgAccServerInformation,
+        MsgAccServerPlayerExchange,
+        MsgAccServerPlayerStatus,
+
+        MsgAccServerEnd = 30999
     }
 }

@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Internal;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
 using Comet.Game.World;
@@ -60,9 +61,9 @@ namespace Comet.Game
             // project name and version may be removed or changed.
             Console.Title = @"Comet, Game Server";
             Console.WriteLine();
-            await Log.WriteLogAsync(LogLevel.Message, "  Comet: Game Server");
-            await Log.WriteLogAsync(LogLevel.Message, $"  Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\"");
-            await Log.WriteLogAsync(LogLevel.Message, "  All Rights Reserved");
+            await Log.WriteLogAsync(LogLevel.Info, "  Comet: Game Server");
+            await Log.WriteLogAsync(LogLevel.Info, $"  Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\"");
+            await Log.WriteLogAsync(LogLevel.Info, "  All Rights Reserved");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments
@@ -73,10 +74,11 @@ namespace Comet.Game
                 return;
             }
 
-            Kernel.Configuration = config.GameNetwork;           
+            Kernel.Configuration = config.GameNetwork;
+            AccountClient.Configuration = config.RpcNetwork;
 
             // Initialize the database
-            await Log.WriteLogAsync(LogLevel.Message, "Initializing server...");
+            await Log.WriteLogAsync(LogLevel.Info, "Initializing server...");
             MsgConnect.StrictAuthentication = config.Authentication.StrictAuthPass;
             ServerDbContext.Configuration = config.Database;
             ServerDbContext.Initialize();
@@ -107,19 +109,13 @@ namespace Comet.Game
             };
             Task.WaitAll(tasks.ToArray());
 
-            // Start the RPC server listener
-            await Log.WriteLogAsync(LogLevel.Message, "Launching server listeners...");
-            var rpcServer = new RpcServerListener(new Remote());
-            _ = rpcServer.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress)
-                .ConfigureAwait(false);
-
             // Start the game server listener
             var server = new Server(config);
             _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
                 .ConfigureAwait(false);
 
             // Output all clear and wait for user input
-            await Log.WriteLogAsync(LogLevel.Message, "Listening for new connections");
+            await Log.WriteLogAsync(LogLevel.Info, "Listening for new connections");
             Console.WriteLine();
 
             bool result = await CommandCenterAsync();

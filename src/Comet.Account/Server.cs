@@ -141,5 +141,10 @@ namespace Comet.Account
                 Console.WriteLine(e);
             }
         }
+
+        protected override void Disconnected(Client actor)
+        {
+            Kernel.Clients.TryRemove(actor.Account.AccountID, out _);
+        }
     }
 }

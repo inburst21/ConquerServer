@@ -21,7 +21,9 @@
 
 #region References
 
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using Comet.Account.States;
 using Comet.Network.RPC;
 
 #endregion
@@ -37,8 +39,7 @@ namespace Comet.Account.Database.Models
     [Table("realm")]
     public class DbRealm
     {
-        // Application Logic Fields
-        [NotMapped] public RpcClient Rpc;
+        [NotMapped] public GameServer Server;
 
         // Column Properties
         public uint RealmID { get; set; }
@@ -48,6 +49,14 @@ namespace Comet.Account.Database.Models
         public uint GamePort { get; set; }
         public string RpcIPAddress { get; set; }
         public uint RpcPort { get; set; }
+        public byte Status { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public DateTime? LastPing { get; set; }
+        public string DatabaseHost { get; set; }
+        public string DatabasePass { get; set; }
+        public string DatabaseUser { get; set; }
+        public string DatabaseSchema { get; set; }
 
         // Navigational Properties
         public virtual DbAccountAuthority Authority { get; set; }

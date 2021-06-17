@@ -30,6 +30,7 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.Internal;
 using Comet.Game.States;
 using Comet.Game.States.Families;
 using Comet.Game.World;
@@ -52,6 +53,15 @@ namespace Comet.Game
     {
         public const int SERVER_VERSION = 5180;
         public static readonly string Version;
+
+        /// <summary>
+        /// The account server client object.
+        /// </summary>
+        public static AccountServer AccountServer;
+        /// <summary>
+        /// The account server client socket.
+        /// </summary>
+        public static AccountClient AccountClient;
 
         // State caches
         public static MemoryCache Logins = MemoryCache.Default;
@@ -156,7 +166,7 @@ namespace Comet.Game
             await SystemThread.CloseAsync();
             for (int i = 0; i < 5; i++)
             {
-                await Log.WriteLogAsync(LogLevel.Message, $"Server will shutdown in {5-i} seconds...");
+                await Log.WriteLogAsync(LogLevel.Info, $"Server will shutdown in {5-i} seconds...");
                 await Task.Delay(1000);
             }
             return true;

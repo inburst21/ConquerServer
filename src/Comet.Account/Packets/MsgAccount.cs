@@ -72,7 +72,7 @@ namespace Comet.Account.Packets
             if (client.Account == null || !AccountsRepository.CheckPassword(
                 DecryptPassword(Password, client.Seed), client.Account.Password, client.Account.Salt))
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                await Log.WriteLogAsync("login_fail", LogLevel.Info,
                     $"[{Username}] tried to login with an invalid account or password.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidPassword));
                 client.Socket.Disconnect(false);
@@ -81,7 +81,7 @@ namespace Comet.Account.Packets
 
             if (client.Account.StatusID == 5) // Banned
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                await Log.WriteLogAsync("login_fail", LogLevel.Info,
                     $"[{Username}] has tried to login with a banned account.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.AccountBanned));
                 client.Socket.Disconnect(false);
@@ -90,7 +90,7 @@ namespace Comet.Account.Packets
 
             if (client.Account.StatusID == 4) // suspicious? temp lock
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                await Log.WriteLogAsync("login_fail", LogLevel.Info,
                     $"[{Username}] has tried to login with a locked account.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.AccountLocked));
                 client.Socket.Disconnect(false);
@@ -103,9 +103,9 @@ namespace Comet.Account.Packets
             }
 
             // Connect to the game server
-            if (!Kernel.Realms.TryGetValue(Realm, out var server) || !server.Rpc.Online)
+            if (!Kernel.Realms.TryGetValue(Realm, out var server) || !server.Server.Socket.Connected)
             {
-                await Log.WriteLogAsync("login_fail", LogLevel.Message,
+                await Log.WriteLogAsync("login_fail", LogLevel.Info,
                     $"[{Username}] tried to login on a not connected [{Realm}] server.");
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
                 client.Socket.Disconnect(false);
@@ -113,21 +113,15 @@ namespace Comet.Account.Packets
             }
 
             client.Realm = server;
-            // Get an access token from the server
-            var args = new TransferAuthArgs
+
+            await server.Server.SendAsync(new MsgAccServerLoginExchange
             {
                 AccountID = client.Account.AccountID,
                 AuthorityID = client.Account.AuthorityID,
                 AuthorityName = client.Account.Authority.AuthorityName,
                 IPAddress = client.IPAddress,
                 VipLevel = client.Account.VipLevel
-            };
-
-            ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
-            
-            await client.SendAsync(new MsgConnectEx(server.GameIPAddress, server.GamePort, token));
-            await Log.WriteLogAsync("login", LogLevel.Message,
-                $"[{Username}] has authenticated successfully on [{Realm}].");
+            });
         }
 
         /// <summary>

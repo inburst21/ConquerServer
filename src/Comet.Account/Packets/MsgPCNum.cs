@@ -44,6 +44,15 @@ namespace Comet.Account.Packets
             MacAddress = reader.ReadString(12);
         }
 
+        public override byte[] Encode()
+        {
+            PacketWriter writer = new PacketWriter();
+            writer.Write((ushort)PacketType.MsgPCNum);
+            writer.Write(AccountIdentity);
+            writer.Write(MacAddress, 12);
+            return writer.ToArray();
+        }
+
         public override async Task ProcessAsync(Client client)
         {
             if (client.Account.AccountID != AccountIdentity)
@@ -52,13 +61,7 @@ namespace Comet.Account.Packets
             client.Account.MacAddress = MacAddress;
             await BaseRepository.SaveAsync(client.Account);
 
-            TransferMacAddrArgs args = new TransferMacAddrArgs
-            {
-                AccountIdentity = client.Account.AccountID,
-                IpAddress = client.IPAddress,
-                MacAddress = MacAddress
-            };
-            await client.Realm.Rpc.CallAsync("TransferMacAddress", args);
+            await client.Realm.Server.SendAsync(this);
         }
     }
 }

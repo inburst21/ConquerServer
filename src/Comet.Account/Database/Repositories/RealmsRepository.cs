@@ -52,16 +52,16 @@ namespace Comet.Account.Database.Repositories
                     .ToDictionaryAsync(x => x.Name);
 
             // Connect to each realm's RPC server
-            foreach (var realm in Kernel.Realms.Values)
-            {
-                await Log.WriteLogAsync(LogLevel.Message, $"ID: {realm.RealmID}, Realm Name:[{realm.Name}]" +
-                    $"{Environment.NewLine}\tIP: {realm.GameIPAddress}, Port: {realm.GamePort}" +
-                    $"{Environment.NewLine}\tRpc: {realm.RpcIPAddress}:{realm.RpcPort}");
+            //foreach (var realm in Kernel.Realms.Values)
+            //{
+            //    await Log.WriteLogAsync(LogLevel.Message, $"ID: {realm.RealmID}, Realm Name:[{realm.Name}]" +
+            //        $"{Environment.NewLine}\tIP: {realm.GameIPAddress}, Port: {realm.GamePort}" +
+            //        $"{Environment.NewLine}\tRpc: {realm.RpcIPAddress}:{realm.RpcPort}");
 
-                realm.Rpc = new RpcClient();
-                var task = realm.Rpc.ConnectAsync(
-                    realm.RpcIPAddress, (int) realm.RpcPort, "Account Server");
-            }
+            //    realm.Rpc = new RpcClient();
+            //    var task = realm.Rpc.ConnectAsync(
+            //        realm.RpcIPAddress, (int) realm.RpcPort, "Account Server");
+            //}
         }
     }
 }

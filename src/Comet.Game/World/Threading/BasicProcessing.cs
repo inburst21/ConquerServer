@@ -24,6 +24,7 @@
 using System;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.Internal;
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 using Comet.Shared.Models;
@@ -37,6 +38,7 @@ namespace Comet.Game.World.Threading
         public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server [{8}] - {1} - Players: {3} (max:{4}) - {2} - Threads[S:{5:0000},U:{6:0000},A:{7:0000}]ms";
 
         private TimeOut m_analytics = new TimeOut(300);
+        private TimeOut m_accountPing = new TimeOut(5);
         private DateTime m_serverStartTime;
 
         public SystemProcessor()
@@ -64,28 +66,39 @@ namespace Comet.Game.World.Threading
                 await DoAnalyticsAsync();
             }
 
+            if (Kernel.AccountClient == null && m_accountPing.ToNextTime())
+            {
+                await Log.WriteLogAsync(LogLevel.Info, "Attempting connection with the account server...");
+
+                Kernel.AccountClient = new AccountClient();
+                if (await Kernel.AccountClient.ConnectToAsync(AccountClient.Configuration.IPAddress, AccountClient.Configuration.Port))
+                {
+                    await Log.WriteLogAsync(LogLevel.Info, "Connected to the account server!");
+                }
+            }
+
             return true;
         }
 
         public async Task DoAnalyticsAsync()
         {
             var interval = DateTime.Now - m_serverStartTime;
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Server Start Time: {m_serverStartTime:G}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Online Time: {(int)interval.TotalDays} days, {interval.Hours} hours, {interval.Minutes} minutes, {interval.Seconds} seconds");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Distinct Players[{Kernel.RoleManager.OnlineUniquePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Generator Thread: {Kernel.GeneratorManager.ElapsedMilliseconds}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms ({Kernel.AiThread.ProcessedMonsters} AI Agents)");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"Identities Remaining: ");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"\tMonster: {IdentityGenerator.Monster.IdentitiesCount()}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"\tFurniture: {IdentityGenerator.Furniture.IdentitiesCount()}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"\tMapItem: {IdentityGenerator.MapItem.IdentitiesCount()}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, $"\tTraps: {IdentityGenerator.Traps.IdentitiesCount()}");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Message, "=".PadLeft(64, '='));
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, "=".PadLeft(64, '='));
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Server Start Time: {m_serverStartTime:G}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Total Online Time: {(int)interval.TotalDays} days, {interval.Hours} hours, {interval.Minutes} minutes, {interval.Seconds} seconds");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Distinct Players[{Kernel.RoleManager.OnlineUniquePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Generator Thread: {Kernel.GeneratorManager.ElapsedMilliseconds}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms ({Kernel.AiThread.ProcessedMonsters} AI Agents)");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Identities Remaining: ");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"\tMonster: {IdentityGenerator.Monster.IdentitiesCount()}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"\tFurniture: {IdentityGenerator.Furniture.IdentitiesCount()}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"\tMapItem: {IdentityGenerator.MapItem.IdentitiesCount()}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"\tTraps: {IdentityGenerator.Traps.IdentitiesCount()}");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, "=".PadLeft(64, '='));
         }
     }
 }

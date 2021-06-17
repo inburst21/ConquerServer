@@ -5589,6 +5589,10 @@ namespace Comet.Game.States
 
         #region Socket
 
+        public DateTime LastLogin => m_dbObject.LoginTime;
+        public DateTime LastLogout => m_dbObject.LogoutTime;
+        public int TotalOnlineTime => m_dbObject.OnlineSeconds;
+
         public async Task SetLoginAsync()
         {
             m_dbObject.LoginTime = m_dbObject.LogoutTime = DateTime.Now;

@@ -60,7 +60,7 @@ namespace Comet.Game.World.Managers
                 if (mapData.Load(name.Replace("\\", Path.DirectorySeparatorChar.ToString())))
                 {
 #if DEBUG
-                    await Log.WriteLogAsync(LogLevel.Message, $"Map [{idMap},{name}] loaded...");
+                    await Log.WriteLogAsync(LogLevel.Info, $"Map [{idMap},{name}] loaded...");
 #endif
                     m_mapData.TryAdd(idMap, mapData);
                 }

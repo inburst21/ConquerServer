@@ -54,7 +54,7 @@ namespace Comet.Game
         public void Connected(string agentName)
         {
             AgentName = agentName;
-            Log.WriteLogAsync(LogLevel.Message, "{0} has connected", agentName).ConfigureAwait(false);
+            Log.WriteLogAsync(LogLevel.Info, "{0} has connected", agentName).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -101,18 +101,18 @@ namespace Comet.Shared
 
             public virtual async Task OnStartAsync()
             {
-                await Log.WriteLogAsync(LogLevel.Message, $"Timer [{m_name}] has started");
+                await Log.WriteLogAsync(LogLevel.Info, $"Timer [{m_name}] has started");
             }
 
             public virtual async Task<bool> OnElapseAsync()
             {
-                await Log.WriteLogAsync(LogLevel.Message, $"Timer [{m_name}] has elapsed at {DateTime.Now}");
+                await Log.WriteLogAsync(LogLevel.Info, $"Timer [{m_name}] has elapsed at {DateTime.Now}");
                 return true;
             }
 
             public virtual async Task OnCloseAsync()
             {
-                await Log.WriteLogAsync(LogLevel.Message, $"Timer [{m_name}] has finished");
+                await Log.WriteLogAsync(LogLevel.Info, $"Timer [{m_name}] has finished");
             }
         }
     }

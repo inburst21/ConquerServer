@@ -414,7 +414,7 @@ namespace Comet.Game
 
             if (actor.Character != null)
             {
-                Log.WriteLogAsync(LogLevel.Message, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
+                Log.WriteLogAsync(LogLevel.Info, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
                 actor.Character.Connection = Character.ConnectionStage.Disconnected;
 
                 Kernel.Services.Processor.Queue(actor.Character.Map?.Partition ?? 0, async () =>
@@ -427,11 +427,11 @@ namespace Comet.Game
             {
                 if (fromCreation)
                 {
-                    Log.WriteLogAsync(LogLevel.Message, $"{actor.AccountIdentity} has created a new character and has logged out.").ConfigureAwait(false);
+                    Log.WriteLogAsync(LogLevel.Info, $"{actor.AccountIdentity} has created a new character and has logged out.").ConfigureAwait(false);
                 }
                 else
                 {
-                    Log.WriteLogAsync(LogLevel.Message, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
+                    Log.WriteLogAsync(LogLevel.Info, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
                 }                
             }
         }        

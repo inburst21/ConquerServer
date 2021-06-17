@@ -53,9 +53,9 @@ namespace Comet.Account
             // project name and version may be removed or changed.
             Console.Title = "Comet, Account Server";
             Console.WriteLine();
-            await Log.WriteLogAsync(LogLevel.Message, "  Comet: Account Server");
-            await Log.WriteLogAsync(LogLevel.Message, $"  Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\"");
-            await Log.WriteLogAsync(LogLevel.Message, "  All Rights Reserved");
+            await Log.WriteLogAsync(LogLevel.Info, "  Comet: Account Server");
+            await Log.WriteLogAsync(LogLevel.Info, $"  Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\"");
+            await Log.WriteLogAsync(LogLevel.Info, "  All Rights Reserved");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments
@@ -67,34 +67,39 @@ namespace Comet.Account
             }
 
             // Initialize the database
-            await Log.WriteLogAsync(LogLevel.Message, "Initializing server...");
+            await Log.WriteLogAsync(LogLevel.Info, "Initializing server...");
             ServerDbContext.Configuration = config.Database;
             ServerDbContext.Initialize();
             if (!ServerDbContext.Ping())
             {
-                await Log.WriteLogAsync(LogLevel.Message, "Invalid database configuration");
+                await Log.WriteLogAsync(LogLevel.Info, "Invalid database configuration");
                 return;
             }
 
             // Recover caches from the database
             var tasks = new List<Task>
             {
-                RealmsRepository.LoadAsync(), 
+                RealmsRepository.LoadAsync(),
                 Kernel.Services.Randomness.StartAsync(CancellationToken.None)
             };
 #pragma warning disable VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono
             Task.WaitAll(tasks.ToArray());
 #pragma warning restore VSTHRD103 // Chame métodos assíncronos quando estiver em um método assíncrono
 
+            await Log.WriteLogAsync(LogLevel.Info, "Launching realm server listener...");
+            var realmServer = new IntraServer(config);
+            _ = realmServer.StartAsync(config.RealmNetwork.Port);
+
             // Start the server listener
-            await Log.WriteLogAsync(LogLevel.Message, "Launching server listener...");
+            await Log.WriteLogAsync(LogLevel.Info, "Launching server listener...");
             var server = new Server(config);
             _ = server.StartAsync(config.Network.Port, config.Network.IPAddress).ConfigureAwait(false);
 
             // Output all clear and wait for user input
-            await Log.WriteLogAsync(LogLevel.Message, "Listening for new connections");
+            await Log.WriteLogAsync(LogLevel.Info, "Listening for new connections");
             Console.WriteLine();
             bool result = await CommandCenterAsync();
+
             if (!result)
                 await Log.WriteLogAsync(LogLevel.Error, "Account server has exited without success.");
         }

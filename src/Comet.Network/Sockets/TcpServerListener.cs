@@ -185,7 +185,7 @@ namespace Comet.Network.Sockets
                     timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
 #else 
                     var receiveOperation = actor.Socket.ReceiveAsync(
-                        actor.Buffer.Slice(0),
+                        actor.Buffer[..],
                         SocketFlags.None);
 #endif
                     examined = await receiveOperation;
@@ -206,7 +206,7 @@ namespace Comet.Network.Sockets
                 // Decrypt traffic by first discarding the first 7 bytes, as per TQ Digital's
                 // exchange protocol, then decrypting only what is necessary for the exchange.
                 // This is to prevent the next packet from being decrypted with the wrong key.
-                actor.Cipher.Decrypt(
+                actor.Cipher?.Decrypt(
                     actor.Buffer.Slice(0, 9).Span,
                     actor.Buffer.Slice(0, 9).Span);
                 consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(7, 2)) + 7;
@@ -217,9 +217,9 @@ namespace Comet.Network.Sockets
                     return;
                 }
 
-                actor.Cipher.Decrypt(
-                    actor.Buffer.Slice(9, consumed - 9).Span,
-                    actor.Buffer.Slice(9, consumed - 9).Span);
+                actor.Cipher?.Decrypt(
+                    actor.Buffer[9..consumed].Span,
+                    actor.Buffer[9..consumed].Span);
 
                 // Process the exchange now that bytes are decrypted
                 if (!Exchanged(actor, actor.Buffer.Slice(0, consumed).Span))
@@ -233,7 +233,7 @@ namespace Comet.Network.Sockets
                 // and prepare to start receiving packets on a standard receive loop.
                 if (consumed < examined)
                 {
-                    actor.Cipher.Decrypt(
+                    actor.Cipher?.Decrypt(
                         actor.Buffer.Slice(consumed, examined - consumed).Span,
                         actor.Buffer.Slice(consumed, examined - consumed).Span);
 
@@ -309,7 +309,7 @@ namespace Comet.Network.Sockets
                 }
 
                 // Decrypt traffic
-                actor.Cipher.Decrypt(
+                actor.Cipher?.Decrypt(
                     actor.Buffer.Slice(remaining, examined).Span,
                     actor.Buffer.Slice(remaining, examined).Span);
 
@@ -373,6 +373,12 @@ namespace Comet.Network.Sockets
 
             // Complete processing for disconnect
             Disconnected(actor);
+        }
+
+        public Task CloseAsync()
+        {
+            ShutdownToken.Cancel();
+            return Task.CompletedTask;
         }
     }
 }
