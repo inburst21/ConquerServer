@@ -135,6 +135,7 @@ namespace Comet.Network.Packets
         MsgAccServerInformation,
         MsgAccServerPlayerExchange,
         MsgAccServerPlayerStatus,
+        MsgAccServerCmd,
 
         MsgAccServerEnd = 30999
     }

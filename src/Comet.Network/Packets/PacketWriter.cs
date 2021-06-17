@@ -48,6 +48,11 @@ namespace Comet.Network.Packets
             base.Write((ushort) 0);
         }
 
+        public void Write(PacketType type)
+        {
+            Write((ushort)type);
+        }
+
         /// <summary>
         ///     Writes a string to the current stream. The string is prefixed with the byte
         ///     length and encoded as an ASCII string.
