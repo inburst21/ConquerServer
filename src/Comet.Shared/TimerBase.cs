@@ -99,18 +99,18 @@ namespace Comet.Shared
                 }
             }
 
-            public virtual async Task OnStartAsync()
+            protected virtual async Task OnStartAsync()
             {
                 await Log.WriteLogAsync(LogLevel.Info, $"Timer [{m_name}] has started");
             }
 
-            public virtual async Task<bool> OnElapseAsync()
+            protected virtual async Task<bool> OnElapseAsync()
             {
                 await Log.WriteLogAsync(LogLevel.Info, $"Timer [{m_name}] has elapsed at {DateTime.Now}");
                 return true;
             }
 
-            public virtual async Task OnCloseAsync()
+            protected virtual async Task OnCloseAsync()
             {
                 await Log.WriteLogAsync(LogLevel.Info, $"Timer [{m_name}] has finished");
             }

@@ -5,7 +5,7 @@ namespace Comet.Network.Packets.Internal
     public abstract class MsgAccServerCmd<T> : MsgBase<T>
     {
         public ServerAction Action { get; set; }
-        public uint Data { get; set; }
+        public uint AccountIdentity { get; set; }
         public uint Param { get; set; }
         public List<string> Strings { get; set; } = new List<string>();
 
@@ -15,7 +15,7 @@ namespace Comet.Network.Packets.Internal
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
             Action = (ServerAction)reader.ReadInt32();
-            Data = reader.ReadUInt32();
+            AccountIdentity = reader.ReadUInt32();
             Param = reader.ReadUInt32();
             Strings = reader.ReadStrings();
         }
@@ -25,7 +25,7 @@ namespace Comet.Network.Packets.Internal
             PacketWriter writer = new();
             writer.Write(PacketType.MsgAccServerCmd);
             writer.Write((int)Action);
-            writer.Write(Data);
+            writer.Write(AccountIdentity);
             writer.Write(Param);
             writer.Write(Strings);
             return writer.ToArray();

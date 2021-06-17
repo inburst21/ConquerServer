@@ -56,6 +56,15 @@ namespace Comet.Account.Database.Repositories
                 .SingleOrDefaultAsync();
         }
 
+        public static async Task<DbAccount> FindAsync(uint identity)
+        {
+            await using var db = new ServerDbContext();
+            return await db.Accounts.Include(x => x.Authority)
+                .Include(x => x.Status)
+                .Where(x => x.AccountID == identity)
+                .SingleOrDefaultAsync();
+        }
+
         /// <summary>
         ///     Validates the user's inputted password, which has been decrypted from the client
         ///     request decode method, and is ready to be hashed and compared with the SHA-1

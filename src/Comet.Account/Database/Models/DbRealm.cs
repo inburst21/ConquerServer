@@ -49,7 +49,7 @@ namespace Comet.Account.Database.Models
         public uint GamePort { get; set; }
         public string RpcIPAddress { get; set; }
         public uint RpcPort { get; set; }
-        public byte Status { get; set; }
+        public RealmStatus Status { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
         public DateTime? LastPing { get; set; }
@@ -60,5 +60,14 @@ namespace Comet.Account.Database.Models
 
         // Navigational Properties
         public virtual DbAccountAuthority Authority { get; set; }
+
+        public enum RealmStatus : byte
+        {
+            Offline,
+            Online,
+            Busy,
+            Crowded,
+            Maintenance
+        }
     }
 }

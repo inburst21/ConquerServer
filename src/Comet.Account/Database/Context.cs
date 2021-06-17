@@ -80,6 +80,7 @@ namespace Comet.Account.Database
             builder.Entity<DbAccountStatus>(e => e.HasKey(x => x.StatusID));
             builder.Entity<DbLogin>(e => e.HasKey(x => new {x.AccountID, x.Timestamp}));
             builder.Entity<DbRealm>(e => e.HasKey(x => x.RealmID));
+            builder.Entity<DbRealm>().Property(x => x.Status).HasConversion<byte>();
         }
 
         /// <summary>

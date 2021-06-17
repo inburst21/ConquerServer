@@ -6,5 +6,6 @@ namespace Comet.Account.States
     {
         public DbRealm Realm;
         public uint AccountIdentity;
+        public DbAccount Account;
     }
 }

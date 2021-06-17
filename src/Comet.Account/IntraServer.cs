@@ -1,10 +1,12 @@
 ﻿using Comet.Account.Database;
+using Comet.Account.Database.Models;
 using Comet.Account.Packets;
 using Comet.Account.States;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
 using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,7 +108,19 @@ namespace Comet.Account
 
             Log.WriteLogAsync(LogLevel.Info, $"Server [{actor.Realm.Name}] has disconnected.").ConfigureAwait(false);
 
-            // TODO cleanup server data
+            try
+            {
+                actor.Realm.Status = DbRealm.RealmStatus.Offline;
+                actor.Realm.LastPing = DateTime.Now;
+                BaseRepository.SaveAsync(actor.Realm).ConfigureAwait(false);
+            }
+            catch
+            {
+            }
+
+            // cleanup server data?
+            foreach (var player in Kernel.Players.Values.Where(x => x.Realm.RealmID == actor.Realm.RealmID))
+                Kernel.Players.TryRemove(player.AccountIdentity, out _);
 
             actor.Realm.Server = null;            
         }

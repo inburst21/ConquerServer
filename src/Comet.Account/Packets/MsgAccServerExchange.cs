@@ -5,6 +5,7 @@ using Comet.Network.Packets.Internal;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Shared;
+using Comet.Account.Database;
 
 namespace Comet.Account.Packets
 {
@@ -49,6 +50,10 @@ namespace Comet.Account.Packets
 
             await Log.WriteLogAsync(LogLevel.Info, $"Server [{realm.Name}] has authenticated gracefully.");
             realm.Server = client;
+
+            realm.LastPing = DateTime.Now;
+            realm.Status = DbRealm.RealmStatus.Online;
+            await BaseRepository.SaveAsync(realm);
 
             await client.SendAsync(new MsgAccServerAction
             {

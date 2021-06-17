@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using Comet.Account.Database;
 using Comet.Account.Database.Models;
 using Comet.Account.Database.Repositories;
+using Comet.Account.Threading;
 using Comet.Shared;
 
 #endregion
@@ -95,11 +96,15 @@ namespace Comet.Account
             var server = new Server(config);
             _ = server.StartAsync(config.Network.Port, config.Network.IPAddress).ConfigureAwait(false);
 
+            BasicProcessing thread = new();
+            await thread.StartAsync();
+
             // Output all clear and wait for user input
             await Log.WriteLogAsync(LogLevel.Info, "Listening for new connections");
             Console.WriteLine();
             bool result = await CommandCenterAsync();
 
+            await thread.CloseAsync();
             if (!result)
                 await Log.WriteLogAsync(LogLevel.Error, "Account server has exited without success.");
         }
