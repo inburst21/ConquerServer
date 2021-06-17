@@ -51,7 +51,7 @@ namespace Comet.Game.World.Threading
             m_dicActions = new ConcurrentDictionary<uint, DbAction>(1, _ACTION_SYSTEM_EVENT_LIMIT);
         }
 
-        public override Task OnStartAsync()
+        protected override Task OnStartAsync()
         {
             for (int a = 0; a < _ACTION_SYSTEM_EVENT_LIMIT; a++)
             {
@@ -64,7 +64,7 @@ namespace Comet.Game.World.Threading
             return base.OnStartAsync();
         }
 
-        public override async Task<bool> OnElapseAsync()
+        protected override async Task<bool> OnElapseAsync()
         {
             foreach (var action in m_dicActions.Values)
             {

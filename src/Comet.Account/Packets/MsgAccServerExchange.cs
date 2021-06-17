@@ -50,6 +50,7 @@ namespace Comet.Account.Packets
 
             await Log.WriteLogAsync(LogLevel.Info, $"Server [{realm.Name}] has authenticated gracefully.");
             realm.Server = client;
+            client.SetRealm(realm.Name);
 
             realm.LastPing = DateTime.Now;
             realm.Status = DbRealm.RealmStatus.Online;

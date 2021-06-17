@@ -19,13 +19,13 @@ namespace Comet.Account.Packets
                 case ExchangeResult.Success:
                     {
                         // continue login sequence
-                        await client.SendAsync(new MsgConnectEx(player.Realm.GameIPAddress, player.Realm.GamePort, Token));
+                        await player.SendAsync(new MsgConnectEx(player.Realm.GameIPAddress, player.Realm.GamePort, Token));
                         await Log.WriteLogAsync("login", LogLevel.Info, $"[{player.Account.Username}] has authenticated successfully on [{player.Realm.Name}].");
                         break;
                     }
                 case ExchangeResult.KeyError:
                     {
-                        await client.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerBusy));
+                        await player.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerBusy));
                         await Log.WriteLogAsync("login", LogLevel.Info, $"[{player.Account.Username}] failed was not authorized to login on [{player.Realm.Name}].");
                         break;
                     }

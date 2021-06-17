@@ -46,7 +46,7 @@ namespace Comet.Game.World.Threading
         {
         }
 
-        public override Task OnStartAsync()
+        protected override Task OnStartAsync()
         {
             m_serverStartTime = DateTime.Now;
             m_analytics.Update();
@@ -54,7 +54,7 @@ namespace Comet.Game.World.Threading
             return base.OnStartAsync();
         }
 
-        public override async Task<bool> OnElapseAsync()
+        protected override async Task<bool> OnElapseAsync()
         {
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
                 Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers,

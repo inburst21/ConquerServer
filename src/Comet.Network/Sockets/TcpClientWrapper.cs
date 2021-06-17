@@ -14,10 +14,11 @@ namespace Comet.Network.Sockets
         private readonly Memory<byte> Buffer;
         private readonly int FooterLength;
         private readonly CancellationTokenSource ShutdownToken;
+        private readonly bool TimeOut;
 
         private readonly Socket Socket;
 
-        protected TcpClientWrapper(int expectedFooterLength = 0)
+        protected TcpClientWrapper(int expectedFooterLength = 0, bool timeout = false)
         {
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
@@ -27,6 +28,7 @@ namespace Comet.Network.Sockets
 
             ShutdownToken = new CancellationTokenSource();
 
+            TimeOut = timeout;
             FooterLength = expectedFooterLength;
 
             Buffer = new Memory<byte>(new byte[MaxBufferSize]);
@@ -121,6 +123,8 @@ namespace Comet.Network.Sockets
                 actor.Buffer.Slice(consumed, remaining).CopyTo(actor.Buffer);
             }
 
+            if (actor.Socket.Connected)
+                actor.Disconnect();
             // Disconnect the client
             Disconnecting(actor);
         }

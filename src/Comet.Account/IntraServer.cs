@@ -85,6 +85,18 @@ namespace Comet.Account
                         msg = new MsgAccServerLoginExchangeEx();
                         break;
 
+                    case PacketType.MsgAccServerPlayerExchange:
+                        msg = new MsgAccServerPlayerExchange();
+                        break;
+
+                    case PacketType.MsgAccServerPlayerStatus:
+                        msg = new MsgAccServerPlayerStatus();
+                        break;
+
+                    case PacketType.MsgAccServerGameInformation:
+                        msg = new MsgAccServerGameInformation();
+                        break;
+
                     default:
                         Console.WriteLine("Missing packet {0}, Length {1}\n{2}",
                             type, length, PacketDump.Hex(packet));

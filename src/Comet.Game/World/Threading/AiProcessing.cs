@@ -39,7 +39,7 @@ namespace Comet.Game.World.Threading
 
         public int ProcessedMonsters { get; private set; }
 
-        public override async Task<bool> OnElapseAsync()
+        protected override async Task<bool> OnElapseAsync()
         {
             try
             {

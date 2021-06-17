@@ -49,7 +49,7 @@ namespace Comet.Game.World.Threading
             m_rankingBroadcast.Update();
         }
 
-        public override async Task<bool> OnElapseAsync()
+        protected override async Task<bool> OnElapseAsync()
         {
             await Kernel.PigeonManager.OnTimerAsync();
 
@@ -84,7 +84,7 @@ namespace Comet.Game.World.Threading
             return true;
         }
 
-        public override async Task OnStartAsync()
+        protected override async Task OnStartAsync()
         {
             await RegisterEventAsync(new TimedGuildWar());
             await RegisterEventAsync(new LineSkillPk());

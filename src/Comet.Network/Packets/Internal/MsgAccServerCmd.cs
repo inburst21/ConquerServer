@@ -23,7 +23,7 @@ namespace Comet.Network.Packets.Internal
         public override byte[] Encode()
         {
             PacketWriter writer = new();
-            writer.Write(PacketType.MsgAccServerCmd);
+            writer.Write((ushort) PacketType.MsgAccServerCmd);
             writer.Write((int)Action);
             writer.Write(AccountIdentity);
             writer.Write(Param);

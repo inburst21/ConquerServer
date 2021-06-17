@@ -15,13 +15,8 @@ namespace Comet.Network.Packets.Internal
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
             ServerName = reader.ReadString(16);
-
-            const int structSize = 118;
             int count = reader.ReadInt32();
-            int expected = count * structSize + 20;
-            if (expected != Length)
-                throw new Exception($"Invalid size packet found. Expected({expected}) Got({Length})");
-
+           
             for (int i = 0; i < count; i++)
             {
                 PlayerData data = new();
@@ -61,6 +56,8 @@ namespace Comet.Network.Packets.Internal
                 data.WhiteRoses = reader.ReadUInt32();
                 data.Orchids = reader.ReadUInt32();
                 data.Tulips = reader.ReadUInt32();
+
+                Data.Add(data);
             }
         }
 

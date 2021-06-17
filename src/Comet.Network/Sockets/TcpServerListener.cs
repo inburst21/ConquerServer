@@ -325,6 +325,8 @@ namespace Comet.Network.Sockets
                 actor.Buffer.Slice(consumed, remaining).CopyTo(actor.Buffer);
             }
 
+            if (actor.Socket.Connected)
+                actor.Disconnect();
             // Disconnect the client
             Disconnecting(actor);
         }

@@ -10,7 +10,7 @@ namespace Comet.Game.World.Threading
         {
         }
 
-        public override async Task<bool> OnElapseAsync()
+        protected override async Task<bool> OnElapseAsync()
         {
             await Kernel.GeneratorManager.OnTimerAsync();
             return true;

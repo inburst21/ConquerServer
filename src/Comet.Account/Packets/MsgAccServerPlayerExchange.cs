@@ -31,6 +31,7 @@ namespace Comet.Account.Packets
                 if (user == null)
                     user = new DbRecordUser();
 
+                user.ServerIdentity = realm.RealmID;
                 user.Name = info.Name;
                 user.MateId = 0; // 
                 user.Level = info.Level;

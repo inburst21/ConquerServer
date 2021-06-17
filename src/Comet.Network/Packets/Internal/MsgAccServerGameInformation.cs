@@ -12,12 +12,20 @@
             PacketReader reader = new (bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Status = reader.ReadInt32();
+            PlayerCount = reader.ReadInt32();
+            PlayerCountRecord = reader.ReadInt32();
+            PlayerLimit = reader.ReadInt32();
         }
 
         public override byte[] Encode()
         {
             PacketWriter writer = new ();
-            writer.Write((ushort)PacketType.MsgAccServerInformation);
+            writer.Write((ushort)PacketType.MsgAccServerGameInformation);
+            writer.Write(Status);
+            writer.Write(PlayerCount);
+            writer.Write(PlayerCountRecord);
+            writer.Write(PlayerLimit);
             return writer.ToArray();
         }
     }

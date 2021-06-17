@@ -25,7 +25,7 @@
             PacketWriter writer = new();
             writer.Write((ushort)PacketType.MsgAccServerLoginExchange);
 
-            writer.Write(IPAddress, 16);
+            writer.Write(IPAddress, 15);
             writer.Write(AccountID);
             writer.Write(AuthorityID);
             writer.Write(AuthorityName, 32);

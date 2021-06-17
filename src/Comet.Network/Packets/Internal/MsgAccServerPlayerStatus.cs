@@ -31,6 +31,7 @@ namespace Comet.Network.Packets.Internal
         {
             PacketWriter writer = new();
             writer.Write((ushort)PacketType.MsgAccServerPlayerStatus);
+            writer.Write(ServerName, 16);
             writer.Write(Count);
             foreach (var status in Status)
             {

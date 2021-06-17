@@ -76,6 +76,10 @@ namespace Comet.Game.Internal
                         msg = new MsgAccServerCmd();
                         break;
 
+                    case PacketType.MsgAccServerPing:
+                        msg = new MsgAccServerPing();
+                        break;
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
                             "Missing packet {0}, Length {1}\n{2}",

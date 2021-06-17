@@ -114,6 +114,8 @@ namespace Comet.Account.Packets
 
             client.Realm = server;
 
+            Kernel.Clients.TryAdd(client.Account.AccountID, client);
+
             await server.Server.SendAsync(new MsgAccServerLoginExchange
             {
                 AccountID = client.Account.AccountID,
