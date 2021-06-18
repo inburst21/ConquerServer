@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8D777D02-43F8-4139-BFF4-96C5D61A49A8}"
 	ProjectSection(SolutionItems) = preProject
@@ -28,13 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Shared", "src\Comet.S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{FA6B5995-7C50-482D-9E46-730B14ED997C}"
 	ProjectSection(SolutionItems) = preProject
-		sql\ArtisanOu.sql = sql\ArtisanOu.sql
-		sql\comet.account.sql = sql\comet.account.sql
-		sql\comet.game.sql = sql\comet.game.sql
-		sql\Conductress.sql = sql\Conductress.sql
-		sql\Events IDs.txt = sql\Events IDs.txt
-		sql\GuildDirector.sql = sql\GuildDirector.sql
-		sql\GuruTodd.sql = sql\GuruTodd.sql
+		sql\account_zf = sql\account_zf
+		sql\conquer = sql\conquer
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B4AAF119-4A1C-4E4E-A7E8-1F41FA59484D}"
