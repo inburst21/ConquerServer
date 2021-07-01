@@ -44,6 +44,7 @@ using Comet.Game.States.NPCs;
 using Comet.Game.States.Relationship;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Internal;
@@ -1173,7 +1174,7 @@ namespace Comet.Game.States
             {
                 if (item.IsNonsuchItem())
                 {
-                    await Log.GmLog("SpendEquipItem",
+                    await Log.GmLogAsync("SpendEquipItem",
                         $"{Name}({Identity}) Spend item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}");
                 }
             }
@@ -1405,7 +1406,7 @@ namespace Comet.Game.States
             await SendAsync(string.Format(Language.StrBoothSold, target.Name, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
             await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
 
-            await Log.GmLog("booth_sale", $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.IsSilver},{item.Value},{item.Item.ToJson()}");
+            await Log.GmLogAsync("booth_sale", $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.IsSilver},{item.Value},{item.Item.ToJson()}");
             return true;
         }
 
@@ -1429,7 +1430,7 @@ namespace Comet.Game.States
             if (Trade != null)
                 return false;
 
-            await Log.GmLog("drop_item",
+            await Log.GmLogAsync("drop_item",
                 $"{Name}({Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.OriginalMaximumDurability}\r\n\t{item.ToJson()}");
 
             if (item.IsSuspicious())
@@ -1485,7 +1486,7 @@ namespace Comet.Game.States
             if (!await SpendMoneyAsync((int) amount, true))
                 return false;
 
-            await Log.GmLog("drop_money", $"drop money: {Identity} {Name} has dropped {amount} silvers");
+            await Log.GmLogAsync("drop_money", $"drop money: {Identity} {Name} has dropped {amount} silvers");
 
             MapItem mapItem = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
             if (mapItem.CreateMoney(Map, pos, amount, 0u))
@@ -1554,7 +1555,7 @@ namespace Comet.Game.States
                 }
                 await SendAsync(string.Format(Language.StrPickupSilvers, mapItem.Money));
 
-                await Log.GmLog("pickup_money", $"User[{Identity},{Name}] picked up {mapItem.Money} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
+                await Log.GmLogAsync("pickup_money", $"User[{Identity},{Name}] picked up {mapItem.Money} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
             }
             else
             {
@@ -1565,7 +1566,7 @@ namespace Comet.Game.States
                     await UserPackage.AddItemAsync(item);
                     await SendAsync(string.Format(Language.StrPickupItem, item.Name));
 
-                    await Log.GmLog("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
+                    await Log.GmLogAsync("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
 
                     if (VipLevel > 0 && mapItem.IsConquerPointsPack())
                     {
@@ -2494,7 +2495,7 @@ namespace Comet.Game.States
 
             if (Action == EntityAction.Sit)
                 await SetAttributesAsync(ClientUpdateType.Stamina, (ulong) (Energy / 2));
-            return true;
+            return true;    
         }
 
         public override async Task BeKillAsync(Role attacker)
@@ -2614,16 +2615,20 @@ namespace Comet.Game.States
 
                     if (PkPoints >= 300)
                     {
-                        await UserPackage.RandDropEquipmentAsync(atkrUser);
-                        await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        //await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        //await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
+                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
                     }
                     else if (PkPoints >= 100)
                     {
-                        await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        //await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
                     }
                     else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(40, 100))
                     {
-                        await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        //await UserPackage.RandDropEquipmentAsync(atkrUser);
+                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
                     }
 
                     if (PkPoints >= 100)
@@ -3043,11 +3048,11 @@ namespace Comet.Game.States
             await BaseRepository.SaveAsync(bonus);
             if (!await GameAction.ExecuteActionAsync(bonus.Action, this, null, null, ""))
             {
-                await Log.GmLog("bonus_error", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
+                await Log.GmLogAsync("bonus_error", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
                 return false;
             }
 
-            await Log.GmLog("bonus", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
+            await Log.GmLogAsync("bonus", $"{bonus.Identity},{bonus.AccountIdentity},{Identity},{bonus.Action}");
             return true;
         }
 
@@ -4634,7 +4639,7 @@ namespace Comet.Game.States
                 if (await UserPackage.AwardItemAsync(idItem))
                 {
                     await SendAsync(string.Format(Language.StrMineItemFound, itemtype.Name));
-                    await Log.GmLog($"mine_drop", $"{Identity},{Name},{idItem},{MapIdentity},{Map?.Name},{MapX},{MapY}");
+                    await Log.GmLogAsync($"mine_drop", $"{Identity},{Name},{idItem},{MapIdentity},{Map?.Name},{MapX},{MapY}");
                 }
                 m_mineCount++;
             }
@@ -4994,7 +4999,7 @@ namespace Comet.Game.States
         public async Task<bool> AddActivityPointsAsync(int amount)
         {
             await Statistic.AddOrUpdateAsync(1200, 0, Statistic.GetValue(1200) + 1, true);
-            await Log.GmLog($"activity_{Identity}", $"{Identity},{Name},{amount}");
+            await Log.GmLogAsync($"activity_{Identity}", $"{Identity},{Name},{amount}");
             return true;
         }
 
@@ -5387,6 +5392,94 @@ namespace Comet.Game.States
                 IsTutor = IsTutor(target.Identity),
                 TargetIdentity = Identity
             });
+        }
+
+        #endregion
+
+        #region Equipment Detain
+
+        public async Task SendDetainedEquipmentAsync()
+        {
+            var items = await DbDetainedItem.GetFromDischargerAsync(Identity);
+            foreach (var dbDischarged in items)
+            {
+                var dbItem = await ItemRepository.GetByIdAsync(dbDischarged.ItemIdentity);
+                if (dbItem == null)
+                {
+                    await BaseRepository.DeleteAsync(dbDischarged);
+                    continue;
+                }
+
+                Item item = new ();
+                if (!await item.CreateAsync(dbItem))
+                    continue;
+
+                await SendAsync(new MsgDetainItemInfo(dbDischarged, item, MsgDetainItemInfo.Mode.DetainPage));
+            }
+
+            if (items.Count > 0)
+                await SendAsync(Language.StrHasDetainEquip, MsgTalk.TalkChannel.Talk);
+        }
+
+        public async Task SendDetainRewardAsync()
+        {
+            var items = await DbDetainedItem.GetFromHunterAsync(Identity);
+            foreach (var dbDetained in items)
+            {
+                DbItem dbItem = null;
+                Item item = null;
+
+                if (dbDetained.ItemIdentity != 0)
+                {
+                    if (dbItem == null)
+                    {
+                        await BaseRepository.DeleteAsync(dbDetained);
+                        continue;
+                    }
+
+                    item = new();
+                    if (!await item.CreateAsync(dbItem))
+                        continue;
+                }
+
+                bool expired = dbDetained.HuntTime + 60 * 60 * 24 * 7 < UnixTimestamp.Now();
+                bool notClaimed = dbDetained.ItemIdentity != 0;
+
+                await SendAsync(new MsgDetainItemInfo(dbDetained, item, MsgDetainItemInfo.Mode.ClaimPage));
+                if (!expired && notClaimed)
+                {
+                    // ? send message? do nothing
+                }
+                else if (expired && notClaimed)
+                {
+                    // ? send message, item ready to be claimed
+                    if (ItemManager.Confiscator != null) 
+                    {
+                        await SendAsync(string.Format(Language.StrHasEquipBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                    }
+                }
+                else if (expired && !notClaimed)
+                {
+                    if (ItemManager.Confiscator != null)
+                    {
+                        await SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                    }
+
+                    // claimed, show CPs reward
+                    await SendAsync(new MsgItem
+                    {
+                        Action = MsgItem.ItemActionType.RedeemEquipment,
+                        Identity = dbDetained.Identity,
+                        Command = dbDetained.TargetIdentity,
+                        Argument = dbDetained.RedeemPrice
+                    });
+                }
+            }
+
+            if (items.Count > 0 && ItemManager.Confiscator != null)
+            {
+                await SendAsync(string.Format(Language.StrPkBonus, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+            }
         }
 
         #endregion
@@ -5888,7 +5981,7 @@ namespace Comet.Game.States
 
             await BaseRepository.ScalarAsync($"INSERT INTO `cq_deluser` SELECT * FROM `cq_user` WHERE `id`={Identity};");
             await BaseRepository.DeleteAsync(m_dbObject);
-            await Log.GmLog("delete_user", $"{Identity},{Name},{MapIdentity},{MapX},{MapY},{Silvers},{ConquerPoints},{Level},{Profession},{FirstProfession},{PreviousProfession}");
+            await Log.GmLogAsync("delete_user", $"{Identity},{Name},{MapIdentity},{MapX},{MapY},{Silvers},{ConquerPoints},{Level},{Profession},{FirstProfession},{PreviousProfession}");
 
             foreach (var friend in m_dicFriends.Values)
                 await friend.DeleteAsync();

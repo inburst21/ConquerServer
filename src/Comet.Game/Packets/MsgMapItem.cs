@@ -126,6 +126,7 @@ namespace Comet.Game.Packets
         LayItem = 1,
         DisappearItem = 2,
         PickupItem = 3,
+        DetainItem = 4,
         LayTrap = 10,
         SynchroTrap = 11,
         DropTrap = 12

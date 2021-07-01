@@ -172,7 +172,7 @@ namespace Comet.Game.States.Events
                 _ = Map.BroadcastMsgAsync(string.Format(Language.StrLineSkillPktAnnounce, sender.Name));
             }
 
-            _ = Log.GmLog("xianjinengbisai", $"Enter\t{sender.Identity},{sender.Name},{sender.Client.IPAddress}");
+            _ = Log.GmLogAsync("xianjinengbisai", $"Enter\t{sender.Identity},{sender.Name},{sender.Client.IPAddress}");
         }
 
         public override Task OnExitAsync(Character sender)

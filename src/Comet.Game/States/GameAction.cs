@@ -4362,7 +4362,7 @@ namespace Comet.Game.States
             if (file.StartsWith("gmlog/"))
                 file = file.Remove(0, "gmlog/".Length);
 
-            await Log.GmLog(file, message);
+            await Log.GmLogAsync(file, message);
             return true;
         }
 
@@ -5918,7 +5918,7 @@ namespace Comet.Game.States
 
             await user.UserPackage.AddItemAsync(newItem);
 
-            await Log.GmLog("lottery",
+            await Log.GmLogAsync("lottery",
                 $"{user.Identity},{user.Name},{lottery.Rank},{lottery.Color},{newItem.Type},{newItem.Plus},{newItem.SocketOne},{newItem.SocketTwo}");
 
             if (lottery.Rank <= 5)

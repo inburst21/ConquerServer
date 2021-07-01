@@ -367,7 +367,7 @@ namespace Comet.Game.States.Items
             m_dicEquipment.TryRemove(position, out _);
 
             item.Position = Item.ItemPosition.Inventory;
-            if (mode != RemovalType.Delete)
+            if (mode != RemovalType.Delete && mode != RemovalType.RemoveAndDisappear)
             {
                 await m_user.SendAsync(new MsgItem(item.Identity, MsgItem.ItemActionType.EquipmentRemove, (uint)position));
                 await m_user.SendAsync(new MsgItemInfo(item));
@@ -381,9 +381,13 @@ namespace Comet.Game.States.Items
 
             if (mode == RemovalType.Delete)
                 await item.DeleteAsync();
-            else
+            else if (mode != RemovalType.RemoveAndDisappear)
             {
                 await AddItemAsync(item);
+                await item.SaveAsync();
+            }
+            else
+            {
                 await item.SaveAsync();
             }
 
@@ -567,7 +571,7 @@ namespace Comet.Game.States.Items
                     break;
 
                 case RemovalType.Delete:
-                    await Log.GmLog("delete_item",
+                    await Log.GmLogAsync("delete_item",
                         $"{item.Identity}, {item.Name}, {item.PlayerIdentity}\r\n\t{item.ToJson()}");
                     await item.DeleteAsync();
                     break;
@@ -930,7 +934,7 @@ namespace Comet.Game.States.Items
                         {
                             await pMapItem.EnterMapAsync();
                             await item.SaveAsync();
-                            await Log.GmLog("drop_item",
+                            await Log.GmLogAsync("drop_item",
                                 $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
                         }
                         else
@@ -989,7 +993,7 @@ namespace Comet.Game.States.Items
                     {
                         await pMapItem.EnterMapAsync();
                         await item.SaveAsync();
-                        await Log.GmLog("drop_item",
+                        await Log.GmLogAsync("drop_item",
                             $"{m_user.Name}({m_user.Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.MaximumDurability}\n\t{item.ToJson()}");
                     }
                     else
@@ -1020,7 +1024,7 @@ namespace Comet.Game.States.Items
             if (await m_user.DropItemAsync(item.Identity, m_user.MapX, m_user.MapY, true))
             {
                 await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
-                await Log.GmLog("detain",
+                await Log.GmLogAsync("detain",
                     $"[{m_user.Identity}] {m_user.Name} has dropped {item.Identity} to [{attacker.Identity}] {attacker.Name} dying at {m_user.MapIdentity}[{m_user.MapX},{m_user.MapY}]");
             }
             else
@@ -1235,7 +1239,7 @@ namespace Comet.Game.States.Items
             {
                 await RemoveFromInventoryAsync(item, RemovalType.RemoveAndDisappear);
                 await item.DeleteAsync(Item.ChangeOwnerType.ClearInventory);
-                await Log.GmLog("clear_inventory", $"User[{m_user.Identity}:{m_user.Name}] deleted item {item.Identity}.\r\n{item.ToJson()}");
+                await Log.GmLogAsync("clear_inventory", $"User[{m_user.Identity}:{m_user.Name}] deleted item {item.Identity}.\r\n{item.ToJson()}");
             }
         }
 

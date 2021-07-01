@@ -334,7 +334,7 @@ namespace Comet.Game
                     if (color > 1)
                         newColor = (byte) Math.Max(3, color);
                     type = (uint) (type - color * 100);
-                    _ = Log.GmLog($"ItemColorChangeType",
+                    _ = Log.GmLogAsync($"ItemColorChangeType",
                         $"PlayerId: {row["player_id"]}, OwnerId: {row["owner_id"]}, OldType: {oldType}, NewType: {type}");
                 }
 

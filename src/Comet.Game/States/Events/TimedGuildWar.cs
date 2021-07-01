@@ -309,7 +309,7 @@ namespace Comet.Game.States.Events
                     await BaseRepository.ScalarAsync($"UPDATE `cq_user` SET `money`=`money`+{money}, `emoney`=`emoney`+{emoney} WHERE `id`={userData.Identity} LIMIT 1");
                 }
 
-                await Log.GmLog($"TimedGuildWarRewards",
+                await Log.GmLogAsync($"TimedGuildWarRewards",
                     $"{userData.Identity},[{userData.Name}],{userData.IpAddress},{userData.MacAddress},{userData.Kills},{userData.Deaths},{userData.Points},{winner.Points},{winner.TotalPoints},{money},{emoney}");
             }
         }

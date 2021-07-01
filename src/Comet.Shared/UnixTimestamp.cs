@@ -41,6 +41,11 @@ namespace Comet.Shared
             return UnixEpoch.AddSeconds(timestamp);
         }
 
+        public static DateTime ToDateTime(int timestamp)
+        {
+            return UnixEpoch.AddSeconds(timestamp);
+        }
+
         public static int Now()
         {
             return Convert.ToInt32((DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime())

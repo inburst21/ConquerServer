@@ -337,7 +337,7 @@ namespace Comet.Game.States.Syndicates
             Level = user.Level;
             MateIdentity = user.MateIdentity;
 
-            await Log.GmLog("syndicate", $"User [{user.Identity}, {user.Name}] has joined [{syn.Identity}, {syn.Name}]");
+            await Log.GmLogAsync("syndicate", $"User [{user.Identity}, {user.Name}] has joined [{syn.Identity}, {syn.Name}]");
             return true;
         }
 

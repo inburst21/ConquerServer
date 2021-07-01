@@ -205,7 +205,7 @@ namespace Comet.Game.States.Magics
             if (!Magics.TryGetValue(usMagicType, out Magic magic)
                 && (ucAutoActive == 0 || (magic?.AutoActive ?? 0 & ucAutoActive) != 0))
             {
-                await Log.GmLog("cheat", $"invalid magic type: {usMagicType}, user[{m_pOwner.Name}][{m_pOwner.Identity}]");
+                await Log.GmLogAsync("cheat", $"invalid magic type: {usMagicType}, user[{m_pOwner.Name}][{m_pOwner.Identity}]");
                 return false;
             }
 
@@ -461,7 +461,7 @@ namespace Comet.Game.States.Magics
 
             if (totalExp > 0)
             {
-                await AwardExpOfLifeAsync(targetRole, totalExp);
+                await AwardExpOfLifeAsync(targetRole, totalExp, magic);
             }
 
             if (!targetRole.IsAlive)
@@ -1552,7 +1552,7 @@ namespace Comet.Game.States.Magics
 
         #region Experience
 
-        public async Task<bool> AwardExpOfLifeAsync(Role pTarget, int nLifeLost, bool bMagicRecruit = false)
+        public async Task<bool> AwardExpOfLifeAsync(Role pTarget, int nLifeLost, Magic magic = null, bool bMagicRecruit = false)
         {
             Character pOwner = m_pOwner as Character;
             if ((pTarget.IsMonster()) && pOwner != null || pTarget is DynamicNpc dynamicNpc && dynamicNpc.IsGoal()) // todo check if dynamic npc
@@ -1568,7 +1568,7 @@ namespace Comet.Game.States.Magics
                         await pOwner.SendAsync(string.Format(Language.StrKillingExperience, nBonusExp));
                 }
 
-                await AwardExpAsync(0, (int)battleExp, exp);
+                await AwardExpAsync(0, (int)battleExp, exp, magic);
             }
             return true;
         }

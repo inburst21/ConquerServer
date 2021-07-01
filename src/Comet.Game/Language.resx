@@ -213,6 +213,9 @@
   <data name="StrDragonBallDropped" xml:space="preserve">
     <value>{0} has dropped a Dragon Ball in {1}.</value>
   </data>
+  <data name="StrDropEquip" xml:space="preserve">
+    <value>{0} items have been detained by {1}`s help. Please find {2} ({3}, {4}) to redeem within 7 days, or they will be awarded to that player.</value>
+  </data>
   <data name="StrDropEquipment" xml:space="preserve">
     <value>{0} has dropped part of his equipment for dying as a criminal.</value>
   </data>
@@ -309,6 +312,12 @@
   <data name="StrFriendListFull" xml:space="preserve">
     <value>Your friend list is full.</value>
   </data>
+  <data name="StrGetEmoneyBonus" xml:space="preserve">
+    <value>{0} has arrested {1}, detained the items and obtained {2} CPs as rewards.</value>
+  </data>
+  <data name="StrGetEquipBonus" xml:space="preserve">
+    <value>{0} has arrested {1}, and obtained the detained items {2} as rewards after 7 days term.</value>
+  </data>
   <data name="StrGoToJail" xml:space="preserve">
     <value>{0} has killed {1} and sent him/her to jail.</value>
   </data>
@@ -347,6 +356,15 @@
   </data>
   <data name="StrGuideTutorLowLevel1" xml:space="preserve">
     <value>A person under level 70 cannot be your mentor.</value>
+  </data>
+  <data name="StrHasDetainEquip" xml:space="preserve">
+    <value>Some of your items have been detained. Please redeem them within 7 days. Otherwise, you cannot get them back.</value>
+  </data>
+  <data name="StrHasEmoneyBonus" xml:space="preserve">
+    <value>Thank you for arresting {0}. Please find {1} ({2}, {3}) in the market to get rewards.</value>
+  </data>
+  <data name="StrHasEquipBonus" xml:space="preserve">
+    <value>Thank you for arresting {0}, whose items have not been redeemed within 7 days. Find {1} ({2}, {3}) to get these items as rewards.</value>
   </data>
   <data name="StrInvalidCoordinate" xml:space="preserve">
     <value>Invalid coordinate.</value>
@@ -398,6 +416,9 @@
   </data>
   <data name="StrKickout" xml:space="preserve">
     <value>You have been kicked from the game. Reason: {0}.</value>
+  </data>
+  <data name="StrKillerEquip" xml:space="preserve">
+    <value>You helped detain {0} items. If he/she redeems them within 7 days, you will get what he/she paid as rewards. If not, you will get these items.</value>
   </data>
   <data name="StrKillingExperience" xml:space="preserve">
     <value>{0} extra experience points awarded by killing monsters.</value>
@@ -600,6 +621,9 @@
   <data name="StrPigeonUrgentErrNoEmoney" xml:space="preserve">
     <value>Sorry, you do not have enough CPs to submit an urgent message for broadcast.</value>
   </data>
+  <data name="StrPkBonus" xml:space="preserve">
+    <value>Thank you for helping detain equipment. Please find {0} ({1}, {2}) in the market to get rewards.</value>
+  </data>
   <data name="StrPrepareToChallengeFamily" xml:space="preserve">
     <value>The Clan Leader has sent a request to challenge {0}. Prepare yourself!</value>
   </data>
@@ -611,6 +635,9 @@
   </data>
   <data name="StrPrepareToDefendFamilyLogin" xml:space="preserve">
     <value>Other Clan wants to get the domination of {0} from your clan. Please get ready!</value>
+  </data>
+  <data name="StrRedeemEquip" xml:space="preserve">
+    <value>{0} has redeemed the detained items. {1} CPs has been awarded to {2}.</value>
   </data>
   <data name="StrShieldActiveP" xml:space="preserve">
     <value>Shield for {0} seconds, your defense will be increased by {1} percent.</value>

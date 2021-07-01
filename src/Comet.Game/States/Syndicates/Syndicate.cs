@@ -2518,7 +2518,7 @@ namespace Comet.Game.States.Syndicates
             await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
             await SendTotemPolesAsync(user);
 
-            await Log.GmLog("arsenal_inscribe", $"{user.Identity},{item.Identity},{item.Type},{Identity}");
+            await Log.GmLogAsync("arsenal_inscribe", $"{user.Identity},{item.Identity},{item.Type},{Identity}");
             return true;
         }
 
@@ -2591,7 +2591,7 @@ namespace Comet.Game.States.Syndicates
                 }
             }
 
-            await Log.GmLog("arsenal_unsubscribe", $"{idUser},{idItem},{idType},{Identity}");
+            await Log.GmLogAsync("arsenal_unsubscribe", $"{idUser},{idItem},{idType},{Identity}");
             return true;
         }
 
@@ -2668,7 +2668,7 @@ namespace Comet.Game.States.Syndicates
 
             Money -= cost;
 
-            await Log.GmLog("arsenal_enhance", $"{Identity},{type},{power},{cost}");
+            await Log.GmLogAsync("arsenal_enhance", $"{Identity},{type},{power},{cost}");
             return await SaveAsync();
         }
 

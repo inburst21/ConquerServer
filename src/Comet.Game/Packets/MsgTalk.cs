@@ -221,7 +221,7 @@ namespace Comet.Game.Packets
 
             if (sender.IsGm() || target?.IsGm() == true)
             {
-                await Log.GmLog("gm_talk", $"{sender.Name} says to {RecipientName}: {Message}");
+                await Log.GmLogAsync("gm_talk", $"{sender.Name} says to {RecipientName}: {Message}");
             }
 
             // if (Channel != TalkChannel.Whisper) // for privacy
@@ -240,7 +240,7 @@ namespace Comet.Game.Packets
 
             if (await ProcessCommandAsync(Message, sender))
             {
-                await Log.GmLog("gm_cmd", $"{sender.Name}: {Message}");
+                await Log.GmLogAsync("gm_cmd", $"{sender.Name}: {Message}");
                 return;
             }
 
@@ -915,7 +915,7 @@ namespace Comet.Game.Packets
                         Character target = Kernel.RoleManager.GetUser(myParams[0]);
                         if (target != null)
                         {
-                            await Log.GmLog("botjail", $"{user.Identity} {user.Name} botjailed {target.Identity} {target.Name} by: {myParams[1]}");
+                            await Log.GmLogAsync("botjail", $"{user.Identity} {user.Name} botjailed {target.Identity} {target.Name} by: {myParams[1]}");
                             await target.SendAsync(Language.StrBotjail);
                             await target.FlyMapAsync(6002, 28, 74);
                             await target.SaveAsync();
@@ -936,7 +936,7 @@ namespace Comet.Game.Packets
                         Character target = Kernel.RoleManager.GetUser(myParams[0]);
                         if (target != null)
                         {
-                            await Log.GmLog("macrojail", $"{user.Identity} {user.Name} macrojailed {target.Identity} {target.Name} by: {myParams[1]}");
+                            await Log.GmLogAsync("macrojail", $"{user.Identity} {user.Name} macrojailed {target.Identity} {target.Name} by: {myParams[1]}");
                             await target.SendAsync(Language.StrMacrojail);
                             await target.FlyMapAsync(6010, 28, 74);
                             await target.SaveAsync();

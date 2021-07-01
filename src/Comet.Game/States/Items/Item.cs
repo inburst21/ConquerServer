@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Comet.Core.Mathematics;
 using Comet.Game.Database;
@@ -176,6 +177,50 @@ namespace Comet.Game.States.Items
         public uint Identity => m_dbItem.Id;
 
         public string Name => m_dbItemtype?.Name ?? Language.StrNone;
+
+        public string FullName
+        {
+            get
+            {
+                StringBuilder builder = new StringBuilder();
+                switch (GetQuality())
+                {
+                    case 9: builder.Append("Super"); break;
+                    case 8: builder.Append("Elite"); break;
+                    case 7: builder.Append("Unique"); break;
+                    case 6: builder.Append("Refined"); break;
+                }
+                builder.Append(Name);
+                if (Plus > 0)
+                {
+                    builder.Append($"(+{Plus})");
+                }
+                if (SocketOne != SocketGem.NoSocket)
+                {
+                    if (SocketTwo != SocketGem.NoSocket)
+                    {
+                        builder.Append(" 2-Socketed");
+                    }
+                    else
+                    {
+                        builder.Append(" 1-Socketed");
+                    }
+                }
+                if (ReduceDamage > 0)
+                {
+                    builder.Append($" -{ReduceDamage}%");
+                }
+                if (Enchantment > 0)
+                {
+                    builder.Append($" +{Enchantment}HP");
+                }
+                if (Effect != ItemEffect.None && !IsMount())
+                {
+                    builder.Append($" {Effect}");
+                }
+                return builder.ToString();
+            }
+        }
 
         public uint Type => m_dbItemtype?.Type ?? 0;
 
@@ -1359,7 +1404,7 @@ namespace Comet.Game.States.Items
                 Durability = MaximumDurability;
                 await SaveAsync();
                 await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
-                await Log.GmLog("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with 5 meteors.", Type, Identity, PlayerIdentity));
+                await Log.GmLogAsync("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with 5 meteors.", Type, Identity, PlayerIdentity));
                 return;
             }
 
@@ -1375,7 +1420,7 @@ namespace Comet.Game.States.Items
             Durability = MaximumDurability;
             await SaveAsync();
             await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
-            await Log.GmLog("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity, nRepairCost));
+            await Log.GmLogAsync("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity, nRepairCost));
         }
 
         #endregion
@@ -1933,7 +1978,7 @@ namespace Comet.Game.States.Items
             {
                 await ChangeOwnerAsync(0, type);
                 m_dbItem.OwnerId = 0;
-                m_dbItem.DeleteTime = DateTime.Now;
+                m_dbItem.DeleteTime = UnixTimestamp.Now();
                 return await SaveAsync();
             }
             catch (Exception ex)
@@ -2122,7 +2167,8 @@ namespace Comet.Game.States.Items
             DeleteDroppedItem,
             InvalidItemType,
             BoothSale,
-            ClearInventory
+            ClearInventory,
+            DetainEquipment
         }
 
         #endregion

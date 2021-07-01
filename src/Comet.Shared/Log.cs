@@ -114,7 +114,7 @@ namespace Comet.Shared
             }
         }
 
-        public static async Task GmLog(string file, string message, params object[] values)
+        public static async Task GmLogAsync(string file, string message, params object[] values)
         {
             RefreshFolders();
 

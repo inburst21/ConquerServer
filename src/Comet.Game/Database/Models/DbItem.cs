@@ -175,7 +175,7 @@ namespace Comet.Game.Database.Models
 
         [Column("syndicate")] public virtual uint Syndicate { get; set; }
 
-        [Column("del_time")] public virtual DateTime? DeleteTime { get; set; }
+        [Column("del_time")] public virtual int DeleteTime { get; set; }
 
         [Column("save_time")] public virtual DateTime? SaveTime { get; set; }
 

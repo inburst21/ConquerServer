@@ -347,7 +347,7 @@ namespace Comet.Game.States
             {
                 uint cpsBagType = (uint)await Kernel.NextAsync(729910, 729912);
                 await DropItemAsync(cpsBagType, null);
-                await Log.GmLog("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
+                await Log.GmLogAsync("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
             } 
             else if (await Kernel.ChanceCalcAsync(625, 54_000_000))
             {

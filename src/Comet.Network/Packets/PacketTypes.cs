@@ -46,6 +46,7 @@ namespace Comet.Network.Packets
         MsgFuse = 1028,
         MsgTeamAward = 1029,
         MsgData = 1033,
+        MsgDetainItemInfo = 1034,
         MsgGodExp = 1036,
         MsgPing = 1037,
         MsgEnemyList = 1041,

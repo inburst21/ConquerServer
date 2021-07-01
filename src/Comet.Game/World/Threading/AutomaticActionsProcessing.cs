@@ -108,7 +108,7 @@ namespace Comet.Game.World.Threading
                 }
                 catch (Exception ex)
                 {
-                    await Log.GmLog("daily_reset_err", ex.ToString());
+                    await Log.GmLogAsync("daily_reset_err", ex.ToString());
                 }
             }
             await BaseRepository.SaveAsync(users).ConfigureAwait(false);

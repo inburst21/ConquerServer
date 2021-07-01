@@ -198,6 +198,8 @@ namespace Comet.Game.Packets
                 case ActionType.LoginInventory: // 75
                     await user.UserPackage.CreateAsync();
                     await user.UserPackage.SendAsync();
+                    await user.SendDetainRewardAsync();
+                    await user.SendDetainedEquipmentAsync();
                     await user.Statistic.InitializeAsync();
                     await user.TaskDetail.InitializeAsync();
                     await user.LoadTitlesAsync();
@@ -544,6 +546,11 @@ namespace Comet.Game.Packets
                     await partner.SendInfoAsync();
                     break;
 
+                case ActionType.ItemDetained:
+                    {
+                        break;
+                    }
+
                 case ActionType.Away:
                 {
                     user.IsAway = Data != 0;
@@ -630,6 +637,8 @@ namespace Comet.Game.Packets
             RelationshipsFriend = 148,
             CharacterAvatar = 151,
             QueryTradeBuddy = 143,
+            ItemDetained = 153,
+            ItemDetainedEx = 155,
             NinjaStep = 156,
             Away = 161,
             //SetGhost = 145,

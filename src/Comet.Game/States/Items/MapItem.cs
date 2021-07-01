@@ -295,7 +295,7 @@ namespace Comet.Game.States.Items
 
                 if (!string.IsNullOrEmpty(message) && !message.Equals(m_itemtype?.Name))
                 {
-                    await Log.GmLog("drop_item", $"MapItem[{Identity}; {MapIdentity}:{MapX},{MapY}][{Itemtype}]{message}");
+                    await Log.GmLogAsync("drop_item", $"MapItem[{Identity}; {MapIdentity}:{MapX},{MapY}][{Itemtype}]{message}");
                 }
             }
         }

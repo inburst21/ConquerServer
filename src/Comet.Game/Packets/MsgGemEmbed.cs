@@ -81,7 +81,7 @@ namespace Comet.Game.Packets
 
             if (Identity != user.Identity)
             {
-                await Log.GmLog("cheat", $"MsgGemEmbed invalid user identity {Identity} != {user.Identity}");
+                await Log.GmLogAsync("cheat", $"MsgGemEmbed invalid user identity {Identity} != {user.Identity}");
                 return;
             }
 

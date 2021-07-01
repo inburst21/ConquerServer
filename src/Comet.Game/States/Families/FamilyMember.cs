@@ -76,7 +76,7 @@ namespace Comet.Game.States.Families
             if (!await member.SaveAsync())
                 return null;
 
-            await Log.GmLog("family", $"[{player.Identity}],[{player.Name}],[{family.Identity}],[{family.Name}],[Join]");
+            await Log.GmLogAsync("family", $"[{player.Identity}],[{player.Name}],[{family.Identity}],[{family.Name}],[Join]");
             return member;
         }
 

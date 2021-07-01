@@ -402,7 +402,7 @@ namespace Comet.Game.Packets
 
                     await item.SaveAsync();
                     await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-                    await Log.GmLog("improve",
+                    await Log.GmLogAsync("improve",
                         $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_DRAGONBALL}");
                     break;
                 }
@@ -479,7 +479,7 @@ namespace Comet.Game.Packets
 
                     await item.SaveAsync();
                     await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-                    await Log.GmLog("uplev",
+                    await Log.GmLogAsync("uplev",
                         $"{user.Identity},{user.Name};{item.Identity};{item.Type};{Item.TYPE_METEOR}");
                     break;
                 }
@@ -626,7 +626,7 @@ namespace Comet.Game.Packets
                     {
                         item.Enchantment = enchant;
                         await item.SaveAsync();
-                        await Log.GmLog("enchant",
+                        await Log.GmLogAsync("enchant",
                             $"User[{user.Identity}] Enchant[Gem: {gem.Type}|{gem.Identity}][Target: {item.Type}|{item.Identity}] with {enchant} points.");
                     }
 
@@ -635,6 +635,25 @@ namespace Comet.Game.Packets
                     await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
                         break;
                 }
+
+                case ItemActionType.RedeemEquipment:
+                    {
+                        if (await Kernel.ItemManager.ClaimDetainedItemAsync(Identity, user))
+                            await user.SendAsync(this);
+                        break;
+                    }
+
+                case ItemActionType.DetainEquipment:
+                    {
+                        if (await Kernel.ItemManager.ClaimDetainRewardAsync(Identity, user))
+                            await user.SendAsync(this);
+                        break;
+                    }
+
+                case ItemActionType.DetainRewardClose:
+                    {
+                        break;
+                    }
 
                 case ItemActionType.TalismanProgress:
                 {
@@ -753,6 +772,9 @@ namespace Comet.Game.Packets
             ClientPing = 27,
             EquipmentEnchant,
             BoothSellPoints,
+            RedeemEquipment = 32,
+            DetainEquipment = 33,
+            DetainRewardClose = 34,
             TalismanProgress = 35,
             TalismanProgressEmoney = 36,
             InventoryDropItem = 37,
