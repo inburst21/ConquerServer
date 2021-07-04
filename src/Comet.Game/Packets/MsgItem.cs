@@ -79,6 +79,7 @@ namespace Comet.Game.Packets
         public uint Timestamp { get; set; }
         public uint Argument { get; set; }
         public ItemActionType Action { get; set; }
+        public uint Argument2 { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -96,6 +97,7 @@ namespace Comet.Game.Packets
             Action = (ItemActionType) reader.ReadUInt32();
             Timestamp = reader.ReadUInt32();
             Argument = reader.ReadUInt32();
+            Argument2 = reader.ReadUInt32();
         }
 
         /// <summary>
@@ -113,6 +115,7 @@ namespace Comet.Game.Packets
             writer.Write((uint) Action);
             writer.Write(Timestamp);
             writer.Write(Argument);
+            writer.Write(Argument2);
             return writer.ToArray();
         }
 
@@ -639,14 +642,20 @@ namespace Comet.Game.Packets
                 case ItemActionType.RedeemEquipment:
                     {
                         if (await Kernel.ItemManager.ClaimDetainedItemAsync(Identity, user))
+                        {
+                            Command = user.Identity;
                             await user.SendAsync(this);
+                        }
                         break;
                     }
 
                 case ItemActionType.DetainEquipment:
                     {
                         if (await Kernel.ItemManager.ClaimDetainRewardAsync(Identity, user))
+                        {
+                            Command = user.Identity;
                             await user.SendAsync(this);
+                        }
                         break;
                     }
 

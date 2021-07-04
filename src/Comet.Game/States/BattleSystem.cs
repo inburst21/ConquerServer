@@ -246,7 +246,7 @@ namespace Comet.Game.States
             else
                 attack = attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
 
-            if (adjustAtk > 0 && adjustAtk < 32000)
+            if (adjustAtk > 0 && adjustAtk < Calculations.ADJUST_PERCENT)
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
             if (attacker is Character && target is Character && attacker.IsBowman)
@@ -269,7 +269,7 @@ namespace Comet.Game.States
 
             damage = Math.Max(1, attack - defense);
 
-            if (adjustAtk > 32000)
+            if (adjustAtk > Calculations.ADJUST_PERCENT)
                 damage = Calculations.CutTrail(0, Calculations.AdjustDataEx(damage, adjustAtk));
 
             if (targetUser != null)
@@ -329,7 +329,7 @@ namespace Comet.Game.States
             InteractionEffect effect = InteractionEffect.None;
             int attack = attacker.MagicAttack;
 
-            if (adjustAtk > 0)
+            if (adjustAtk > 0 && adjustAtk < Calculations.ADJUST_PERCENT)
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
             int defense = target.MagicDefense;
@@ -337,6 +337,9 @@ namespace Comet.Game.States
             int damage = attack - defense;
 
             damage = (int)(damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
+
+            if (adjustAtk > 0 && adjustAtk > Calculations.ADJUST_PERCENT)
+                damage = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
             Character targetUser = target as Character;
             if (targetUser != null)

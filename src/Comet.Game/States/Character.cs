@@ -2331,12 +2331,20 @@ namespace Comet.Game.States
                             return true;
                         if (IsMate(user.Identity))
                             return true;
-                        if (Syndicate?.QueryMember(user.Identity) != null)
-                            return true;
-                        if (Syndicate?.IsAlly(user.SyndicateIdentity) == true)
-                            return true;
-                        if (Team?.IsMember(user.Identity) == true)
-                            return true;
+                        if (Map?.IsFamilyMap() == true)
+                        {
+                            if (Family.GetMember(user.Identity) != null)
+                                return true;
+                        }
+                        else
+                        {
+                            if (Syndicate?.QueryMember(user.Identity) != null)
+                                return true;
+                            if (Syndicate?.IsAlly(user.SyndicateIdentity) == true)
+                                return true;
+                            if (Team?.IsMember(user.Identity) == true)
+                                return true;
+                        }
                         return false;
                 }
             }
@@ -2518,7 +2526,10 @@ namespace Comet.Game.States
 
             await DetachStatusAsync(StatusSet.BLUE_NAME);
             await DetachAllStatusAsync();
-            await SetScapegoatAsync(false);
+
+            if (Scapegoat)
+                await SetScapegoatAsync(false);
+
             await AttachStatusAsync(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
             await AttachStatusAsync(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
@@ -5403,6 +5414,9 @@ namespace Comet.Game.States
             var items = await DbDetainedItem.GetFromDischargerAsync(Identity);
             foreach (var dbDischarged in items)
             {
+                if (dbDischarged.ItemIdentity == 0)
+                    continue; // item already claimed back
+
                 var dbItem = await ItemRepository.GetByIdAsync(dbDischarged.ItemIdentity);
                 if (dbItem == null)
                 {
@@ -5431,6 +5445,7 @@ namespace Comet.Game.States
 
                 if (dbDetained.ItemIdentity != 0)
                 {
+                    dbItem = await ItemRepository.GetByIdAsync(dbDetained.ItemIdentity);
                     if (dbItem == null)
                     {
                         await BaseRepository.DeleteAsync(dbDetained);
@@ -5458,7 +5473,7 @@ namespace Comet.Game.States
                         await SendAsync(string.Format(Language.StrHasEquipBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
                     }
                 }
-                else if (expired && !notClaimed)
+                else if (!notClaimed)
                 {
                     if (ItemManager.Confiscator != null)
                     {
@@ -5471,7 +5486,7 @@ namespace Comet.Game.States
                         Action = MsgItem.ItemActionType.RedeemEquipment,
                         Identity = dbDetained.Identity,
                         Command = dbDetained.TargetIdentity,
-                        Argument = dbDetained.RedeemPrice
+                        Argument2 = dbDetained.RedeemPrice
                     });
                 }
             }

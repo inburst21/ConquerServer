@@ -567,6 +567,10 @@ namespace Comet.Game.States
                         result = await ExecuteActionTrapCount(action, param, user, role, item, input);
                         break;
 
+                    case TaskActionType.ActionDetainDialog:
+                        result = await ExecuteActionDetainDialogAsync(action, param, user, role, item, input);
+                        break;
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
                             $"GameAction::ExecuteActionAsync unhandled action type {action.Type} for action: {action.Identity}");
@@ -6758,6 +6762,40 @@ namespace Comet.Game.States
         {
             throw new NotImplementedException("No action for this yet.");
             // return true;
+        }
+
+        #endregion
+
+        #region Detain
+
+        private static async Task<bool> ExecuteActionDetainDialogAsync(DbAction action, string param, Character user,
+            Role role, Item item, string input)
+        {
+            if (param.Equals("target"))
+            {
+                await user.SendAsync(new MsgAction
+                {
+                    Action = MsgAction.ActionType.ClientDialog,
+                    X = user.MapX,
+                    Y = user.MapY,
+                    Identity = user.Identity,
+                    Data = 336
+                });
+                return true;
+            }
+            else if (param.Equals("hunter"))
+            {
+                await user.SendAsync(new MsgAction
+                {
+                    Action = MsgAction.ActionType.ClientDialog,
+                    X = user.MapX,
+                    Y = user.MapY,
+                    Identity = user.Identity,
+                    Data = 337
+                });
+                return true;
+            }
+            return false;
         }
 
         #endregion

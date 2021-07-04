@@ -93,7 +93,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (!item.IsEquipment())
+                    if (!item.IsEquipment() && !item.IsMount())
                     {
                         await client.Character.SendAsync(Language.StrEquipLockCantLock);
                         return;

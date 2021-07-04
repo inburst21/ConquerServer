@@ -43,7 +43,7 @@ namespace Comet.Game.World.Managers
     {
         private Dictionary<uint, DbItemtype> m_dicItemtype;
         private Dictionary<ulong, DbItemAddition> m_dicItemAddition;
-        public static Npc Confiscator { get; private set; }
+        public static BaseNpc Confiscator => Kernel.RoleManager.FindRole<BaseNpc>(4450);
 
         public async Task InitializeAsync()
         {
@@ -58,8 +58,6 @@ namespace Comet.Game.World.Managers
             {
                 m_dicItemAddition.TryAdd(AdditionKey(addition.TypeId, addition.Level), addition);
             }
-
-            Confiscator = Kernel.RoleManager.FindRole<Npc>(4450);
         }
 
         public List<DbItemtype> GetByRange(int mobLevel, int tolerationMin, int tolerationMax, int maxLevel = 120)
@@ -185,8 +183,8 @@ namespace Comet.Game.World.Managers
             }, true);
             IdentityGenerator.MapItem.ReturnIdentity(detainFloorId);
 
-            await discharger.SendAsync(new MsgDetainItemInfo(dbDetain, item, MsgDetainItemInfo.Mode.ClaimPage));
-            await detainer.SendAsync(new MsgDetainItemInfo(dbDetain, item, MsgDetainItemInfo.Mode.DetainPage));
+            await discharger.SendAsync(new MsgDetainItemInfo(dbDetain, item, MsgDetainItemInfo.Mode.DetainPage));
+            await detainer.SendAsync(new MsgDetainItemInfo(dbDetain, item, MsgDetainItemInfo.Mode.ClaimPage));
 
             if (Confiscator != null)
             {
@@ -209,7 +207,7 @@ namespace Comet.Game.World.Managers
             if (dbDetain.HunterIdentity != user.Identity)
                 return false;
 
-            if (dbDetain.HuntTime + MsgDetainItemInfo.MAX_REDEEM_SECONDS > UnixTimestamp.Now())
+            if (dbDetain.ItemIdentity != 0 && dbDetain.HuntTime + MsgDetainItemInfo.MAX_REDEEM_SECONDS > UnixTimestamp.Now())
                 return false;
 
             if (!user.UserPackage.IsPackSpare(1))
@@ -301,6 +299,13 @@ namespace Comet.Game.World.Managers
             {
                 if (Confiscator != null)
                 {
+                    await hunter.SendAsync(new MsgItem
+                    {
+                        Action = MsgItem.ItemActionType.RedeemEquipment,
+                        Identity = dbDetain.Identity,
+                        Command = dbDetain.TargetIdentity,
+                        Argument2 = dbDetain.RedeemPrice
+                    });
                     await hunter.SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetain.TargetName, Confiscator.Name, Confiscator.MapX, Confiscator.MapY), MsgTalk.TalkChannel.Talk);
                 }
             }
