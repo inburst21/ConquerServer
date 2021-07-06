@@ -297,15 +297,16 @@ namespace Comet.Game.World.Managers
             Character hunter = Kernel.RoleManager.GetUser(dbDetain.HunterIdentity);
             if (hunter != null)
             {
+                await hunter.SendAsync(new MsgItem
+                {
+                    Action = MsgItem.ItemActionType.RedeemEquipment,
+                    Identity = dbDetain.Identity,
+                    Command = dbDetain.TargetIdentity,
+                    Argument2 = dbDetain.RedeemPrice
+                });
+
                 if (Confiscator != null)
                 {
-                    await hunter.SendAsync(new MsgItem
-                    {
-                        Action = MsgItem.ItemActionType.RedeemEquipment,
-                        Identity = dbDetain.Identity,
-                        Command = dbDetain.TargetIdentity,
-                        Argument2 = dbDetain.RedeemPrice
-                    });
                     await hunter.SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetain.TargetName, Confiscator.Name, Confiscator.MapX, Confiscator.MapY), MsgTalk.TalkChannel.Talk);
                 }
             }
