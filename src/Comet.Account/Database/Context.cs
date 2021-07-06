@@ -40,7 +40,7 @@ namespace Comet.Account.Database
 
         public static void Initialize()
         {
-            ConnectionString = $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password}";
+            ConnectionString = $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password};port={Configuration.Port}";
             ServerVersion = ServerVersion.AutoDetect(ConnectionString);
         }
 

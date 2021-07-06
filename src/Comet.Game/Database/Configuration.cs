@@ -74,6 +74,7 @@ namespace Comet.Game.Database
             public string Schema { get; set; }
             public string Username { get; set; }
             public string Password { get; set; }
+            public int Port { get; set; } = 3306;
         }
 
         /// <summary>

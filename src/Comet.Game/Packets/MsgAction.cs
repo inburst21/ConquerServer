@@ -165,6 +165,14 @@ namespace Comet.Game.Packets
             {
                 case ActionType.LoginSpawn: // 74
                     Identity = client.Character.Identity;
+
+                    if (user.IsOfflineTraining)
+                    {
+                        client.Character.MapIdentity = 601;
+                        client.Character.MapX = 61;
+                        client.Character.MapY = 54;
+                    }
+
                     GameMap targetMap = Kernel.MapManager.GetMap(client.Character.MapIdentity);
                     if (targetMap == null)
                     {
@@ -172,12 +180,10 @@ namespace Comet.Game.Packets
                         client.Disconnect();
                         return;
                     }
-                    else
-                    {
-                        Command = targetMap.MapDoc;
-                        X = client.Character.MapX;
-                        Y = client.Character.MapY;
-                    }
+
+                    Command = targetMap.MapDoc;
+                    X = client.Character.MapX;
+                    Y = client.Character.MapY;
 
                     await client.Character.EnterMapAsync();
                     await client.SendAsync(this);

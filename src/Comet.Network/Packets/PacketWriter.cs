@@ -81,7 +81,7 @@ namespace Comet.Network.Packets
         /// <param name="strings">List of strings to be written to the stream</param>
         public void Write(List<string> strings)
         {
-            base.Write((byte) strings.Count);
+            Write((byte) strings.Count);
             for (int i = 0; i < strings.Count; i++)
                 base.Write(strings[i]);
         }

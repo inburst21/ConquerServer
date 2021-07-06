@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Network.Packets;
@@ -46,23 +47,23 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgTraining;
         }
 
-        public Mode Action {  get;  set; }
+        public Mode Action { get; set; }
         public ulong TrainingTime { get; set; }
 
         public override void Decode(byte[] bytes)
         {
             PacketReader reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType) reader.ReadUInt16();
-            Action = (Mode) reader.ReadUInt32();
+            Type = (PacketType)reader.ReadUInt16();
+            Action = (Mode)reader.ReadUInt32();
             TrainingTime = reader.ReadUInt64();
         }
 
         public override byte[] Encode()
         {
             PacketWriter writer = new PacketWriter();
-            writer.Write((ushort) Type);
-            writer.Write((uint) Action);
+            writer.Write((ushort)Type);
+            writer.Write((uint)Action);
             writer.Write(TrainingTime);
             return writer.ToArray();
         }
@@ -72,32 +73,45 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case Mode.RequestTime:
-                {
-                    TrainingTime = client.Character.CurrentTrainingMinutes;
-                    await client.Character.SendAsync(this);
-                    break;
-                }
-
-                case Mode.RequestEnter:
-                {
-                    if (!client.Character.IsBlessed)
                     {
-                        await client.Character.SendAsync(Language.StrCannotEnterTG);
-                        return;
+                        TrainingTime = client.Character.CurrentTrainingMinutes;
+                        await client.Character.SendAsync(this);
+                        break;
                     }
 
-                    await client.Character.SendAsync(this);
-                    break;
-                }
+                case Mode.RequestEnter:
+                    {
+                        if (!client.Character.IsBlessed || client.Character.CurrentTrainingMinutes == 0)
+                        {
+                            await client.Character.SendAsync(Language.StrCannotEnterTG);
+                            return;
+                        }
+
+                        await client.Character.SendAsync(this);
+
+                        if (client.Character.MapIdentity != 601)
+                            await client.Character.EnterAutoExerciseAsync();
+                        break;
+                    }
 
                 case Mode.RequestRewardInfo:
-                {
-                    await client.Character.SendAsync(new MsgTrainingInfo
                     {
-                        
-                    });
-                    break;
-                }
+                        var currData = client.Character.GetCurrentOnlineTGExp();
+                        await client.Character.SendAsync(new MsgTrainingInfo
+                        {
+                            Experience = (int)currData.Experience,
+                            Level = currData.Level,
+                            TimeRemaining = (ushort)(client.Character.CurrentTrainingTime - Math.Min(client.Character.CurrentOfflineTrainingTime, client.Character.CurrentTrainingTime)),
+                            TimeUsed = Math.Min(client.Character.CurrentOfflineTrainingTime, client.Character.CurrentTrainingTime)
+                        });
+                        break;
+                    }
+
+                case Mode.ClaimReward:
+                    {
+                        await client.Character.LeaveAutoExerciseAsync();
+                        break;
+                    }
 
                 default:
                     await Log.WriteLogAsync(LogLevel.Warning, $"Unhandled MsgTraining::{Action}");

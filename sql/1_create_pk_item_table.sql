@@ -1,3 +1,5 @@
+USE `conquer`;
+
 CREATE TABLE `cq_pk_item` (
   `id` int(4) NOT NULL AUTO_INCREMENT,
   `item` int(4) unsigned NOT NULL DEFAULT '0',

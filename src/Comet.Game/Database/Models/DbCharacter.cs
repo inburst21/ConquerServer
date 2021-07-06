@@ -75,6 +75,7 @@ namespace Comet.Game.Database.Models
         [Column("donation")] public ulong Donation { get; set; }
         [Column("last_login")] public virtual DateTime LoginTime { get; set; }
         [Column("last_logout")] public virtual DateTime LogoutTime { get; set; }
+        [Column("last_logout2")] public virtual DateTime? LogoutTime2 { get; set; } // Offline TG
         [Column("online_time")] public virtual int OnlineSeconds { get; set; }
         [Column("auto_allot")] public virtual byte AutoAllot { get; set; }
         [Column("mete_lev")] public virtual uint MeteLevel { get; set; }
@@ -86,7 +87,7 @@ namespace Comet.Game.Database.Models
         [Column("task_mask")] public virtual uint TaskMask { get; set; }
         [Column("home_id")] public virtual uint HomeIdentity { get; set; }
         [Column("lock_key")] public virtual ulong LockKey { get; set; }
-        [Column("auto_exercise")] public virtual DateTime? AutoExercise { get; set; }
+        [Column("auto_exercise")] public virtual ushort AutoExercise { get; set; }
         [Column("time_of_life")] public virtual DateTime? LuckyTime { get; set; }
         [Column("vip_value")] public virtual uint VipLevel { get; set; }
         [Column("vip_expire")] public virtual DateTime? VipExpiration { get; set; }

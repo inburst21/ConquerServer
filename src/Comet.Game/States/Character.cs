@@ -596,6 +596,8 @@ namespace Comet.Game.States
             byte newLevel = Level;
             ushort virtue = 0;
             long usedExp = amount;
+
+            double mentorUpLevTime = 0;
             while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
             {
                 DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(newLevel);
@@ -614,23 +616,22 @@ namespace Comet.Game.States
                     continue;
                 }
 
+                mentorUpLevTime += dbExp.MentorUpLevTime;//(leveXp.MentorUpLevTime * ((float)usedExp / leveXp.Exp));
+
                 if (newLevel < Kernel.RoleManager.GetLevelLimit()) continue;
                 amount = 0;
                 break;
             }
 
-            usedExp -= amount;
-            
             uint metLev = 0;
             var leveXp = Kernel.RoleManager.GetLevelExperience(newLevel);
             if (leveXp != null)
             {
                 float fExp = amount / (float)leveXp.Exp;
                 metLev = (uint)(newLevel * 10000 + fExp * 1000);
-            }
 
-            if (!noContribute && Guide != null && leveXp != null)
-                await Guide.AwardTutorExperienceAsync((uint)(leveXp.MentorUpLevTime * ((float)usedExp / leveXp.Exp))).ConfigureAwait(false);
+                mentorUpLevTime += (leveXp.MentorUpLevTime * ((float)amount / leveXp.Exp));
+            }
 
             byte checkLevel = 130; //(byte)(m_dbObject.Reincarnation > 0 ? 110 : 130);
             if (newLevel >= checkLevel && Metempsychosis > 0 && m_dbObject.MeteLevel > metLev)
@@ -661,10 +662,10 @@ namespace Comet.Game.States
             if (leveled)
             {
                 byte job;
-                if ((int)Profession > 100)
+                if (Profession > 100)
                     job = 10;
                 else
-                    job = (byte)(((int)Profession - (int)Profession % 10) / 10);
+                    job = (byte)((Profession - Profession % 10) / 10);
 
                 var allot = Kernel.RoleManager.GetPointAllot(job, newLevel);
                 Level = newLevel;
@@ -688,6 +689,9 @@ namespace Comet.Game.States
                 });
 
                 await UplevelEventAsync();
+
+                if (!noContribute && Guide != null && mentorUpLevTime > 0)
+                    await Guide.AwardTutorExperienceAsync((uint) mentorUpLevTime).ConfigureAwait(false);
             }
 
             if (Team != null && !Team.IsLeader(Identity) && virtue > 0)
@@ -4143,35 +4147,83 @@ namespace Comet.Game.States
 
         #region Offline TG
 
-        public int MaxTrainingMinutes => (int) (IsBlessed ? Math.Min(1440 + 60 * VipLevel, (m_dbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes) : 0);
+        public ushort MaxTrainingMinutes => (ushort)Math.Min(1440 + 60 * VipLevel, (m_dbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes);
 
-        public ulong CurrentTrainingMinutes => (ulong) Math.Min(((DateTime.Now - m_dbObject.LoginTime).TotalMinutes / TimeSpan.TicksPerMinute * 10), MaxTrainingMinutes);
+        public ushort CurrentTrainingMinutes => 600;
+            //(ushort)Math.Min(((DateTime.Now - m_dbObject.LoginTime).TotalMinutes), MaxTrainingMinutes);
 
-        public ulong CurrentOfflineTraining => m_dbObject.AutoExercise == null
-            ? 0UL
-            : (ulong) ((DateTime.Now - m_dbObject.AutoExercise.Value).TotalMinutes / TimeSpan.TicksPerMinute * 10);
+        //public ushort CurrentOfflineTrainingTime => (ushort)(m_dbObject.AutoExercise == 0 || m_dbObject.LogoutTime2 == null
+        //    ? 0
+        //    : Math.Min((MaxTrainingMinutes - (m_dbObject.LogoutTime2.Value.AddMinutes(m_dbObject.AutoExercise) - DateTime.Now).TotalMinutes), MaxTrainingMinutes));
 
-        public bool IsOfflineTraining => m_dbObject.AutoExercise != null;
-
-        public Task EnterAutoExerciseAsync()
+        public ushort CurrentOfflineTrainingTime
         {
-            if (!IsBlessed)
-                return Task.CompletedTask;
+            get
+            {
+                if (m_dbObject.AutoExercise == 0 || m_dbObject.LogoutTime2 == null)
+                    return 0;
 
-            m_dbObject.AutoExercise = DateTime.Now;
-            return SaveAsync();
+                DateTime endTime = m_dbObject.LogoutTime2.Value.AddMinutes(m_dbObject.AutoExercise);
+                if (endTime < DateTime.Now)
+                    return CurrentTrainingTime;
+
+                int remainingTime = (int)Math.Min((DateTime.Now - m_dbObject.LogoutTime2.Value).TotalMinutes, CurrentTrainingTime);
+                return (ushort)(remainingTime);
+            }
         }
 
-        public Task LeaveAutoExerciseAsync()
+        public ushort CurrentTrainingTime => m_dbObject.AutoExercise;
+
+        public bool IsOfflineTraining => m_dbObject.AutoExercise != 0;
+
+        public async Task EnterAutoExerciseAsync()
         {
-            return Task.CompletedTask;
+            if (!IsBlessed)
+                return;
+
+            m_dbObject.AutoExercise = CurrentTrainingMinutes;
+            m_dbObject.LogoutTime2 = DateTime.Now;
+        }
+
+        public async Task LeaveAutoExerciseAsync()
+        {
+            await AwardExperienceAsync(CalculateExpBall(GetAutoExerciseExpTimes()), true);
+
+            int totalMinutes = Math.Min(CurrentTrainingTime, CurrentOfflineTrainingTime);
+
+            const int moneyPerMinute = 100;
+            const double conquerPointsChance = 0.0125;
+
+            await AwardMoneyAsync(moneyPerMinute * totalMinutes);
+
+            int emoneyAmount = 0;
+            for (int i = 0; i < totalMinutes; i++)
+            {
+                if (await Kernel.ChanceCalcAsync(conquerPointsChance))
+                    emoneyAmount += await Kernel.NextAsync(1, 3);
+            }
+
+            if (emoneyAmount > 0)
+                await AwardConquerPointsAsync(emoneyAmount);
+
+            await FlyMapAsync(RecordMapIdentity, RecordMapX, RecordMapY);
+
+            m_dbObject.AutoExercise = 0;
+            m_dbObject.LogoutTime2 = null;
+            await SaveAsync();
+        }
+
+        public int GetAutoExerciseExpTimes()
+        {
+            const int MAX_REWARD = 3000; // 5 Exp Balls every 8 hours
+            const double REWARD_EVERY_N_MINUTES = 480;
+            return (int)(Math.Min(CurrentOfflineTrainingTime, CurrentTrainingTime) / REWARD_EVERY_N_MINUTES * MAX_REWARD);
         }
 
         public (int Level, ulong Experience) GetCurrentOnlineTGExp()
         {
-            const int MAX_REWARD = 6000;
             
-            return PreviewExpBallUsage();
+            return PreviewExpBallUsage(GetAutoExerciseExpTimes());
         }
 
         #endregion
